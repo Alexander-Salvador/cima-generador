@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"bytes"
+	"io"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -68,6 +70,8 @@ func main() {
 		exitOn(runCreateTab(repoRoot, args))
 	case "delete-tab":
 		exitOn(runDeleteTab(repoRoot, args))
+	case "delete-column":
+		exitOn(runDeleteColumnCmd(repoRoot, args))
 	case "snapshots":
 		exitOn(runSnapshots(repoRoot, args))
 	case "rollback":
@@ -231,7 +235,8 @@ Writes:
   append       Append row to a table (--tab, --json or --k=v)
   update       Update rows where column=value (--tab, --where col=val, --set col=val)
   create-tab   Create a new tab (--title)
-  delete-tab   Delete a tab (--sheet-id)
+  delete-tab        Delete a tab (--sheet-id)
+  delete-column     Delete columns (--tab, --start-col, --end-col)
 Formatting & rules (v0.4.0):
   format         Conditional formatting (--range, --when, --value, --bg, --fg, --bold)
   style          Plain cell style (--range, --bg, --fg, --bold, --italic, --border, --border-color, --align, --font-size)
@@ -1625,3 +1630,178 @@ func hasFlag(args []string, flag string) bool {
 	return false
 }
 
+
+
+// runDeleteColumnCmd removes columns from a tab using the Sheets API
+// deleteDimension request. Accepts column letter OR numeric (1-based) index.
+func runDeleteColumnCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	startCol := flagValue(args, "--start-col", "")
+	endCol := flagValue(args, "--end-col", "")
+	if tab == "" {
+		return fmt.Errorf("delete-column: --tab required")
+	}
+	if startCol == "" || endCol == "" {
+		return fmt.Errorf("delete-column: --start-col and --end-col required")
+	}
+	cl, err := buildSheetClient(repoRoot, id)
+	if err != nil {
+		return err
+	}
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	startIdx, err1 := colRefToIndex(startCol)
+	endIdx, err2 := colRefToIndex(endCol)
+	if err1 != nil || err2 != nil {
+		return fmt.Errorf("delete-column: bad column ref: %v %v", err1, err2)
+	}
+	if startIdx > endIdx {
+		startIdx, endIdx = endIdx, startIdx
+	}
+	req := map[string]any{
+		"deleteDimension": map[string]any{
+			"range": map[string]any{
+				"sheetId":          sid,
+				"dimension":         "COLUMNS",
+				"startIndex":       startIdx,
+				"endIndex":         endIdx + 1,
+			},
+		},
+	}
+	body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("delete-column: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("delete-column HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, tab, "delete_column", map[string]any{
+		"start_col": startCol, "end_col": endCol, "startIndex": startIdx, "endIndex": endIdx + 1,
+	}, int(endIdx-startIdx+1))
+	fmt.Printf("✅ deleted %d columns (%s to %s) on %s\n", endIdx-startIdx+1, startCol, endCol, tab)
+	return nil
+}
+
+func colRefToIndex(ref string) (int, error) {
+	ref = strings.TrimSpace(strings.ToUpper(ref))
+	if ref == "" {
+		return 0, fmt.Errorf("empty ref")
+	}
+	// Try numeric 0-based index (e.g. "5" → 5)
+	if n, err := strconv.Atoi(ref); err == nil {
+		if n < 0 {
+			return 0, fmt.Errorf("negative")
+		}
+		return n, nil
+	}
+	// Letter-based 1-based → 0-based (A=1 → 0)
+	col := 0
+	for _, c := range ref {
+		if c < 'A' || c > 'Z' {
+			return 0, fmt.Errorf("non-letter: %c", c)
+		}
+		col = col*26 + int(c-'A'+1)
+	}
+	return col - 1, nil
+}
+
+func buildSheetClient(repoRoot, id string) (*Client, error) {
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return nil, err
+	}
+	return NewClient(creds, id), nil
+}
+
+// runUpdateNamedRangeCmd replaces an EXISTING named range by deleting
+// the old one (by ID we discover from getSpreadsheet) and adding a
+// fresh one. Required because addNamedRange errors if the name already
+// exists (Google refuses duplicate names).
+func runUpdateNamedRangeCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	name := flagValue(args, "--name", "")
+	rng := flagValue(args, "--range", "")
+	if name == "" || rng == "" {
+		return fmt.Errorf("update-named-range: --name and --range required")
+	}
+	cl, err := buildSheetClient(repoRoot, id)
+	if err != nil {
+		return err
+	}
+	// Get spreadsheet to find existing namedRange ID by name
+	url := fmt.Sprintf("%s/%s?fields=namedRanges", sheetsAPIBase, id)
+	greq, _ := http.NewRequest("GET", url, nil)
+	gresp, err := cl.http.Do(greq)
+	if err != nil {
+		return fmt.Errorf("getSpreadsheet: %w", err)
+	}
+	defer gresp.Body.Close()
+	if gresp.StatusCode != 200 {
+		return fmt.Errorf("getSpreadsheet HTTP %d", gresp.StatusCode)
+	}
+	var doc struct {
+		NamedRanges []struct {
+			NamedRange struct {
+				NamedRangeID string `json:"namedRangeId"`
+				Name         string `json:"name"`
+			} `json:"namedRange"`
+		} `json:"namedRanges"`
+	}
+	gb, _ := io.ReadAll(gresp.Body)
+	if err := json.Unmarshal(gb, &doc); err != nil {
+		return fmt.Errorf("parse: %w", err)
+	}
+	delID := ""
+	for _, nr := range doc.NamedRanges {
+		if nr.NamedRange.Name == name {
+			delID = nr.NamedRange.NamedRangeID
+			break
+		}
+	}
+	grid, err := cl.a1ToGrid(rng)
+	if err != nil {
+		return err
+	}
+	requests := []map[string]any{}
+	if delID != "" {
+		requests = append(requests, map[string]any{
+			"deleteNamedRange": map[string]any{"namedRangeId": delID},
+		})
+	}
+	requests = append(requests, map[string]any{
+		"addNamedRange": map[string]any{
+			"namedRange": map[string]any{
+				"name":  name,
+				"range": grid,
+			},
+		},
+	})
+	body, _ := json.Marshal(map[string]any{"requests": requests})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("update-named-range: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("update-named-range HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, "", "update_named_range", map[string]any{
+		"name": name, "range": rng, "oldId": delID,
+	}, 1)
+	fmt.Printf("✅ updated named range %q → %s\n", name, rng)
+	return nil
+}
