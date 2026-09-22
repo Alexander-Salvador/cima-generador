@@ -1,7 +1,7 @@
 # OVAV Project Memory
 
 > **Canonical in-repo memory for OVAV project**
-> **Last updated:** 2026-09-21 (Apps Script elimination + Doctor fix items)
+> **Last updated:** 2026-09-22 (OPERACIONES layout refactor — 7 cols, smart dropdown by name)
 > **Authority:** `.ovav/plan/caps.yaml` + Git HEAD + this file
 > **Harness:** OpenCode primary + Crush secondary
 > **Model:** `MiniMax-M3`
@@ -370,3 +370,61 @@ tail -20 .ovav/registry/audit/sheets/*.jsonl
 **Main repo state preserved:**
 - fix/external-secrets-semantic with 4 modified files (other team's work)
 - Will be returned to that branch on next session start
+
+---
+
+## 13. Session end log — 2026-09-22
+
+**OPERACIONES sheet (CIMA) layout refactor — applied to Google Sheets (not local git)**
+
+No local code changes this session; all work is **persistent cloud state in Google Sheets** (Spreadsheet ID `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`, sheet `OPERACIONES`). Final state below.
+
+### Final layout (7 cols)
+
+| Col | Header | Type | Width | Notes |
+|---|---|---|---|---|
+| A | 📝 NOMBRES COMPLETOS | input (dropdown) | 280px | 25 names, typeahead on DNI or name |
+| B | DNI | formula | 110px | `INDEX/MATCH` on PERSONAL!C → PERSONAL!B |
+| C | MOTIVO | input | 240px | manual yellow |
+| D | FECHA_OP | formula | 130px | `DATE` format d/M/yyyy |
+| E | HORARIO | formula | 130px | VLOOKUP col 4 |
+| F | SUPERVISOR | formula | 130px | truncated ≤25 chars |
+| G | REQUEST_ID | formula | 110px | `REQ-001`, `REQ-002`, … |
+
+Rows 4–100 (97 data rows). H+ hidden.
+
+### What changed (from prior state)
+
+| Step | Change | Reason |
+|---|---|---|
+| 1 | Removed TURNO_ID col | Redundant — HORARIO already encodes shift identity |
+| 2 | Removed cols H, I, J, K (NUEVO_HORARIO/HORAS/PRE_POST/ESTADO_GTR) | Empty/broken, no semantic value |
+| 3 | Hidden cols H–M | Visual cleanliness; CEO only sees A–G |
+| 4 | Smart dropdown on A: 25 items "nombre" only (not "DNI - nombre") | Removes DNI duplication since col B shows DNI |
+| 5 | B formula: `INDEX/MATCH` on name → DNI | CEO picks by name; DNI auto-derived |
+| 6 | PERSONAL!B DNI: NUMBER → TEXT format | VLOOKUP from text → text works; preserves leading zeros (`09887772` not `988772`) |
+| 7 | Col D format: `DATE` `d/M/yyyy` | Was showing raw serial (46252); now `18/8/2026` |
+| 8 | Removed residual data validation from col B | Old "NOMBRES" dropdown artifact leaked through earlier refactor |
+| 9 | Re-applied bold white text on row 3 headers | Was lost during wipe step |
+| 10 | Merged ranges cleaned | Old `A1:O1` merge conflict resolved; row 1 + row 2 status rebuilt clean |
+
+### CRIT-009 lessons (this session)
+
+1. **`deleteRange` with `shiftDimension: COLUMNS` is destructive** — it removed column A and shifted left, breaking every formula that referenced `A`. Never use that for "removing data validation". A safer fix: `setDataValidation` with `CUSTOM_FORMULA =1=1` (no-op).
+2. **API batches can silently fail** — my initial title+status+headers batch returned `replies: 0` due to a merge conflict, but other requests still ran. Always verify with `get values` after complex batches.
+3. **PERSONAL!B was NUMBER, not TEXT** — even though it displayed `09887772` with leading zero, the underlying value was `9887772` (number). When you write `"09887772"` as text from another sheet, `VLOOKUP` does not match. Fix: re-write column as `userEnteredValue.stringValue` with `numberFormat.type = TEXT`.
+
+### Live tests verified (3/3 PASS)
+
+| Scenario | A | B | D | E | F | G |
+|---|---|---|---|---|---|---|
+| Standard name | WONG CORREA PATRICIA DEL PILAR | 41418003 | 18/8/2026 | 12:00 - 21:00 | WILLIAMS… | REQ-001 |
+| Leading zero | URIBE DAVILA MONICA PAHOLA | 09887772 | 18/8/2026 | 12:00 - 21:00 | WILLIAMS… | REQ-002 |
+| Invalid name | NO EXISTE EN BD | NO ENCONTRADO | NO ENCONTRADO | NO ENCONTRADO | NO ENCONTRADO | REQ-003 |
+
+### Next-session pre-loaded context
+
+- Spreadsheet ID is unchanged; CEO opens directly.
+- **Apps Script still bound as orphan** — not harmful, no code in it (`feat(cleanup): Apps Script v9 eliminated` 43be454).
+- No new CRIT entries this session (no decision was missed).
+- Worktree `feature/c1ma-desing` is clean; ready for next session or `owd` when CEO signs off.
