@@ -76,6 +76,8 @@ func main() {
 		exitOn(runScriptsCmd(repoRoot, args))
 	case "format":
 		exitOn(runFormatCmd(repoRoot, args))
+	case "style":
+		exitOn(runStyleCmd(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -232,6 +234,7 @@ Writes:
   delete-tab   Delete a tab (--sheet-id)
 Formatting & rules (v0.4.0):
   format         Conditional formatting (--range, --when, --value, --bg, --fg, --bold)
+  style          Plain cell style (--range, --bg, --fg, --bold, --italic, --border, --border-color, --align, --font-size)
   validate       Data validation (--range, --type ONE_OF_LIST, --values A,B,C)
   protect        Protected ranges (--range, --description, --editor email, --warning-only)
   name-range     Named ranges (--name, --range)
@@ -1541,3 +1544,84 @@ func runDebug() error {
 	fmt.Println("token:", c.AccessToken)
 	return nil
 }
+
+// runStyleCmd applies plain cell formatting (bg, fg, bold, borders, align).
+// Designed to give CONFIG (and other operational tabs) a real visual
+// hierarchy: section headers in dark navy, editable cells in cream,
+// readonly/calculated in light gray, with borders between blocks.
+//
+// Usage:
+//   ovav-sheets style --range "CONFIG!A3:E3" --bg "1F4E78" --fg "FFFFFF" --bold --border-all --border-color "1F4E78"
+//   ovav-sheets style --range "PERSONAL!B3:B27" --bg "FFF4D6"  // editable flag cells
+func runStyleCmd(repoRoot string, args []string) error {
+	if err := requireArg(args, "--range"); err != nil {
+		return err
+	}
+	id := pickSpreadsheetID(args)
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	spec := CellStyleSpec{
+		Range: flagValue(args, "--range", ""),
+	}
+	if v := flagValue(args, "--bg", ""); v != "" {
+		spec.BgColor = strings.TrimPrefix(v, "#")
+	}
+	if v := flagValue(args, "--fg", ""); v != "" {
+		spec.FgColor = strings.TrimPrefix(v, "#")
+	}
+	if v := flagValue(args, "--border-color", ""); v != "" {
+		spec.BorderColor = strings.TrimPrefix(v, "#")
+	}
+	spec.Bold = hasFlag(args, "--bold")
+	spec.Italic = hasFlag(args, "--italic")
+	if v := flagValue(args, "--font-size", ""); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			spec.FontSize = n
+		}
+	}
+	spec.Align = flagValue(args, "--align", "")
+	spec.BorderAll = hasFlag(args, "--border-all")
+	spec.BorderTop = hasFlag(args, "--border-top")
+	spec.BorderBottom = hasFlag(args, "--border-bottom")
+	spec.BorderLeft = hasFlag(args, "--border-left")
+	spec.BorderRight = hasFlag(args, "--border-right")
+	if err := cl.SetCellStyle(spec); err != nil {
+		return err
+	}
+	audit(repoRoot, id, "", "style_cells", map[string]any{
+		"range": spec.Range, "bg": spec.BgColor, "fg": spec.FgColor,
+		"bold": spec.Bold, "italic": spec.Italic, "border": spec.BorderAll,
+	}, 1)
+	fmt.Printf("✅ style applied to %s (bg=%s fg=%s bold=%v border=%v)\n",
+		spec.Range, spec.BgColor, spec.FgColor, spec.Bold, spec.BorderAll)
+	return nil
+}
+
+
+// requireArg returns a missing-arg error if the named flag is absent.
+func requireArg(args []string, flag string) error {
+	for _, a := range args {
+		if a == flag {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s required", flag)
+}
+
+// hasFlag returns true if the named flag is present in args.
+func hasFlag(args []string, flag string) bool {
+	for _, a := range args {
+		if a == flag {
+			return true
+		}
+	}
+	return false
+}
+
