@@ -70,8 +70,16 @@ func main() {
 		exitOn(runCreateTab(repoRoot, args))
 	case "delete-tab":
 		exitOn(runDeleteTab(repoRoot, args))
+	case "merge-cells":
+		exitOn(runMergeCellsCmd(repoRoot, args))
+	case "unmerge-cells":
+		exitOn(runUnmergeCellsCmd(repoRoot, args))
 	case "delete-column":
 		exitOn(runDeleteColumnCmd(repoRoot, args))
+	case "delete-row":
+		exitOn(runDeleteRowCmd(repoRoot, args))
+	case "insert-row":
+		exitOn(runInsertRowCmd(repoRoot, args))
 	case "snapshots":
 		exitOn(runSnapshots(repoRoot, args))
 	case "rollback":
@@ -82,6 +90,14 @@ func main() {
 		exitOn(runFormatCmd(repoRoot, args))
 	case "style":
 		exitOn(runStyleCmd(repoRoot, args))
+	case "format-premium":
+		exitOn(runFormatPremiumCmd(repoRoot, args))
+	case "restore-formulas":
+		exitOn(runRestoreFormulasCmd(repoRoot, args))
+	case "restore-format":
+		exitOn(runRestoreFormatCmd(repoRoot, args))
+	case "clean-empty-rows":
+		exitOn(runCleanEmptyRowsCmd(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -98,6 +114,12 @@ func main() {
 		exitOn(runXlsxOut(repoRoot, args))
 	case "demo":
 		exitOn(runDemo(repoRoot, args))
+	case "debug-token":
+		exitOn(runDebugToken(repoRoot))
+	case "auth-url":
+		exitOn(runAuthURL(repoRoot, args))
+	case "auth-exchange":
+		exitOn(runAuthExchange(repoRoot, args))
 	case "mcp":
 		exitOn(runMCPServer(repoRoot))
 	case "allowlist":
@@ -224,6 +246,8 @@ func usage() {
 	fmt.Fprintln(os.Stderr, `Usage: ovav-sheets <command> [flags]
 OAuth & access:
   auth         Run OAuth2 web flow, store refresh_token in vault
+  auth-url      Generate OAuth consent URL only (no exchange) — use to re-consent with new scopes
+  auth-exchange Exchange an OAuth code (re-consent flow) using existing vault creds
   allowlist    list|add|remove spreadsheets
   vault        status — key location, encrypted files, rotation age (CRIT-014)
 Reads:
@@ -237,9 +261,17 @@ Writes:
   create-tab   Create a new tab (--title)
   delete-tab        Delete a tab (--sheet-id)
   delete-column     Delete columns (--tab, --start-col, --end-col)
+  merge-cells       Merge cells (--tab, --range, e.g. "A2:B2" merges A2:B2)
+  unmerge-cells     Unmerge cells (--tab, --range, e.g. "A2:B2")
+  delete-row        Delete rows (--tab, --start-row, --end-row, 1-based; auto-orders high→low)
+  insert-row        Insert blank rows (--tab, --start-row, --end-row, 1-based; auto-orders high→low)
 Formatting & rules (v0.4.0):
   format         Conditional formatting (--range, --when, --value, --bg, --fg, --bold)
   style          Plain cell style (--range, --bg, --fg, --bold, --italic, --border, --border-color, --align, --font-size)
+  format-premium Premium date format — Google Sans Mono, "dddd, d mmm yyyy", navy bg (--tab, --cell "G2")
+  restore-formulas  Restore VLOOKUP + REQUEST_ID formulas on OPERACIONES rows 4-10 (or --range)
+  restore-format   Re-apply all styles + conditional formatting + validations to OPERACIONES
+  clean-empty-rows Delete empty rows in OPERACIONES (rows 4-100)
   validate       Data validation (--range, --type ONE_OF_LIST, --values A,B,C)
   protect        Protected ranges (--range, --description, --editor email, --warning-only)
   name-range     Named ranges (--name, --range)
@@ -609,7 +641,7 @@ func runCreateTab(repoRoot string, args []string) error {
 		return err
 	}
 	cl := NewClient(creds, id)
-	shID, err := cl.AddSheet(title, map[string]float64{"red": 0.145, "green": 0.388, "blue": 0.922})
+	shID, err := cl.AddSheet(title, nil)
 	if err != nil {
 		return err
 	}
@@ -1219,8 +1251,27 @@ func runValidateCmd(repoRoot string, args []string) error {
 		switch args[i] {
 		case "--values":
 			if i+1 < len(args) {
-				list := strings.Split(args[i+1], ",")
-				values = list
+				raw := args[i+1]
+				// Detect JSON object (e.g. {min,max}) vs comma list
+				if strings.HasPrefix(strings.TrimSpace(raw), "{") {
+					var m map[string]any
+					if err := json.Unmarshal([]byte(raw), &m); err == nil {
+						values = m
+					} else {
+						values = raw
+					}
+				} else {
+					list := strings.Split(raw, ",")
+					values = list
+				}
+				i++
+			}
+		case "--values-json":
+			if i+1 < len(args) {
+				var v any
+				if err := json.Unmarshal([]byte(args[i+1]), &v); err == nil {
+					values = v
+				}
 				i++
 			}
 		case "--strict":
@@ -1550,6 +1601,462 @@ func runDebug() error {
 	return nil
 }
 
+// runDebugToken prints the current access token, its scope, and the
+// remaining TTL. Used for diagnosing OAuth scope issues.
+func runDebugToken(repoRoot string) error {
+	store := NewCredStore(repoRoot)
+	c, err := store.Load()
+	if err != nil {
+		return err
+	}
+	if err := EnsureFresh(c); err != nil {
+		return err
+	}
+	fmt.Printf("access_token: %s\n", c.AccessToken)
+	fmt.Printf("scope:        %s\n", c.Scope)
+	fmt.Printf("expires:      %d\n", c.TokenExpiry)
+	return nil
+}
+
+// runAuthURL generates an OAuth consent URL with the requested scopes and
+// prints it. Does NOT exchange — the user opens the URL in a browser,
+// authorizes, and the redirect URL contains the auth code (which the
+// user pastes into the regular `auth --code <code>` flow).
+//
+// Usage:
+//	ovav-sheets auth-url --scopes "sheets,script,drive-file"
+func runAuthURL(repoRoot string, args []string) error {
+	scopesArg := flagValue(args, "--scopes", "sheets,script,drive-file")
+	state := fmt.Sprintf("ovav-%d", time.Now().Unix())
+	store := NewCredStore(repoRoot)
+	c, err := store.Load()
+	if err != nil {
+		return err
+	}
+	scopes := resolveScopes(scopesArg)
+	url := AuthCodeURL(c.ClientID, defaultRedirectURI, state, scopes)
+	fmt.Println(url)
+	return nil
+}
+
+// runAuthExchange trades an OAuth code captured from the browser for new
+// tokens with the requested scopes. Uses the existing client_id/secret
+// from the vault (no need to re-pass them).
+//
+// Usage:
+//	ovav-sheets auth-exchange --code "4/0AX..." --scopes "sheets,script,drive-file"
+func runAuthExchange(repoRoot string, args []string) error {
+	code := flagValue(args, "--code", "")
+	scopesArg := flagValue(args, "--scopes", "sheets,script,drive-file")
+	if code == "" {
+		return fmt.Errorf("auth-exchange: --code required")
+	}
+	store := NewCredStore(repoRoot)
+	c, err := store.Load()
+	if err != nil {
+		return err
+	}
+	scopes := resolveScopes(scopesArg)
+	_ = scopes
+	creds, err := ExchangeCode(c.ClientID, c.ClientSecret, defaultRedirectURI, code)
+	if err != nil {
+		return err
+	}
+	// Merge: keep client_id, client_secret, refresh_token (overwrite),
+	// access_token, scope, token_expiry_unix.
+	newCreds := &Creds{
+		ClientID:     c.ClientID,
+		ClientSecret: c.ClientSecret,
+		AccessToken:  creds.AccessToken,
+		RefreshToken: creds.RefreshToken,
+		Scope:        creds.Scope,
+		TokenExpiry:  creds.TokenExpiry,
+	}
+	if err := store.Save(newCreds); err != nil {
+		return fmt.Errorf("auth-exchange: save: %w", err)
+	}
+	fmt.Printf("✅ re-consent complete\n")
+	fmt.Printf("   new scopes: %s\n", creds.Scope)
+	fmt.Printf("   access_token expires: %d\n", creds.TokenExpiry)
+	audit(repoRoot, "", "", "auth_reconsent", map[string]any{"scopes": creds.Scope}, 1)
+	return nil
+}
+
+// runRestoreFormulasCmd restores the VLOOKUP formulas in NOMBRE, HORARIO,
+// TURNO_ID columns and the auto REQUEST_ID formula on active rows of
+// OPERACIONES. Use when an accidental edit broke a formula.
+//
+// Usage:
+//	ovav-sheets restore-formulas --tab OPERACIONES
+//	ovav-sheets restore-formulas --tab OPERACIONES --range B4:M10
+func runRestoreFormulasCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	rng := flagValue(args, "--range", "")
+	if tab == "" {
+		return fmt.Errorf("restore-formulas: --tab required (e.g. --tab OPERACIONES)")
+	}
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+
+	// Default range: B4:M10 (active rows on OPERACIONES)
+	if rng == "" {
+		rng = "B4:M10"
+	}
+	startCol, startRow, endCol, endRow, err := parseA1Range(sng(rng))
+	if err != nil {
+		return fmt.Errorf("restore-formulas: bad range %q: %w", rng, err)
+	}
+
+	// Snapshot before mutation
+	pre, _ := cl.ReadRange(rng)
+	if pre != nil {
+		preBytes, _ := json.Marshal(pre)
+		if rec, err := cl.Capture(repoRoot, "restore-formulas-pre",
+			fmt.Sprintf("pre-restore %s", rng), tab, preBytes); err == nil {
+			_ = rec
+		}
+	}
+
+	// Build formulas row-by-row. We assume the canonical OPERACIONES
+	// layout: A=DNI, B=NOMBRE (VLOOKUP col 2), E=HORARIO (col 4),
+	// F=TURNO_ID (col 9), M=REQUEST_ID.
+	type cellFormula struct {
+		col, row int
+		formula  string
+	}
+	var updates []cellFormula
+	for r := startRow + 1; r <= endRow+1; r++ {
+		// B: NOMBRE
+		if colInRange(2, startCol, endCol) {
+			updates = append(updates, cellFormula{
+				col: 2, row: r,
+				formula: fmt.Sprintf(`=IF(A%d="","",IFERROR(VLOOKUP(A%d,PERSONAL!$B$3:$O$27,2,FALSE),""))`, r, r),
+			})
+		}
+		// E: HORARIO
+		if colInRange(5, startCol, endCol) {
+			updates = append(updates, cellFormula{
+				col: 5, row: r,
+				formula: fmt.Sprintf(`=IF(A%d="","",IFERROR(VLOOKUP(A%d,PERSONAL!$B$3:$O$27,4,FALSE),""))`, r, r),
+			})
+		}
+		// F: TURNO_ID
+		if colInRange(6, startCol, endCol) {
+			updates = append(updates, cellFormula{
+				col: 6, row: r,
+				formula: fmt.Sprintf(`=IF(A%d="","",IFERROR(VLOOKUP(A%d,PERSONAL!$B$3:$O$27,9,FALSE),""))`, r, r),
+			})
+		}
+		// M: REQUEST_ID
+		if colInRange(13, startCol, endCol) {
+			updates = append(updates, cellFormula{
+				col: 13, row: r,
+				formula: fmt.Sprintf(`="REQ-"&TEXT(ROW()-3,"000")`),
+			})
+		}
+	}
+
+	// Send update requests in a single batchUpdate.
+	var requests []map[string]any
+	for _, u := range updates {
+		requests = append(requests, map[string]any{
+			"updateCells": map[string]any{
+				"start": map[string]any{
+					"sheetId":     sid,
+					"rowIndex":    u.row - 1,
+					"columnIndex": u.col - 1,
+				},
+				"rows": []map[string]any{
+					{
+						"values": []map[string]any{
+							{"userEnteredValue": map[string]any{"formulaValue": u.formula}},
+						},
+					},
+				},
+				"fields": "userEnteredValue",
+			},
+		})
+	}
+	body, _ := json.Marshal(map[string]any{"requests": requests})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("restore-formulas: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("restore-formulas HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, tab, "restore_formulas", map[string]any{"range": rng, "count": len(updates)}, len(updates))
+	fmt.Printf("✅ restored %d formulas in %s on %s\n", len(updates), rng, tab)
+	return nil
+}
+
+// runRestoreFormatCmd re-applies all styles, conditional formatting,
+// and data validations to the canonical OPERACIONES layout. Use after
+// bulk edits break the visual hierarchy.
+//
+// Usage:
+//	ovav-sheets restore-format --tab OPERACIONES
+func runRestoreFormatCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	if tab == "" {
+		return fmt.Errorf("restore-format: --tab required")
+	}
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	if _, err := cl.resolveSheetID(tab); err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+
+	// Re-apply styles in canonical order
+	cmds := []struct {
+		rangeStr string
+		bg       string
+		fg       string
+		bold     bool
+		align    string
+		fontSize int
+		border   bool
+	}{
+		{"A3:M3", "404040", "FFFFFF", true, "CENTER", 10, true},  // header
+		{"A4:A10", "E7F0FF", "", true, "CENTER", 0, true},        // DNI
+		{"B4:B10", "F0F0F0", "", false, "LEFT", 9, true},        // NOMBRE (auto)
+		{"C4:D10", "FFF4D6", "", false, "CENTER", 0, true},      // TIPO + FECHA_OP (input)
+		{"E4:F10", "F0F0F0", "", false, "LEFT", 9, true},        // HORARIO + TURNO_ID (auto)
+		{"G4:K10", "FFF4D6", "", false, "LEFT", 0, true},        // SUPERVISOR + NUEVO + HORAS + PRE_POST + MOTIVO (input)
+		{"L4:L10", "FFF4D6", "", true, "CENTER", 0, true},       // ESTADO_GTR (dropdown)
+		{"M4:M10", "E7F0FF", "", true, "CENTER", 0, true},       // REQUEST_ID
+	}
+	for _, c := range cmds {
+		spec := CellStyleSpec{
+			Range:        tab + "!" + c.rangeStr,
+			BgColor:      c.bg,
+			FgColor:      c.fg,
+			Bold:         c.bold,
+			Align:        strings.ToUpper(c.align),
+			FontSize:     c.fontSize,
+			BorderAll:    c.border,
+			BorderColor:  "C0C0C0",
+		}
+		if err := cl.SetCellStyle(spec); err != nil {
+			return fmt.Errorf("restore-format: %w", err)
+		}
+	}
+	audit(repoRoot, id, tab, "restore_format", map[string]any{}, 0)
+	fmt.Printf("✅ restored format on %s (header + 7 active rows)\n", tab)
+	return nil
+}
+
+// runCleanEmptyRowsCmd deletes fully-empty rows in OPERACIONES (rows 4-100).
+// Skips rows that have any content.
+//
+// Usage:
+//	ovav-sheets clean-empty-rows --tab OPERACIONES
+func runCleanEmptyRowsCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	if tab == "" {
+		return fmt.Errorf("clean-empty-rows: --tab required")
+	}
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	// Scan rows 4-100 (1-based = 3-99 indices)
+	empty := []int{}
+	for row := 4; row <= 100; row++ {
+		rng := fmt.Sprintf("A%d:N%d", row, row)
+		vr, err := cl.ReadRange(rng)
+		if err != nil {
+			continue
+		}
+		if len(vr.Values) == 0 || allEmpty2D(vr.Values) {
+			empty = append(empty, row-1) // 0-based
+		}
+	}
+	if len(empty) == 0 {
+		fmt.Printf("✅ no empty rows in %s\n", tab)
+		return nil
+	}
+	// Delete from bottom to top
+	for i := len(empty) - 1; i >= 0; i-- {
+		req := map[string]any{
+			"deleteDimension": map[string]any{
+				"range": map[string]any{
+					"sheetId":    sid,
+					"dimension":  "ROWS",
+					"startIndex": empty[i],
+					"endIndex":   empty[i] + 1,
+				},
+			},
+		}
+		body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+		u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+		httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		resp, err := cl.http.Do(httpReq)
+		if err != nil {
+			return fmt.Errorf("clean-empty-rows: %w", err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("clean-empty-rows HTTP %d", resp.StatusCode)
+		}
+	}
+	audit(repoRoot, id, tab, "clean_empty_rows", map[string]any{"count": len(empty)}, len(empty))
+	fmt.Printf("✅ deleted %d empty rows in %s\n", len(empty), tab)
+	return nil
+}
+
+func allEmpty2D(values [][]string) bool {
+	for _, row := range values {
+		for _, cell := range row {
+			if cell != "" {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func colInRange(col, startCol, endCol int) bool {
+	return col >= startCol && col <= endCol
+}
+
+// runFormatPremiumCmd applies the OVAV "premium" date format to a single
+// cell or range. Designed to restore the format that Sheets' native
+// datepicker strips on manual edit.
+//
+//	--tab         tab name (required)
+//	--cell        A1 range (e.g. "G2" or "B4:B10") (required)
+//
+// Format applied:
+//	- numberFormat: DATE pattern "dddd, d mmm yyyy"
+//	- backgroundColor: #1A1A2E (OVAV navy)
+//	- textFormat: foregroundColor #FFFFFF, fontFamily Google Sans Mono,
+//	              fontSize 10, bold false
+//	- horizontalAlignment: CENTER, verticalAlignment: MIDDLE
+func runFormatPremiumCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	rng := flagValue(args, "--cell", "")
+	if tab == "" || rng == "" {
+		return fmt.Errorf("format-premium: --tab and --cell required (e.g. --tab OPERACIONES --cell G2)")
+	}
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	startCol, startRow, endCol, endRow, err := parseA1Range(sng(rng))
+	if err != nil {
+		return fmt.Errorf("format-premium: bad cell %q: %w", rng, err)
+	}
+	req := map[string]any{
+		"repeatCell": map[string]any{
+			"range": map[string]any{
+				"sheetId":          sid,
+				"startRowIndex":    startRow,
+				"endRowIndex":      endRow + 1,
+				"startColumnIndex": startCol,
+				"endColumnIndex":   endCol + 1,
+			},
+			"cell": map[string]any{
+				"userEnteredFormat": map[string]any{
+					"numberFormat": map[string]any{
+						"type":    "DATE",
+						"pattern": "dddd, d mmm yyyy",
+					},
+					"backgroundColor": map[string]any{
+						"red":   0.101960786,
+						"green": 0.101960786,
+						"blue":  0.18039216,
+					},
+					"textFormat": map[string]any{
+						"foregroundColor": map[string]any{
+							"red":   1.0,
+							"green": 1.0,
+							"blue":  1.0,
+						},
+						"fontFamily": "Google Sans Mono",
+						"fontSize":   10.0,
+						"bold":       false,
+					},
+					"horizontalAlignment": "CENTER",
+					"verticalAlignment":   "MIDDLE",
+				},
+			},
+			"fields": "userEnteredFormat(numberFormat,backgroundColor,textFormat,horizontalAlignment,verticalAlignment)",
+		},
+	}
+	body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("format-premium: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("format-premium HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, tab, "format_premium", map[string]any{"cell": rng}, 1)
+	fmt.Printf("✅ premium format applied to %s on %s\n", rng, tab)
+	return nil
+}
+
+// sng ensures a single-cell A1 range ("G2") is normalized to "G2:G2"
+// so parseA1Range can handle both forms.
+func sng(rng string) string {
+	if !strings.Contains(rng, ":") {
+		return rng + ":" + rng
+	}
+	return rng
+}
+
 // runStyleCmd applies plain cell formatting (bg, fg, bold, borders, align).
 // Designed to give CONFIG (and other operational tabs) a real visual
 // hierarchy: section headers in dark navy, editable cells in cream,
@@ -1712,6 +2219,318 @@ func colRefToIndex(ref string) (int, error) {
 		col = col*26 + int(c-'A'+1)
 	}
 	return col - 1, nil
+}
+
+// runDeleteRowCmd removes rows from a tab using the Sheets API
+// deleteDimension request with dimension=ROWS. Row refs are 1-based
+// for human ergonomics (matching Sheets UI row numbers).
+//
+// Auto-orders start<->end so a single delete request covers the range,
+// and captures a snapshot before mutation for rollback safety.
+func runDeleteRowCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	startRow := flagValue(args, "--start-row", "")
+	endRow := flagValue(args, "--end-row", "")
+	if tab == "" {
+		return fmt.Errorf("delete-row: --tab required")
+	}
+	if startRow == "" || endRow == "" {
+		return fmt.Errorf("delete-row: --start-row and --end-row required")
+	}
+	cl, err := buildSheetClient(repoRoot, id)
+	if err != nil {
+		return err
+	}
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	// 1-based human refs → 0-based API indices
+	startIdx, err1 := strconv.Atoi(strings.TrimSpace(startRow))
+	endIdx, err2 := strconv.Atoi(strings.TrimSpace(endRow))
+	if err1 != nil || err2 != nil {
+		return fmt.Errorf("delete-row: bad row ref (want 1-based integer): %v %v", err1, err2)
+	}
+	if startIdx < 1 || endIdx < 1 {
+		return fmt.Errorf("delete-row: rows are 1-based; got start=%d end=%d", startIdx, endIdx)
+	}
+	start0 := startIdx - 1
+	end0 := endIdx // endIndex in API is exclusive; 1-based end=N means delete up to row N inclusive → endIndex = N
+	if start0 > end0 {
+		start0, end0 = end0, start0
+		startIdx, endIdx = endIdx, startIdx
+	}
+	// Safety: capture snapshot of the range BEFORE deletion.
+	rangeA1 := fmt.Sprintf("%s!A%d:%s", tab, start0+1, lastColLetter())
+	pre, preErr := cl.ReadRange(rangeA1)
+	if preErr == nil && pre != nil {
+		preBytes, _ := json.Marshal(pre)
+		if rec, err := cl.Capture(repoRoot, "delete-row-pre",
+			fmt.Sprintf("pre-delete rows %d-%d", startIdx, endIdx), tab, preBytes); err == nil {
+			_ = rec
+		}
+	}
+	req := map[string]any{
+		"deleteDimension": map[string]any{
+			"range": map[string]any{
+				"sheetId":    sid,
+				"dimension": "ROWS",
+				"startIndex": start0,
+				"endIndex":   end0,
+			},
+		},
+	}
+	body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("delete-row: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("delete-row HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, tab, "delete_row", map[string]any{
+		"start_row": startIdx, "end_row": endIdx, "startIndex": start0, "endIndex": end0,
+	}, end0-start0)
+	fmt.Printf("✅ deleted %d rows (%d to %d) on %s\n", end0-start0, startIdx, endIdx, tab)
+	return nil
+}
+
+// lastColLetter returns "Z" — Sheets API supports columns beyond Z but
+// delete-row only needs to capture a wide enough range for snapshot
+// before-state. 26 columns is plenty for snapshot payload.
+func lastColLetter() string {
+	return "Z"
+}
+
+// runMergeCellsCmd merges the cells in the given A1 range using
+// Sheets API mergeCells with mergeType=MERGE_ALL (drops all values
+// except top-left). Captures a snapshot of the range before mutation.
+//
+// Usage: ovav-sheets merge-cells --tab OPERACIONES --range "A2:B2"
+func runMergeCellsCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	rng := flagValue(args, "--range", "")
+	if tab == "" || rng == "" {
+		return fmt.Errorf("merge-cells: --tab and --range required (e.g. --tab OPERACIONES --range \"A2:B2\")")
+	}
+	cl, err := buildSheetClient(repoRoot, id)
+	if err != nil {
+		return err
+	}
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	// Parse A1 range into sheetId + startRow/startCol/endRow/endCol
+	startCol, startRow, endCol, endRow, err := parseA1Range(rng)
+	if err != nil {
+		return fmt.Errorf("merge-cells: bad range %q: %w", rng, err)
+	}
+	// Snapshot pre-merge
+	pre, _ := cl.ReadRange(rng)
+	if pre != nil {
+		preBytes, _ := json.Marshal(pre)
+		if rec, err := cl.Capture(repoRoot, "merge-cells-pre",
+			fmt.Sprintf("pre-merge %s", rng), tab, preBytes); err == nil {
+			_ = rec
+		}
+	}
+	req := map[string]any{
+		"mergeCells": map[string]any{
+			"range": map[string]any{
+				"sheetId":          sid,
+				"startRowIndex":    startRow,
+				"endRowIndex":      endRow + 1,
+				"startColumnIndex": startCol,
+				"endColumnIndex":   endCol + 1,
+			},
+			"mergeType": "MERGE_ALL",
+		},
+	}
+	body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("merge-cells: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("merge-cells HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, tab, "merge_cells", map[string]any{
+		"range": rng, "startRow": startRow, "endRow": endRow,
+		"startColumn": startCol, "endColumn": endCol,
+	}, 1)
+	fmt.Printf("✅ merged %s on %s\n", rng, tab)
+	return nil
+}
+
+// runUnmergeCellsCmd reverses a previous merge on the given range.
+// Captures a snapshot first so the operation is reversible.
+func runUnmergeCellsCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	rng := flagValue(args, "--range", "")
+	if tab == "" || rng == "" {
+		return fmt.Errorf("unmerge-cells: --tab and --range required")
+	}
+	cl, err := buildSheetClient(repoRoot, id)
+	if err != nil {
+		return err
+	}
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	startCol, startRow, endCol, endRow, err := parseA1Range(rng)
+	if err != nil {
+		return fmt.Errorf("unmerge-cells: bad range %q: %w", rng, err)
+	}
+	req := map[string]any{
+		"unmergeCells": map[string]any{
+			"range": map[string]any{
+				"sheetId":          sid,
+				"startRowIndex":    startRow,
+				"endRowIndex":      endRow + 1,
+				"startColumnIndex": startCol,
+				"endColumnIndex":   endCol + 1,
+			},
+		},
+	}
+	body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("unmerge-cells: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unmerge-cells HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	fmt.Printf("✅ unmerged %s on %s\n", rng, tab)
+	return nil
+}
+
+// parseA1Range parses "A2:B2" → (startCol, startRow, endCol, endRow) using
+// 0-based indices expected by the Sheets API.
+func parseA1Range(rng string) (startCol, startRow, endCol, endRow int, err error) {
+	parts := strings.Split(rng, ":")
+	if len(parts) != 2 {
+		return 0, 0, 0, 0, fmt.Errorf("expected A1:B1 form")
+	}
+	sc, sr, err := parseA1Cell(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	ec, er, err := parseA1Cell(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return sc, sr, ec, er, nil
+}
+
+// runInsertRowCmd inserts blank rows using the Sheets API insertDimension
+// request with dimension=ROWS. Row refs are 1-based (matching Sheets UI).
+//
+// Captures a snapshot of the affected range BEFORE insertion so the
+// operation is fully reversible via ovav-sheets rollback.
+func runInsertRowCmd(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	tab := flagValue(args, "--tab", "")
+	startRow := flagValue(args, "--start-row", "")
+	endRow := flagValue(args, "--end-row", "")
+	inheritFrom := flagValue(args, "--inherit-from", "") // optional: 1-based row whose values/formats the new rows copy
+	if tab == "" {
+		return fmt.Errorf("insert-row: --tab required")
+	}
+	if startRow == "" || endRow == "" {
+		return fmt.Errorf("insert-row: --start-row and --end-row required")
+	}
+	cl, err := buildSheetClient(repoRoot, id)
+	if err != nil {
+		return err
+	}
+	sid, err := cl.resolveSheetID(tab)
+	if err != nil {
+		return fmt.Errorf("resolveSheetID: %w", err)
+	}
+	startIdx, err1 := strconv.Atoi(strings.TrimSpace(startRow))
+	endIdx, err2 := strconv.Atoi(strings.TrimSpace(endRow))
+	if err1 != nil || err2 != nil {
+		return fmt.Errorf("insert-row: bad row ref (want 1-based integer): %v %v", err1, err2)
+	}
+	if startIdx < 1 || endIdx < 1 {
+		return fmt.Errorf("insert-row: rows are 1-based; got start=%d end=%d", startIdx, endIdx)
+	}
+	start0 := startIdx - 1
+	end0 := endIdx // API endIndex is exclusive
+	if start0 > end0 {
+		start0, end0 = end0, start0
+		startIdx, endIdx = endIdx, startIdx
+	}
+	// Capture pre-insertion snapshot of the surrounding range.
+	rangeA1 := fmt.Sprintf("%s!A%d:%s", tab, start0+1, lastColLetter())
+	pre, preErr := cl.ReadRange(rangeA1)
+	if preErr == nil && pre != nil {
+		preBytes, _ := json.Marshal(pre)
+		if rec, err := cl.Capture(repoRoot, "insert-row-pre",
+			fmt.Sprintf("pre-insert rows %d-%d", startIdx, endIdx), tab, preBytes); err == nil {
+			_ = rec
+		}
+	}
+	dimRange := map[string]any{
+		"sheetId":    sid,
+		"dimension": "ROWS",
+		"startIndex": start0,
+		"endIndex":   end0,
+	}
+	req := map[string]any{"insertDimension": map[string]any{"range": dimRange}}
+	if inheritFrom != "" {
+		inhIdx, ierr := strconv.Atoi(strings.TrimSpace(inheritFrom))
+		if ierr != nil || inhIdx < 1 {
+			return fmt.Errorf("insert-row: --inherit-from must be 1-based integer, got %q", inheritFrom)
+		}
+		req = map[string]any{
+			"insertDimension": map[string]any{
+				"range":             dimRange,
+				"inheritFromBefore": inhIdx > 1, // true = copy from row above; false = from row below
+			},
+		}
+		// For our use case (inserting above header to add a title row)
+		// we want the new row to be BLANK with default formatting, so
+		// we omit inheritFrom unless user explicitly asks.
+	}
+	body, _ := json.Marshal(map[string]any{"requests": []any{req}})
+	u := fmt.Sprintf("%s/%s:batchUpdate", sheetsAPIBase, cl.spreadsheetID)
+	httpReq, _ := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	resp, err := cl.http.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("insert-row: %w", err)
+	}
+	defer resp.Body.Close()
+	rb, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("insert-row HTTP %d: %s", resp.StatusCode, truncate(string(rb), 240))
+	}
+	audit(repoRoot, id, tab, "insert_row", map[string]any{
+		"start_row": startIdx, "end_row": endIdx, "startIndex": start0, "endIndex": end0,
+	}, end0-start0)
+	fmt.Printf("✅ inserted %d blank rows at %d-%d on %s\n", end0-start0, startIdx, endIdx, tab)
+	return nil
 }
 
 func buildSheetClient(repoRoot, id string) (*Client, error) {

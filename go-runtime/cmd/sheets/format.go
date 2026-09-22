@@ -122,8 +122,9 @@ func buildConditionalRule(r ConditionalFormatRule, gridRange map[string]any) map
 // ── Data validation ──────────────────────────────────────────────────
 
 // SetDataValidation adds a dropdown or checkbox rule.
-// type: "ONE_OF_LIST" | "ONE_OF_RANGE" | "CHECKBOX" | "NUMBER_BETWEEN"
-// values: list items (string for ONE_OF_LIST) or {"min","max"} (for BETWEEN)
+// type: "ONE_OF_LIST" | "ONE_OF_RANGE" | "CHECKBOX" | "NUMBER_BETWEEN" | "DATE_BETWEEN" | "DATE_IS_VALID"
+// values: list items (string for ONE_OF_LIST) or {"min","max"} (for BETWEEN / DATE_BETWEEN)
+//         or "TODAY" / "DATE_VALID" / etc. for DATE_IS_VALID
 func (cl *Client) SetDataValidation(a1Range, ruleType string, values any, strict bool) error {
 	if err := EnsureFresh(cl.c); err != nil {
 		return err
@@ -162,6 +163,22 @@ func (cl *Client) SetDataValidation(a1Range, ruleType string, values any, strict
 		rule["condition"] = map[string]any{
 			"type":   "NUMBER_BETWEEN",
 			"values": toUserEnteredValues([]any{mm["min"], mm["max"]}),
+		}
+	case "DATE_BETWEEN":
+		mm, ok := values.(map[string]any)
+		if !ok {
+			return fmt.Errorf("sheets: DATE_BETWEEN requires values {min,max}")
+		}
+		rule["condition"] = map[string]any{
+			"type":   "DATE_BETWEEN",
+			"values": toUserEnteredValues([]any{mm["min"], mm["max"]}),
+		}
+	case "DATE":
+		// values: "TODAY" | "DATE_VALID" — minimal guard; full
+		// flexibility via DATE_BETWEEN
+		rule["condition"] = map[string]any{
+			"type":   "DATE_IS_VALID",
+			"values": []map[string]any{{"userEnteredValue": fmt.Sprint(values)}},
 		}
 	default:
 		return fmt.Errorf("sheets: unknown validation type %q", ruleType)

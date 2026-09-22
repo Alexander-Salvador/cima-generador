@@ -77,6 +77,10 @@ func NewCredStore(repoRoot string) *credStore {
 
 // Load reads and decrypts credentials. Returns ErrNoCreds when the file
 // does not yet exist.
+//
+// CRIT-014 fallback: if the primary key fails to decrypt (e.g. .enc was
+// written before the global-key migration in commit 2294bcc), try the
+// other well-known key paths before giving up.
 func (s *credStore) Load() (*Creds, error) {
 	ct, err := os.ReadFile(s.credsPath)
 	if err != nil {
@@ -85,19 +89,63 @@ func (s *credStore) Load() (*Creds, error) {
 		}
 		return nil, fmt.Errorf("sheets: read creds: %w", err)
 	}
+	// Try the primary key path first.
+	if pt, err := s.tryDecrypt(ct); err == nil {
+		return pt, nil
+	}
+	// Try every well-known key path as fallback.
+	for _, alt := range s.altKeyPaths() {
+		if alt == s.keyPath {
+			continue
+		}
+		if _, err := os.Stat(alt); err != nil {
+			continue
+		}
+		k, err := os.ReadFile(alt)
+		if err != nil || len(k) != vault.KeySize {
+			continue
+		}
+		if pt, derr := vault.Decrypt(ct, k); derr == nil {
+			var c Creds
+			if jerr := json.Unmarshal(pt, &c); jerr == nil {
+				return &c, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("sheets: decrypt creds: tried %d key paths, all failed", len(s.altKeyPaths())+1)
+}
+
+func (s *credStore) tryDecrypt(ct []byte) (*Creds, error) {
 	key, err := s.loadKey()
 	if err != nil {
 		return nil, err
 	}
 	pt, err := vault.Decrypt(ct, key)
 	if err != nil {
-		return nil, fmt.Errorf("sheets: decrypt creds: %w", err)
+		return nil, err
 	}
 	var c Creds
 	if err := json.Unmarshal(pt, &c); err != nil {
 		return nil, fmt.Errorf("sheets: parse creds: %w", err)
 	}
 	return &c, nil
+}
+
+// altKeyPaths returns well-known vault.key locations to try as fallbacks.
+// Order: global first, then repo-local for backward compatibility.
+func (s *credStore) altKeyPaths() []string {
+	paths := []string{}
+	if g := globalVaultKeyPath(); g != "" {
+		paths = append(paths, g)
+	}
+	if s.credsPath != "" {
+		// Derive repo-local key path from credsPath's repo root
+		// credsPath = <repoRoot>/.ovav/vault/credentials/google_oauth.enc
+		// key path   = <repoRoot>/.ovav/vault/vault.key
+		dir := filepath.Dir(filepath.Dir(s.credsPath)) // → .ovav/vault
+		paths = append(paths, filepath.Join(dir, "vault.key"))
+	}
+	return paths
 }
 
 // Save encrypts and writes credentials atomically (tmp + rename).
