@@ -1,7 +1,7 @@
 # OVAV Project Memory
 
 > **Canonical in-repo memory for OVAV project**
-> **Last updated:** 2026-09-22 (OPERACIONES layout refactor — 7 cols, smart dropdown by name)
+> **Last updated:** 2026-09-22 (OPERACIONES 9-col final + 2 horario updates)
 > **Authority:** `.ovav/plan/caps.yaml` + Git HEAD + this file
 > **Harness:** OpenCode primary + Crush secondary
 > **Model:** `MiniMax-M3`
@@ -428,3 +428,78 @@ Rows 4–100 (97 data rows). H+ hidden.
 - **Apps Script still bound as orphan** — not harmful, no code in it (`feat(cleanup): Apps Script v9 eliminated` 43be454).
 - No new CRIT entries this session (no decision was missed).
 - Worktree `feature/c1ma-desing` is clean; ready for next session or `owd` when CEO signs off.
+
+---
+
+## 14. Session log — 2026-09-22 (cont.) — Final 9-col layout + 2 horario updates
+
+This is a continuation of section 13. Same day, same worktree, second batch of changes.
+
+### Layout final (9 cols, EFECTIVO removed)
+
+| Col | Header | Type | Logic |
+|---|---|---|---|
+| A | 📝 NOMBRES COMPLETOS | dropdown input | 25 names |
+| B | DNI | text auto | INDEX/MATCH from name |
+| C | 🏷️ TIPO | dropdown input | 4 canonical types |
+| D | 📅 FECHA | date picker | manual entry (data validation 2024-01-01 → 2030-12-31) |
+| E | 🕐 HORARIO | text auto | VLOOKUP PERSONAL!B → col 4 |
+| F | 👤 SUPERVISOR | text auto ≤25 | VLOOKUP PERSONAL!B → col 8, LEFT 25 + "..." |
+| G | ⏰ PRE/POST | dropdown input (manual) | 4 options [PRE, POST, AMBAS, —]; CEO decides |
+| H | 🕓 CANTIDAD | number input | 0.5-5 (data validation per CONFIG "Máx OT diaria") |
+| I | 📝 MOTIVO | text input (last) | libre |
+
+EFECTIVO removed — CEO said "no tiene importancia".
+
+### CRIT-019 lessons from this session (CRITICAL, MUST be remembered next session)
+
+1. **Bash heredoc + Python f-string + `$B$3` = broken formulas**:
+   ```bash
+   python3 << 'PYEOF'  # Even quoted heredoc
+   ...
+   b = f'=IF(A{row}="","",IFERROR(INDEX(PERSONAL!$B$3:$B$27,...'
+   # When run, formula became: =IF(A4="","",IFERROR(INDEX(PERSONAL!:7,...
+   # ALL 97 rows had broken B/E/F formulas showing #ERROR!
+   ```
+   **Fix**: Always write Python scripts to a FILE first when using `$` in formula strings. Run from `/tmp/opencode/*.py` then execute. This eliminates bash expansion issues.
+
+2. **MID offset bug**: `MID(string, FIND("- ", string) + 3, 5)` returns `"1:00"` instead of `"21:00"` because `" - "` is 2 chars (dash + space). Correct offset is **+2**, not +3.
+
+3. **Row skipping in batches**: Some rows (e.g., E4) silently miss formula updates when in large batches. Always audit with `valueRenderOption=FORMULA` and re-apply formulas to skipped rows individually.
+
+4. **PERSONAL!E had VLOOKUP formulas**: All 25 cells were `=IFERROR(VLOOKUP(J,CONFIG!...,2,FALSE),...)`. CEO couldn't double-click to edit. **Fix applied**: converted to plain text. CEO can now edit horario directly. Trade-off: lost automatic sync with CONFIG TURNOS catalog.
+
+### Horario updates (CEO directive)
+
+| Persona | DNI | Row | Antes | Después | Motivo |
+|---|---|---|---|---|---|
+| ALVARADO RODRIGUEZ JACKELIN CONSUELO | 41983463 | PERSONAL!E7 | 15:00 - 00:00 | **07:00 - 16:00** | Cambio a turno 7am |
+| GOMEZ FLORES JONATHAN ARTURO | 73986093 | PERSONAL!E20 | 12:00 - 21:00 | **08:00 - 17:00** | Cambio a turno 8am |
+
+OPERACIONES auto-reflected changes via VLOOKUP.
+
+### Smart PRE/POST evolution
+
+- v1: FORMULA smart default ("POST" for AM, "AMBAS" for PM, etc.) — CEO said "no es inteligente"
+- v2: MANUAL dropdown [PRE, POST, AMBAS, —] — CEO approved ✓
+- CEO rule: 6am shifts can't have PRE (operation already running). Without Apps Script, can't filter options per row.
+
+### Layout changes this session
+
+| Phase | Cols | Notes |
+|---|---|---|
+| Start | 7 cols | A-F + G REQUEST_ID (decorative) |
+| Mid | 8 cols | Removed REQUEST_ID, added MOTIVO at end (CEO request) |
+| Mid | 10 cols | Added PRE/POST, CANTIDAD, EFECTIVO |
+| **Final** | **9 cols** | **EFECTIVO removed (CEO feedback)** |
+
+### Next-session pre-loaded context (updated)
+
+- **9-col layout FINAL** — don't add new cols without CEO OK
+- **PERSONAL!E is plain text** — CEO edits horario directly, no formulas
+- **G (PRE/POST) is INPUT not formula** — CEO wants manual control
+- **EFECTIVO column does NOT exist** — don't accidentally restore
+- Spreadsheet ID: `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` (OPERACIONES sheetId 1028787839)
+- If working with formulas → write Python to FILE first (avoid bash heredoc bug)
+- Apps Script orphan still bound (no action needed)
+- Worktree `feature/c1ma-desing` ready for `owd` or next session
