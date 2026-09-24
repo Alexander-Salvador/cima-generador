@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+<meta charset="UTF-8">
+<title>HE Lima — Heatmap HE × Persona</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8f9fa;
+    padding: 20px;
+  }
+  h1 { color: #1F4E79; margin-bottom: 4px; }
+  .subtitle { color: #5f6368; margin-bottom: 20px; font-size: 13px; }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    align-items: center;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 24px; height: 24px; border-radius: 4px; border: 1px solid #e8eaed; }
+
+  table.heatmap {
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  table.heatmap th, table.heatmap td {
+    padding: 8px 6px;
+    text-align: center;
+    border: 1px solid #e8eaed;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  table.heatmap thead th {
+    background: #1F4E79;
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  table.heatmap tbody th {
+    background: #f8f9fa;
+    text-align: left;
+    font-weight: 500;
+    color: #202124;
+    padding-left: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  table.heatmap tfoot th, table.heatmap tfoot td {
+    background: #1F4E79;
+    color: white;
+    font-weight: 700;
+  }
+  td.heat-0 { background: #f8f9fa; color: #9aa0a6; }
+  td.heat-1 { background: #d1fae5; color: #065f46; }
+  td.heat-2 { background: #a7f3d0; color: #065f46; }
+  td.heat-3 { background: #fde68a; color: #92400e; }
+  td.heat-4 { background: #fca5a5; color: #7f1d1d; font-weight: 600; }
+  td.heat-5 { background: #ef4444; color: white; font-weight: 700; }
+  td.feriado-cell { background: #fee2e2 !important; color: #991b1b; font-weight: 700; }
+  td.weekend-cell { background: #fef3c7 !important; color: #92400e; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .kpi-mini {
+    background: white;
+    padding: 14px;
+    border-radius: 6px;
+    border-left: 4px solid #1F4E79;
+  }
+  .kpi-mini .label { font-size: 11px; color: #5f6368; }
+  .kpi-mini .value { font-size: 22px; font-weight: 700; color: #1F4E79; }
+</style>
+</head>
+<body>
+
+<h1>🔥 Heatmap HE × Persona — Abril 2026</h1>
+<div class="subtitle">Horas extras por persona × día · Working surface · Branch feature/c1ma-desing · Commit 2f7ebe2</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#f8f9fa"></div>0h (ausente)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#d1fae5"></div>1-2h</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#a7f3d0"></div>3-4h</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fde68a"></div>5-6h</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fca5a5"></div>7-8h</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#ef4444"></div>9h+</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fee2e2"></div>Feriado</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fef3c7"></div>Sáb/Dom</div>
+</div>
+
+<table class="heatmap">
+  <thead>
+    <tr>
+      <th>Persona</th>
+      <th>1<br>Mié</th>
+      <th>2<br>Jue</th>
+      <th>3<br>Vie<br>🟥</th>
+      <th>4<br>Sáb</th>
+      <th>5<br>Dom</th>
+      <th>6<br>Lun</th>
+      <th>7<br>Mar</th>
+      <th>8<br>Mié</th>
+      <th>9<br>Jue</th>
+      <th>10<br>Vie</th>
+      <th>11<br>Sáb</th>
+      <th>12<br>Dom</th>
+      <th>13<br>Lun</th>
+      <th>14<br>Mar</th>
+      <th>15<br>Mié</th>
+      <th>16<br>Jue</th>
+      <th>17<br>Vie</th>
+      <th>18<br>Sáb</th>
+      <th>19<br>Dom</th>
+      <th>20<br>Lun</th>
+      <th>21<br>Mar</th>
+      <th>22<br>Mié</th>
+      <th>23<br>Jue</th>
+      <th>24<br>Vie</th>
+      <th>25<br>Sáb</th>
+      <th>26<br>Dom</th>
+      <th>27<br>Lun</th>
+      <th>28<br>Mar</th>
+      <th>29<br>Mié</th>
+      <th>30<br>Jue</th>
+      <th style="background:#064E3B">Σ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>URIBE DAVILA M.</th>
+      <td class="heat-0">-</td><td class="heat-1">2</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">62</td>
+    </tr>
+    <tr>
+      <th>WONG CORREA P.</th>
+      <td class="heat-0">-</td><td class="heat-2">4</td><td class="feriado-cell">10F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-1">2</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-1">2</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-1">2</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-1">2</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">108</td>
+    </tr>
+    <tr>
+      <th>RAMIREZ HUAMAN</th>
+      <td class="heat-0">-</td><td class="heat-3">6</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-3">6</td><td class="heat-2">4</td><td class="heat-3">6</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">140</td>
+    </tr>
+    <tr>
+      <th>ESCUDERO G.</th>
+      <td class="heat-0">-</td><td class="heat-1">2</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">62</td>
+    </tr>
+    <tr>
+      <th>ALVARADO R.</th>
+      <td class="heat-0">-</td><td class="heat-3">6</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-4">8</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-4">8</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-4">8</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-4">8</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-4">8</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-4">8</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-4">8</td><td class="heat-3">6</td><td class="heat-3">6</td><td class="heat-3">6</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">196</td>
+    </tr>
+    <tr>
+      <th>ALBA CARRILLO</th>
+      <td class="heat-0">-</td><td class="heat-2">4</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">124</td>
+    </tr>
+    <tr>
+      <th>HILARIO P.</th>
+      <td class="heat-0">-</td><td class="heat-4">8</td><td class="feriado-cell">10F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-5">10</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-5">10</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-5">10</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-5">10</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-5">10</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-5">10</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-5">10</td><td class="heat-4">8</td><td class="heat-4">8</td><td class="heat-4">8</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">248</td>
+    </tr>
+    <tr>
+      <th>VARGAS TAPIA</th>
+      <td class="heat-0">-</td><td class="heat-2">4</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td><td class="heat-2">4</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">124</td>
+    </tr>
+    <tr>
+      <th>MENDOZA C.</th>
+      <td class="heat-0">-</td><td class="heat-0">0</td><td class="feriado-cell">0F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td><td class="heat-0">0</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">0</td>
+    </tr>
+    <tr>
+      <th>ARIAS CUEVA</th>
+      <td class="heat-0">-</td><td class="heat-1">2</td><td class="feriado-cell">8F</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td class="weekend-cell">S</td><td class="weekend-cell">D</td>
+      <td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td><td class="heat-1">2</td>
+      <td style="background:#1F4E79;color:white;font-weight:700">62</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>Σ día</th>
+      <td class="heat-0">-</td><td>34</td><td>76</td>
+      <td>S</td><td>D</td>
+      <td>42</td><td>42</td><td>38</td><td>38</td><td>42</td>
+      <td>S</td><td>D</td>
+      <td>42</td><td>38</td><td>38</td><td>38</td><td>42</td>
+      <td>S</td><td>D</td>
+      <td>42</td><td>38</td><td>38</td><td>38</td><td>42</td>
+      <td>S</td><td>D</td>
+      <td>42</td><td>38</td><td>38</td><td>38</td>
+      <td style="background:#064E3B">1126</td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="kpi-row">
+  <div class="kpi-mini"><div class="label">Total HE Abril 2026</div><div class="value">1,126 h</div></div>
+  <div class="kpi-mini"><div class="label">Pago total HE</div><div class="value">S/ 28,964</div></div>
+  <div class="kpi-mini"><div class="label">Personas con HE</div><div class="value">9 / 10</div></div>
+  <div class="kpi-mini"><div class="label">HE en feriados</div><div class="value">76 h</div></div>
+</div>
+
+<p style="margin-top:20px;color:#5f6368;font-size:12px">
+  📊 Heatmap generada a partir de datos de muestra en <code>.ovav/templates/he-lima/tests/test-cases.md</code> + <code>deploy_he_lima.gs</code><br>
+  🎨 CF real en Google Sheets vía <code>05_DashboardRefresh.refrescarHeatmap()</code>
+</p>
+
+</body>
+</html>
