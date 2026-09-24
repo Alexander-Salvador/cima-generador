@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HE Lima v0.2.0 — Preview Desplegado</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f8f9fa;
+    color: #202124;
+    padding: 16px;
+    font-size: 13px;
+  }
+  .header {
+    background: linear-gradient(135deg, #1F4E79 0%, #2563EB 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .meta { font-size: 11px; opacity: 0.9; }
+
+  .toolbar {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .toolbar label {
+    font-size: 11px;
+    color: #5f6368;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .toolbar select, .toolbar input {
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    background: white;
+    min-width: 110px;
+  }
+  .toolbar .factor {
+    background: #fef7e0;
+    border-color: #feefc3;
+    color: #b06000;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #dadce0;
+  }
+  .tab {
+    background: #f1f3f4;
+    border: 1px solid #dadce0;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #5f6368;
+  }
+  .tab.active {
+    background: white;
+    color: #1a73e8;
+    font-weight: 600;
+    border-bottom: 1px solid white;
+    margin-bottom: -1px;
+  }
+  .tab.hidden { background: #f8f9fa; color: #9aa0a6; font-style: italic; }
+
+  .sheet {
+    background: white;
+    border: 1px solid #dadce0;
+    border-radius: 0 8px 8px 8px;
+    overflow: hidden;
+  }
+  .sheet-header {
+    background: #f8f9fa;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #5f6368;
+    border-bottom: 1px solid #dadce0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .grid-wrapper { overflow-x: auto; max-width: 100%; }
+
+  table.grid {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid #e8eaed;
+    padding: 6px 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  table.grid thead th {
+    background: #1F4E79;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    text-align: center;
+    font-size: 11px;
+  }
+  table.grid tbody tr:nth-child(even) { background: #fafbfc; }
+  table.grid tbody tr:hover { background: #f0f4ff; }
+
+  /* CF: Conditional Formatting */
+  td.feriado { background: #FEE2E2 !important; color: #991B1B; font-weight: 600; }
+  td.sabado, td.domingo { background: #FEF3C7 !important; color: #92400E; }
+  td.normal { background: #D1FAE5 !important; color: #065F46; }
+  td.he-alta { background: #FCA5A5 !important; color: #7F1D1D; font-weight: 600; }
+
+  /* Numeric cells */
+  td.numeric { text-align: right; font-variant-numeric: tabular-nums; font-family: 'Roboto Mono', monospace; font-size: 11px; }
+  td.currency { text-align: right; font-weight: 600; color: #1F4E79; font-variant-numeric: tabular-nums; font-family: 'Roboto Mono', monospace; font-size: 11px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge.borrador { background: #f1f3f4; color: #5f6368; }
+  .badge.validado { background: #d2e3fc; color: #1967d2; }
+  .badge.aprobado { background: #c8e6c9; color: #1e8e3e; }
+  .badge.pagado { background: #a8dab5; color: #0d652d; }
+
+  .row-num { background: #f8f9fa !important; color: #5f6368; text-align: center; font-size: 10px; }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 20px;
+    background: white;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+  }
+  .kpi-card {
+    background: linear-gradient(135deg, #1F4E79 0%, #2563EB 100%);
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .kpi-card .label { font-size: 11px; opacity: 0.9; margin-bottom: 4px; }
+  .kpi-card .value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi-card .unit { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+
+  .notice {
+    background: #e8f0fe;
+    border-left: 4px solid #1a73e8;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #174ea6;
+  }
+  .notice strong { color: #174ea6; }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: #dadce0;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .config-grid .cell {
+    background: white;
+    padding: 10px 14px;
+  }
+  .config-grid .cell .key { font-size: 11px; color: #5f6368; }
+  .config-grid .cell .val { font-size: 18px; font-weight: 600; color: #1a73e8; }
+  .config-grid .cell.note { background: #f8f9fa; }
+
+  .holidays-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+  .holiday-item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: #fef7e0;
+    border-left: 3px solid #fbbc04;
+    font-size: 12px;
+  }
+  .holiday-item .date { font-weight: 600; color: #b06000; }
+  .holiday-item .name { color: #5f6368; }
+
+  .footer {
+    margin-top: 24px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #5f6368;
+    text-align: center;
+  }
+
+  /* Personas sheet */
+  table.personas td { font-size: 12px; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+  .status-dot.active { background: #1e8e3e; }
+  .status-dot.inactive { background: #9aa0a6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 HE Lima v0.2.0 — Preview del Sheet Desplegado</h1>
+    <div class="meta">CIMA — Técnica Móvil · Lima, Perú · 13 feriados D.L. 713 · Working surface + DB mensual</div>
+  </div>
+  <div class="meta">
+    Branch: <strong>feature/c1ma-desing</strong><br>
+    Commit: <strong>2a09051</strong><br>
+    Generado: <span id="ts"></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SHEET 1: 00_Config — Panel de Control -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="tabs">
+  <div class="tab active">⚙️ 00_Config</div>
+  <div class="tab">🇵🇪 01_Feriados_PE</div>
+  <div class="tab">👥 02_Personas</div>
+  <div class="tab">📅 10_Registro_HE</div>
+  <div class="tab">📊 20_Dashboard</div>
+  <div class="tab hidden">🔍 99_Audit_Log</div>
+</div>
+
+<div class="sheet">
+  <div class="sheet-header">
+    <span><strong>00_Config</strong> · Panel de control · <span style="color:#1e8e3e">● Conectado</span></span>
+    <span>Último refresh: <span id="refresh-ts">2026-09-24 15:30:00</span></span>
+  </div>
+
+  <div style="padding: 20px;">
+    <div class="config-grid">
+      <div class="cell">
+        <div class="key">📅 Mes activo</div>
+        <div class="val">Abril (4)</div>
+      </div>
+      <div class="cell">
+        <div class="key">🗓️ Año activo</div>
+        <div class="val">2026</div>
+      </div>
+      <div class="cell">
+        <div class="key">📆 Semana ISO</div>
+        <div class="val">W14</div>
+      </div>
+      <div class="cell">
+        <div class="key">👤 Persona filtro</div>
+        <div class="val">TODOS</div>
+      </div>
+      <div class="cell note">
+        <div class="key">⚡ Factor HE Diurno</div>
+        <div class="val" style="color:#b06000">1.25×</div>
+      </div>
+      <div class="cell note">
+        <div class="key">🌙 Factor HE Nocturno</div>
+        <div class="val" style="color:#b06000">1.35×</div>
+      </div>
+      <div class="cell note">
+        <div class="key">🎉 Factor Feriado</div>
+        <div class="val" style="color:#b06000">2.00×</div>
+      </div>
+      <div class="cell note">
+        <div class="key">⏱️ Jornada Max Diaria</div>
+        <div class="val">8 h</div>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top: 20px;">
+      <strong>ℹ️ Dropdown activo:</strong> Los valores en B2 (Mes), B3 (Año), B4 (Semana), B5 (Persona) tienen Data Validation.
+      Al cambiar Mes → el grid de 10_Registro_HE se repobla automáticamente desde <code>98_DB_2026_04</code>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SHEET 2: 01_Feriados_PE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="sheet" style="margin-top: 24px;">
+  <div class="sheet-header">
+    <span><strong>01_Feriados_PE</strong> · Catálogo feriados Perú · D.L. 713 · <span style="color:#1e8e3e">13 feriados 2026</span></span>
+    <span>Auto-calculado: Pascua 2026-04-05 (Meeus/Jones/Butcher)</span>
+  </div>
+
+  <div class="holidays-list">
+    <div class="holiday-item"><span class="date">2026-01-01</span> · Año Nuevo</div>
+    <div class="holiday-item"><span class="date">2026-04-02</span> · Jueves Santo <span style="color:#1a73e8">(móvil)</span></div>
+    <div class="holiday-item"><span class="date">2026-04-03</span> · Viernes Santo <span style="color:#1a73e8">(móvil)</span></div>
+    <div class="holiday-item"><span class="date">2026-05-01</span> · Día del Trabajo</div>
+    <div class="holiday-item"><span class="date">2026-06-29</span> · San Pedro y San Pablo</div>
+    <div class="holiday-item"><span class="date">2026-07-28</span> · Fiestas Patrias</div>
+    <div class="holiday-item"><span class="date">2026-07-29</span> · Fiestas Patrias (2da)</div>
+    <div class="holiday-item"><span class="date">2026-08-30</span> · Santa Rosa de Lima</div>
+    <div class="holiday-item"><span class="date">2026-10-08</span> · Combate de Angamos</div>
+    <div class="holiday-item"><span class="date">2026-11-01</span> · Todos los Santos</div>
+    <div class="holiday-item"><span class="date">2026-12-08</span> · Inmaculada Concepción</div>
+    <div class="holiday-item"><span class="date">2026-12-09</span> · Batalla de Ayacucho</div>
+    <div class="holiday-item"><span class="date">2026-12-25</span> · Navidad</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SHEET 3: 02_Personas — Maestro -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="sheet" style="margin-top: 24px;">
+  <div class="sheet-header">
+    <span><strong>02_Personas</strong> · Maestro de personas · 10 personas activas (sample data)</span>
+    <span>DNI único · regex <code>^\d{8}$</code> · FK lógica → <code>10_Registro_HE</code></span>
+  </div>
+
+  <div class="grid-wrapper">
+    <table class="grid personas">
+      <thead>
+        <tr>
+          <th>ID_Persona</th>
+          <th>DNI</th>
+          <th>Apellidos_Nombres</th>
+          <th>Cargo</th>
+          <th>Cuadrilla</th>
+          <th>Turno_Base</th>
+          <th>Fecha_Ingreso</th>
+          <th>Activo</th>
+          <th>Tarifa (PEN/h)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>P-001</td><td>12345678</td><td>URIBE DAVILA MONICA</td><td>tecnico</td><td>A</td><td>diurno</td><td>2020-03-15</td><td><span class="status-dot active"></span> Sí</td><td class="currency">22.50</td></tr>
+        <tr><td>P-002</td><td>23456789</td><td>WONG CORREA PATRICIA</td><td>tecnico</td><td>A</td><td>diurno</td><td>2019-08-01</td><td><span class="status-dot active"></span> Sí</td><td class="currency">24.00</td></tr>
+        <tr><td>P-003</td><td>34567890</td><td>RAMIREZ HUAMAN JOHNN</td><td>tecnico</td><td>B</td><td>nocturno</td><td>2021-01-10</td><td><span class="status-dot active"></span> Sí</td><td class="currency">26.00</td></tr>
+        <tr><td>P-004</td><td>45678901</td><td>ESCUDERO GRANDEZ CRIS</td><td>supervisor</td><td>A</td><td>diurno</td><td>2018-05-20</td><td><span class="status-dot active"></span> Sí</td><td class="currency">35.00</td></tr>
+        <tr><td>P-005</td><td>56789012</td><td>ALVARADO RODRIGUEZ JAC</td><td>tecnico</td><td>C</td><td>rotativo</td><td>2022-07-01</td><td><span class="status-dot active"></span> Sí</td><td class="currency">23.50</td></tr>
+        <tr><td>P-006</td><td>67890123</td><td>ALBA CARRILLO OSCAR</td><td>tecnico</td><td>B</td><td>diurno</td><td>2020-11-15</td><td><span class="status-dot active"></span> Sí</td><td class="currency">25.00</td></tr>
+        <tr><td>P-007</td><td>78901234</td><td>HILARIO PURIZACA BEATRIZ</td><td>jefe_cuadrilla</td><td>D</td><td>diurno</td><td>2017-02-01</td><td><span class="status-dot active"></span> Sí</td><td class="currency">40.00</td></tr>
+        <tr><td>P-008</td><td>89012345</td><td>VARGAS TAPIA ISABEL</td><td>tecnico</td><td>C</td><td>nocturno</td><td>2021-09-20</td><td><span class="status-dot active"></span> Sí</td><td class="currency">26.50</td></tr>
+        <tr><td>P-009</td><td>90123456</td><td>MENDOZA CARMEN CECILIA</td><td>admin</td><td>A</td><td>diurno</td><td>2019-04-10</td><td><span class="status-dot active"></span> Sí</td><td class="currency">30.00</td></tr>
+        <tr><td>P-010</td><td>01234567</td><td>ARIAS CUEVA STEPHANNI</td><td>tecnico</td><td>B</td><td>diurno</td><td>2023-03-05</td><td><span class="status-dot active"></span> Sí</td><td class="currency">21.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SHEET 4: 10_Registro_HE — Working Surface (CORE) -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="sheet" style="margin-top: 24px;">
+  <div class="sheet-header">
+    <span><strong>10_Registro_HE</strong> · Working surface · Abril 2026 W14 (6-12 abril) · 10 personas × 7 días</span>
+    <span>Sincronizado con <code>98_DB_2026_04</code> (auto-creada)</span>
+  </div>
+
+  <div class="grid-wrapper">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>W##</th>
+          <th>Día</th>
+          <th>¿Fer?</th>
+          <th>Tipo_Dia</th>
+          <th>ID</th>
+          <th>Apellidos_Nombres</th>
+          <th>Turno</th>
+          <th>Ingreso</th>
+          <th>Salida</th>
+          <th>H.Total</th>
+          <th>H.Norm</th>
+          <th>H.Extras</th>
+          <th>Factor</th>
+          <th>H.Pond</th>
+          <th>Pago HE (PEN)</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="row-num">1</td><td>2026-04-06</td><td>W14</td><td>Lun</td><td>—</td><td class="normal">Normal</td><td>P-001</td><td>URIBE DAVILA MONICA</td><td>diurno</td><td>08:00</td><td>17:00</td><td class="numeric">8.0</td><td class="numeric">8.0</td><td class="numeric">0.0</td><td class="numeric">1.25</td><td class="numeric">10.00</td><td class="currency">225.00</td><td><span class="badge validado">validado</span></td></tr>
+        <tr><td class="row-num">2</td><td>2026-04-06</td><td>W14</td><td>Lun</td><td>—</td><td class="normal">Normal</td><td>P-002</td><td>WONG CORREA PATRICIA</td><td>diurno</td><td>08:00</td><td>19:00</td><td class="numeric">10.0</td><td class="numeric">8.0</td><td class="numeric">2.0</td><td class="numeric">1.25</td><td class="numeric">2.50</td><td class="currency">60.00</td><td><span class="badge borrador">borrador</span></td></tr>
+        <tr><td class="row-num">3</td><td>2026-04-06</td><td>W14</td><td>Lun</td><td>—</td><td class="normal">Normal</td><td>P-003</td><td>RAMIREZ HUAMAN JOHNN</td><td>nocturno</td><td>20:00</td><td>06:00</td><td class="numeric">10.0</td><td class="numeric">8.0</td><td class="numeric">2.0</td><td class="numeric">1.35</td><td class="numeric">2.70</td><td class="currency">70.20</td><td><span class="badge validado">validado</span></td></tr>
+        <tr><td class="row-num">4</td><td>2026-04-07</td><td>W14</td><td>Mar</td><td>—</td><td class="normal">Normal</td><td>P-001</td><td>URIBE DAVILA MONICA</td><td>diurno</td><td>08:00</td><td>17:00</td><td class="numeric">8.0</td><td class="numeric">8.0</td><td class="numeric">0.0</td><td class="numeric">1.25</td><td class="numeric">10.00</td><td class="currency">225.00</td><td><span class="badge aprobado">aprobado</span></td></tr>
+        <tr><td class="row-num">5</td><td>2026-04-08</td><td>W14</td><td>Mié</td><td>—</td><td class="normal">Normal</td><td>P-005</td><td>ALVARADO RODRIGUEZ JAC</td><td>rotativo</td><td>08:00</td><td>20:00</td><td class="numeric he-alta">12.0</td><td class="numeric">8.0</td><td class="numeric he-alta">4.0</td><td class="numeric">1.25</td><td class="numeric">5.00</td><td class="currency">117.50</td><td><span class="badge borrador">borrador</span></td></tr>
+        <tr><td class="row-num">6</td><td>2026-04-09</td><td>W14</td><td>Jue</td><td>—</td><td class="normal">Normal</td><td>P-006</td><td>ALBA CARRILLO OSCAR</td><td>diurno</td><td>08:00</td><td>18:00</td><td class="numeric">10.0</td><td class="numeric">8.0</td><td class="numeric">2.0</td><td class="numeric">1.25</td><td class="numeric">2.50</td><td class="currency">62.50</td><td><span class="badge validado">validado</span></td></tr>
+        <tr><td class="row-num">7</td><td>2026-04-10</td><td>W14</td><td>Vie</td><td>—</td><td class="normal">Normal</td><td>P-007</td><td>HILARIO PURIZACA BEATRIZ</td><td>diurno</td><td>08:00</td><td>17:00</td><td class="numeric">8.0</td><td class="numeric">8.0</td><td class="numeric">0.0</td><td class="numeric">1.25</td><td class="numeric">10.00</td><td class="currency">400.00</td><td><span class="badge aprobado">aprobado</span></td></tr>
+        <tr><td class="row-num">8</td><td>2026-04-11</td><td>W14</td><td>Sáb</td><td>—</td><td class="sabado">Sabado</td><td>P-002</td><td>WONG CORREA PATRICIA</td><td>diurno</td><td>08:00</td><td>18:00</td><td class="numeric">10.0</td><td class="numeric">0.0</td><td class="numeric">10.0</td><td class="numeric">1.25</td><td class="numeric">12.50</td><td class="currency">300.00</td><td><span class="badge borrador">borrador</span></td></tr>
+        <tr><td class="row-num">9</td><td>2026-04-12</td><td>W14</td><td>Dom</td><td>—</td><td class="domingo">Domingo</td><td>P-003</td><td>RAMIREZ HUAMAN JOHNN</td><td>nocturno</td><td>20:00</td><td>04:00</td><td class="numeric">8.0</td><td class="numeric">0.0</td><td class="numeric">8.0</td><td class="numeric">1.35</td><td class="numeric">10.80</td><td class="currency">280.80</td><td><span class="badge validado">validado</span></td></tr>
+        <tr style="background:#fff8e1"><td class="row-num">10</td><td>2026-04-03</td><td>W14</td><td>Vie</td><td>✓</td><td class="feriado">Feriado</td><td>P-005</td><td>ALVARADO RODRIGUEZ JAC</td><td>diurno</td><td>08:00</td><td>17:00</td><td class="numeric">8.0</td><td class="numeric">0.0</td><td class="numeric">8.0</td><td class="numeric">2.00</td><td class="numeric">16.00</td><td class="currency">376.00</td><td><span class="badge aprobado">aprobado</span></td></tr>
+        <tr><td class="row-num">11</td><td>2026-04-03</td><td>W14</td><td>Vie</td><td>✓</td><td class="feriado">Feriado</td><td>P-006</td><td>ALBA CARRILLO OSCAR</td><td>nocturno</td><td>20:00</td><td>04:00</td><td class="numeric">8.0</td><td class="numeric">0.0</td><td class="numeric">8.0</td><td class="numeric">2.70</td><td class="numeric">21.60</td><td class="currency">540.00</td><td><span class="badge validado">validado</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notice" style="margin: 12px;">
+    <strong>🎨 Conditional Formatting aplicada:</strong>
+    <span class="feriado" style="padding:2px 6px; border-radius:3px;">Feriado (rosa)</span>
+    <span class="sabado" style="padding:2px 6px; border-radius:3px;">Sábado/Domingo (amarillo)</span>
+    <span class="normal" style="padding:2px 6px; border-radius:3px;">Normal (verde)</span>
+    <span class="he-alta" style="padding:2px 6px; border-radius:3px;">HE > 4h (rojo)</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SHEET 5: 20_Dashboard — KPIs -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="sheet" style="margin-top: 24px;">
+  <div class="sheet-header">
+    <span><strong>20_Dashboard</strong> · KPIs ejecutivos · Abril 2026</span>
+    <span>Auto-refresh via <code>refrescarKPIs()</code></span>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="kpi-card">
+      <div class="label">⏱️ HE Mes Actual</div>
+      <div class="value">156.5</div>
+      <div class="unit">horas extras</div>
+    </div>
+    <div class="kpi-card" style="background: linear-gradient(135deg, #0d652d 0%, #1e8e3e 100%);">
+      <div class="label">📊 HE YTD 2026</div>
+      <div class="value">487.2</div>
+      <div class="unit">horas acumuladas</div>
+    </div>
+    <div class="kpi-card" style="background: linear-gradient(135deg, #b06000 0%, #fbbc04 100%);">
+      <div class="label">💰 Pago Mes</div>
+      <div class="value">S/ 11,847</div>
+      <div class="unit">PEN (10 personas)</div>
+    </div>
+    <div class="kpi-card" style="background: linear-gradient(135deg, #1967d2 0%, #4285f4 100%);">
+      <div class="label">👥 Personas Activas</div>
+      <div class="value">10</div>
+      <div class="unit">de 10 totales</div>
+    </div>
+  </div>
+
+  <div style="padding: 20px;">
+    <h3 style="margin: 16px 0 8px 0; font-size: 14px;">📈 Top 5 personas con más HE (abril)</h3>
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Persona</th>
+          <th>Cuadrilla</th>
+          <th>Horas Extras</th>
+          <th>Pago HE</th>
+          <th>% del total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="row-num">1</td><td>HILARIO PURIZACA BEATRIZ</td><td>D</td><td class="numeric he-alta">28.0</td><td class="currency">S/ 1,120.00</td><td class="numeric">17.9%</td></tr>
+        <tr><td class="row-num">2</td><td>ALBA CARRILLO OSCAR</td><td>B</td><td class="numeric he-alta">22.5</td><td class="currency">S/ 562.50</td><td class="numeric">14.4%</td></tr>
+        <tr><td class="row-num">3</td><td>RAMIREZ HUAMAN JOHNN</td><td>B</td><td class="numeric">18.0</td><td class="currency">S/ 468.00</td><td class="numeric">11.5%</td></tr>
+        <tr><td class="row-num">4</td><td>ALVARADO RODRIGUEZ JAC</td><td>C</td><td class="numeric">15.5</td><td class="currency">S/ 364.25</td><td class="numeric">9.9%</td></tr>
+        <tr><td class="row-num">5</td><td>WONG CORREA PATRICIA</td><td>A</td><td class="numeric">14.0</td><td class="currency">S/ 336.00</td><td class="numeric">8.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  🎯 <strong>HE Lima v0.2.0</strong> · 31 archivos · 8,435 líneas · Branch: <code>feature/c1ma-desing</code> · Commit: <code>2a09051</code><br>
+  📦 Bundle completo en <code>.ovav/templates/he-lima/</code> · Deploy script: <code>deploy_he_lima.gs</code><br>
+  🟢 <strong>Para desplegar:</strong> abrir Apps Script en tu sheet → pegar <code>deploy_he_lima.gs</code> → ejecutar <code>desplegarHELima()</code>
+</div>
+
+<script>
+  document.getElementById('ts').textContent = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  document.getElementById('refresh-ts').textContent = new Date().toISOString().slice(0, 19).replace('T', ' ');
+</script>
+
+</body>
+</html>
