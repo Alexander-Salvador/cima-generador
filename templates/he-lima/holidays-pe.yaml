@@ -1,0 +1,216 @@
+# Feriados Perú — Base de datos de feriados (v2 — design-revised)
+# Authority: marco (systems_architect)
+# Implementer: andres (consume via 02_HolidaysEngine.gs)
+# Review: 2026-09-24
+# Fuente normativa: Decreto Legislativo N° 713, consolidado a 2026
+# Locale: es-PE · timezone: America/Lima
+#
+# ─────────────────────────────────────────────────────────────
+# CAMBIO v1 → v2 (CORR-2):
+#   · Lista cerrada a 13 feriados nacionales validados
+#   · Eliminado: Carnaval, Viernes Santo (duplicado), San Pedro (era opt-in),
+#     Aniversario de Lima
+#   · Carnaval NO es feriado nacional en PE — solo cultural, no aplica HE
+#   · Aniversario de Lima NO es nacional — regional/municipal — CEO excluyó
+#   · San Pedro y San Pablo (29-Jun) ahora FIJO nacional (F-05)
+# ─────────────────────────────────────────────────────────────
+
+metadata:
+  country: PE
+  locale: es-PE
+  schema_version: 2
+  count_total: 13
+  count_fijos: 11
+  count_moviles: 2
+  algoritmo_pascua_recomendado: "Meeus/Jones/Butcher (1987)"
+  fuente_normativa: "D.L. N° 713 — El Peruano"
+  decision_resolved: "13 feriados confirmados por CEO — sin opt-in sectorial/regional"
+
+# ─────────────────────────────────────────────────────────────
+# FERIADOS NACIONALES 2026 — 13 validados (D.L. 713)
+# ─────────────────────────────────────────────────────────────
+feriados_2026:
+
+  - id: F-01
+    nombre: "Año Nuevo"
+    tipo: nacional_fijo
+    fecha: 2026-01-01
+    es_movil: false
+    aplica_HE: true
+    notas: "Ley 17794, inamovible"
+
+  - id: F-02
+    nombre: "Jueves Santo"
+    tipo: nacional_movil
+    fecha: 2026-04-02
+    es_movil: true
+    pascua_offset_days: -3
+    aplica_HE: true
+    notas: "Derivado de Pascua 2026-04-05"
+
+  - id: F-03
+    nombre: "Viernes Santo"
+    tipo: nacional_movil
+    fecha: 2026-04-03
+    es_movil: true
+    pascua_offset_days: -2
+    aplica_HE: true
+    notas: "Derivado de Pascua 2026-04-05"
+
+  - id: F-04
+    nombre: "Día del Trabajo"
+    tipo: nacional_fijo
+    fecha: 2026-05-01
+    es_movil: false
+    aplica_HE: true
+
+  - id: F-05
+    nombre: "San Pedro y San Pablo"
+    tipo: nacional_fijo
+    fecha: 2026-06-29
+    es_movil: false
+    aplica_HE: true
+    notas: "CORR-2: ahora fijo nacional (antes era opt-in en v1)"
+
+  - id: F-06
+    nombre: "Fiestas Patrias"
+    tipo: nacional_fijo
+    fecha: 2026-07-28
+    es_movil: false
+    aplica_HE: true
+    notas: "Independencia nacional"
+
+  - id: F-07
+    nombre: "Fiestas Patrias (2da)"
+    tipo: nacional_fijo
+    fecha: 2026-07-29
+    es_movil: false
+    aplica_HE: true
+    notas: "Segunda jornada Independencia nacional"
+
+  - id: F-08
+    nombre: "Santa Rosa de Lima"
+    tipo: nacional_fijo
+    fecha: 2026-08-30
+    es_movil: false
+    aplica_HE: true
+    notas: "Patrona de Lima — relevante para CIMA"
+
+  - id: F-09
+    nombre: "Combate de Angamos"
+    tipo: nacional_fijo
+    fecha: 2026-10-08
+    es_movil: false
+    aplica_HE: true
+
+  - id: F-10
+    nombre: "Todos los Santos"
+    tipo: nacional_fijo
+    fecha: 2026-11-01
+    es_movil: false
+    aplica_HE: true
+
+  - id: F-11
+    nombre: "Inmaculada Concepción"
+    tipo: nacional_fijo
+    fecha: 2026-12-08
+    es_movil: false
+    aplica_HE: true
+
+  - id: F-12
+    nombre: "Batalla de Ayacucho"
+    tipo: nacional_fijo
+    fecha: 2026-12-09
+    es_movil: false
+    aplica_HE: true
+
+  - id: F-13
+    nombre: "Navidad"
+    tipo: nacional_fijo
+    fecha: 2026-12-25
+    es_movil: false
+    aplica_HE: true
+
+# ─────────────────────────────────────────────────────────────
+# ALGORITMO DE PASCUA — referencia (NO implementación aquí)
+# ─────────────────────────────────────────────────────────────
+algoritmo_pascua:
+  nombre: "Anonymous Gregorian algorithm (Meeus/Jones/Butcher 1987)"
+  referencia: https://en.wikipedia.org/wiki/Date_of_Easter
+  input: "year (1583 ≤ year ≤ 4099)"
+  output: "Date — Pascua de Resurrección (domingo)"
+  complejidad: "O(1), aritmética entera"
+  apps_script_function: "calcularPascua(anio)"
+  downstream:
+    - "calcularJuevesSanto(anio) = Pascua − 3 días → F-02"
+    - "calcularViernesSanto(anio) = Pascua − 2 días → F-03"
+  casos_borde:
+    - "Años bisiestos: cubiertos nativamente por el algoritmo"
+    - "Antes de 1583: no aplica (rango de Gregorio)"
+    - "Año 2038+: precisión Date en Apps Script OK hasta 2200"
+  validacion_2026:
+    pascua_2026: "2026-04-05"
+    fuente_validacion: "Algoritmo Meeus/Jones/Butcher + verificación contra calendarios oficiales"
+    jueves_santo_2026: "2026-04-02"
+    viernes_santo_2026: "2026-04-03"
+
+# ─────────────────────────────────────────────────────────────
+# EXCLUIDOS EXPLÍCITAMENTE (decisión CEO, no son feriado nacional)
+# ─────────────────────────────────────────────────────────────
+excluidos:
+
+  - id_excluido: X-01
+    nombre: "Carnaval (lunes y martes)"
+    razon: "Carnaval NO es feriado nacional en PE — solo cultural. D.L. 713 no lo incluye."
+    estado: "excluido por normativa"
+    nota_tecnica: "Si se requiere clasificar día cultural, hacerlo vía bandera separada en Personas/Cuadrilla, NO como feriado"
+
+  - id_excluido: X-02
+    nombre: "Aniversario de Lima"
+    fecha_historica: "01-18"
+    razon: "Feriado regional/municipal, NO nacional. CEO decidió excluir — CIMA opera en Lima pero este feriado es distrital"
+    estado: "excluido por decisión CEO"
+
+  - id_excluido: X-03
+    nombre: "San Pedro y San Pablo (versión opt-in anterior)"
+    fecha_historica: "06-29"
+    razon: "Reclasificado: ahora es F-05 fijo nacional (D.L. 713 siempre lo incluyó, v1 lo tenía como opt-in por error)"
+
+  - id_excluido: X-04
+    nombre: "Viernes Santo (duplicado)"
+    razon: "v1 tenía F-03 y F-14 ambos como Viernes Santo. Consolidado en F-03 únicamente"
+
+# ─────────────────────────────────────────────────────────────
+# DATOS PRE-CALCULADOS (referencia para auditoría)
+# ─────────────────────────────────────────────────────────────
+tabla_pascua_pre_calculada:
+  scope: "2024-2030 (cobertura 12 meses histórico + 5 futuro)"
+  rows:
+    - {anio: 2024, pascua: "2024-03-31", jueves_santo: "2024-03-28", viernes_santo: "2024-03-29"}
+    - {anio: 2025, pascua: "2025-04-20", jueves_santo: "2025-04-17", viernes_santo: "2025-04-18"}
+    - {anio: 2026, pascua: "2026-04-05", jueves_santo: "2026-04-02", viernes_santo: "2026-04-03"}
+    - {anio: 2027, pascua: "2027-03-28", jueves_santo: "2027-03-25", viernes_santo: "2027-03-26"}
+    - {anio: 2028, pascua: "2028-04-16", jueves_santo: "2028-04-13", viernes_santo: "2028-04-14"}
+    - {anio: 2029, pascua: "2029-04-01", jueves_santo: "2029-03-29", viernes_santo: "2029-03-30"}
+    - {anio: 2030, pascua: "2030-04-21", jueves_santo: "2030-04-18", viernes_santo: "2030-04-19"}
+  notas: |
+    Esta tabla sirve como bootstrap si Apps Script falla al calcular.
+    02_HolidaysEngine.gs debe preferir SIEMPRE el cálculo (Pascua es determinística)
+    y usar esta tabla solo como fallback en modo degradado.
+
+# ─────────────────────────────────────────────────────────────
+# RESUMEN EJECUTIVO — diff v1 → v2
+# ─────────────────────────────────────────────────────────────
+resumen_diffs:
+  v1_total_feriados: 16
+  v2_total_feriados: 13
+  count_reduction: -3
+  cambios:
+    - {cambio: "Añadido F-05 San Pedro y San Pablo como fijo", efecto: "+1 nacional fijo"}
+    - {cambio: "Eliminado F-13 Carnaval", efecto: "-1 cultural"}
+    - {cambio: "Eliminado F-14 Viernes Santo duplicado", efecto: "-1 dedup"}
+    - {cambio: "Eliminado F-15 San Pedro opt-in", efecto: "fusionado con F-05"}
+    - {cambio: "Eliminado F-16 Aniversario de Lima", efecto: "-1 regional"}
+    - {cambio: "Renombrado F-04 v1 'Independencia del Perú (2da)' → F-07 v2 'Fiestas Patrias (2da)'", efecto: "consistencia naming"}
+  neto: -3 (16 → 13)
+  riesgo_residual: "BAJO — lista cerrada y validada contra D.L. 713"
