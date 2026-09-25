@@ -8,6 +8,7 @@
     "https://www.googleapis.com/auth/script.container.ui",
     "https://www.googleapis.com/auth/script.send_mail",
     "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/script.projects",
     "https://www.googleapis.com/auth/drive.file"
   ],
   "webapp": {
@@ -16,6 +17,8 @@
   },
   "addOns": {
     "common": {
+      "name": "HE Lima - CIMA",
+      "logoUrl": "https://www.gstatic.com/images/branding/product/1x/sheets_48dp.png",
       "homepageTrigger": {
         "runFunction": "onOpen"
       }
