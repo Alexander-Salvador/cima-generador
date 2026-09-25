@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CIMA — HE LIMA Preview</title>
+<style>
+  body { font-family: 'Google Sans', Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+  .preview { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .title { background: #1a3a5c; color: white; padding: 14px 20px; font-size: 18px; font-weight: bold; text-align: center; border-radius: 4px; }
+  .subtitle { text-align: center; color: #666; font-style: italic; padding: 8px; font-size: 10pt; }
+  .panel { background: #fef9e7; padding: 12px 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #e0e0e0; }
+  .panel-label { font-weight: bold; }
+  .panel-input { background: white; border: 2px solid #1a3a5c; padding: 4px 10px; border-radius: 4px; font-weight: bold; min-width: 40px; text-align: center; }
+  .status-active { color: #27ae60; font-weight: bold; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 10pt; }
+  th { background: #d4e3f3; padding: 6px 4px; text-align: center; font-size: 9pt; color: #1a3a5c; font-weight: bold; border: 1px solid #b0c4de; }
+  th.day-num { background: #d4e3f3; }
+  th.day-label { font-style: italic; background: #d4e3f3; }
+  td { padding: 4px; text-align: center; border: 1px solid #e0e0e0; }
+  td.emp-name { background: #fef9e7; font-weight: bold; text-align: left; }
+  td.dni { background: #f4f4f4; font-style: italic; color: #666; }
+  td.input { background: white; }
+  td.input.holiday { background: #ffe4e1; color: #c0392b; font-weight: bold; }
+  td.input.zero { background: #f4f4f4; color: #999; }
+  td.input.over { background: #fdebd0; color: #e67e22; font-weight: bold; }
+  td.summary { background: #fdebd0; font-style: italic; }
+  td.money { background: #fdebd0; font-weight: bold; text-align: right; }
+  tr.totales td { background: #1a3a5c; color: white; font-weight: bold; }
+  .legend { margin-top: 16px; padding: 12px; background: #fafafa; border-radius: 4px; font-size: 10pt; }
+  .legend-item { display: inline-block; margin-right: 24px; }
+  .legend-swatch { display: inline-block; width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; border-radius: 2px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<div class="preview">
+
+  <div class="title">CIMA — REGISTRO DE HORAS EXTRAS</div>
+  <div class="subtitle">Período: 01-Sep al 30-Sep 2026</div>
+
+  <div class="panel">
+    <span><span class="panel-label">Mes:</span> <span class="panel-input">9</span></span>
+    <span><span class="panel-label">Año:</span> <span class="panel-input">2026</span></span>
+    <span><span class="panel-label">Jornada:</span> 8h/día</span>
+    <span><span class="panel-label">Fac 25%:</span> 1.25</span>
+    <span><span class="panel-label">Fac 35%:</span> 1.35</span>
+    <span><span class="panel-label">Status:</span> <span class="status-active">● ACTIVO</span></span>
+    <span><span class="panel-label">Sync:</span> 2026-09-25</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="emp-name">Empleado</th>
+        <th>DNI</th>
+        <th class="day-num">1</th>
+        <th class="day-num">2</th>
+        <th class="day-num">3</th>
+        <th class="day-num">4</th>
+        <th class="day-num">5</th>
+        <th class="day-num">6</th>
+        <th class="day-num">7</th>
+        <th class="day-num">8</th>
+        <th class="day-num">9</th>
+        <th class="day-num">10</th>
+        <th class="day-num">11</th>
+        <th class="day-num">12</th>
+        <th class="day-num">13</th>
+        <th class="day-num">14</th>
+        <th class="day-num">15</th>
+        <th class="day-num">16</th>
+        <th class="day-num">17</th>
+        <th class="day-num">18</th>
+        <th class="day-num">19</th>
+        <th class="day-num">20</th>
+        <th class="day-num">21</th>
+        <th class="day-num">22</th>
+        <th class="day-num">23</th>
+        <th class="day-num">24</th>
+        <th class="day-num">25</th>
+        <th class="day-num">26</th>
+        <th class="day-num">27</th>
+        <th class="day-num">28</th>
+        <th class="day-num">29</th>
+        <th class="day-num">30</th>
+        <th class="summary">H_norm</th>
+        <th class="summary">H_ext</th>
+        <th class="summary">25%</th>
+        <th class="summary">35%</th>
+        <th class="summary">$_norm</th>
+        <th class="summary">$_ext</th>
+      </tr>
+      <tr>
+        <th class="emp-name">DNI</th>
+        <th>DNI</th>
+        <th class="day-label">M</th>
+        <th class="day-label">M</th>
+        <th class="day-label">J</th>
+        <th class="day-label">V</th>
+        <th class="day-label">S</th>
+        <th class="day-label">D</th>
+        <th class="day-label">L</th>
+        <th class="day-label">M</th>
+        <th class="day-label">M</th>
+        <th class="day-label">J</th>
+        <th class="day-label">V</th>
+        <th class="day-label">S</th>
+        <th class="day-label">D</th>
+        <th class="day-label">L</th>
+        <th class="day-label">M</th>
+        <th class="day-label">M</th>
+        <th class="day-label">J</th>
+        <th class="day-label">V</th>
+        <th class="day-label">S</th>
+        <th class="day-label">D</th>
+        <th class="day-label">L</th>
+        <th class="day-label">M</th>
+        <th class="day-label">M</th>
+        <th class="day-label">J</th>
+        <th class="day-label">V</th>
+        <th class="day-label">S</th>
+        <th class="day-label">D</th>
+        <th class="day-label">L</th>
+        <th class="day-label">M</th>
+        <th class="day-label">M</th>
+        <th class="day-label">≤8h</th>
+        <th class="day-label">&gt;8h</th>
+        <th class="day-label">×1.25</th>
+        <th class="day-label">×1.35</th>
+        <th class="day-label">S/</th>
+        <th class="day-label">S/</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="emp-name">URIBE DAVILA MONICA PAHOLA</td>
+        <td class="dni">9887772</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">WONG CORREA PATRICIA DEL PILAR</td>
+        <td class="dni">41418003</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">RAMIREZ HUAMAN JOHNN MILTON</td>
+        <td class="dni">41754765</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">ESCUDERO GRANDEZ CRISTHINA ISABEL</td>
+        <td class="dni">41951857</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">ALVARADO RODRIGUEZ JACKELIN CONSUELO</td>
+        <td class="dni">41983463</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">ALBA CARRILLO OSCAR DANIEL</td>
+        <td class="dni">42743447</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">HILARIO PURIZACA BEATRIZ PATRICIA</td>
+        <td class="dni">45102430</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr>
+        <td class="emp-name">VARGAS TAPIA ISABEL</td>
+        <td class="dni">45454166</td>
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input holiday"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="input"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="summary"></td">
+        <td class="money"></td">
+        <td class="money"></td">
+      </tr>
+      <tr class="totales">
+        <td>TOTALES</td><td></td>
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td></td">
+        <td>T</td><td>T</td><td>T</td><td>T</td><td>T</td><td>T</td></tr>    </tbody>
+  </table>
+
+  <div class="legend">
+    <strong>Leyenda visual:</strong><br>
+    <span class="legend-item"><span class="legend-swatch" style="background:#1a3a5c;"></span> Título / Total</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#d4e3f3;"></span> Headers (días)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#fef9e7;"></span> Empleado / Label</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#fdebd0;"></span> Summary (formulas)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#f4f4f4;"></span> DNI / Día sin horas</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#ffe4e1;"></span> Feriado</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#ffffff;"></span> Input editable</span>
+  </div>
+
+</div>
+</body>
+</html>
