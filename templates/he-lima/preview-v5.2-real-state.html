@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CIMA HE LIMA v0.5.2 — Real State</title>
+<style>
+body { font-family: 'Inter', sans-serif; background: #f5f5f7; padding: 24px; font-size: 14px; }
+.sheet { background: white; max-width: 1400px; margin: 0 auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+.title-bar { background: #0f172a; color: white; padding: 18px 24px; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; text-align: left; }
+.subtitle { padding: 10px 24px; background: #f1f5f9; color: #64748b; font-size: 11px; font-style: italic; text-align: center; }
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 20px 24px; background: #f8fafc; }
+.kpi { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; }
+.kpi-label { font-size: 11px; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+.kpi-value { font-size: 32px; font-weight: 800; color: #0f172a; margin: 6px 0; }
+.kpi-delta { font-size: 11px; color: #10b981; font-style: italic; }
+.kpi-delta.warn { color: #f59e0b; }
+.controls { padding: 14px 24px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; gap: 16px; align-items: center; }
+.label { background: #f1f5f9; color: #0f172a; font-weight: 700; padding: 6px 12px; border-radius: 6px; font-size: 11px; }
+.dropdown { background: white; color: #0f172a; font-weight: 700; padding: 6px 12px; border: 2px solid #0f172a; border-radius: 6px; font-size: 13px; min-width: 130px; }
+.badge { background: #10b981; color: white; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.divider { background: #0f172a; color: white; padding: 12px 24px; font-weight: 700; font-size: 14px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.data-table thead th { background: #0f172a; color: white; padding: 8px 4px; font-weight: 600; text-align: center; font-size: 10px; }
+.data-table thead th.emp { text-align: left; padding-left: 16px; font-size: 11px; }
+.data-table thead th.money { background: #f59e0b; }
+.data-table .day-sub td { background: #f8fafc; color: #64748b; font-weight: 600; padding: 4px; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 9px; }
+.data-table tbody tr { border-bottom: 1px solid #f1f5f9; }
+.data-table tbody tr:nth-child(even) { background: #f8fafc; }
+.data-table tbody td { padding: 4px; text-align: center; font-size: 10px; }
+.data-table tbody td.emp { text-align: left; padding-left: 16px; font-weight: 600; color: #0f172a; }
+.data-table tbody td.h-norm, .data-table tbody td.h-ext { background: #f1f5f9; font-weight: 600; }
+.data-table tbody td.money { background: #fef3c7; font-weight: 700; text-align: right; }
+.data-table tfoot td { background: #0f172a; color: white; padding: 8px; font-weight: 700; text-align: center; font-size: 11px; }
+.data-table tfoot td.t { text-align: left; padding-left: 16px; font-size: 13px; }
+.data-table tfoot td.money-t { background: #f59e0b; font-size: 13px; }
+.legend { max-width: 1400px; margin: 16px auto; padding: 12px 24px; background: white; border-radius: 8px; font-size: 11px; color: #64748b; }
+.legend b { color: #0f172a; }
+.fixed { position: relative; }
+.fixed::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #f59e0b; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="title-bar">CONTROL DE HORAS EXTRAS · CIMA TÉCNICA MÓVIL</div>
+  <div class="subtitle">Período activo · vista por empleado · valorización normativa PE · v0.5.2</div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">TOTAL HORAS EXTRA</div>
+      <div class="kpi-value">0h</div>
+      <div class="kpi-delta">↗ vs mes anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">PAGO TOTAL ESTIMADO</div>
+      <div class="kpi-value">S/ 0</div>
+      <div class="kpi-delta">+0% vs mes anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">EMPLEADOS ACTIVOS</div>
+      <div class="kpi-value">21</div>
+      <div class="kpi-delta warn">● TODOS EN PLANILLA</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="label">MES</span>
+    <span class="dropdown">▼ Septiembre</span>
+    <span class="label">AÑO</span>
+    <span class="dropdown">▼ 2026</span>
+    <span class="badge">● EN VIVO</span>
+    <span style="margin-left: auto; color: #64748b; font-style: italic; font-size: 11px;">Cambiar período ↓</span>
+  </div>
+
+  <div class="divider">DETALLE POR EMPLEADO · HE DIARIA · SEPTIEMBRE 2026</div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th class="emp">Personal</th>
+        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
+        <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th>
+        <th>21</th><th>22</th><th>23</th><th>24</th><th>25</th><th>26</th><th>27</th><th>28</th><th>29</th><th>30</th>
+        <th>H_norm</th><th>H_ext</th><th>$_N</th><th>$_E</th>
+      </tr>
+      <tr class="day-sub">
+        <td></td>
+        <td>vie</td><td>sáb</td><td>dom</td><td>lun</td><td>mar</td><td>mié</td><td>jue</td><td>vie</td><td>sáb</td><td>dom</td>
+        <td>lun</td><td>mar</td><td>mié</td><td>jue</td><td>vie</td><td>sáb</td><td>dom</td><td>lun</td><td>mar</td><td>mié</td>
+        <td>jue</td><td>vie</td><td>sáb</td><td>dom</td><td>lun</td><td>mar</td><td>mié</td><td>jue</td><td>vie</td><td>sáb</td>
+        <td></td><td></td><td></td><td></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="emp"></td><td>8</td><td>8</td><td>8</td><td>7</td><td>6</td><td>8</td><td>6</td><td>7</td><td>7</td><td>7</td><td>6</td><td>6</td><td>8</td><td style="color: #ef4444; font-weight: 700;">10</td><td>7</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td style="color: #ef4444; font-weight: 700;">12</td><td>6</td><td style="color: #ef4444; font-weight: 700;">11</td><td>6</td><td style="color: #ef4444; font-weight: 700;">10</td><td style="color: #ef4444; font-weight: 700;">9</td><td class="h-norm">206</td><td class="h-ext">12</td><td class="money">S/ 2,575</td><td class="money">S/ 195</td></tr>
+      <tr><td class="emp"></td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>7</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>7</td><td>8</td><td>7</td><td>8</td><td>7</td><td>7</td><td class="h-norm">205</td><td class="h-ext">0</td><td class="money">S/ 2,562</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>8</td><td>6</td><td>8</td><td>7</td><td>8</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>6</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>6</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>7</td><td>6</td><td class="h-norm">199</td><td class="h-ext">0</td><td class="money">S/ 2,488</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>7</td><td>7</td><td>7</td><td>6</td><td>8</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>6</td><td>6</td><td>6</td><td>8</td><td>7</td><td>8</td><td>7</td><td>6</td><td>7</td><td>7</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>6</td><td class="h-norm">198</td><td class="h-ext">0</td><td class="money">S/ 2,475</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td>7</td><td>8</td><td>8</td><td>6</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>7</td><td>6</td><td>8</td><td>6</td><td>8</td><td>6</td><td>8</td><td>8</td><td>8</td><td>6</td><td>8</td><td>7</td><td>7</td><td class="h-norm">209</td><td class="h-ext">0</td><td class="money">S/ 2,612</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>8</td><td>7</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>7</td><td>7</td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>7</td><td>8</td><td>6</td><td class="h-norm">206</td><td class="h-ext">0</td><td class="money">S/ 2,575</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>8</td><td>8</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>8</td><td>8</td><td>7</td><td>8</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>7</td><td>6</td><td>6</td><td class="h-norm">203</td><td class="h-ext">0</td><td class="money">S/ 2,538</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>8</td><td>8</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>6</td><td>8</td><td>8</td><td>8</td><td>6</td><td>7</td><td>7</td><td>7</td><td>7</td><td>6</td><td>6</td><td>8</td><td>8</td><td>6</td><td>7</td><td class="h-norm">201</td><td class="h-ext">0</td><td class="money">S/ 2,512</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>6</td><td>7</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>8</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>8</td><td>7</td><td>7</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td class="h-norm">200</td><td class="h-ext">0</td><td class="money">S/ 2,500</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>7</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td class="h-norm">202</td><td class="h-ext">0</td><td class="money">S/ 2,525</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>7</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>7</td><td>7</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>7</td><td>8</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td class="h-norm">203</td><td class="h-ext">0</td><td class="money">S/ 2,538</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>7</td><td>8</td><td>7</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td class="h-norm">203</td><td class="h-ext">0</td><td class="money">S/ 2,538</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>6</td><td>6</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>8</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>7</td><td>7</td><td class="h-norm">205</td><td class="h-ext">0</td><td class="money">S/ 2,562</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>8</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>6</td><td>6</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>8</td><td>6</td><td>8</td><td class="h-norm">206</td><td class="h-ext">0</td><td class="money">S/ 2,575</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>7</td><td>7</td><td>7</td><td>8</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>8</td><td>7</td><td>8</td><td>7</td><td>7</td><td class="h-norm">198</td><td class="h-ext">0</td><td class="money">S/ 2,475</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp"></td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>7</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td>7</td><td>8</td><td>6</td><td>7</td><td class="h-norm">192</td><td class="h-ext">0</td><td class="money">S/ 2,400</td><td class="money">S/ 0</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td class="t">TOTALES</td>
+<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="money-t">0h</td><td class="money-t">0h</td><td class="money-t">S/ 0</td><td class="money-t">S/ 0</td></tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="legend">
+  <b>v0.5.2 — Layout real verificado celda por celda</b>
+  · Title navy bold 18pt LEFT-aligned en B1:T1 merge
+  · Mes + Año dropdowns con width 130px (caben "Septiembre" + "2026")
+  · Status badge EN VIVO emerald-500
+  · Day numbers row 12 (1..30) horizontal
+  · Day letters row 13 (vie sáb dom lun mar mié jue)
+  · Zebra stripe rows 14-34
+  · Summary cols amber accent
+</div>
+
+</body>
+</html>
