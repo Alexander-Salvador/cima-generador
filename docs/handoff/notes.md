@@ -78,28 +78,32 @@ acba9fc  docs(cima): CLEANUP_REPORT — 8 tabs + Apps Script wiped
 
 ## ⏭️ FASE 2 — Pendiente (fórmulas reales)
 
+> ✅ **HECHO 2026-09-26**: D8:AH8 fechas dinámicas + D9:AH9 day letters — conectadas a C5 (Año) y C6 (Mes).
+> Tool: `.ovav/templates/he-lima/tools/connect_dates_he.go`
+> Verified: Enero (31), Febrero (28), Julio (31), Septiembre (30), Diciembre (31) — días correctos, day letters correctos.
+
 > ⚠️ **IMPORTANTE**: Las filas de FASE 2 cambiaron por Design Token System v1.0.1 (row 2 eliminado).
 > Nuevos rangos para FASE 2 (vs los listados abajo):
-> - Day numbers: D10:AH10 (no D12)
-> - Day letters: D11:AH11 (no D13)
-> - Employees: D12:AH32 (no D14:AH34)
-> - H_normal: AJ12:AJ32
-> - H_extra: AL12:AL32
-> - $_N: AR12:AR32
-> - $_E: AT12:AT32
-> - Totales: row 34 (no row 36)
+> - Day numbers: **D8:AH8** (DONE — formulas DATE)
+> - Day letters: **D9:AH9** (DONE — formulas TEXT DDD)
+> - Employees: D10:AH30 (no D12:AH32)
+> - H_normal: AJ10:AJ30
+> - H_extra: AL10:AL30
+> - $_N: AR10:AR30
+> - $_E: AT10:AT30
+> - Totales: row 32 (no row 34)
 
-### Lo que falta implementar:
-1. **D10:AH10 fechas dinámicas** → `=DATE(F5, MONTH(...), 1)` etc. para que Mes/Año cambien las fechas
-2. **D11:AH11 día de semana auto** → `=TEXT(D10, "DDD")`
-3. **AJ12:AJ32 H_normal** → `=MIN(SUM(D12:AH12), COUNT(D10:AH10)*8)`
-4. **AL12:AL32 H_extra** → `=SUM(D12:AH12) - AJ12`
-5. **AN12:AN32 H_25%** (hidden) → conditional on weekday/feriado
-6. **AP12:AP32 H_35%** (hidden) → conditional on holiday/Sunday
-7. **AR12:AR32 $_N** → `=AJ12 * tarifa / 8`
-8. **AT12:AT32 $_E** → `=H_25% * 1.25 + H_35% * 1.35`
-9. **Row 34 Totales** → `=SUM(...)` con fórmulas
-10. **Row 3-4 KPI cards** → `=COUNTIF(...)`, `=SUM(...)` etc. — referenciar datos de FASE 2
+### Lo que falta implementar (actualizado tras connect_dates_he):
+1. ✅ ~~D8:AH8 fechas dinámicas~~ → HECHO
+2. ✅ ~~D9:AH9 día de semana auto~~ → HECHO
+3. **AJ10:AJ30 H_normal** → `=MIN(SUM(D10:AH10), COUNT(D8:AH8)*8)`
+4. **AL10:AL30 H_extra** → `=SUM(D10:AH10) - AJ10`
+5. **AN10:AN30 H_25%** (hidden) → conditional on weekday/feriado
+6. **AP10:AP30 H_35%** (hidden) → conditional on holiday/Sunday
+7. **AR10:AR30 $_N** → `=AJ10 * tarifa / 8`
+8. **AT10:AT30 $_E** → `=H_25% * 1.25 + H_35% * 1.35`
+9. **Row 32 Totales** → `=SUM(...)` con fórmulas
+10. **Row 2-3 KPI cards** → `=COUNTIF(...)`, `=SUM(...)` etc. — referenciar datos de FASE 2
 
 ### Datos de tarifa:
 - 21 empleados tienen tarifa en PERSONAL (col 14 = TARIFA)
@@ -177,10 +181,11 @@ Key: 32 bytes raw (NO PBKDF2)
 
 ## 🔄 Para próximo chat
 
-1. **Empezar FASE 2 (fórmulas reales)** que reaccionen a Mes/Año — **con nuevos row indices** (ver sección FASE 2 actualizada)
+1. **Continuar FASE 2** — fórmulas restantes (H_normal, H_extra, $_N, $_E, Totales, KPI cards). Rango actualizado: D10:AH30 empleados, AJ/AL/AR/AT summary cols, row 32 totales, row 2-3 KPIs.
 2. ✅ Design Token System v1.0.1 aplicado — ver `.ovav/templates/he-lima/DESIGN_TOKENS.md`
-3. ⚠️ **NO re-correr** `apply-tokens.go -tab=10_HE` sin antes restaurar filas manualmente — el spec HE aún no es idempotent
-4. Validar fórmulas con datos reales del Excel
-5. Crear tab `_TOKENS` oculto como referencia visual
-6. Integrar token resolver al CLI sheets-bridge (`--bg token:brand.primary`)
+3. ✅ **DONE 2026-09-26**: D8:AH8 + D9:AH9 dinámicos conectados a C5/C6
+4. ⚠️ **NO re-correr** `apply-tokens.go -tab=10_HE` sin antes restaurar filas manualmente — el spec HE aún no es idempotent
+5. Validar fórmulas con datos reales del Excel
+6. Crear tab `_TOKENS` oculto como referencia visual
+7. Integrar token resolver al CLI sheets-bridge (`--bg token:brand.primary`)
 
