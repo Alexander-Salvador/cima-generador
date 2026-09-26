@@ -510,18 +510,21 @@ OPERACIONES auto-reflected changes via VLOOKUP.
 
 **Branch:** `feature/c1ma-desing` · **HEAD:** `36f35e3` · **Tab:** `10_HE` (sheetId 222789142)
 
-### Estado actual de 10_HE
+### Estado actual de 10_HE (post Design Token System v1.0.1)
 
 ```
 Row 1   Title merged B1:T1 navy bold 18pt LEFT-aligned "CONTROL DE HORAS EXTRAS · CIMA TÉCNICA MÓVIL"
-Row 2   Subtitle "Período activo · vista por empleado · valorización normativa PE · v0.5"
-Row 4-6 3 KPI cards: TOTAL HORAS EXTRA | PAGO TOTAL ESTIMADO | EMPLEADOS ACTIVOS (0h | S/ 0 | 21)
-Row 7   SOLO controles funcionales: Mes dropdown (C7) + Año dropdown (F7)
-Row 9   Section divider "DETALLE POR EMPLEADO · HE DIARIA · SEPTIEMBRE 2026"
-Row 12  Day numbers 1-30 horizontal (D-AH)
-Row 13  Day letters vie sáb dom lun mar mié jue (D-AH)
-Row 14-34 21 empleados con zebra stripe + sample data del Excel (16 con horas, 5 vacíos)
-Row 36  Totales "TOTALES" (formulas pendientes)
+Row 2   KPI label "TOTAL HORAS EXTRA" (white bg + secondary fg 10pt bold)
+Row 3   KPI value "0h" (white bg + primary fg 24pt bold) — hero number
+Row 4   KPI sub "vs mes anterior" (italic muted 10pt)
+Row 5   SELECTOR Mes/Año: B5="Mes:" (zebra+secondary) C5="Septiembre" (white+primary center) D5=gap E5="Año:" (zebra+secondary) F5="2026" (white+primary center)
+Row 6   empty (spacer)
+Row 7   Section divider "DETALLE POR EMPLEADO · HE DIARIA · SEPTIEMBRE 2026" (primarySubtle bg)
+Row 8-9 empty
+Row 10  Day numbers 1-30 horizontal (primarySubtle bg, primary fg 10pt bold)
+Row 11  Day letters vie sáb dom lun mar mié jue (navy bg, white fg 11pt bold)
+Row 12-32 21 empleados con zebraWarm col B + sample data del Excel (16 con horas, 5 vacíos)
+Row 34  Totales "TOTALES" navy bg white bold (formulas pendientes)
 ```
 
 ### Column widths
@@ -566,9 +569,74 @@ A=15 · B=280 (Personal) · C=110 (Mes dropdown) · D-AH=35 (days) · AI=8 · AJ
 ### Próximo chat — Plan
 
 1. **Empezar FASE 2** — fórmulas reales que reaccionen a Mes/Año
-2. **Consultar Elena** (UX Design lead) antes de más diseño visual
-3. **Buscar design tokens** en `.ovav/source/` (CEO mencionó "modelo especial de frontend" que no estoy usando)
-4. **Validar fórmulas** con datos reales del Excel (BASE20SETP vs registros septiembre)
+2. **Crear tab `_TOKENS` oculto** — referencia visual del design system
+3. **Integrar token resolver al CLI sheets-bridge** (`--bg token:brand.primary`)
+4. **Hacer `apply-tokens.go` idempotent** — si se corre 2x para HE, actualmente elimina 2 filas. **CRÍTICO**: añadir guard antes de delete (read row 2 content, only delete if matches subtitle)
+5. Validar fórmulas con datos reales del Excel (BASE20SETP vs registros septiembre)
+
+---
+
+## 10. Design Token System v1.0.1 — Sesión 2026-09-26
+
+**Aplicado a:** 5 tabs (PERSONAL, 10_HE, Feedbacks, 01_FERIADOS_PE, CONFIG) del spreadsheet `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`.
+**Tokens:** `.ovav/templates/he-lima/tokens.json` (gitignored, local-only).
+**Helper:** `.ovav/templates/he-lima/tools/apply-tokens.go` + `verify_styles.go`.
+**CEO directives ejecutadas:**
+- ✅ Tokens globales (single source of truth)
+- ✅ HE row 2 (subtitle "Período activo...") eliminado
+- ✅ Mes/Año realigned limpio (labels zebra + values white, mismo row)
+
+### Tokens principales
+
+| Categoría | Tokens canónicos |
+|---|---|
+| **brand** | `primary` `#1a3a5c`, `primarySubtle` `#d4e3f3`, `primaryHover` `#0f2440` |
+| **accent** | `alert` `#e67e22`, `alertSoft` `#fdebd0`, `success` `#1fb6a8`, `successSoft` `#d4f1ed` |
+| **surface** | `base` `#fff`, `zebra` `#f4f7fb`, `zebraWarm` `#fef9e7`, `divider` `#d5dde8`, `disabled` `#f4f4f4` |
+| **text** | `primary` `#0f2440`, `secondary` `#4a5a7a`, `muted` `#5d6b85` (AA), `inverse` `#fff` |
+| **semantic** | `success/warning/danger/info` con bg variants |
+| **tab** | 6 colores distintos por tab (sin colisión) |
+
+### Components (13 canónicos)
+
+`title_bar`, `subtitle`, `section_header`, `data_header`, `data_row_zebra/base/employee`, `input_editable/disabled`, `kpi_card`, `total_row`, `summary_col`, `month_year_selector`.
+
+### WCAG AA validado (Elena)
+
+| Pair | Ratio | Pass |
+|---|---|---|
+| `text.inverse` on `brand.primary` | 11.66:1 | AAA |
+| `text.primary` on `surface.base` | 15.63:1 | AAA |
+| `text.secondary` on `surface.base` | 7.42:1 | AAA |
+| `text.muted` on `surface.base` | 5.37:1 | AA |
+| `accent.alert pair_text` on `accent.alert` | 5.48:1 | AA |
+
+### Bugs encontrados durante implementación
+
+| # | Bug | Fix |
+|---|---|---|
+| 1 | `fmt.Sscanf("%x")` retorna 0 | Usar `strconv.ParseUint(s, 16, 8)` |
+| 2 | `apply-tokens.go` no idempotent — 2da ejecución borra fila distinta | Documentado + restaurar via `fixup_he_rows.go`. **Fix proper: PR futuro con guard** |
+| 3 | `verify_matrix.go` iteraba sheets/data mal | Reescrito a `verify_styles.go` con un fetch por celda |
+
+### CRIT lecciones añadidas (a llevar al ledger formal)
+
+- **CRIT-022**: `fmt.Sscanf("%x")` NO funciona para hex parsing en Go. Usar `strconv.ParseUint(s, 16, 8)`.
+- **CRIT-023**: `apply-tokens.go`-style bulk restylers deben ser **idempotent**. Si una operación cambia la estructura (insert/delete), el spec debe verificar el estado antes de actuar. Verificar contenido de celdas pre-delete, no asumir estado.
+- **CRIT-025**: Design tokens = single source of truth. Eliminar hex ad-hoc de código. Toda styling reference via `token:category.name`, fallback raw hex solo en legacy.
+
+### Cómo continuar
+
+```bash
+# Re-aplicar tokens (idempotent para PERSONAL/Feedbacks/FERIADOS/CONFIG, NO para HE aún)
+cd .ovav/templates/he-lima/tools && go run apply-tokens.go
+
+# Verificar estilos aplicados
+go run verify_styles.go
+
+# Dry-run
+go run apply-tokens.go -dry-run
+```
 
 ### Archivos clave
 

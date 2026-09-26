@@ -78,17 +78,28 @@ acba9fc  docs(cima): CLEANUP_REPORT — 8 tabs + Apps Script wiped
 
 ## ⏭️ FASE 2 — Pendiente (fórmulas reales)
 
+> ⚠️ **IMPORTANTE**: Las filas de FASE 2 cambiaron por Design Token System v1.0.1 (row 2 eliminado).
+> Nuevos rangos para FASE 2 (vs los listados abajo):
+> - Day numbers: D10:AH10 (no D12)
+> - Day letters: D11:AH11 (no D13)
+> - Employees: D12:AH32 (no D14:AH34)
+> - H_normal: AJ12:AJ32
+> - H_extra: AL12:AL32
+> - $_N: AR12:AR32
+> - $_E: AT12:AT32
+> - Totales: row 34 (no row 36)
+
 ### Lo que falta implementar:
-1. **D12:AH12 fechas dinámicas** → `=DATE(F7, MONTH(...), 1)` etc. para que Mes/Año cambien las fechas
-2. **D13:AH13 día de semana auto** → `=TEXT(D12, "DDD")`
-3. **AJ14:AJ34 H_normal** → `=MIN(SUM(D14:AH14), COUNT(D12:AH12)*8)`
-4. **AL14:AL34 H_extra** → `=SUM(D14:AH14) - AJ14`
-5. **AN14:AN34 H_25%** (hidden) → conditional on weekday/feriado
-6. **AP14:AP34 H_35%** (hidden) → conditional on holiday/Sunday
-7. **AR14:AR34 $_N** → `=AJ14 * tarifa / 8`
-8. **AT14:AT34 $_E** → `=H_25% * 1.25 + H_35% * 1.35`
-9. **Row 36 Totales** → `=SUM(...)` con fórmulas
-10. **Row 5 KPI cards** → `=COUNTIF(...)`, `=SUM(...)` etc.
+1. **D10:AH10 fechas dinámicas** → `=DATE(F5, MONTH(...), 1)` etc. para que Mes/Año cambien las fechas
+2. **D11:AH11 día de semana auto** → `=TEXT(D10, "DDD")`
+3. **AJ12:AJ32 H_normal** → `=MIN(SUM(D12:AH12), COUNT(D10:AH10)*8)`
+4. **AL12:AL32 H_extra** → `=SUM(D12:AH12) - AJ12`
+5. **AN12:AN32 H_25%** (hidden) → conditional on weekday/feriado
+6. **AP12:AP32 H_35%** (hidden) → conditional on holiday/Sunday
+7. **AR12:AR32 $_N** → `=AJ12 * tarifa / 8`
+8. **AT12:AT32 $_E** → `=H_25% * 1.25 + H_35% * 1.35`
+9. **Row 34 Totales** → `=SUM(...)` con fórmulas
+10. **Row 3-4 KPI cards** → `=COUNTIF(...)`, `=SUM(...)` etc. — referenciar datos de FASE 2
 
 ### Datos de tarifa:
 - 21 empleados tienen tarifa en PERSONAL (col 14 = TARIFA)
@@ -166,8 +177,10 @@ Key: 32 bytes raw (NO PBKDF2)
 
 ## 🔄 Para próximo chat
 
-1. **Empezar FASE 2 (fórmulas reales)** que reaccionen a Mes/Año
-2. Considerar consultar a **Elena (UX Design)** antes de diseñar más
-3. Buscar **design tokens** en `.ovav/source/` 
+1. **Empezar FASE 2 (fórmulas reales)** que reaccionen a Mes/Año — **con nuevos row indices** (ver sección FASE 2 actualizada)
+2. ✅ Design Token System v1.0.1 aplicado — ver `.ovav/templates/he-lima/DESIGN_TOKENS.md`
+3. ⚠️ **NO re-correr** `apply-tokens.go -tab=10_HE` sin antes restaurar filas manualmente — el spec HE aún no es idempotent
 4. Validar fórmulas con datos reales del Excel
+5. Crear tab `_TOKENS` oculto como referencia visual
+6. Integrar token resolver al CLI sheets-bridge (`--bg token:brand.primary`)
 
