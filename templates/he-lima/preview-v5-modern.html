@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CIMA HE LIMA — v0.5 Modern Dashboard</title>
+<style>
+body { font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f5f5f7; padding: 24px; font-size: 14px; }
+.sheet { background: white; max-width: 1400px; margin: 0 auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); overflow: hidden; }
+.header { background: #0f172a; color: white; padding: 24px 32px; }
+.header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+.header .sub { margin-top: 6px; font-size: 12px; font-style: italic; opacity: 0.7; }
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 24px 32px; background: #f8fafc; }
+.kpi { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; }
+.kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; }
+.kpi-value { font-size: 32px; font-weight: 800; color: #0f172a; margin: 8px 0; letter-spacing: -1px; }
+.kpi-delta { font-size: 11px; color: #10b981; font-style: italic; }
+.period-row { padding: 16px 32px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; gap: 12px; align-items: center; }
+.period-label { font-weight: 600; color: #0f172a; }
+.period-value { color: #0f172a; }
+.status-badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.divider { background: #0f172a; color: white; padding: 14px 32px; font-weight: 700; font-size: 14px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table thead th { background: #0f172a; color: white; padding: 12px 8px; font-weight: 600; text-align: center; }
+.data-table thead th.emp { text-align: left; padding-left: 20px; }
+.data-table thead th.money { background: #f59e0b; }
+.data-table .day-sub td { background: #f8fafc; color: #64748b; font-weight: 600; padding: 6px 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+.data-table tbody tr { border-bottom: 1px solid #f1f5f9; }
+.data-table tbody tr:nth-child(even) { background: #f8fafc; }
+.data-table tbody tr:hover { background: #fef3c7; }
+.data-table tbody td { padding: 8px; text-align: center; }
+.data-table tbody td.emp { text-align: left; padding-left: 20px; font-weight: 600; color: #0f172a; }
+.data-table tbody td.h-norm { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+.data-table tbody td.h-ext { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+.data-table tbody td.money { background: #fef3c7; color: #0f172a; font-weight: 700; text-align: right; }
+.data-table tfoot td { background: #0f172a; color: white; padding: 12px; font-weight: 700; text-align: center; }
+.data-table tfoot td.t { text-align: left; padding-left: 20px; font-size: 14px; }
+.data-table tfoot td.money-t { background: #f59e0b; font-size: 14px; }
+.legend { max-width: 1400px; margin: 16px auto; padding: 12px 32px; background: white; border-radius: 8px; font-size: 11px; color: #64748b; }
+.legend b { color: #0f172a; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="header">
+    <h1>CONTROL DE HORAS EXTRAS · CIMA TÉCNICA MÓVIL</h1>
+    <div class="sub">Período activo · vista por empleado · valorización normativa PE · v0.5</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">TOTAL HORAS EXTRA</div>
+      <div class="kpi-value">0h</div>
+      <div class="kpi-delta">vs mes anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">PAGO TOTAL ESTIMADO</div>
+      <div class="kpi-value">S/ 0</div>
+      <div class="kpi-delta">+0% vs mes anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">EMPLEADOS ACTIVOS</div>
+      <div class="kpi-value">21</div>
+      <div class="kpi-delta">● TODOS EN PLANILLA</div>
+    </div>
+  </div>
+
+  <div class="period-row">
+    <span class="period-label">Período:</span>
+    <span class="period-value">Septiembre 2026</span>
+    <span class="status-badge">EN VIVO</span>
+    <span style="margin-left: auto; color: #64748b;">Cambiar período ↓</span>
+  </div>
+
+  <div class="divider">DETALLE POR EMPLEADO · HE DIARIA · SEPTIEMBRE 2026</div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th class="emp">Personal</th>
+        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
+        <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th>
+        <th>21</th><th>22</th><th>23</th><th>24</th><th>25</th><th>26</th><th>27</th><th>28</th><th>29</th><th>30</th>
+        <th>H_norm</th><th>H_ext</th><th>$_N</th><th>$_E</th>
+      </tr>
+      <tr class="day-sub">
+        <td></td>
+        <td>vie</td><td>sáb</td><td>dom</td><td>lun</td><td>mar</td><td>mié</td><td>jue</td><td>vie</td><td>sáb</td><td>dom</td>
+        <td>lun</td><td>mar</td><td>mié</td><td>jue</td><td>vie</td><td>sáb</td><td>dom</td><td>lun</td><td>mar</td><td>mié</td>
+        <td>jue</td><td>vie</td><td>sáb</td><td>dom</td><td>lun</td><td>mar</td><td>mié</td><td>jue</td><td>vie</td><td>sáb</td>
+        <td></td><td></td><td></td><td></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="emp">Javier Méndez</td><td>7</td><td>8</td><td>8</td><td>8</td><td>7</td><td>6</td><td>8</td><td>6</td><td>7</td><td>7</td><td>7</td><td>6</td><td>6</td><td>8</td><td style="color: #ef4444; font-weight: 700;">10</td><td>7</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td style="color: #ef4444; font-weight: 700;">12</td><td>6</td><td style="color: #ef4444; font-weight: 700;">11</td><td>6</td><td style="color: #ef4444; font-weight: 700;">10</td><td style="color: #ef4444; font-weight: 700;">9</td><td class="h-norm">213</td><td class="h-ext">12</td><td class="money">S/ 2,662</td><td class="money">S/ 195</td></tr>
+      <tr><td class="emp">Sofía Paredes</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>7</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>7</td><td>8</td><td>7</td><td>8</td><td>7</td><td>7</td><td class="h-norm">212</td><td class="h-ext">0</td><td class="money">S/ 2,650</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Sofía Paredes</td><td>7</td><td>8</td><td>6</td><td>8</td><td>7</td><td>8</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>6</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>6</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>7</td><td>6</td><td class="h-norm">206</td><td class="h-ext">0</td><td class="money">S/ 2,575</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Andrés Guzmán</td><td>6</td><td>7</td><td>7</td><td>7</td><td>6</td><td>8</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>6</td><td>6</td><td>6</td><td>8</td><td>7</td><td>8</td><td>7</td><td>6</td><td>7</td><td>7</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>6</td><td class="h-norm">204</td><td class="h-ext">0</td><td class="money">S/ 2,550</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Esteban Cordero</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td>7</td><td>8</td><td>8</td><td>6</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>7</td><td>6</td><td>8</td><td>6</td><td>8</td><td>6</td><td>8</td><td>8</td><td>8</td><td>6</td><td>8</td><td>7</td><td>7</td><td class="h-norm">216</td><td class="h-ext">0</td><td class="money">S/ 2,700</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Diego Salazar</td><td>6</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>8</td><td>7</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>7</td><td>7</td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>7</td><td>8</td><td>6</td><td class="h-norm">212</td><td class="h-ext">0</td><td class="money">S/ 2,650</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Mariana Torres</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>8</td><td>8</td><td>7</td><td>8</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>7</td><td>6</td><td>6</td><td class="h-norm">209</td><td class="h-ext">0</td><td class="money">S/ 2,612</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>6</td><td>8</td><td>8</td><td>8</td><td>6</td><td>7</td><td>7</td><td>7</td><td>7</td><td>6</td><td>6</td><td>8</td><td>8</td><td>6</td><td>7</td><td class="h-norm">207</td><td class="h-ext">0</td><td class="money">S/ 2,588</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>8</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>8</td><td>7</td><td>7</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td class="h-norm">206</td><td class="h-ext">0</td><td class="money">S/ 2,575</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>8</td><td>7</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td class="h-norm">210</td><td class="h-ext">0</td><td class="money">S/ 2,625</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>7</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>8</td><td>7</td><td>8</td><td>7</td><td>7</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>7</td><td>8</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td class="h-norm">209</td><td class="h-ext">0</td><td class="money">S/ 2,612</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>7</td><td>8</td><td>7</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>7</td><td>7</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td class="h-norm">209</td><td class="h-ext">0</td><td class="money">S/ 2,612</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>8</td><td>6</td><td>6</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>8</td><td>8</td><td>6</td><td>7</td><td>6</td><td>8</td><td>8</td><td>6</td><td>8</td><td>7</td><td>7</td><td class="h-norm">213</td><td class="h-ext">0</td><td class="money">S/ 2,662</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>8</td><td>7</td><td>6</td><td>6</td><td>8</td><td>7</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>6</td><td>6</td><td>8</td><td>7</td><td>6</td><td>8</td><td>8</td><td>8</td><td>8</td><td>6</td><td>8</td><td class="h-norm">212</td><td class="h-ext">0</td><td class="money">S/ 2,650</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>7</td><td>7</td><td>7</td><td>8</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td>6</td><td>7</td><td>6</td><td>8</td><td>6</td><td>6</td><td>8</td><td>7</td><td>8</td><td>7</td><td>7</td><td class="h-norm">204</td><td class="h-ext">0</td><td class="money">S/ 2,550</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">Camila Rodríguez</td><td>6</td><td>6</td><td>6</td><td>7</td><td>7</td><td>8</td><td>6</td><td>6</td><td>8</td><td>6</td><td>6</td><td>7</td><td>6</td><td>7</td><td>7</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>6</td><td>8</td><td>7</td><td>7</td><td>6</td><td>7</td><td>8</td><td>6</td><td>7</td><td class="h-norm">198</td><td class="h-ext">0</td><td class="money">S/ 2,475</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">[Empleado sin horas]</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td class="h-norm">0</td><td class="h-ext">0</td><td class="money">S/ 0</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">[Empleado sin horas]</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td class="h-norm">0</td><td class="h-ext">0</td><td class="money">S/ 0</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">[Empleado sin horas]</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td class="h-norm">0</td><td class="h-ext">0</td><td class="money">S/ 0</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">[Empleado sin horas]</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td class="h-norm">0</td><td class="h-ext">0</td><td class="money">S/ 0</td><td class="money">S/ 0</td></tr>
+      <tr><td class="emp">[Empleado sin horas]</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td class="h-norm">0</td><td class="h-ext">0</td><td class="money">S/ 0</td><td class="money">S/ 0</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td class="t">TOTALES</td>
+<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="money-t">0h</td><td class="money-t">0h</td><td class="money-t">S/ 0</td><td class="money-t">S/ 0</td></tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="legend">
+  <b>Diseño SaaS dashboard v0.5</b> — paleta navy/slate con acentos en amber y emerald.
+  Hover sobre filas para resaltar.
+  Status badges indican período activo. KPI cards resumen agregados del mes.
+</div>
+
+</body>
+</html>
