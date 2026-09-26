@@ -503,3 +503,80 @@ OPERACIONES auto-reflected changes via VLOOKUP.
 - If working with formulas → write Python to FILE first (avoid bash heredoc bug)
 - Apps Script orphan still bound (no action needed)
 - Worktree `feature/c1ma-desing` ready for `owd` or next session
+
+---
+
+## 9. HE LIMA v0.5.3 — Sesión 2026-09-25/26
+
+**Branch:** `feature/c1ma-desing` · **HEAD:** `36f35e3` · **Tab:** `10_HE` (sheetId 222789142)
+
+### Estado actual de 10_HE
+
+```
+Row 1   Title merged B1:T1 navy bold 18pt LEFT-aligned "CONTROL DE HORAS EXTRAS · CIMA TÉCNICA MÓVIL"
+Row 2   Subtitle "Período activo · vista por empleado · valorización normativa PE · v0.5"
+Row 4-6 3 KPI cards: TOTAL HORAS EXTRA | PAGO TOTAL ESTIMADO | EMPLEADOS ACTIVOS (0h | S/ 0 | 21)
+Row 7   SOLO controles funcionales: Mes dropdown (C7) + Año dropdown (F7)
+Row 9   Section divider "DETALLE POR EMPLEADO · HE DIARIA · SEPTIEMBRE 2026"
+Row 12  Day numbers 1-30 horizontal (D-AH)
+Row 13  Day letters vie sáb dom lun mar mié jue (D-AH)
+Row 14-34 21 empleados con zebra stripe + sample data del Excel (16 con horas, 5 vacíos)
+Row 36  Totales "TOTALES" (formulas pendientes)
+```
+
+### Column widths
+
+A=15 · B=280 (Personal) · C=110 (Mes dropdown) · D-AH=35 (days) · AI=8 · AJ=70 (H_norm) · AK=8 · AL=70 (H_ext) · AM-AP hidden · AQ=8 · AR=100 ($_N) · AS=8 · AT=100 ($_E)
+
+### Data validations
+
+- `C7`: ONE_OF_LIST [Enero,...,Diciembre] strict
+- `F7`: ONE_OF_LIST [2025,...,2030] strict
+- `D16:AH36`: NUMBER_BETWEEN [0, 24] (input horas)
+
+### Bugs encontrados por inspección real (POSTMORTEM v0.5.1)
+
+1. **Day numbers escritos VERTICAL** — Go helper `fix-day/main.go` tenía `endRowIndex: 41` cuando debería ser `12`. Resultado: D12:D41 = "1,2,3,...,30" vertical.
+2. **Employee data off-by-one** — Python sin spacer en col C, puso day 1 en C en vez de D.
+3. **Restyler reseteaba el bug** — tenía mismo day nums write con bug. Eliminado completamente.
+4. **Row 7 desalineado** — múltiples writes sin coordinación. Fix: clear + rewrite explícito.
+
+### Lecciones aprendidas (CRIT aplicadas)
+
+| Regla | Aplicación |
+|---|---|
+| **CRIT-002** Observable result = contract | NO marcar "✅ hecho" sin verificar celda por celda |
+| **CRIT-009** Advanced+ baseline | Diseño SaaS moderno, no copia de Excel |
+| **NO decoración** (regla CEO) | Eliminar "● EN VIVO", "Cambiar período ↓" — solo funcionales |
+| **Inspeccionar antes de declarar** | Verificar cada celda tras cambios significativos |
+
+### FASE 2 — Pendiente (NO ejecutada)
+
+1. D12:AH12 fechas dinámicas vía `=DATE(F7, MONTH(...), 1)`
+2. D13:AH13 día de semana auto vía `=TEXT(D12, "DDD")`
+3. AJ14:AJ34 H_normal vía `=MIN(SUM(D14:AH14), COUNT(D12:AH12)*8)`
+4. AL14:AL34 H_extra vía `=SUM(D14:AH14) - AJ14`
+5. AN14:AN34 H_25% (hidden) — conditional on weekday/feriado
+6. AP14:AP34 H_35% (hidden) — conditional on holiday/Sunday
+7. AR14:AR34 $_N vía `=AJ14 * tarifa_empleado / 8`
+8. AT14:AT34 $_E vía `=H_25% * 1.25 + H_35% * 1.35`
+9. Row 36 Totales vía `=SUM(...)`
+10. Row 5 KPI cards vía `=COUNTIF`, `=SUM`
+
+### Próximo chat — Plan
+
+1. **Empezar FASE 2** — fórmulas reales que reaccionen a Mes/Año
+2. **Consultar Elena** (UX Design lead) antes de más diseño visual
+3. **Buscar design tokens** en `.ovav/source/` (CEO mencionó "modelo especial de frontend" que no estoy usando)
+4. **Validar fórmulas** con datos reales del Excel (BASE20SETP vs registros septiembre)
+
+### Archivos clave
+
+```
+.ovav/templates/he-lima/preview-v5.3-clean.html     ← Preview HTML actual
+.ovav/templates/he-lima/POSTMORTEM.md              ← v0.5.1 bugs documentados
+.ovav/templates/he-lima/CRITERIA_2026.md           ← 12 criterios Sheets 2026
+.ovav/templates/he-lima/HE_VISUAL_SPEC.md
+.ovav/memory/notes.md                              ← Handoff doc (7114 bytes)
+```
+
