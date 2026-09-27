@@ -1,161 +1,178 @@
-# CIMA HE LIMA — Session Handoff · 2026-09-26
+# CIMA HE LIMA — Session Handoff · 2026-09-26 (final)
 
 **Para nuevo chat — leer esto primero.**
 
 ---
 
-## 🎯 Estado actual (v0.5.3)
+## 🎯 Estado actual (post-merge + polish)
 
 **Branch:** `feature/c1ma-desing`
 **Worktree:** `/home/braka/Systems/ovav/.ovav/worktrees/feature-c1ma-desing`
-**HEAD:** `36f35e3`
+**HEAD:** `f4bd5e5` (latest) — `feat(sheets): polish day headers + frame data/numbers + trim empty cols`
 **Spreadsheet:** `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` (CIMA_2026_PREMIUM_BASE)
+**CEO:** Braka / Alexander Salvador (williams.huerta.s)
 
-### Tabs actuales:
-- `PERSONAL` — 21 agentes Teleatento
-- `Feedbacks` — auditoría semanal W39-2026
-- `CONFIG` — incluye zona HE LIMA (rows 68-82)
-- `01_FERIADOS_PE` — 90 feriados PE 2025-2030 (Pascua Meeus)
-- `10_HE` — vista principal v0.5.3
+### Tabs (5):
+| Tab | Filas × Cols | Contenido |
+|---|---|---|
+| `PERSONAL` | 1000 × 8 | 24 empleados Teleatento (CEO agregó CARGO, AREA) |
+| `10_HE` | 996 × 46 | Vista principal HE con merge B+C+D + N° col |
+| `Feedbacks` | 1010 × 7 | Auditoría semanal W39-2026 (data empieza row 13) |
+| `01_FERIADOS_PE` | 1000 × 5 | 90 feriados PE 2025-2030 |
+| `CONFIG` | 1000 × 11 | Parámetros sistema + catálogos |
 
-### Layout 10_HE actual:
-- Row 1: Title merged B1:T1 navy bold 18pt LEFT-aligned
-- Row 2: Subtitle slate italic 10pt
-- Rows 4-6: 3 KPI cards (TOTAL HORAS | PAGO TOTAL | EMPLEADOS)
-- Row 7: SOLO Mes dropdown (C7) + Año dropdown (F7) — sin decoración
-- Row 9: Section divider navy
-- Row 12: Day numbers 1-30 horizontal (light navy bg)
-- Row 13: Day letters vie sáb dom lun mar mié jue (navy bg white bold)
-- Rows 14-34: 21 employees con zebra stripe + sample data
-- Row 36: Totales navy + amber accent
+---
 
-### Column widths (B-AT):
-- A=15, B=280 (Personal), C=110 (Mes dropdown), D-AH=35 (days), AI=8, AJ=70 (H_norm), AK=8, AL=70 (H_ext), AM-AP=hidden, AQ=8, AR=100 ($_N), AS=8, AT=100 ($_E)
+## 🏗️ Layout actual 10_HE (post rediseño)
+
+```
+Row 1   Title merged B1:T1 navy bold 18pt LEFT-aligned "CONTROL DE HORAS EXTRAS"
+Row 2   "0h" KPI value (white bg, 24pt bold, primary)         | "S/ 0" (K2)  | "21" (S2)
+Row 3   "vs mes anterior" (text.muted italic)                  | "+0%..."   | "TODOS..."
+Row 4   (empty spacer)
+Row 5   "Año:" label | 2026 (Año dropdown)
+Row 6   "Mes:" label | Septiembre (Mes dropdown)
+Row 7   (empty spacer)
+Row 8   Day numbers 1, 2, 3, ..., 30 — primarySubtle bg, primary text, 11pt bold center
+        Numbers formula: =IFERROR(IF(MONTH(DATE($C$5,MATCH($C$6,list,0),n))=MATCH($C$6,list,0),DATE(...),""),"")
+        Format: "d" (day-of-month)
+Row 9   Day letters mar, mié, jue, vie, sáb, dom, ... — brand.primary bg, white text, 11pt bold center
+        Conditional format: =E$9="sáb" or "dom" → alertSoft bg + primary text bold
+Row 10-25   16 employees with full data (URI... through LLAMPASI)
+Row 26-30   5 employees with NO data (LEON, GOMEZ, OSORIO, IMAN, YANA) — muted bg + italic
+Row 31   (empty spacer)
+Row 32   TOTALES horas (sum formulas pending)
+Row 33   TOTALES dinero ($_N sum)
+```
+
+### Column structure (10_HE):
+- **A** (30px): N° col (1-21)
+- **B+C+D MERGED** (180+120+100 = 400px wide): Employee name
+- **E-AI** (28px each, 31 cols): Days 1-31 (with format "d")
+- **AI** (8px): spacer
+- **AJ-AK** (ak=8px, aj=70px): H_norm + spacer
+- **AL** (70px): H_ext
+- **AM-AP** (hidden): reserved for H_25%, H_35%
+- **AQ** (8px): spacer
+- **AR-AS** (as=8px, ar=100px): $_N + spacer
+- **AT** (100px): $_E
+
+### Visual frames (CEO directive):
+- **Data section** (B-AH, rows 8-34): thick navy border
+- **Numbers section** (AJ-AT, rows 8-34): thick orange border
+- **Weekend columns** (sáb/dom): alertSoft bg via conditional formatting
 
 ---
 
 ## 📋 Commits recientes (orden inverso)
 
 ```
+f4bd5e5  feat(sheets): polish day headers + frame data/numbers + trim empty cols
+2d00613  feat(sheets): redesign 10_HE layout — merge B+C+D + N° col + day shift
+2e623cc  docs(memory): update FASE 2 ranges after connect_dates_he (D8:AH8 done)
+d558886  feat(sheets): connect Año/Mes selectors to dynamic dates + day letters
+67c98da  fix(sheets): migrate CEO-introduced colors to existing tokens (no new tokens)
+328a182  feat(sheets): HE LIMA Design Token System v1.0.1 — global tokens + 5 tabs applied
+bb83420  memory(cima): HE LIMA v0.5.3 — estado completo para nuevo chat
 36f35e3  fix(sheets): v0.5.3 — ELIMINAR textos decorativos 'EN VIVO' y 'Cambiar período'
 65bbe70  fix(sheets): v0.5.2 — title LEFT-aligned + Mes/Año dropdowns widened
 7c0467e  docs(sheets): POSTMORTEM v0.5.1 — bugs encontrados por inspección real
 72fd3eb  fix(sheets): HE LIMA v0.5.1 — Mes + Año dropdowns funcionales
 04314a1  feat(sheets): HE LIMA v0.5 — modern SaaS dashboard design
-9ad4677  fix(sheets): HE LIMA v0.4.2 — title overflow + label/gaps
-a5b3258  docs(sheets): HE_HEADER_CLEANUP — v0.4.1 fixes header rows 1-14
-6f9ba8d  feat(sheets): HE LIMA v0.4.0 — visual 1:1 match Excel desktop
-a925fab  feat(sheets): HE LIMA v0.3.0 visual UX/UI layer
-d490ed9  docs(cima): CRITERIA_2026 — 12 criterios potencia real Google Sheets
-acba9fc  docs(cima): CLEANUP_REPORT — 8 tabs + Apps Script wiped
-80fb60a  docs(sheets-template): SESSION_HANDOFF.md — honest status report
 ```
 
 ---
 
-## ⚠️ Bugs ya encontrados y corregidos (postmortem)
+## ⚠️ Bugs encontrados y corregidos (sesión 2026-09-26)
 
-### v0.5.1 — CATASTRÓFICOS (encontrados por inspección celda por celda):
-1. Day numbers escritos VERTICAL en column D rows 12-41 (debería horizontal en row 12 D-AH)
-   - Causa: Go helper con `endRowIndex: 41` (30 rows) cuando debería ser `12` (1 row)
-2. Employee data shifted por 1 columna (B=name, C=day1, D=day2...)
-   - Causa: Python sin spacer en col C, debería ser B=name, C=empty, D=day1
-3. Restyler reseteaba el bug cada vez (tenía mismo day nums write con bug)
-   - Fix: eliminado completamente del restyler
-4. Row 7 valores desalineados (B7="Período:" en vez de "Mes:", F7="EN VIVO" en vez de "2026")
-   - Fix: clear + rewrite explícito
+### Catastróficos (detectados ANTES de los tokens):
+1. **Day numbers escritos VERTICAL** en D rows 12-41 — fix: `endRowIndex: 12`
+2. **Employee data off-by-one** — fix: spacer en col C
+3. **Restyler reseteaba el bug** — fix: eliminado
+4. **Row 7 desalineado** — fix: clear + rewrite
 
-### v0.5.2 — Visuales:
-1. Title CENTERED en merge B1:AH1 → ahora B1:T1 LEFT-aligned
-2. Dropdowns truncados: C7=8px → 110px (Mes), F7=35px → 60px (Año)
-
-### v0.5.3 — Decorativos:
-1. Eliminado "● EN VIVO" badge (era decorativo)
-2. Eliminado "Cambiar período ↓" (era decorativo)
-3. Reset col widths
+### Sesión 2026-09-26 (estos los más recientes):
+1. **`fmt.Sscanf("%x")` retorna 0** → usar `strconv.ParseUint(s, 16, 8)` (CRIT-022)
+2. **`apply-tokens.go` no idempotent** — 2da ejecución borra fila distinta → restaurar via `fixup_he_rows.go`
+3. **`values.update` con USER_ENTERED pierde fórmulas** — el read API da FORMATO NO source. Re-escribir fórmulas con `rewrite_date_formulas_he.go`
+4. **Conditional format fórmula wrong** — `=$E9="sáb"` solo triggereaba E9; fixed a `=E$9="sáb"`
 
 ---
 
 ## ⏭️ FASE 2 — Pendiente (fórmulas reales)
 
-> ✅ **HECHO 2026-09-26**: D8:AH8 fechas dinámicas + D9:AH9 day letters — conectadas a C5 (Año) y C6 (Mes).
-> Tool: `.ovav/templates/he-lima/tools/connect_dates_he.go`
-> Verified: Enero (31), Febrero (28), Julio (31), Septiembre (30), Diciembre (31) — días correctos, day letters correctos.
+### Rangos ACTUALIZADOS (post-merge B+C+D):
+- Day numbers: E8:AI8 (DONE — formulas DATE)
+- Day letters: E9:AI9 (DONE — formulas TEXT DDD)
+- Employees: E10:AI30 (16 with data, 5 empty)
+- H_normal: AJ10:AJ30
+- H_extra: AL10:AL30
+- $_N: AR10:AR30
+- $_E: AT10:AT30
+- Totales: row 32 (horas) + row 33 (dinero)
 
-> ⚠️ **IMPORTANTE**: Las filas de FASE 2 cambiaron por Design Token System v1.0.1 (row 2 eliminado).
-> Nuevos rangos para FASE 2 (vs los listados abajo):
-> - Day numbers: **D8:AH8** (DONE — formulas DATE)
-> - Day letters: **D9:AH9** (DONE — formulas TEXT DDD)
-> - Employees: D10:AH30 (no D12:AH32)
-> - H_normal: AJ10:AJ30
-> - H_extra: AL10:AL30
-> - $_N: AR10:AR30
-> - $_E: AT10:AT30
-> - Totales: row 32 (no row 34)
-
-### Lo que falta implementar (actualizado tras connect_dates_he):
-1. ✅ ~~D8:AH8 fechas dinámicas~~ → HECHO
-2. ✅ ~~D9:AH9 día de semana auto~~ → HECHO
-3. **AJ10:AJ30 H_normal** → `=MIN(SUM(D10:AH10), COUNT(D8:AH8)*8)`
-4. **AL10:AL30 H_extra** → `=SUM(D10:AH10) - AJ10`
-5. **AN10:AN30 H_25%** (hidden) → conditional on weekday/feriado
-6. **AP10:AP30 H_35%** (hidden) → conditional on holiday/Sunday
-7. **AR10:AR30 $_N** → `=AJ10 * tarifa / 8`
-8. **AT10:AT30 $_E** → `=H_25% * 1.25 + H_35% * 1.35`
-9. **Row 32 Totales** → `=SUM(...)` con fórmulas
-10. **Row 2-3 KPI cards** → `=COUNTIF(...)`, `=SUM(...)` etc. — referenciar datos de FASE 2
-
-### Datos de tarifa:
-- 21 empleados tienen tarifa en PERSONAL (col 14 = TARIFA)
-- Fórmulas deben lookup tarifa por empleado via VLOOKUP/INDEX/MATCH
+### Pendiente:
+1. ✅ ~~E8:AI8 fechas dinámicas~~ → HECHO
+2. ✅ ~~E9:AI9 día de semana auto~~ → HECHO
+3. **AJ10:AJ30 H_normal** → `=MIN(SUM(E10:AI10), COUNT(E8:AI8)*8)`
+4. **AL10:AL30 H_extra** → `=SUM(E10:AI10) - AJ10`
+5. **AN10:AN30 H_25%** (hidden) → conditional weekday/feriado
+6. **AP10:AP30 H_35%** (hidden) → conditional holiday/Sunday
+7. **AR10:AR30 $_N** → `=AJ10 * tarifa / 8` (necesita VLOOKUP a PERSONAL)
+8. **AT10:AT30 $_E** → `=H_25%*1.25 + H_35%*1.35`
+9. **Row 32-33 Totales** → `=SUM(...)` con fórmulas
+10. **Row 2-3 KPI cards** → `=COUNTIF(...)`, `=SUM(...)` etc.
 
 ---
 
-## 📂 Archivos importantes en `.ovav/templates/he-lima/`
+## 📂 Archivos clave en `.ovav/templates/he-lima/`
 
 ```
-POSTMORTEM.md              ← v0.5.1 bugs documentados
-CRITERIA_2026.md           ← 12 criterios Sheets 2026
-preview-v5.3-clean.html    ← Preview HTML actual (open en browser)
-preview-v5.2-real-state.html
-preview-v5.1-mes-anio.html
-preview-v5-modern.html     ← v0.5 SaaS dashboard preview
-HE_VISUAL_v2.md
-HE_VISUAL_SPEC.md
-HE_HEADER_CLEANUP.md       ← v0.4.1 header fixes doc
-CLEANUP_REPORT.md
-SESSION_HANDOFF.md         ← v0.0.2 handoff original
-STATUS.md
+DESIGN_TOKENS.md            ← docs del token system v1.0.1 (single source of truth)
+tokens.json                 ← CANONICAL palette + components (gitignored, local-only)
+tools/apply-tokens.go       ← bulk styling (5 tabs)
+tools/verify_styles.go      ← verify applied styles
+tools/connect_dates_he.go   ← dynamic dates + day letters (E8:AI8 + E9:AI9)
+tools/merge_name_cells_he.go ← merge B+C+D per row
+tools/shift_days_he.go      ← shift day data D:AH → E:AI
+tools/rewrite_date_formulas_he.go ← rewrite day formulas at correct cols
+tools/restore_day_data.go   ← restore 16 emp × 30 days of hour data
+tools/finalize_he_styling.go ← final borders + day header style
+tools/polish_and_frame_he.go ← polish day headers + frame data/numbers + trim
+tools/fix_weekend_formula.go ← fix conditional format formula
+tools/migrate_ceo_colors.go  ← migrate #0F172A/#10B981/#F1F6F9 to existing tokens
+preview-v5.3-clean.html     ← Latest HTML preview
+POSTMORTEM.md               ← v0.5.1 bugs documentados
 ```
 
 ---
 
-## 🔧 Herramientas que uso
+## 🔧 CLI Sheets (sheets-bridge)
 
-### CLI Sheets (sheets-bridge)
 ```bash
 go run -C go-runtime ./cmd/sheets <cmd>
 ```
+
 Comandos principales:
 - `list` — listar tabs
 - `read --range "10_HE!B7:H7"` — leer celdas
-- `write --range "..." --values-json '[[...]]'` — escribir
+- `write --range "..." --values-json '[[...]]'` — escribir (RAW = literal, USER_ENTERED = formula)
 - `style --range "..." --bg #hex --fg #hex --bold --italic --font-size 11 --align center` — estilizar
 - `validate --range "..." --type ONE_OF_LIST --values "..." --strict` — dropdowns
 - `merge-cells --tab NAME --range "B1:T1"` — merge
 - `unmerge-cells --tab NAME --range "B1:T1"` — unmerge
 - `name-range --name X --range "..."` — named range
 - `protect --range "..." --description "..."` — protección
+- `snapshots` — list captured snapshots
+- `rollback --id ID` — restore from snapshot
 
-### Go helpers (en /tmp/opencode/)
-- `restyler/main.go` — batch styling 180 requests (YA NO escribe day numbers — bug fixed)
-- `col-widths/main.go` — set column widths (raw API)
-- `fix-day/main.go` — escribe day numbers 1-30 horizontal en row 12 D-AH
-- `fix-title/main.go` — title LEFT-aligned + merge B1:T1
+---
 
-### Decrypt OAuth (AES-256-GCM)
-Format: nonce(12) || ciphertext || tag(16)
-Key: 32 bytes raw (NO PBKDF2)
+## 🔑 OAuth decrypt
+
+Format: `nonce(12) || ciphertext || tag(16)`
+Key: 32 bytes raw from `$HOME/.config/ovav/vault.key`
+Helper pattern: see any `tools/*.go` for reference.
 
 ---
 
@@ -163,29 +180,40 @@ Key: 32 bytes raw (NO PBKDF2)
 
 - **Excel original** (registro_horas_valorizado.xlsx): `/home/braka/Systems/ovav/.ovav/inbox/cima-uploads/`
 - **Spreadsheet real**: https://docs.google.com/spreadsheets/d/1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y
+- **Google Cloud Console**: project con OAuth credentials para Sheets API
 
 ---
 
-## 🧠 Aprendizajes clave (CEO feedback)
+## 🧠 Aprendizajes CEO feedback (acumulado)
 
-1. **NO marcar nada como "✅ hecho" sin verificar el sheet real celda por celda** (CEO me lo dijo en este chat)
+1. **NO marcar nada como "✅ hecho" sin verificar el sheet real celda por celda**
 2. **NO generar previews HTML cuando el sheet real está roto** (dan falsa confianza)
 3. **NO usar Excel desktop como fuente única** — el CEO quiere diseño SaaS moderno+
-4. **NO agregar textos decorativos** — solo funcionales (regla CEO: "ELIMINA textos decorativos")
+4. **NO agregar textos decorativos** — solo funcionales
 5. **Inspeccionar bugs estructurales** (off-by-one, vertical vs horizontal, alignment, widths)
-6. **Usar el "modelo especial de frontend"** — CEO mencionó que existe pero no lo estoy usando
-   - Probable: Elena (UX Design lead), design tokens en `.ovav/source/`
-7. **CRIT-009 advanced+ baseline** — nunca hacer versiones "funcionales" básicas
+6. **CRIT-009 advanced+ baseline** — nunca hacer versiones "funcionales" básicas
+7. **Consultar Elena (UX Design) ANTES de diseñar visualmente** — no asumir
+8. **Migrar a tokens existentes** — no añadir nuevos sin CEO approval
+9. **El CEO reorganiza el sheet manualmente** — respetar sus decisiones, integrar via tokens
+10. **"Juntar 2 por row"** puede significar merge cells B+C+D — preguntar si ambiguo
+11. **Weekend highlight debe usar CONDITIONAL FORMAT** — fórmula `=E$9="sáb"`, no `=$E9`
 
 ---
 
 ## 🔄 Para próximo chat
 
-1. **Continuar FASE 2** — fórmulas restantes (H_normal, H_extra, $_N, $_E, Totales, KPI cards). Rango actualizado: D10:AH30 empleados, AJ/AL/AR/AT summary cols, row 32 totales, row 2-3 KPIs.
-2. ✅ Design Token System v1.0.1 aplicado — ver `.ovav/templates/he-lima/DESIGN_TOKENS.md`
-3. ✅ **DONE 2026-09-26**: D8:AH8 + D9:AH9 dinámicos conectados a C5/C6
-4. ⚠️ **NO re-correr** `apply-tokens.go -tab=10_HE` sin antes restaurar filas manualmente — el spec HE aún no es idempotent
+1. **Continuar FASE 2** — fórmulas restantes (H_normal, H_extra, $_N, $_E, Totales, KPI cards). Rangos actualizados en sección "FASE 2 — Pendiente" arriba.
+2. ⚠️ **NO re-correr** `apply-tokens.go -tab=10_HE` sin restaurar filas primero (spec aún no idempotent para HE)
+3. Crear tab `_TOKENS` oculto como referencia visual
+4. Integrar token resolver al CLI sheets-bridge (`--bg token:brand.primary`)
 5. Validar fórmulas con datos reales del Excel
-6. Crear tab `_TOKENS` oculto como referencia visual
-7. Integrar token resolver al CLI sheets-bridge (`--bg token:brand.primary`)
 
+---
+
+## 🐛 Known issues / TODOs
+
+- **apply-tokens.go HE spec**: not idempotent. Running 2x for HE deletes different rows. Fix: add guard pre-delete.
+- **values.update USER_ENTERED limitation**: doesn't preserve formulas from formatted-value reads. Need to use formula source or write formulas directly.
+- **01_FERIADOS_PE data inconsistency**: some rows have AÑO/TIPO empty (Año Nuevo, Jueves Santo 2025). Fix: fill or accept.
+- **CONFIG double TURNOS catalog**: 2 catálogos T01-T10 side-by-side (left A-F row 17, right G-K row 3). Consolidate.
+- **Feedbacks data starts row 13** but headers at row 4 (empty between). Move headers or leave.
