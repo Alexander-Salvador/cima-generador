@@ -22,7 +22,7 @@ C = {
     "text":      (15, 36, 64),
 }
 
-COL_WIDTHS = [26, 60, 55, 50] + [22]*30 + [2, 50, 2, 50, 2, 50, 2, 50, 2, 60, 2, 60]
+COL_WIDTHS = [26, 60, 55, 50] + [22]*30 + [6, 55, 2, 55, 2, 55, 2, 65, 0, 0, 0, 0, 60]  # post-fix-widths: A-D, days E-AH, AI spacer, AJ-AP summary, AQ-AT eliminated, AU
 ROW_HEIGHTS = {1: 32, 2: 24, 3: 24, 4: 8, 5: 22, 6: 22, 7: 8, 8: 22, 9: 18}
 DEFAULT_ROW_H = 18
 
@@ -51,7 +51,7 @@ def fetch(token):
         "sheets.merges"
     ])
     url = (f"https://sheets.googleapis.com/v4/spreadsheets/{SPREADSHEET_ID}"
-           f"?includeGridData=true&ranges=CIMA%20TEAM!A1:AT40&fields={fields}")
+           f"?includeGridData=true&ranges=HORAS%20EXTRAS!A1:AU40&fields={fields}")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
     with urllib.request.urlopen(req) as resp:
         return json.loads(resp.read())["sheets"][0]
@@ -116,8 +116,8 @@ def render():
     draw = ImageDraw.Draw(img)
 
     # Title
-    draw.text((margin, 10), "CIMA TEAM — Visual Verification Render", fill=C["navy"], font=get_font(20, bold=True))
-    draw.text((margin, 36), f"Total width: {total_w}px | Tab: CIMA TEAM | Generated from live API data",
+    draw.text((margin, 10), "HORAS EXTRAS — Visual Verification Render", fill=C["navy"], font=get_font(20, bold=True))
+    draw.text((margin, 36), f"Total width: {total_w}px | Tab: HORAS EXTRAS | Generated from live API data",
               fill=C["muted_dark"], font=get_font(11))
 
     y0 = margin + 70
@@ -144,7 +144,7 @@ def render():
         cy = y0 + get_y(ri)
 
         cells = row.get("values", [])
-        for ci in range(46):
+        for ci in range(47):
             cx = x0 + get_x(ci)
 
             # Check merge state
