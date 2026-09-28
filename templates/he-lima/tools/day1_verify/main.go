@@ -169,14 +169,31 @@ func main() {
 				fmt.Printf("  ⚠️  Tab color: (%.3f, %.3f, %.3f), expected orange ~0.961/0.620/0.043\n", r, g, b)
 			}
 		}
-		// Headers
+		// Headers — CANONICAL from .ovav/templates/he-lima/apps-script/03_RegistroEngine.gs
+		// const REGISTRO_HEADERS (lines 30-53). Day 2.1 fix: byte-for-byte verification.
 		expectedHdrs := []string{
-			"ID", "DNI", "NOMBRE", "CARGO",
-			"FECHA", "H_ENTRADA", "H_SALIDA", "H_NORM",
-			"H_EXTRA", "H_25", "H_35", "$_N",
-			"$_E", "ESTADO", "OBSERVACIONES",
-			"AUD_USUARIO", "AUD_TS", "AUD_OLD", "AUD_NEW",
-			"AUD_HASH", "AUD_TAG", "SYNC_STATUS",
+			"Fecha",
+			"ISO_Week",
+			"Dia_Semana",
+			"Es_Feriado",
+			"Tipo_Dia",
+			"ID_Persona",
+			"Apellidos_Nombres",
+			"Turno",
+			"Hora_Ingreso",
+			"Hora_Salida",
+			"Horas_Total",
+			"Horas_Normales",
+			"Horas_Extras",
+			"Factor_Aplicado",
+			"Horas_Ponderadas",
+			"Pago_HE_PEN",
+			"Observaciones",
+			"Aud_Usuario",
+			"Aud_Timestamp",
+			"Estado",
+			"Mes_Año",
+			"Sync_Status",
 		}
 		for i, h := range expectedHdrs {
 			got := reg.valueAt(0, i)

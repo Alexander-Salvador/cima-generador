@@ -64,15 +64,32 @@ var cfgDescriptions = []string{
 	"Último refresh (auto)", // B11
 }
 
-// 10_Registro_HE headers per task directive (NOT architecture canonical — flagged for Day 2 sync).
+// 10_Registro_HE headers — CANONICAL from .ovav/templates/he-lima/apps-script/03_RegistroEngine.gs
+// const REGISTRO_HEADERS (lines 30-53). Day 2.1 fix: byte-for-byte, no translation.
+// Source of truth: apps-script/03_RegistroEngine.gs REGISTRO_HEADERS (also matches architecture.yaml).
 var registroHeaders = []string{
-	"ID", "DNI", "NOMBRE", "CARGO",
-	"FECHA", "H_ENTRADA", "H_SALIDA", "H_NORM",
-	"H_EXTRA", "H_25", "H_35", "$_N",
-	"$_E", "ESTADO", "OBSERVACIONES",
-	// P-V audit log columns (7 cols, total = 22)
-	"AUD_USUARIO", "AUD_TS", "AUD_OLD", "AUD_NEW",
-	"AUD_HASH", "AUD_TAG", "SYNC_STATUS",
+	"Fecha",
+	"ISO_Week",
+	"Dia_Semana",
+	"Es_Feriado",
+	"Tipo_Dia",
+	"ID_Persona",
+	"Apellidos_Nombres",
+	"Turno",
+	"Hora_Ingreso",
+	"Hora_Salida",
+	"Horas_Total",
+	"Horas_Normales",
+	"Horas_Extras",
+	"Factor_Aplicado",
+	"Horas_Ponderadas",
+	"Pago_HE_PEN",
+	"Observaciones",
+	"Aud_Usuario",
+	"Aud_Timestamp",
+	"Estado",
+	"Mes_Año",
+	"Sync_Status",
 }
 
 func main() {
