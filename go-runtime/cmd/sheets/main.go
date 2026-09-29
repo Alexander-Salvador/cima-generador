@@ -109,6 +109,8 @@ func main() {
 		exitOn(runCimaTest(repoRoot, args))
 	case "cima-bundle":
 		exitOn(runCimaBundle(repoRoot, args))
+	case "cima-lint":
+		exitOn(runCimaLint(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2836,6 +2838,21 @@ func runCimaTest(repoRoot string, args []string) error {
 			fmt.Printf("  - %s\n", f)
 		}
 		return fmt.Errorf("cima-test: %d check(s) failed", failed)
+	}
+	return nil
+}
+
+// runCimaLint runs Apps Script static analysis (no OAuth).
+// Usage: go run -C go-runtime ./cmd/sheets cima-lint
+func runCimaLint(repoRoot string, args []string) error {
+	res := AnalyzeScripts(repoRoot)
+	fmt.Print(res.String())
+
+	errors, warnings, _ := res.Summary()
+	fmt.Printf("\n📊 Summary: %d errors · %d warnings\n", errors, warnings)
+
+	if errors > 0 {
+		return fmt.Errorf("cima-lint: %d error(s) found", errors)
 	}
 	return nil
 }
