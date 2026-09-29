@@ -98,6 +98,12 @@ func main() {
 		exitOn(runRestoreFormatCmd(repoRoot, args))
 	case "clean-empty-rows":
 		exitOn(runCleanEmptyRowsCmd(repoRoot, args))
+	case "cima-verify":
+		exitOn(runCimaVerify(repoRoot, args))
+	case "cima-modules":
+		exitOn(runCimaModules(repoRoot, args))
+	case "cima-schema":
+		exitOn(runCimaSchema(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2622,5 +2628,187 @@ func runUpdateNamedRangeCmd(repoRoot string, args []string) error {
 		"name": name, "range": rng, "oldId": delID,
 	}, 1)
 	fmt.Printf("✅ updated named range %q → %s\n", name, rng)
+	return nil
+}
+
+// runCimaVerify validates the live spreadsheet against the CIMA schema.
+// Read-only: requires OAuth (creds in repoRoot vault).
+// Usage: go run -C go-runtime ./cmd/sheets cima-verify [SPREADSHEET_ID]
+func runCimaVerify(repoRoot string, args []string) error {
+	id := pickSpreadsheetID(args)
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+
+	// Fetch live sheet list.
+	tabs, err := cl.ListSheets()
+	if err != nil {
+		return fmt.Errorf("cima-verify list: %w", err)
+	}
+	actual := make([]string, 0, len(tabs))
+	for _, t := range tabs {
+		actual = append(actual, t.Title)
+	}
+
+	v := VerifyStructure(id, actual)
+	fmt.Print(v.String())
+
+	if !v.OK() {
+		return fmt.Errorf("cima-verify: structure invalid (%d missing, %d errors)",
+			len(v.Missing), len(v.Errors))
+	}
+	return nil
+}
+
+// runCimaModules validates local Apps Script .gs files against the
+// canonical 9-module list. Pure local operation, no OAuth required.
+// Usage: go run -C go-runtime ./cmd/sheets cima-modules [--path PATH]
+func runCimaModules(repoRoot string, args []string) error {
+	path := ".ovav/templates/he-lima/apps-script"
+	for i, a := range args {
+		if a == "--path" && i+1 < len(args) {
+			path = args[i+1]
+		}
+	}
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(repoRoot, path)
+	}
+
+	files, err := filepath.Glob(filepath.Join(path, "*.gs"))
+	if err != nil {
+		return fmt.Errorf("cima-modules glob: %w", err)
+	}
+	if len(files) == 0 {
+		return fmt.Errorf("cima-modules: no .gs files found at %s", path)
+	}
+
+	present := make([]string, 0, len(files))
+	for _, f := range files {
+		present = append(present, filepath.Base(f))
+	}
+
+	missing := ValidateModules(present)
+
+	fmt.Printf("📋 CIMA Modules Verification @ %s\n", time.Now().Format(time.RFC3339))
+	fmt.Printf("  Path: %s\n", path)
+	fmt.Printf("  Canonical: %d modules (00..08)\n", len(CanonicalModules()))
+	fmt.Printf("  Found: %d .gs files\n", len(present))
+	fmt.Printf("  Required: %d modules (00,01,02,03,04,06,08)\n", len(RequiredModules()))
+	fmt.Println()
+
+	// Print canonical modules table.
+	fmt.Println("  ┌─────┬─────────────────────────┬─────────┬──────────────────────────┐")
+	fmt.Println("  │  #  │ File                    │ Required │ Public Functions         │")
+	fmt.Println("  ├─────┼─────────────────────────┼─────────┼──────────────────────────┤")
+	for _, m := range CanonicalModules() {
+		req := "✓"
+		if !m.Required {
+			req = "·"
+		}
+		fmt.Printf("  │ %2d  │ %-23s │    %s    │ %-24s │\n",
+			m.Number, m.File, req, fmt.Sprintf("%d funcs", len(m.PublicFunctions)))
+	}
+	fmt.Println("  └─────┴─────────────────────────┴─────────┴──────────────────────────┘")
+	fmt.Println()
+
+	// Print present files (with status).
+	presentSet := map[string]bool{}
+	for _, p := range present {
+		presentSet[p] = true
+	}
+	fmt.Println("  📂 Local files:")
+	for _, m := range CanonicalModules() {
+		marker := "✓"
+		if !presentSet[m.File] {
+			if m.Required {
+				marker = "❌"
+			} else {
+				marker = "⚠️"
+			}
+		}
+		fmt.Printf("    %s %s\n", marker, m.File)
+	}
+	fmt.Println()
+
+	if len(missing) > 0 {
+		fmt.Printf("  ❌ MISSING required modules: %v\n", missing)
+		return fmt.Errorf("cima-modules: %d required module(s) missing", len(missing))
+	}
+
+	fmt.Println("  ✅ All required modules present")
+	return nil
+}
+
+// runCimaSchema prints the canonical CIMA schema (read-only, no OAuth).
+// Usage: go run -C go-runtime ./cmd/sheets cima-schema [--section SECTION]
+//   sections: sheets | columns | modules | anchors | all (default)
+func runCimaSchema(repoRoot string, args []string) error {
+	section := "all"
+	for i, a := range args {
+		if a == "--section" && i+1 < len(args) {
+			section = args[i+1]
+		}
+	}
+
+	switch section {
+	case "sheets":
+		fmt.Println("📋 CIMA Required Base Sheets (6):")
+		for _, s := range RequiredBaseSheets() {
+			fmt.Printf("  - %s\n", s)
+		}
+		fmt.Println("\n📋 CIMA Monthly Storage Sheets (12):")
+		for _, s := range AllMonthlyStorageSheets() {
+			fmt.Printf("  - %s\n", s)
+		}
+	case "columns":
+		fmt.Println("📋 10_Registro_HE Columns (22):")
+		for _, c := range RegistroColumns() {
+			req := ""
+			if c.Required {
+				req = " [REQUIRED]"
+			}
+			fmt.Printf("  %s (%s): %s [%s]%s\n",
+				c.Letter, fmt.Sprintf("col %d", c.Index), c.Header, c.Type, req)
+		}
+	case "modules":
+		fmt.Println("📋 CIMA Apps Script Modules (9):")
+		for _, m := range CanonicalModules() {
+			req := "optional"
+			if m.Required {
+				req = "REQUIRED"
+			}
+			fmt.Printf("  %02d: %s [%s]\n", m.Number, m.File, req)
+			fmt.Printf("      %s\n", m.Responsibility)
+			fmt.Printf("      Public: %v\n", m.PublicFunctions)
+		}
+	case "anchors":
+		fmt.Println("📋 00_Config Anchors:")
+		a := DefaultAnchors()
+		fmt.Printf("  Mes:             %s\n", a.Mes)
+		fmt.Printf("  Anio:            %s\n", a.Anio)
+		fmt.Printf("  Semana:          %s\n", a.Semana)
+		fmt.Printf("  PersonaFiltro:   %s\n", a.PersonaFiltro)
+		fmt.Printf("  FactorDiurno:    %s\n", a.FactorDiurno)
+		fmt.Printf("  FactorNocturno:  %s\n", a.FactorNocturno)
+		fmt.Printf("  FactorFeriado:   %s\n", a.FactorFeriado)
+		fmt.Printf("  JornadaMax:      %s\n", a.JornadaMax)
+		fmt.Printf("  LastRefresh:     %s\n", a.LastRefresh)
+	case "all":
+		fmt.Printf("📋 CIMA HE Lima — %s — Canonical Schema\n\n", CIMAVersion)
+		fmt.Printf("Spreadsheet: %s\n", CIMASpreadsheetName)
+		fmt.Printf("Total sheets: %d (%d base + %d monthly)\n",
+			TotalExpectedSheets(), len(RequiredBaseSheets()), SheetDBTotalMonths)
+		fmt.Printf("Total modules: %d (Apps Script)\n", len(CanonicalModules()))
+		fmt.Printf("Required modules: %d\n\n", len(RequiredModules()))
+		fmt.Println("Use --section sheets|columns|modules|anchors for details.")
+	default:
+		return fmt.Errorf("unknown section %q (use sheets|columns|modules|anchors|all)", section)
+	}
 	return nil
 }
