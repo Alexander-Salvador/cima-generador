@@ -104,6 +104,8 @@ func main() {
 		exitOn(runCimaModules(repoRoot, args))
 	case "cima-schema":
 		exitOn(runCimaSchema(repoRoot, args))
+	case "cima-test":
+		exitOn(runCimaTest(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2809,6 +2811,28 @@ func runCimaSchema(repoRoot string, args []string) error {
 		fmt.Println("Use --section sheets|columns|modules|anchors for details.")
 	default:
 		return fmt.Errorf("unknown section %q (use sheets|columns|modules|anchors|all)", section)
+	}
+	return nil
+}
+
+// runCimaTest runs the Cima test harness — 86 integrity checks + math tests.
+// Pure local operation, NO OAuth required.
+// Usage: go run -C go-runtime ./cmd/sheets cima-test
+func runCimaTest(repoRoot string, args []string) error {
+	res := CheckIntegrity(repoRoot)
+	fmt.Print(res.String())
+
+	total, passed, failed := res.Summary()
+	fmt.Printf("\n📊 Summary: %d total · %d passed · %d failed\n",
+		total, passed, failed)
+
+	if failed > 0 {
+		failures := res.Failures()
+		fmt.Printf("\n❌ Failures (%d):\n", len(failures))
+		for _, f := range failures {
+			fmt.Printf("  - %s\n", f)
+		}
+		return fmt.Errorf("cima-test: %d check(s) failed", failed)
 	}
 	return nil
 }
