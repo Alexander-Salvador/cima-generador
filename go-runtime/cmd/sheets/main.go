@@ -15,6 +15,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -106,6 +107,8 @@ func main() {
 		exitOn(runCimaSchema(repoRoot, args))
 	case "cima-test":
 		exitOn(runCimaTest(repoRoot, args))
+	case "cima-bundle":
+		exitOn(runCimaBundle(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2834,5 +2837,187 @@ func runCimaTest(repoRoot string, args []string) error {
 		}
 		return fmt.Errorf("cima-test: %d check(s) failed", failed)
 	}
+	return nil
+}
+
+// runCimaBundle generates a structured deploy bundle at --output PATH.
+// The bundle contains:
+//   - 9 Apps Script modules (00..08) with deterministic names
+//   - appsscript.json manifest
+//   - DEPLOY.md with step-by-step instructions
+//   - SHA256SUMS.txt for integrity verification
+//
+// Pure local operation — no OAuth required. CEO can:
+//   1. Extract the bundle
+//   2. Open Apps Script editor
+//   3. Create files with the exact names
+//   4. Paste contents
+//
+// Usage: go run -C go-runtime ./cmd/sheets cima-bundle [--output DIR]
+func runCimaBundle(repoRoot string, args []string) error {
+	output := "build/cima-bundle"
+	for i, a := range args {
+		if a == "--output" && i+1 < len(args) {
+			output = args[i+1]
+		}
+	}
+	if !filepath.IsAbs(output) {
+		output = filepath.Join(repoRoot, output)
+	}
+
+	// Source: where the .gs files live.
+	srcDir := filepath.Join(repoRoot, ".ovav", "templates", "he-lima", "apps-script")
+
+	// Create output directory.
+	if err := os.MkdirAll(output, 0o755); err != nil {
+		return fmt.Errorf("cima-bundle mkdir: %w", err)
+	}
+
+	mods := CanonicalModules()
+	written := []string{}
+
+	// Copy each .gs module.
+	for _, m := range mods {
+		src := filepath.Join(srcDir, m.File)
+		dst := filepath.Join(output, m.File)
+		content, err := os.ReadFile(src)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", m.File, err)
+		}
+		if err := os.WriteFile(dst, content, 0o644); err != nil {
+			return fmt.Errorf("write %s: %w", m.File, err)
+		}
+		written = append(written, m.File)
+	}
+
+	// Copy manifest.
+	manifestSrc := filepath.Join(srcDir, "appsscript.json")
+	manifestDst := filepath.Join(output, "appsscript.json")
+	manifest, err := os.ReadFile(manifestSrc)
+	if err != nil {
+		return fmt.Errorf("read manifest: %w", err)
+	}
+	if err := os.WriteFile(manifestDst, manifest, 0o644); err != nil {
+		return fmt.Errorf("write manifest: %w", err)
+	}
+
+	// Generate SHA256SUMS.txt for integrity verification.
+	sumsPath := filepath.Join(output, "SHA256SUMS.txt")
+	sums, err := os.Create(sumsPath)
+	if err != nil {
+		return fmt.Errorf("create SHA256SUMS: %w", err)
+	}
+	defer sums.Close()
+	for _, fname := range append([]string{}, written...) {
+		fname := fname
+		content, _ := os.ReadFile(filepath.Join(output, fname))
+		sum := sha256.Sum256(content)
+		fmt.Fprintf(sums, "%s  %s\n", hex.EncodeToString(sum[:]), fname)
+	}
+	manifestSum := sha256.Sum256(manifest)
+	fmt.Fprintf(sums, "%s  appsscript.json\n", hex.EncodeToString(manifestSum[:]))
+
+	// Generate DEPLOY.md with instructions.
+	deployMd := `# CIMA HE Lima — Deploy Bundle v0.3.0
+
+> Generated: ` + time.Now().Format(time.RFC3339) + `
+> Bundle: ` + output + `
+
+## 📦 Contents
+
+| File | Purpose | Required |
+|---|---|---|
+`
+	for _, m := range mods {
+		req := "✓"
+		if !m.Required {
+			req = "·"
+		}
+		deployMd += fmt.Sprintf("| `%s` | %s | %s |\n", m.File, m.Responsibility, req)
+	}
+	deployMd += `
+| ` + "`appsscript.json`" + ` | Manifest (oauthScopes + timezone + V8) | ✓ |
+
+## 🚀 Deploy Instructions
+
+### Opción A — Manual via Apps Script editor (sin OAuth)
+
+1. Abrir ` + "`https://docs.google.com/spreadsheets/d/" + defaultSpreadsheetID + "`" + `
+2. **Extensions → Apps Script**
+3. Si hay archivos viejos, **borrarlos** (excepto Code.gs si existe)
+4. Crear archivo nuevo por cada módulo en **este orden**:
+`
+	for _, m := range mods {
+		deployMd += fmt.Sprintf("   - **`%s`** → pegar contenido del archivo\n", m.File)
+	}
+	deployMd += `5. Reemplazar ` + "`appsscript.json`" + ` (click en el icono ⚙️ → Project manifest)
+6. **Save** (Ctrl+S)
+7. **Reload** spreadsheet → menú **"CIMA HE Lima"** aparece automáticamente
+
+### Opción B — Verificar con Apps Script API (requiere OAuth en vault)
+
+Una vez OAuth provisionado:
+
+` + "```bash" + `
+# 1. Run integrity tests
+go run -C go-runtime ./cmd/sheets cima-test
+# Expected: 86/86 PASS
+
+# 2. Verify live sheet structure (requires OAuth)
+go run -C go-runtime ./cmd/sheets cima-verify
+# Expected: 18/18 sheets present
+` + "```" + `
+
+## 🔍 Verify integrity
+
+` + "```bash" + `
+sha256sum -c SHA256SUMS.txt
+# All files should report "OK"
+` + "```" + `
+
+## ⚙️ Post-deploy
+
+1. Reload sheet
+2. Menú **"⚙️ Configuración → Instalar/Reparar triggers"**
+3. Verificar menú **"🔍 Diagnóstico → Verificar estructura"** → 6 sheets base ✓
+4. Sync inicial: **"💾 Sync Manual"**
+
+## 📞 Squad
+
+| Persona | Rol |
+|---|---|
+| **Andrés** | Senior — Apps Script implementation |
+| **Lucas** | Junior — data fixtures, personas seed |
+| **Clara** | QA — visual regression |
+| **Thavren** | Lead — gates + CEO comms |
+
+---
+
+*Generated by ` + "`sheets cima-bundle`" + ` · OVAV v0.3.0-stable*
+`
+
+	deployPath := filepath.Join(output, "DEPLOY.md")
+	if err := os.WriteFile(deployPath, []byte(deployMd), 0o644); err != nil {
+		return fmt.Errorf("write DEPLOY.md: %w", err)
+	}
+
+	fmt.Printf("📦 CIMA Bundle generated @ %s\n\n", output)
+	fmt.Printf("  Files written: %d (.gs) + 1 manifest + 1 SHA256SUMS + 1 DEPLOY.md\n", len(written))
+	fmt.Println()
+	fmt.Println("  📂 Structure:")
+	fmt.Printf("    %s/\n", output)
+	for _, m := range mods {
+		fmt.Printf("    ├── %s\n", m.File)
+	}
+	fmt.Println("    ├── appsscript.json")
+	fmt.Println("    ├── SHA256SUMS.txt")
+	fmt.Println("    └── DEPLOY.md")
+	fmt.Println()
+	fmt.Println("  Next steps:")
+	fmt.Println("    1. Open spreadsheet → Extensions → Apps Script")
+	fmt.Println("    2. Create files in order 00..08, paste content")
+	fmt.Println("    3. Replace manifest, save, reload sheet")
+	fmt.Println("    4. Verify: go run -C go-runtime ./cmd/sheets cima-test")
+
 	return nil
 }
