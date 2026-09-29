@@ -113,6 +113,8 @@ func main() {
 		exitOn(runCimaLint(repoRoot, args))
 	case "cima-ci":
 		exitOn(runCimaCI(repoRoot, args))
+	case "cima-drift":
+		exitOn(runCimaDrift(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2928,6 +2930,25 @@ func runCimaCI(repoRoot string, args []string) error {
 
 	if !pass {
 		return fmt.Errorf("cima-ci: at least one step failed")
+	}
+	return nil
+}
+
+// runCimaDrift detects drift between local code and canonical schema.
+// Usage: go run -C go-runtime ./cmd/sheets cima-drift
+func runCimaDrift(repoRoot string, args []string) error {
+	res := DetectDrift(repoRoot)
+	fmt.Print(res.String())
+
+	errors := 0
+	for _, i := range res.Issues {
+		if i.Severity == "error" {
+			errors++
+		}
+	}
+
+	if errors > 0 {
+		return fmt.Errorf("cima-drift: %d error(s) found", errors)
 	}
 	return nil
 }
