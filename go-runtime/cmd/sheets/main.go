@@ -115,6 +115,10 @@ func main() {
 		exitOn(runCimaCI(repoRoot, args))
 	case "cima-drift":
 		exitOn(runCimaDrift(repoRoot, args))
+	case "resize-columns":
+		exitOn(runResizeColumnsCmd(repoRoot, args))
+	case "freeze":
+		exitOn(runFreezeCmd(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2133,6 +2137,91 @@ func runStyleCmd(repoRoot string, args []string) error {
 	return nil
 }
 
+
+// runResizeColumnsCmd sets pixel widths for columns.
+// Usage: sheets resize-columns --tab T --widths "0=50,1=100,2=350"
+// (colIdx=pixelSize, comma-separated pairs)
+func runResizeColumnsCmd(repoRoot string, args []string) error {
+	tab := flagValue(args, "--tab", "")
+	if tab == "" {
+		return fmt.Errorf("resize-columns: --tab required")
+	}
+	widthsRaw := flagValue(args, "--widths", "")
+	if widthsRaw == "" {
+		return fmt.Errorf("resize-columns: --widths required (e.g. '0=50,1=100')")
+	}
+
+	widths := map[int]int{}
+	for _, pair := range strings.Split(widthsRaw, ",") {
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid widths pair %q (expected colIdx=pixelSize)", pair)
+		}
+		colIdx, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+		if err != nil {
+			return fmt.Errorf("invalid column index in %q: %v", pair, err)
+		}
+		w, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+		if err != nil {
+			return fmt.Errorf("invalid pixel size in %q: %v", pair, err)
+		}
+		widths[colIdx] = w
+	}
+
+	id := pickSpreadsheetID(args)
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	if err := cl.SetColumnWidths(tab, widths); err != nil {
+		return fmt.Errorf("resize-columns: %w", err)
+	}
+	audit(repoRoot, id, "", "resize_columns", map[string]any{
+		"tab": tab, "widths": widths,
+	}, 1)
+	fmt.Printf("✅ set %d column widths on %s\n", len(widths), tab)
+	for colIdx, w := range widths {
+		fmt.Printf("   col %d → %dpx\n", colIdx, w)
+	}
+	return nil
+}
+
+// runFreezeCmd freezes rows/columns in a tab.
+// Usage: sheets freeze --tab T --rows N --cols N
+func runFreezeCmd(repoRoot string, args []string) error {
+	tab := flagValue(args, "--tab", "")
+	if tab == "" {
+		return fmt.Errorf("freeze: --tab required")
+	}
+	rows, _ := strconv.Atoi(flagValue(args, "--rows", "0"))
+	cols, _ := strconv.Atoi(flagValue(args, "--cols", "0"))
+	if rows < 0 || cols < 0 {
+		return fmt.Errorf("freeze: --rows and --cols must be >= 0")
+	}
+	id := pickSpreadsheetID(args)
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	if err := cl.SetFreezePanes(tab, rows, cols); err != nil {
+		return fmt.Errorf("freeze: %w", err)
+	}
+	audit(repoRoot, id, "", "freeze_panes", map[string]any{
+		"tab": tab, "rows": rows, "cols": cols,
+	}, 1)
+	fmt.Printf("✅ froze %d rows + %d cols on %s\n", rows, cols, tab)
+	return nil
+}
 
 // requireArg returns a missing-arg error if the named flag is absent.
 func requireArg(args []string, flag string) error {

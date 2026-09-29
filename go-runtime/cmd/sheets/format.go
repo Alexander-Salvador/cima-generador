@@ -511,6 +511,74 @@ func (cl *Client) batchUpdate(body []byte) error {
 	return nil
 }
 
+// SetColumnWidths sets the pixel width for a range of columns in a single tab.
+// tabName: tab to modify
+// widths: map of column index (0-based) → pixel width
+// Returns error if any column width is invalid (< 8px).
+func (cl *Client) SetColumnWidths(tabName string, widths map[int]int) error {
+	if err := EnsureFresh(cl.c); err != nil {
+		return err
+	}
+	sheetID, err := cl.resolveSheetID(tabName)
+	if err != nil {
+		return fmt.Errorf("set column widths: %w", err)
+	}
+	var requests []map[string]any
+	for colIdx, w := range widths {
+		if w < 8 {
+			return fmt.Errorf("column %d width %d too small (min 8px)", colIdx, w)
+		}
+		requests = append(requests, map[string]any{
+			"updateDimensionProperties": map[string]any{
+				"range": map[string]any{
+					"sheetId":    sheetID,
+					"dimension":  "COLUMNS",
+					"startIndex": colIdx,
+					"endIndex":   colIdx + 1,
+				},
+				"properties": map[string]any{"pixelSize": w},
+				"fields":     "pixelSize",
+			},
+		})
+	}
+	if len(requests) == 0 {
+		return fmt.Errorf("no column widths specified")
+	}
+	body, _ := json.Marshal(map[string]any{"requests": requests})
+	return cl.batchUpdate(body)
+}
+
+// SetFreezePanes freezes rows and/or columns so they stay visible while scrolling.
+// tabName: tab to modify.
+// frozenRows: number of rows to freeze from top (0 = none).
+// frozenCols: number of columns to freeze from left (0 = none).
+func (cl *Client) SetFreezePanes(tabName string, frozenRows, frozenCols int) error {
+	if err := EnsureFresh(cl.c); err != nil {
+		return err
+	}
+	sheetID, err := cl.resolveSheetID(tabName)
+	if err != nil {
+		return fmt.Errorf("set freeze panes: %w", err)
+	}
+	body, _ := json.Marshal(map[string]any{
+		"requests": []map[string]any{
+			{
+				"updateSheetProperties": map[string]any{
+					"properties": map[string]any{
+						"sheetId": sheetID,
+						"gridProperties": map[string]any{
+							"frozenRowCount":    frozenRows,
+							"frozenColumnCount": frozenCols,
+						},
+					},
+					"fields": "gridProperties.frozenRowCount,gridProperties.frozenColumnCount",
+				},
+			},
+		},
+	})
+	return cl.batchUpdate(body)
+}
+
 func (cl *Client) resolveSheetID(tabName string) (int64, error) {
 	sheets, err := cl.ListSheets()
 	if err != nil {
