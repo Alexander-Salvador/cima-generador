@@ -66,13 +66,13 @@ const HEADERS = {
     'Horas_Normales', 'Horas_Extras', 'Factor_Aplicado', 'Horas_Ponderadas',
     'Pago_HE_PEN', 'Observaciones',
     'Aud_Usuario', 'Aud_Timestamp', 'Estado',
-    'Mes_Año', 'Partition_Key'
+    'Mes_Año', 'Sync_Status'
   ],
 
   '20_Dashboard': ['KPI', 'Valor', 'Unidad', 'Detalle'],
 
   '99_Audit_Log': [
-    'Timestamp', 'Usuario', 'Acción', 'Sheet', 'Fila', 'Columna',
+    'Timestamp_ISO', 'Usuario', 'Acción', 'Sheet', 'Fila', 'Columna',
     'Valor_Anterior', 'Valor_Nuevo'
   ]
 };
@@ -304,7 +304,7 @@ function applyRegistroFormatting(regSheet) {
   regSheet.setColumnWidth(19, 120); // Aud_Timestamp
   regSheet.setColumnWidth(20, 80); // Estado
   regSheet.setColumnWidth(21, 80); // Mes_Año
-  regSheet.setColumnWidth(22, 120); // Partition_Key
+  regSheet.setColumnWidth(22, 120); // Sync_Status
 }
 
 function applyRegistroConditionalFormatting(regSheet) {

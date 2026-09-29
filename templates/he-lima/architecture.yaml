@@ -541,6 +541,28 @@ formula_strategy:
 # ─────────────────────────────────────────────────────────────
 apps_script_modules:
 
+  - id: addon_menu
+    name: "00_AddOnMenu.gs"
+    responsibility: "Entry point onOpen() + menú nativo add-on + bootstrap + verificación estructura"
+    public_functions:
+      - onOpen(e)
+      - menuRefrescarConfig
+      - menuSyncManual
+      - menuRefrescarKPIs
+      - menuRefrescarHeatmap
+      - menuVerificarEstructura
+      - menuVerAuditLog
+      - menuTestCache
+      - menuPoblarDropdowns
+      - menuInstalarTriggers
+      - menuQuitarTriggers
+      - menuAcercaDe
+    architecture_notes:
+      - "Requerido por manifest: addOns.homepageTrigger.runFunction='onOpen'"
+      - "Sin HTML — 100% nativo Ui.createAddonMenu"
+      - "Bootstrap silencioso: dropdowns, cache, verificación estructura"
+      - "Alert proactivo si faltan sheets — sugiere deploy completo"
+
   - id: cfg_loader
     name: "01_CfgLoader.gs"
     responsibility: "Lee 00_Config y expone valores a otros módulos via CacheService"
