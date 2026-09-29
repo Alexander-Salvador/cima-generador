@@ -117,4 +117,30 @@ go run -C go-runtime ./cmd/sheets format --range "'HORAS EXTRAS'!K9:K33" --when 
 
 ---
 
-*Generated 2026-09-29 post-rebuild · thavren · OVAV v0.5.0*
+## 🔧 Update 2026-09-29 v0.5.1 — column widths + freeze panes
+
+CEO screenshot feedback: "se rompió completo o no llegaste al diseño".
+Root cause: default column widths too narrow for labels.
+
+**Fix applied**:
+- NEW bridge CLI subcommands: `resize-columns`, `freeze`
+- HORAS EXTRAS column widths (px):
+  | Col | Width | Purpose |
+  |---|---|---|
+  | A | 70 | N° + "Año:" label |
+  | B | 120 | DNI + "2026" + "HE Totales (mes)" |
+  | C | 300 | NOMBRES + "Mes: Septiembre" |
+  | D | 90 | Excedidos + day inputs |
+  | E-J | 60 each | 7 day inputs |
+  | K | 80 | TOTAL |
+  | L | 70 | MAX |
+  | M | 110 | STATUS + "Max HE/sem:" |
+- Merged selector cells: A6:B6, C6:D6, E6:F6, G6:H6
+- Re-applied visual styles
+- Frozen rows 1-8 (header stays visible)
+
+Total width: 1190px (readable on standard monitors).
+
+---
+
+*Generated 2026-09-29 post-rebuild · thavren · OVAV v0.5.0/v0.5.1*
