@@ -111,6 +111,8 @@ func main() {
 		exitOn(runCimaBundle(repoRoot, args))
 	case "cima-lint":
 		exitOn(runCimaLint(repoRoot, args))
+	case "cima-ci":
+		exitOn(runCimaCI(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2853,6 +2855,79 @@ func runCimaLint(repoRoot string, args []string) error {
 
 	if errors > 0 {
 		return fmt.Errorf("cima-lint: %d error(s) found", errors)
+	}
+	return nil
+}
+
+// runCimaCI runs the full CI pipeline locally (lint + test + integrity).
+// Returns 0 only if all checks pass.
+// Usage: go run -C go-runtime ./cmd/sheets cima-ci
+func runCimaCI(repoRoot string, args []string) error {
+	fmt.Println("═══════════════════════════════════════════════════════════════")
+	fmt.Println("  CIMA CI Pipeline — Local Validation")
+	fmt.Println("═══════════════════════════════════════════════════════════════")
+	fmt.Println()
+
+	pass := true
+
+	// Step 1: Lint
+	fmt.Println("▶ Step 1/3: Static analysis (cima-lint)")
+	fmt.Println("─────────────────────────────────────")
+	lintRes := AnalyzeScripts(repoRoot)
+	lintErr, lintWarn, _ := lintRes.Summary()
+	if lintErr > 0 {
+		pass = false
+		fmt.Printf("  ❌ %d error(s), %d warning(s)\n", lintErr, lintWarn)
+	} else {
+		fmt.Printf("  ✅ %d modules analyzed, 0 errors, %d warnings\n",
+			len(lintRes.Modules), lintWarn)
+	}
+	fmt.Println()
+
+	// Step 2: Integrity
+	fmt.Println("▶ Step 2/3: Integrity checks (cima-test)")
+	fmt.Println("─────────────────────────────────────")
+	intRes := CheckIntegrity(repoRoot)
+	total, passed, failed := intRes.Summary()
+	if failed > 0 {
+		pass = false
+		fmt.Printf("  ❌ %d/%d checks failed\n", failed, total)
+	} else {
+		fmt.Printf("  ✅ %d/%d checks passed\n", passed, total)
+	}
+	fmt.Println()
+
+	// Step 3: Local module presence
+	fmt.Println("▶ Step 3/3: Module presence (cima-modules)")
+	fmt.Println("─────────────────────────────────────")
+	mods := CanonicalModules()
+	allPresent := true
+	srcDir := filepath.Join(repoRoot, ".ovav", "templates", "he-lima", "apps-script")
+	for _, m := range mods {
+		path := filepath.Join(srcDir, m.File)
+		if _, err := os.Stat(path); err != nil {
+			allPresent = false
+			fmt.Printf("  ❌ %s missing\n", m.File)
+		}
+	}
+	if allPresent {
+		fmt.Printf("  ✅ %d/%d modules present\n", len(mods), len(mods))
+	} else {
+		pass = false
+	}
+	fmt.Println()
+
+	// Final report
+	fmt.Println("═══════════════════════════════════════════════════════════════")
+	if pass {
+		fmt.Println("  ✅ ALL CHECKS PASSED — ready for deploy")
+	} else {
+		fmt.Println("  ❌ CHECKS FAILED — fix issues before deploy")
+	}
+	fmt.Println("═══════════════════════════════════════════════════════════════")
+
+	if !pass {
+		return fmt.Errorf("cima-ci: at least one step failed")
 	}
 	return nil
 }
