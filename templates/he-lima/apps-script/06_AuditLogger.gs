@@ -3,10 +3,10 @@
  * ----------------------------------------------------------------------------
  * Append-only logger a 99_Audit_Log.
  *
- * Schema (8 columnas):
- *   A: Timestamp      (datetime)
+ * Schema (8 columnas, ISO 8601 estricto):
+ *   A: Timestamp_ISO  (text — ISO 8601 string: 2026-09-29T15:32:00.123-05:00)
  *   B: Usuario        (email editor)
- *   C: Acción         (create|update|delete|recalc|trigger|sync_load|sync_save|sync_create_sheet|validate)
+ *   C: Acción         (create|update|delete|recalc|trigger|sync_load|sync_save|sync_create_sheet|validate|menu_*)
  *   D: Sheet          (text)
  *   E: Fila           (int, 0 si aplica a muchas filas)
  *   F: Columna        (text, rango A1)
@@ -17,8 +17,11 @@
  *   - Append-only (nunca edita filas existentes)
  *   - Tolerante a hoja faltante (auto-crea con headers)
  *   - Thread-safe via LockService (lectura atómica de lastRow)
+ *   - Auto-archivado cuando se acerca al límite (9500 → 8500)
+ *   - ISO 8601 estricto (string, no Date object — portable)
  *
- * Authority: marco · Implementer: andres
+ * Authority: marco · Implementer: andres · stabilize: thavren
+ * Updated: 2026-09-29 — ISO 8601 + auto-archive
  */
 
 /** @constant {string} Hoja audit log */
@@ -26,7 +29,7 @@ const SHEET_AUDIT = '99_Audit_Log';
 
 /** @constant {!Array<string>} Headers */
 const AUDIT_HEADERS = [
-  'Timestamp',
+  'Timestamp_ISO',
   'Usuario',
   'Acción',
   'Sheet',
@@ -38,6 +41,18 @@ const AUDIT_HEADERS = [
 
 /** @constant {number} Lock timeout en ms */
 const AUDIT_LOCK_TIMEOUT = 5000;
+
+/** @constant {number} Capacidad máxima antes de archivado */
+const AUDIT_MAX_ROWS = 9500;
+
+/** @constant {number} Umbral para disparar archivado (rotar antes del límite) */
+const AUDIT_ARCHIVE_THRESHOLD = 8500;
+
+/** @constant {number} Filas a mantener tras archivado */
+const AUDIT_KEEP_ROWS = 5000;
+
+/** @constant {string} Hoja destino del archivo (sufijo _archive_YYYY_MM) */
+const AUDIT_ARCHIVE_SHEET_PREFIX = '99_Audit_Log_archive_';
 
 /**
  * Garantiza que 99_Audit_Log existe con headers.
@@ -97,7 +112,7 @@ function logAccion(usuario, accion, payload) {
     const newRow = lastRow + 1;
 
     const row = [
-      new Date(),
+      nowIso_(),
       usuario,
       accion,
       (payload && payload.sheet) || '',
@@ -109,10 +124,9 @@ function logAccion(usuario, accion, payload) {
 
     sh.getRange(newRow, 1, 1, AUDIT_HEADERS.length).setValues([row]);
 
-    // Capacidad de la hoja: 10000 filas (definida en architecture.yaml).
-    // Si llega a 9500, alertar (no implementado — solo log warning).
-    if (newRow > 9500 && typeof console !== 'undefined') {
-      console.warn('audit_sheet_critical: 99_Audit_Log > 9500 filas');
+    // Auto-archivado cuando supera el umbral — no esperar al límite
+    if (newRow >= AUDIT_ARCHIVE_THRESHOLD) {
+      archiveAuditLogIfNeeded_(sh);
     }
   } catch (e) {
     if (typeof console !== 'undefined') {
@@ -146,4 +160,63 @@ function stringifySafe_(v) {
     }
   }
   return String(v);
+}
+
+/**
+ * Devuelve timestamp actual en formato ISO 8601 estricto con timezone.
+ * Formato: 2026-09-29T15:32:00.123-05:00
+ * @private
+ * @returns {string}
+ */
+function nowIso_() {
+  const tz = Session.getScriptTimeZone() || 'America/Lima';
+  return Utilities.formatDate(new Date(), tz, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+}
+
+/**
+ * Archiva las filas más antiguas cuando se acerca al límite.
+ * Mantiene AUDIT_KEEP_ROWS más recientes; mueve el resto a una hoja
+ * oculta con sufijo _archive_YYYY_MM.
+ *
+ * Idempotente: si ya hay archivo del mes actual, añade al existente.
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sh Hoja 99_Audit_Log
+ * @private
+ */
+function archiveAuditLogIfNeeded_(sh) {
+  try {
+    const lastRow = sh.getLastRow();
+    if (lastRow < AUDIT_ARCHIVE_THRESHOLD) return;
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const tz = Session.getScriptTimeZone() || 'America/Lima';
+    const stamp = Utilities.formatDate(new Date(), tz, 'yyyy_MM');
+    const archiveName = AUDIT_ARCHIVE_SHEET_PREFIX + stamp;
+
+    // 1. Crear/obtener hoja de archivo
+    let archiveSh = ss.getSheetByName(archiveName);
+    if (!archiveSh) {
+      archiveSh = ss.insertSheet(archiveName);
+      archiveSh.getRange(1, 1, 1, AUDIT_HEADERS.length).setValues([AUDIT_HEADERS]);
+      archiveSh.setTabColor('#1F2937');
+      archiveSh.hideSheet();
+    }
+
+    // 2. Determinar rango a mover (filas 2 a lastRow - AUDIT_KEEP_ROWS)
+    const archiveLast = lastRow - AUDIT_KEEP_ROWS;
+    if (archiveLast < 2) return;
+
+    const archiveStartArchiveRow = archiveSh.getLastRow() + 1;
+    const sourceData = sh.getRange(2, 1, archiveLast - 1, AUDIT_HEADERS.length).getValues();
+    archiveSh.getRange(archiveStartArchiveRow, 1, sourceData.length, AUDIT_HEADERS.length)
+      .setValues(sourceData);
+
+    // 3. Limpiar 99_Audit_Log: borrar filas 2 a archiveLast, dejar header + AUDIT_KEEP_ROWS
+    sh.deleteRows(2, archiveLast - 1);
+
+    console.info('audit_log_archived: moved ' + sourceData.length +
+      ' rows to ' + archiveName + ', kept ' + AUDIT_KEEP_ROWS + ' recent rows');
+  } catch (e) {
+    console.error('audit_archive_failed: ' + e.message);
+  }
 }
