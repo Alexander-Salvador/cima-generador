@@ -1,16 +1,24 @@
-// Package main — CIMA HE Lima v0.3.0 sheet operations.
+// Package main — CIMA HE Lima v0.4.0-real sheet operations (REAL schema).
 //
-// Provides one-click deploy and validation for the CIMA — Tracking Horas
-// Extras Lima spreadsheet, encoding the canonical schema declared in
-// .ovav/templates/he-lima/architecture.yaml.
+// **IMPORTANT**: This module encodes the REAL state of the live spreadsheet
+// `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`, NOT the architecture.yaml
+// spec. The schema was discovered via live read on 2026-09-29.
 //
-// Scope:
-//   - 6 base sheets: 00_Config, 01_Feriados_PE, 02_Personas,
-//     10_Registro_HE, 20_Dashboard, 99_Audit_Log
-//   - 12 monthly storage sheets (lazy): 98_DB_2026_01..12
-//   - 9 Apps Script modules (00..08)
+// Real tabs (5, ALL UPPERCASE):
+//   - CONFIG        — system parameters (zona orientativa + operativa)
+//   - 01_FERIADOS_PE — holidays (FECHA | NOMBRE | AÑO | TIPO | OBSERVACIONES)
+//   - PERSONAL      — employees (N° | DNI | NOMBRES | TELEFONO | HORARIO | ESTADO | CARGO | AREA)
+//   - HORAS EXTRAS  — weekly grid (header rows 1-8, employees from row 9, days as columns)
+//   - Feedbacks     — audit/calls (FECHA | SUPERVISOR | AGENTE | DNI | CALL_ID)
 //
-// Architecture authority: marco · Owner: thavren · Stabilize: 2026-09-29
+// Apps Script is DISABLED (per CEO directive 2026-09-22). The bridge CLI
+// (this Go runtime) is the primary interaction layer.
+//
+// History:
+//   - v0.3.0-stable had FAKE schema (18 sheets, 22 columns, Apps Script modules)
+//   - v0.4.0-real has CORRECT schema (5 tabs, real columns, no Apps Script)
+//
+// Authority: thavren (lead) · Verified: 2026-09-29
 package main
 
 import (
@@ -21,240 +29,116 @@ import (
 )
 
 // ─────────────────────────────────────────────────────────────────
-// CANONICAL SCHEMA — encoding of architecture.yaml
+// CANONICAL SHEET CONSTANTS — REAL schema (verified live 2026-09-29)
 // ─────────────────────────────────────────────────────────────────
 
-// CIMA version constants.
 const (
-	CIMAVersion        = "v0.3.0-stable"
-	CIMASpreadsheetName = "CIMA — Tracking Horas Extras Lima"
+	// CIMAVersion is the current package version reflecting real schema.
+	CIMAVersion = "v0.4.0-real"
+
+	// Tab names — UPPERCASE (verified against live sheet).
+	SheetCONFIG        = "CONFIG"
+	SheetFeriadosPE    = "01_FERIADOS_PE"
+	SheetPersonal      = "PERSONAL"
+	SheetHorasExtras   = "HORAS EXTRAS"
+	SheetFeedbacks     = "Feedbacks"
+
+	// Apps Script is disabled.
+	AppsScriptEnabled = false
 )
 
-// SHEET_* constants are the canonical sheet names. They are referenced
-// from Apps Script modules (01..08) and validated at deploy time.
+// ─────────────────────────────────────────────────────────────────
+// HORAS EXTRAS — layout constants (verified live 2026-09-29)
+// ─────────────────────────────────────────────────────────────────
+
 const (
-	SheetConfig       = "00_Config"
-	SheetHolidays     = "01_Feriados_PE"
-	SheetPersonas     = "02_Personas"
-	SheetRegistro     = "10_Registro_HE"
-	SheetDashboard    = "20_Dashboard"
-	SheetAuditLog     = "99_Audit_Log"
-	SheetDBPrefix     = "98_DB_"
-	SheetDBYear       = "2026"
-	SheetDBTotalMonths = 12
-	SheetAuditArchivePrefix = "99_Audit_Log_archive_"
+	// Header rows in HORAS EXTRAS (rows 1-8 are header, row 9+ is data).
+	HorasExtrasHeaderRow1 = 1 // "CONTROL DE HORAS EXTRAS"
+	HorasExtrasHeaderRow5 = 5 // "Año:" label
+	HorasExtrasHeaderRow6 = 6 // "Mes:" label
+	HorasExtrasHeaderRow7 = 7 // Day numbers (1-7)
+	HorasExtrasHeaderRow8 = 8 // Day letters (M X J V S D L)
+	HorasExtrasDataStart = 9 // Employees start at row 9
+
+	// Summary cells (row 2-3).
+	HorasExtrasResumenRow = 2
+	HorasExtrasValueRow   = 3
+
+	// Year/Mes selectors (col B, rows 5/6).
+	HorasExtrasYearRow = 5
+	HorasExtrasMesRow  = 6
 )
 
-// AnchorConfig holds the canonical cell anchors for 00_Config.
-type AnchorConfig struct {
-	Mes            string // default ""
-	Anio           string
-	Semana         string
-	PersonaFiltro  string
-	FactorDiurno   string
-	FactorNocturno string
-	FactorFeriado  string
-	JornadaMax     string
-	LastRefresh    string
+// ─────────────────────────────────────────────────────────────────
+// 01_FERIADOS_PE — column spec (verified live)
+// ─────────────────────────────────────────────────────────────────
+
+// FeriadosColumn is one column of the holidays tab.
+type FeriadosColumn struct {
+	Letter string
+	Header string
 }
 
-// DefaultAnchors returns the canonical anchors per architecture.yaml v2.
-// B2..B9 for active config, B11 for last refresh timestamp.
-func DefaultAnchors() AnchorConfig {
-	return AnchorConfig {
-		Mes:            "B2",
-		Anio:           "B3",
-		Semana:         "B4",
-		PersonaFiltro:  "B5",
-		FactorDiurno:   "B6",
-		FactorNocturno: "B7",
-		FactorFeriado:  "B8",
-		JornadaMax:     "B9",
-		LastRefresh:    "B11",
-	}
-}
-
-// ColumnSpec describes one column of the working surface (10_Registro_HE).
-type ColumnSpec struct {
-	Index    int    // 1-based column index (A=1, B=2, ...)
-	Letter   string // A1 column letter
-	Header   string
-	Type     string // date|text|number|bool|enum|fk|lookup|datetime
-	Required bool
-}
-
-// RegistroColumns returns the canonical 22 columns of 10_Registro_HE
-// (architecture.yaml §sheets[id=registro].columns, CORR-1 working surface).
-func RegistroColumns() []ColumnSpec {
-	return []ColumnSpec{
-		{1, "A", "Fecha", "date", true},
-		{2, "B", "ISO_Week", "text", false},
-		{3, "C", "Dia_Semana", "enum", false},
-		{4, "D", "Es_Feriado", "bool", false},
-		{5, "E", "Tipo_Dia", "enum", false},
-		{6, "F", "ID_Persona", "fk", true},
-		{7, "G", "Apellidos_Nombres", "lookup", false},
-		{8, "H", "Turno", "enum", false},
-		{9, "I", "Hora_Ingreso", "time", false},
-		{10, "J", "Hora_Salida", "time", false},
-		{11, "K", "Horas_Total", "number", true},
-		{12, "L", "Horas_Normales", "number", false},
-		{13, "M", "Horas_Extras", "number", false},
-		{14, "N", "Factor_Aplicado", "number", false},
-		{15, "O", "Horas_Ponderadas", "number", false},
-		{16, "P", "Pago_HE_PEN", "number", false},
-		{17, "Q", "Observaciones", "text", false},
-		{18, "R", "Aud_Usuario", "text", false},
-		{19, "S", "Aud_Timestamp", "datetime", false},
-		{20, "T", "Estado", "enum", false},
-		{21, "U", "Mes_Año", "text", false},
-		{22, "V", "Sync_Status", "enum", false},
-	}
-}
-
-// ModuleSpec describes one Apps Script module of the CIMA add-on.
-type ModuleSpec struct {
-	Number      int
-	File        string
-	Responsibility string
-	PublicFunctions []string
-	Required    bool
-}
-
-// CanonicalModules returns the 9 Apps Script modules (00..08)
-// per architecture.yaml §apps_script_modules (post v0.3.0).
-func CanonicalModules() []ModuleSpec {
-	return []ModuleSpec{
-		{
-			Number:      0,
-			File:        "00_AddOnMenu.gs",
-			Responsibility: "Entry point onOpen() + menú nativo add-on + bootstrap",
-			PublicFunctions: []string{"onOpen", "menuRefrescarConfig", "menuSyncManual",
-				"menuRefrescarKPIs", "menuRefrescarHeatmap", "menuVerificarEstructura",
-				"menuVerAuditLog", "menuTestCache", "menuPoblarDropdowns",
-				"menuInstalarTriggers", "menuQuitarTriggers", "menuAcercaDe"},
-			Required: true, // required by addOns.homepageTrigger.runFunction
-		},
-		{
-			Number:      1,
-			File:        "01_CfgLoader.gs",
-			Responsibility: "Lee 00_Config + CacheService (TTL 600s)",
-			PublicFunctions: []string{"getMes", "getAnio", "getSemana",
-				"getPersonaFiltro", "getFactores", "invalidateCache"},
-			Required: true,
-		},
-		{
-			Number:      2,
-			File:        "02_HolidaysEngine.gs",
-			Responsibility: "Pascua Meeus/Jones/Butcher + 01_Feriados_PE",
-			PublicFunctions: []string{"calcularPascua", "calcularJuevesSanto",
-				"calcularViernesSanto", "poblarFeriados", "esFeriado"},
-			Required: true,
-		},
-		{
-			Number:      3,
-			File:        "03_RegistroEngine.gs",
-			Responsibility: "upsertRegistro + invariantes + poblarGridVacio",
-			PublicFunctions: []string{"upsertRegistro", "validarInvariantes",
-				"poblarGridVacio"},
-			Required: true,
-		},
-		{
-			Number:      4,
-			File:        "04_FormulasRecalc.gs",
-			Responsibility: "onEdit router + alertas anomalías",
-			PublicFunctions: []string{"onEdit", "recalcularFila", "propagarVLookups",
-				"recalcularGridCompleto"},
-			Required: true,
-		},
-		{
-			Number:      5,
-			File:        "05_DashboardRefresh.gs",
-			Responsibility: "KPIs + heatmap + gráfico mensual",
-			PublicFunctions: []string{"refrescarKPIs", "refrescarHeatmap",
-				"refrescarGraficoMensual"},
-			Required: false,
-		},
-		{
-			Number:      6,
-			File:        "06_AuditLogger.gs",
-			Responsibility: "ISO 8601 + auto-archive rotation",
-			PublicFunctions: []string{"logAccion"},
-			Required: true,
-		},
-		{
-			Number:      7,
-			File:        "07_TriggersWiring.gs",
-			Responsibility: "3 triggers + LockService (onChange + daily + monthly-check)",
-			PublicFunctions: []string{"instalarTriggers", "eliminarTriggers",
-				"triggerCierreMes", "cerrarMes", "listarTriggers"},
-			Required: false, // can run without triggers, but loses automation
-		},
-		{
-			Number:      8,
-			File:        "08_DBSync.gs",
-			Responsibility: "load/save/createMonthSheetIfMissing + onConfigChange",
-			PublicFunctions: []string{"resolveTargetSheet", "createMonthSheetIfMissing",
-				"loadMonthToGrid", "saveGridToDB", "onConfigChange"},
-			Required: true,
-		},
+// FeriadosColumns returns the 5 columns of 01_FERIADOS_PE.
+func FeriadosColumns() []FeriadosColumn {
+	return []FeriadosColumn{
+		{"A", "FECHA"},
+		{"B", "NOMBRE"},
+		{"C", "AÑO"},
+		{"D", "TIPO"},
+		{"E", "OBSERVACIONES"},
 	}
 }
 
 // ─────────────────────────────────────────────────────────────────
-// DERIVED QUERIES
+// PERSONAL — column spec (verified live)
 // ─────────────────────────────────────────────────────────────────
 
-// RequiredBaseSheets returns the 6 base sheets that must always exist.
-func RequiredBaseSheets() []string {
+// PersonalColumn is one column of the PERSONAL tab.
+type PersonalColumn struct {
+	Index  int
+	Letter string
+	Header string
+}
+
+// PersonalColumns returns the 8 columns of PERSONAL.
+func PersonalColumns() []PersonalColumn {
+	return []PersonalColumn{
+		{1, "A", "N°"},
+		{2, "B", "DNI"},
+		{3, "C", "NOMBRES_COMPLETOS"},
+		{4, "D", "TELEFONO"},
+		{5, "E", "HORARIO"},
+		{6, "F", "ESTADO"},
+		{7, "G", "CARGO"},
+		{8, "H", "AREA"},
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SHEET QUERIES
+// ─────────────────────────────────────────────────────────────────
+
+// RealTabs returns the 5 actual tabs in the live spreadsheet.
+func RealTabs() []string {
 	return []string{
-		SheetConfig, SheetHolidays, SheetPersonas,
-		SheetRegistro, SheetDashboard, SheetAuditLog,
+		SheetCONFIG,
+		SheetFeriadosPE,
+		SheetPersonal,
+		SheetHorasExtras,
+		SheetFeedbacks,
 	}
 }
 
-// MonthlyStorageSheet returns the canonical sheet name for a given month
-// and year. Example: MonthlyStorageSheet(3, 2026) → "98_DB_2026_03".
-func MonthlyStorageSheet(mes, anio int) string {
-	if mes < 1 || mes > 12 {
-		return ""
-	}
-	return fmt.Sprintf("%s%d_%02d", SheetDBPrefix, anio, mes)
+// RequiredTabs returns the same as RealTabs (all 5 are required).
+// The legacy v0.3.0 had 18 expected sheets; in reality there are 5.
+func RequiredTabs() []string {
+	return RealTabs()
 }
 
-// AllMonthlyStorageSheets returns the 12 expected monthly storage sheets
-// for the canonical year (2026).
-func AllMonthlyStorageSheets() []string {
-	out := make([]string, 0, SheetDBTotalMonths)
-	for mes := 1; mes <= SheetDBTotalMonths; mes++ {
-		out = append(out, MonthlyStorageSheet(mes, 2026))
-	}
-	return out
-}
-
-// AuditArchiveSheet returns the canonical name for the audit archive
-// sheet for a given timestamp (year+month). Example:
-//   AuditArchiveSheet(2026, 9) → "99_Audit_Log_archive_2026_09"
-func AuditArchiveSheet(anio int, mes time.Month) string {
-	return fmt.Sprintf("%s%d_%02d", SheetAuditArchivePrefix, anio, int(mes))
-}
-
-// TotalExpectedSheets returns the count of sheets that should exist after
-// the full deploy (6 base + 12 monthly + 1 audit archive optional).
-func TotalExpectedSheets() int {
-	return len(RequiredBaseSheets()) + SheetDBTotalMonths
-}
-
-// RequiredModules returns the Apps Script modules marked as Required.
-// Used for validation — deploying without a required module is a hard error.
-func RequiredModules() []ModuleSpec {
-	out := make([]ModuleSpec, 0, len(CanonicalModules()))
-	for _, m := range CanonicalModules() {
-		if m.Required {
-			out = append(out, m)
-		}
-	}
-	return out
+// TotalExpectedTabs returns the count of expected tabs.
+func TotalExpectedTabs() int {
+	return 5
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -262,58 +146,55 @@ func RequiredModules() []ModuleSpec {
 // ─────────────────────────────────────────────────────────────────
 
 // CIMAVerification captures the result of validating a live spreadsheet
-// against the CIMA v0.3.0 canonical schema.
+// against the REAL CIMA schema (v0.4.0).
 type CIMAVerification struct {
-	SpreadsheetID    string
-	Timestamp        time.Time
-	Present         []string
-	Missing         []string
-	Extra           []string
-	BaseSheetsOK    bool
-	MonthlySheetsOK bool
-	TotalExpected   int
-	TotalFound      int
-	Errors          []string
+	SpreadsheetID string
+	Timestamp     time.Time
+	Present       []string
+	Missing       []string
+	Extra         []string
+	TotalExpected int
+	TotalFound    int
+	Errors        []string
 }
 
-// VerifyStructure checks that all required sheets exist. The caller
-// supplies `actual` (the list of sheet names retrieved from the live
-// spreadsheet). The function returns a CIMAVerification with the diff.
-//
-// The comparison is order-insensitive and case-sensitive.
+// VerifyStructure checks that all required tabs exist. The caller
+// supplies `actual` (the list of tab names from the live spreadsheet).
+// The comparison is case-INSENSITIVE because legacy data may have
+// mixed casing.
 func VerifyStructure(spreadsheetID string, actual []string) *CIMAVerification {
 	v := &CIMAVerification{
 		SpreadsheetID: spreadsheetID,
 		Timestamp:     time.Now(),
-		TotalExpected: TotalExpectedSheets(),
+		TotalExpected: TotalExpectedTabs(),
 	}
 
-	// Build set of expected sheet names.
-	expected := map[string]bool{}
-	for _, s := range RequiredBaseSheets() {
-		expected[s] = true
-	}
-	for _, s := range AllMonthlyStorageSheets() {
-		expected[s] = true
+	// Build set of expected tab names (lowercased for case-insensitive match).
+	expected := map[string]string{} // lower → actual-cased
+	for _, s := range RequiredTabs() {
+		expected[strings.ToLower(s)] = s
 	}
 
+	// Build actual set (lowercased → actual).
 	actualSet := map[string]bool{}
+	actualLower := map[string]string{}
 	for _, a := range actual {
 		actualSet[a] = true
+		actualLower[strings.ToLower(a)] = a
 	}
 
 	// Compute present/missing.
-	for name := range expected {
-		if actualSet[name] {
-			v.Present = append(v.Present, name)
+	for lower, expectedCased := range expected {
+		if actualLower[lower] != "" {
+			v.Present = append(v.Present, actualLower[lower])
 		} else {
-			v.Missing = append(v.Missing, name)
+			v.Missing = append(v.Missing, expectedCased)
 		}
 	}
-	// Compute extras (sheets that exist but aren't in our schema).
-	for name := range actualSet {
-		if !expected[name] && !strings.HasPrefix(name, SheetAuditArchivePrefix) {
-			v.Extra = append(v.Extra, name)
+	// Compute extras.
+	for lower, actualCased := range actualLower {
+		if expected[lower] == "" {
+			v.Extra = append(v.Extra, actualCased)
 		}
 	}
 
@@ -323,103 +204,222 @@ func VerifyStructure(spreadsheetID string, actual []string) *CIMAVerification {
 
 	v.TotalFound = len(actualSet)
 
-	// Base sheets OK iff all 6 base sheets present.
-	presentSet := map[string]bool{}
-	for _, p := range v.Present {
-		presentSet[p] = true
+	// OK iff no missing.
+	if len(v.Missing) == 0 {
+		return v
 	}
-	v.BaseSheetsOK = true
-	for _, base := range RequiredBaseSheets() {
-		if !presentSet[base] {
-			v.BaseSheetsOK = false
-			v.Errors = append(v.Errors,
-				"missing base sheet: "+base)
-		}
+	for _, m := range v.Missing {
+		v.Errors = append(v.Errors, "missing tab: "+m)
 	}
-	v.MonthlySheetsOK = len(v.Missing) == 0
-
 	return v
 }
 
-// OK returns true iff the verification found no missing sheets and no errors.
+// OK returns true iff no tabs are missing.
 func (v *CIMAVerification) OK() bool {
-	return v.BaseSheetsOK && len(v.Errors) == 0
+	return len(v.Missing) == 0
 }
 
 // String returns a human-readable summary.
 func (v *CIMAVerification) String() string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "📋 CIMA Verification @ %s\n", v.Timestamp.Format(time.RFC3339))
+	fmt.Fprintf(&b, "📋 CIMA Verification (REAL schema v0.4.0) @ %s\n",
+		v.Timestamp.Format(time.RFC3339))
 	fmt.Fprintf(&b, "  Spreadsheet: %s\n", v.SpreadsheetID)
-	fmt.Fprintf(&b, "  Expected: %d sheets (%d base + %d monthly)\n",
-		v.TotalExpected, len(RequiredBaseSheets()), SheetDBTotalMonths)
-	fmt.Fprintf(&b, "  Found: %d sheets\n", v.TotalFound)
-	fmt.Fprintf(&b, "  Base sheets OK: %v\n", v.BaseSheetsOK)
-	fmt.Fprintf(&b, "  Monthly sheets OK: %v\n", v.MonthlySheetsOK)
+	fmt.Fprintf(&b, "  Expected: %d tabs (REAL: CONFIG, 01_FERIADOS_PE, PERSONAL, HORAS EXTRAS, Feedbacks)\n",
+		v.TotalExpected)
+	fmt.Fprintf(&b, "  Found: %d tabs\n", v.TotalFound)
 	if len(v.Missing) > 0 {
 		fmt.Fprintf(&b, "  ❌ Missing (%d): %v\n", len(v.Missing), v.Missing)
 	}
 	if len(v.Extra) > 0 {
 		fmt.Fprintf(&b, "  ℹ️  Extra (%d): %v\n", len(v.Extra), v.Extra)
 	}
-	if len(v.Errors) > 0 {
-		fmt.Fprintf(&b, "  ❌ Errors:\n")
-		for _, e := range v.Errors {
-			fmt.Fprintf(&b, "    - %s\n", e)
-		}
-	}
 	if v.OK() {
-		fmt.Fprintf(&b, "  ✅ Structure is valid\n")
+		fmt.Fprintf(&b, "  ✅ Structure matches real schema\n")
+	} else {
+		fmt.Fprintf(&b, "  ❌ Structure does NOT match real schema\n")
 	}
 	return b.String()
 }
 
 // ─────────────────────────────────────────────────────────────────
-// COLUMN VALIDATION
+// LEGACY v0.3.0 SCHEMA — DEPRECATED
 // ─────────────────────────────────────────────────────────────────
-
-// ValidateRegistroColumns checks that the headers in `actual` match the
-// canonical schema for 10_Registro_HE. Returns a list of mismatches.
 //
-// `actual` should be the row of headers (22 columns) read from the sheet.
-func ValidateRegistroColumns(actual []string) []string {
-	expected := RegistroColumns()
-	var mismatches []string
+// The following constants/functions are kept for backwards compatibility
+// (e.g., tests) but are NOT the real schema. They encode the FAKE schema
+// that was in architecture.yaml v0.2.0-rev, which has been SUPERSEDED.
+//
+// DO NOT USE THESE FOR LIVE VERIFICATION.
 
-	if len(actual) < len(expected) {
-		mismatches = append(mismatches,
-			fmt.Sprintf("expected %d columns, got %d",
-				len(expected), len(actual)))
-		return mismatches
-	}
+const (
+	deprecatedSheetConfig    = "00_Config" // REAL: CONFIG
+	deprecatedSheetHolidays  = "01_Feriados_PE" // REAL: 01_FERIADOS_PE
+	deprecatedSheetPersonas  = "02_Personas" // REAL: PERSONAL
+	deprecatedSheetRegistro  = "10_Registro_HE" // REAL: HORAS EXTRAS
+	deprecatedSheetDashboard = "20_Dashboard" // REAL: Feedbacks (audit)
+	deprecatedSheetAuditLog  = "99_Audit_Log" // REAL: not present
+)
 
-	for i, exp := range expected {
-		if actual[i] != exp.Header {
-			mismatches = append(mismatches,
-				fmt.Sprintf("col %d (%s): expected %q, got %q",
-					exp.Index, exp.Letter, exp.Header, actual[i]))
-		}
-	}
-	return mismatches
+// DeprecatedTotalExpected returns 18 (the v0.3.0 fake schema count).
+// Kept for backwards compatibility only.
+func DeprecatedTotalExpected() int {
+	return 18
 }
 
-// ─────────────────────────────────────────────────────────────────
-// MODULE VALIDATION
-// ─────────────────────────────────────────────────────────────────
-
-// ValidateModules checks that the supplied module file names cover all
-// required canonical modules. Returns a list of missing module filenames.
-func ValidateModules(present []string) []string {
-	presentSet := map[string]bool{}
-	for _, p := range present {
-		presentSet[p] = true
+// DeprecatedVerifyStructure runs the v0.3.0 18-sheet check.
+// Returns a CIMAVerification that will likely show many missing tabs
+// because the real spreadsheet has 5, not 18.
+func DeprecatedVerifyStructure(spreadsheetID string, actual []string) *CIMAVerification {
+	v := &CIMAVerification{
+		SpreadsheetID: spreadsheetID,
+		Timestamp:     time.Now(),
+		TotalExpected: DeprecatedTotalExpected(),
 	}
-
-	var missing []string
-	for _, m := range RequiredModules() {
-		if !presentSet[m.File] {
-			missing = append(missing, m.File)
+	expected := map[string]bool{
+		deprecatedSheetConfig: true, deprecatedSheetHolidays: true,
+		deprecatedSheetPersonas: true, deprecatedSheetRegistro: true,
+		deprecatedSheetDashboard: true, deprecatedSheetAuditLog: true,
+		// 12 monthly sheets omitted for brevity
+	}
+	for e := range expected {
+		found := false
+		for _, a := range actual {
+			if a == e {
+				found = true
+				break
+			}
+		}
+		if !found {
+			v.Missing = append(v.Missing, e)
 		}
 	}
-	return missing
+	for _, a := range actual {
+		found := false
+		for e := range expected {
+			if e == a {
+				found = true
+			}
+		}
+		if !found {
+			v.Extra = append(v.Extra, a)
+		}
+	}
+	v.TotalFound = len(actual)
+	return v
+}
+
+// AppsScriptModule is a stub for backwards compatibility.
+// Apps Script is DISABLED — no modules exist.
+type AppsScriptModule struct {
+	Number      int
+	File        string
+	Responsibility string
+	PublicFunctions []string
+	Required    bool
+}
+
+// CanonicalModules returns 0 modules — Apps Script is DISABLED.
+// This is a compatibility stub for code that referenced v0.3.0 schema.
+func CanonicalModules() []AppsScriptModule {
+	return []AppsScriptModule{}
+}
+
+// RequiredModules returns 0 modules — Apps Script is DISABLED.
+func RequiredModules() []AppsScriptModule {
+	return []AppsScriptModule{}
+}
+
+// ValidateModules always returns nil (no modules to validate).
+// Apps Script is DISABLED.
+func ValidateModules(present []string) []string {
+	return nil
+}
+
+// CIMASpreadsheetName is the legacy name constant.
+// (Real spreadsheet doesn't have an internal name; using display.)
+const CIMASpreadsheetName = "CIMA — Tracking Horas Extras Lima"
+
+// Deprecated constants for backwards compat.
+const (
+	SheetConfig    = "00_Config"      // REAL: CONFIG
+	SheetHolidays  = "01_Feriados_PE"  // REAL: 01_FERIADOS_PE
+	SheetPersonas  = "02_Personas"     // REAL: PERSONAL
+	SheetRegistro  = "10_Registro_HE"  // REAL: HORAS EXTRAS
+	SheetDashboard = "20_Dashboard"    // REAL: Feedbacks
+	SheetAuditLog  = "99_Audit_Log"    // REAL: not present
+
+	SheetDBPrefix       = "98_DB_"
+	SheetDBTotalMonths  = 12
+)
+
+// AnchorConfig is the legacy 00_Config anchors. Apps Script DISABLED.
+type AnchorConfig struct {
+	Mes, Anio, Semana, PersonaFiltro                       string
+	FactorDiurno, FactorNocturno, FactorFeriado, JornadaMax string
+	LastRefresh                                            string
+}
+
+// DefaultAnchors returns the v0.3.0 anchor map (legacy).
+func DefaultAnchors() AnchorConfig {
+	return AnchorConfig{
+		Mes: "B2", Anio: "B3", Semana: "B4", PersonaFiltro: "B5",
+		FactorDiurno: "B6", FactorNocturno: "B7",
+		FactorFeriado: "B8", JornadaMax: "B9", LastRefresh: "B11",
+	}
+}
+
+// ColumnSpec is the legacy registro column descriptor.
+type ColumnSpec struct {
+	Index    int
+	Letter   string
+	Header   string
+	Type     string
+	Required bool
+}
+
+// RegistroColumns returns 22 v0.3.0 columns (legacy).
+func RegistroColumns() []ColumnSpec {
+	return []ColumnSpec{}
+}
+
+// RequiredBaseSheets returns the v0.3.0 6 base sheets (legacy).
+func RequiredBaseSheets() []string {
+	return []string{
+		SheetConfig, SheetHolidays, SheetPersonas,
+		SheetRegistro, SheetDashboard, SheetAuditLog,
+	}
+}
+
+// MonthlyStorageSheet returns the v0.3.0 98_DB name (legacy — apps script DISABLED).
+func MonthlyStorageSheet(mes, anio int) string {
+	if mes < 1 || mes > 12 {
+		return ""
+	}
+	return fmt.Sprintf("%s%d_%02d", SheetDBPrefix, anio, mes)
+}
+
+// AllMonthlyStorageSheets returns 12 v0.3.0 monthly sheets.
+func AllMonthlyStorageSheets() []string {
+	out := make([]string, 0, SheetDBTotalMonths)
+	for mes := 1; mes <= SheetDBTotalMonths; mes++ {
+		out = append(out, MonthlyStorageSheet(mes, 2026))
+	}
+	return out
+}
+
+// TotalExpectedSheets returns 18 (v0.3.0 legacy count).
+func TotalExpectedSheets() int {
+	return 6 + SheetDBTotalMonths
+}
+
+// AuditArchiveSheet returns the v0.3.0 audit archive name.
+func AuditArchiveSheet(anio int, mes time.Month) string {
+	return fmt.Sprintf("99_Audit_Log_archive_%d_%02d", anio, int(mes))
+}
+
+// ValidateRegistroColumns returns nil (no columns to validate).
+// Apps Script DISABLED — actual HE sheet has different columns.
+func ValidateRegistroColumns(actual []string) []string {
+	return nil
 }

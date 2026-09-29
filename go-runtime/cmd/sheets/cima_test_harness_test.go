@@ -332,8 +332,10 @@ func TestCheckIntegrity_Smoke(t *testing.T) {
 		t.Fatal("CheckIntegrity returned nil")
 	}
 	total, passed, failed := res.Summary()
-	if total < 20 {
-		t.Errorf("expected at least 20 checks, got %d", total)
+	// Apps Script DISABLED — fewer checks than v0.3.0 (was 86, now ~15).
+	// Threshold lowered accordingly.
+	if total < 10 {
+		t.Errorf("expected at least 10 checks, got %d", total)
 	}
 	t.Logf("Integrity: total=%d passed=%d failed=%d", total, passed, failed)
 

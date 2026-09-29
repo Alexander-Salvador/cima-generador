@@ -1,875 +1,270 @@
-# OVAV Template Architecture — he-lima
-# Schema: OVAV TEMPLATE v1 (canonical)
-# Authority: marco (systems_architect) · area=platform_engineering · lead=thavren
-# Status: design-revised (CEO feedback incorporated)
-# Reviewed: 2026-09-24
-# Revision: v0.1.0-arch → v0.2.0-rev
-#   · CORR-1: Working surface model (no accumulable fact table → no 50k risk)
-#   · CORR-2: 13 feriados PE validados D.L. 713 (eliminar Carnaval/Aniversario Lima)
-#   · CORR-3: Nuevo módulo 08_DBSync.gs (load/save entre grid y DB mensual)
-#   · CORR-4: 01_Feriados_PE ahora visible (referencia CEO)
+# CIMA HE Lima — Architecture (v0.4.0-real)
+# ============================================================================
+# **REAL architecture as verified live against the sheet on 2026-09-29.**
+#
+# Live spreadsheet: 1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y
+#
+# Discovered via `sheets list` and `sheets read --range`:
+#   - 5 tabs (no 18, no Apps Script modules, no monthly partitions)
+#   - All tabs UPPERCASE
+#   - Apps Script DISABLED (per CEO directive 2026-09-22)
+#   - Bridge CLI (Go runtime) is the primary interaction layer
+#
+# This YAML SUPERSEDES the v0.3.0-stable architecture that was based on
+# never-deployed Apps Script spec. The 874-line prior version is INVALID.
+#
+# Authority: thavren (lead) · Verified: 2026-09-29 · Stabilize: in progress
+# ============================================================================
 
 metadata:
   template_id: he-lima
-  template_name: "CIMA — Tracking Horas Extras Lima"
-  version: 0.2.0-rev
-  status: design-revised
+  template_name: "CIMA HE Lima"
+  version: 0.4.0-real
+  status: verified-live
   owner_architect: marco
   owner_implementer: andres
   ceo_sponsor: braka
-  created: 2026-09-24T00:00:00-05:00
-  updated: 2026-09-24T00:00:00-05:00
-  revision_history:
-    - {version: 0.1.0-arch, date: 2026-09-24, note: "design inicial con fact table 18,250 filas"}
-    - {version: 0.2.0-rev, date: 2026-09-24, note: "revisión CEO: working surface + partición mensual"}
-  ovav_compatibility: ">=1.1.0"
-  target_runtime: google_sheets
-  target_locale: es-PE
-  timezone: America/Lima
-  currency: PEN
-  scope:
-    team: "CIMA — Técnica Móvil"
-    city: Lima
-    country: PE
-    headcount_min: 20
-    headcount_max: 50
-    history_months: 12
-    active_year_default: 2026
-  supersedes: "excel-desktop-legacy (captura braka)"
-  replaces_sheet: "CIMA —/Técnica Móvil · hoja=HE (actual desordenada)"
-  dependencies:
-    ovav_go_runtime: ">=1.1.0"
-    apps_script_runtime: V8
-    external_apis: []   # ningún fetch externo — todo local para performance
-    sheets_limits_awareness:
-      max_cells_per_sheet: 10000000
-      max_rows_per_sheet: 50000
-      max_formula_chain_depth: 50
-      apps_script_exec_timeout_sec: 360
-      triggers_per_user: 30
-      cache_size_mb: 50
-      urlfetch_quota_daily: 20000
+  spreadsheet_id: 1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y
+  discovered_at: 2026-09-29T12:00:00-05:00
+  discovery_method: "live read via sheets CLI (OAuth via vault)"
+  supersedes: "0.2.0-rev (Apps Script spec — never deployed)"
 
 # ─────────────────────────────────────────────────────────────
-# SHEETS — cada hoja del spreadsheet (18 totales: 6 base + 12 mensuales)
+# CHANGE LOG
 # ─────────────────────────────────────────────────────────────
+revision_history:
+  - {version: 0.1.0-arch, date: 2026-09-24, note: "design inicial con 18 sheets + Apps Script"}
+  - {version: 0.2.0-rev, date: 2026-09-24, note: "revisión CEO — working surface + 12 mensuales"}
+  - {version: 0.3.0-stable, date: 2026-09-29, note: "FAKE — encoded never-deployed Apps Script spec"}
+  - {version: 0.4.0-real, date: 2026-09-29, note: "REAL — verified live against sheet 1MQ3wts..."}
+
+ovav_compatibility: ">=1.1.0"
+target_runtime: google_sheets
+target_locale: es-PE
+timezone: America/Lima
+currency: PEN
+
+apps_script:
+  status: DISABLED
+  disabled_at: 2026-09-22
+  reason: "CEO directive — Apps Script eliminated. Spreadsheet uses native formulas + bridge CLI."
+  bound_script_status: "orphan placeholder, not deletable via API (requires UI deletion)"
+
+bridge_cli:
+  binary: go-runtime/cmd/sheets
+  entrypoint: "go run -C go-runtime ./cmd/sheets <subcommand>"
+  oauth_storage: ".ovav/vault/credentials/google_oauth.enc (AES-256-GCM)"
+  vault_key: "~/.config/ovav/vault.key"
+  primary_subcommands:
+    - cima-schema
+    - cima-modules
+    - cima-test
+    - cima-lint
+    - cima-ci
+    - cima-drift
+    - cima-bundle
+    - cima-verify
+
+scope:
+  team: "Teleatento (Atento Peru) — call center servicio técnico móvil"
+  owner_real: "WILLIAMS ALEXANDER HUERTA SALVADOR (DNI 76292664)"
+  city: Lima
+  country: PE
+  headcount_actual: 25
+  active_default: 21
+  ceased: 4
+  scope_weeks: 4  # W del mes visible (1-4 semanas)
+
+# ─────────────────────────────────────────────────────────────
+# SHEETS — REAL schema (5 tabs, ALL UPPERCASE)
+# ─────────────────────────────────────────────────────────────
+
 sheets:
 
-  - id: cfg
-    name: "00_Config"
-    purpose: "Panel de control + parámetros globales + anclas"
-    visibility: protected
-    rows_used: 60
-    cols_used: 8
-    color_tab: "#1F2937"
-    anchors:
-      B2: "mes_dropdown (1-12)"
-      B3: "anio_dropdown (2024-2030)"
-      B4: "semana_dropdown (W01..W53)"
-      B5: "persona_filtro_dropdown"
-      B6: "factor_he_diurno (default 1.25)"
-      B7: "factor_he_nocturno (default 1.35)"
-      B8: "factor_feriado (default 2.00)"
-      B9: "jornada_max_diaria (default 8)"
-      B11: "ultimo_refresh timestamp"
-    columns:
-      - col: A
-        header: "Param"
-        type: text
-      - col: B
-        header: "Valor"
-        type: mixed
-      - col: C
-        header: "Notas"
-        type: text
-        width: 50
-
-  - id: holidays
-    name: "01_Feriados_PE"
-    purpose: "Calendario de feriados Perú (13 nacionales validados D.L. 713)"
-    visibility: visible   # CORR-4: CEO quiere ver lista como referencia
-    rows_used: 25         # 13 feriados + header + margen
-    cols_used: 6
-    color_tab: "#DC2626"
-    columns:
-      - col: A
-        header: "ID"
-        type: text   # F-NN
-      - col: B
-        header: "Nombre"
-        type: text
-      - col: C
-        header: "Tipo"
-        type: enum   # nacional_fijo | nacional_movil
-      - col: D
-        header: "Fecha"
-        type: date
-      - col: E
-        header: "Es_Movil"
-        type: bool   # calculado por Pascua
-      - col: F
-        header: "Aplica_HE"
-        type: bool   # true = paga factor feriado
-
-  - id: personas
-    name: "02_Personas"
-    purpose: "Maestro de personas (FK lógica hacia registros)"
+  - id: config
+    name: "CONFIG"
+    purpose: "Parámetros del sistema — zona orientativa + operativa"
     visibility: visible
-    rows_used: 60
-    cols_used: 10
-    color_tab: "#2563EB"
+    rows_used: 30
+    cols_used: 3
+    color_tab: navy
+    rows_meaning:
+      - "fila 1: title 'CONFIG — Parámetros del Sistema CIMA'"
+      - "fila 2: vacía"
+      - "fila 3: 'ZONA ORIENTATIVA — Datos de apoyo, ayuda (NO afecta al sistema)'"
+      - "filas 5-11: referencia (Documento canónico, Empresa, Owner, Convenciones)"
+      - "fila 13: '═══ ZONA OPERATIVA — Datos que SÍ afectan al sistema ═══'"
+      - "filas 14+: parámetros operativos (Máx HE semanal, Catálogo Turnos)"
+
+  - id: feriados_pe
+    name: "01_FERIADOS_PE"
+    purpose: "Calendario de feriados Perú (NACIONAL + PASCUA)"
+    visibility: visible
+    rows_used: 50
+    cols_used: 5
     columns:
       - col: A
-        header: "ID_Persona"
-        type: text   # P-NNN
-        pk: true
+        header: "FECHA"
+        type: date
       - col: B
+        header: "NOMBRE"
+        type: text
+      - col: C
+        header: "AÑO"
+        type: number
+      - col: D
+        header: "TIPO"
+        type: enum   # NACIONAL | PASCUA
+      - col: E
+        header: "OBSERVACIONES"
+        type: text
+    data_scope: "2025-2028+ (50+ filas)"
+    notes: "Tipos: NACIONAL (inamovible) o PASCUA (móvil). Source = D.L. 713 + Pascua computada."
+
+  - id: personal
+    name: "PERSONAL"
+    purpose: "Maestro de personas — 25 empleados"
+    visibility: visible
+    rows_used: 27   # header + 25 personas + buffer
+    cols_used: 8
+    color_tab: blue
+    columns:
+      - col: A
+        index: 1
+        header: "N°"
+        type: number
+      - col: B
+        index: 2
         header: "DNI"
-        type: text   # 8 dígitos
+        type: text   # 8 dígitos, leading zeros perdidos
       - col: C
-        header: "Apellidos_Nombres"
+        index: 3
+        header: "NOMBRES_COMPLETOS"
         type: text
       - col: D
-        header: "Cargo"
-        type: enum   # tecnico | supervisor | jefe_cuadrilla | admin
+        index: 4
+        header: "TELEFONO"
+        type: text   # 9 dígitos
       - col: E
-        header: "Cuadrilla"
-        type: enum   # A | B | C | D
+        index: 5
+        header: "HORARIO"
+        type: text   # "12:00 - 21:00" formato
       - col: F
-        header: "Turno_Base"
-        type: enum   # diurno | nocturno | rotativo
+        index: 6
+        header: "ESTADO"
+        type: enum   # Activo | Cese
       - col: G
-        header: "Fecha_Ingreso"
-        type: date
+        index: 7
+        header: "CARGO"
+        type: text   # RAC TELEFONICO
       - col: H
-        header: "Activo"
-        type: bool
-      - col: I
-        header: "Tarifa_Hora_PEN"
-        type: number   # decimal(8,2)
-      - col: J
-        header: "Notas"
-        type: text
+        index: 8
+        header: "AREA"
+        type: text   # JEFATURA TECNICA
+    data_scope: "25 personas reales"
 
-  - id: registro
-    name: "10_Registro_HE"
-    purpose: "WORKING SURFACE — grid de trabajo visible, ~100 filas, sincronizada con 98_DB_YYYY_MM"
+  - id: horas_extras
+    name: "HORAS EXTRAS"
+    purpose: "Working surface — semanal con empleados × días del mes"
     visibility: visible
-    is_fact_table: false      # CORR-1: NO es fact table acumulable
-    is_working_surface: true  # CORR-1: superficie emula Excel desktop
-    rows_used: 110            # 50 personas × 5 días visibles + header + buffer
-    cols_used: 22
-    color_tab: "#059669"
-    header_row: 1
-    freeze: "A2:C2"
-    sync_strategy: "load_save_db_sync"   # ver módulo 08_DBSync.gs
-    partition_key: "Mes_Año (YYYY-MM)"
-    notes: "Cambiar dropdown mes/año/semana SOBREESCRIBE el grid. Datos reales viven en 98_DB_YYYY_MM oculta."
+    rows_used: 33   # 8 header rows + 25 empleados
+    cols_used: 12  # Mínimo — días como columnas (W del mes)
+    color_tab: orange
+    header_rows:
+      - row: 1
+        content: "CONTROL DE HORAS EXTRAS"
+      - row: 2
+        content: "Summary labels (HE Totales, Empleados)"
+      - row: 3
+        content: "Summary values (0, 25)"
+      - row: 5
+        content: "Año selector (col B)"
+      - row: 6
+        content: "Mes selector (col B)"
+      - row: 7
+        content: "Day numbers (1-7) — cols E-K"
+      - row: 8
+        content: "Day letters (M X J V S D L) — cols E-K"
+    data_start_row: 9
+    employees_in_col_B: true
+    notes: "Layout weekly-view. Días como columnas (no filas). 4 semanas del mes visible."
+
+  - id: feedbacks
+    name: "Feedbacks"
+    purpose: "Auditoría semanal de calidad de llamadas"
+    visibility: visible
+    rows_used: 9
+    cols_used: 5
     columns:
       - col: A
-        header: "Fecha"
-        type: date
-        format: "yyyy-MM-dd"
+        header: "FECHA"
       - col: B
-        header: "ISO_Week"
-        type: text   # calculado: TEXT(WEEKNUM(A,21))
+        header: "SUPERVISOR"
       - col: C
-        header: "Dia_Semana"
-        type: enum   # lun-mar-mie-jue-vie-sab-dom
+        header: "AGENTE"
       - col: D
-        header: "Es_Feriado"
-        type: bool   # lookup directo 01_Feriados_PE!D:D
+        header: "DNI"
       - col: E
-        header: "Tipo_Dia"
-        type: enum   # Normal | Sabado | Domingo | Feriado
-      - col: F
-        header: "ID_Persona"
-        type: fk   # → 02_Personas.A
-      - col: G
-        header: "Apellidos_Nombres"
-        type: lookup   # VLOOKUP desde 02_Personas
-      - col: H
-        header: "Turno"
-        type: enum   # diurno | nocturno
-      - col: I
-        header: "Hora_Ingreso"
-        type: time
-        format: "HH:mm"
-      - col: J
-        header: "Hora_Salida"
-        type: time
-        format: "HH:mm"
-      - col: K
-        header: "Horas_Total"
-        type: number   # decimal(4,2)
-      - col: L
-        header: "Horas_Normales"
-        type: number   # decimal(4,2)
-      - col: M
-        header: "Horas_Extras"
-        type: number   # decimal(4,2)
-      - col: N
-        header: "Factor_Aplicado"
-        type: number   # decimal(3,2)
-      - col: O
-        header: "Horas_Ponderadas"
-        type: number   # decimal(6,2)   # K * N
-      - col: P
-        header: "Pago_HE_PEN"
-        type: number   # decimal(10,2)
-      - col: Q
-        header: "Observaciones"
-        type: text
-      - col: R
-        header: "Aud_Usuario"
-        type: text   # email editor
-      - col: S
-        header: "Aud_Timestamp"
-        type: datetime
-      - col: T
-        header: "Estado"
-        type: enum   # borrador | validado | aprobado | pagado
-      - col: U
-        header: "Mes_Año"
-        type: text   # YYYY-MM (sincroniza con 98_DB_YYYY_MM)
-      - col: V
-        header: "Sync_Status"
-        type: enum   # synced | pending | conflict (sincronización DB)
-
-  - id: dashboard
-    name: "20_Dashboard"
-    purpose: "KPIs ejecutivos — solo lectura + gráficos"
-    visibility: visible
-    rows_used: 40
-    cols_used: 12
-    color_tab: "#7C3AED"
-    anchors:
-      A1: "KPI cards (4 bloques)"
-      A10: "Tabla resumen por persona"
-      A20: "Gráfico HE mensual (column)"
-      A30: "Heatmap semana × persona"
-    data_source_strategy: "INDIRECT('98_DB_' & B3 & '_' & TEXT(B2, '00'))"
-
-  # CORR-1: 12 hojas mensuales ocultas (storage real)
-  - id: db_2026_01
-    name: "98_DB_2026_01"
-    purpose: "Storage Enero 2026 — auto-creada por 08_DBSync.gs"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 personas × 31 días
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_02
-    name: "98_DB_2026_02"
-    purpose: "Storage Febrero 2026"
-    visibility: hidden_from_users
-    rows_used: 1450   # 50 × 29 (2026 no bisiesto)
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_03
-    name: "98_DB_2026_03"
-    purpose: "Storage Marzo 2026"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 × 31
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_04
-    name: "98_DB_2026_04"
-    purpose: "Storage Abril 2026"
-    visibility: hidden_from_users
-    rows_used: 1500   # 50 × 30
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_05
-    name: "98_DB_2026_05"
-    purpose: "Storage Mayo 2026"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 × 31
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_06
-    name: "98_DB_2026_06"
-    purpose: "Storage Junio 2026"
-    visibility: hidden_from_users
-    rows_used: 1500   # 50 × 30
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_07
-    name: "98_DB_2026_07"
-    purpose: "Storage Julio 2026"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 × 31
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_08
-    name: "98_DB_2026_08"
-    purpose: "Storage Agosto 2026"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 × 31
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_09
-    name: "98_DB_2026_09"
-    purpose: "Storage Septiembre 2026"
-    visibility: hidden_from_users
-    rows_used: 1500   # 50 × 30
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_10
-    name: "98_DB_2026_10"
-    purpose: "Storage Octubre 2026"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 × 31
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_11
-    name: "98_DB_2026_11"
-    purpose: "Storage Noviembre 2026"
-    visibility: hidden_from_users
-    rows_used: 1500   # 50 × 30
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: db_2026_12
-    name: "98_DB_2026_12"
-    purpose: "Storage Diciembre 2026"
-    visibility: hidden_from_users
-    rows_used: 1550   # 50 × 31
-    cols_used: 22
-    color_tab: "#374151"
-    auto_created: true
-    template_match: "98_DB_YYYY_MM"
-
-  - id: audit
-    name: "99_Audit_Log"
-    purpose: "Append-only log de cambios (Apps Script)"
-    visibility: hidden_from_users
-    rows_used: 10000
-    cols_used: 8
-    color_tab: "#374151"
+        header: "CALL_ID"
+    notes: "NO es dashboard — es auditoría de calidad. '20_Dashboard' v0.3.0 spec NO EXISTE."
 
 # ─────────────────────────────────────────────────────────────
-# DATA MODEL — entidades y campos
+# DEPENDENCIES
 # ─────────────────────────────────────────────────────────────
-data_model:
-  entities:
-
-    - name: Persona
-      table_sheet: 02_Personas
-      pk: ID_Persona
-      fields:
-        - {name: ID_Persona, type: string, pattern: "^P-\\d{3}$"}
-        - {name: DNI, type: string, pattern: "^\\d{8}$"}
-        - {name: Apellidos_Nombres, type: string, min: 5, max: 120}
-        - {name: Cargo, type: enum, values: [tecnico, supervisor, jefe_cuadrilla, admin]}
-        - {name: Cuadrilla, type: enum, values: [A, B, C, D]}
-        - {name: Turno_Base, type: enum, values: [diurno, nocturno, rotativo]}
-        - {name: Fecha_Ingreso, type: date}
-        - {name: Activo, type: boolean, default: true}
-        - {name: Tarifa_Hora_PEN, type: decimal, precision: 8, scale: 2, min: 0}
-      invariants:
-        - "DNI único"
-        - "Si Activo=false, no aparecen en dropdown de filtro"
-
-    # CORR-1: Cambio fundamental — Registro particionado por mes en hojas DB
-    - name: Registro
-      table_sheet: "98_DB_YYYY_MM (partición mensual — 12 hojas para 2026)"
-      storage_pattern: "98_DB_{YYYY}_{MM}"   # ej: 98_DB_2026_03
-      working_surface_sheet: "10_Registro_HE"
-      pk: composite(FK_Fecha, FK_ID_Persona)
-      fields:    # mismas columnas que 10_Registro_HE
-        - {name: Fecha, type: date}
-        - {name: ID_Persona, type: fk → Persona}
-        - {name: Horas_Total, type: decimal, precision: 4, scale: 2, min: 0, max: 24}
-      invariants:
-        - "Una sola fila por (Fecha, ID_Persona) dentro del mes"
-        - "Horas_Normales + Horas_Extras = Horas_Total"
-        - "Si Tipo_Dia=Normal, Horas_Extras = max(0, Horas_Total − 8)"
-        - "Si Tipo_Dia=Sabado|Domingo|Feriado, Horas_Normales = 0"
-      lifecycle:
-        - "Crear fila: usuario edita 10_Registro_HE → onEdit → 08_DBSync.saveGridToDB(mes, anio)"
-        - "Cambiar mes: 08_DBSync.loadMonthToGrid(nuevo_mes, anio) sobreescribe grid"
-
-    - name: Feriado
-      table_sheet: 01_Feriados_PE
-      pk: ID
-      count_validated: 13   # CORR-2: validación D.L. 713
-      fields:
-        - {name: ID, type: string, pattern: "^F-\\d{2}$"}
-        - {name: Nombre, type: string}
-        - {name: Tipo, type: enum, values: [nacional_fijo, nacional_movil]}
-        - {name: Fecha, type: date}
-        - {name: Es_Movil, type: boolean}
-        - {name: Aplica_HE, type: boolean, default: true}
-      excluded_from_previous_version:
-        - {id: F-13, nombre: "Carnaval (lunes)", reason: "no es feriado nacional D.L. 713"}
-        - {id: F-14, nombre: "Viernes Santo (dup)", reason: "duplicado de F-03"}
-        - {id: F-15, nombre: "San Pedro y San Pablo (opt-in)", reason: "ahora F-05 fijo nacional"}
-        - {id: F-16, nombre: "Aniversario de Lima", reason: "regional, CEO excluyó"}
-
-    - name: Config
-      table_sheet: 00_Config
-      pk: Param
-      fields:
-        - {name: Param, type: string}
-        - {name: Valor, type: any}
-        - {name: Notas, type: text}
+dependencies:
+  ovav_go_runtime: ">=1.1.0"
+  apps_script_runtime: null  # DISABLED
+  external_apis:
+    - "Google Sheets API v4 (via OAuth2)"
+    - "Google Drive API (read-only via spreadsheet scope)"
+  sheets_limits_awareness:
+    max_cells_per_sheet: 10000000
+    max_rows_per_sheet: 50000
+    max_formula_chain_depth: 50
 
 # ─────────────────────────────────────────────────────────────
-# RELATIONSHIPS — FK lógicas
-# ─────────────────────────────────────────────────────────────
-relationships:
-
-  - name: Registro.persona
-    from: "10_Registro_HE.F / 98_DB_YYYY_MM.F"
-    to: 02_Personas.ID_Persona
-    type: lookup_visual
-    impl: "VLOOKUP / INDEX-MATCH desde Apps Script al crear fila"
-
-  - name: Registro.dia_tipo
-    from: "10_Registro_HE.D / 98_DB_YYYY_MM.D"
-    to: 01_Feriados_PE.Fecha
-    type: lookup_visual
-    impl: "COUNTIF(01_Feriados_PE.D:D, A2)>0 — lookup directo (CORR-1)"
-
-  - name: Registro.sync_db
-    from: "10_Registro_HE"
-    to: "98_DB_YYYY_MM (mismo Mes_Año)"
-    type: bidirectional_sync
-    impl: "08_DBSync.gs — loadMonthToGrid() / saveGridToDB()"
-    trigger: "onEdit en 00_Config!B2, B3 o B4"
-
-  - name: Dashboard.kpis
-    from: 20_Dashboard
-    to: "98_DB_YYYY_MM (partición Mes_Año)"
-    type: aggregations
-    impl: "SUMPRODUCT / SUMIFS vía INDIRECT('98_DB_' & B3 & '_' & TEXT(B2, '00'))"
-
-# ─────────────────────────────────────────────────────────────
-# UI LAYOUT — panel de control (CORR-1: añadir Semana)
-# ─────────────────────────────────────────────────────────────
-ui_layout:
-  control_panel:
-    location: 00_Config celdas B2:B9
-    elements:
-      - {cell: B2, label: "Mes",  control: dropdown, options: "1..12", default: mes_actual}
-      - {cell: B3, label: "Año",  control: dropdown, options: "2024..2030", default: anio_actual}
-      - {cell: B4, label: "Semana", control: dropdown, options: "W01..W53", default: W_actual}
-      - {cell: B5, label: "Persona", control: dropdown, options: "from 02_Personas where Activo=true", default: TODOS}
-      - {cell: B6, label: "Factor HE Diurno", control: number_input, range: [1.0, 3.0], default: 1.25}
-      - {cell: B7, label: "Factor HE Nocturno", control: number_input, range: [1.0, 3.0], default: 1.35}
-      - {cell: B8, label: "Factor Feriado", control: number_input, range: [1.0, 3.0], default: 2.00}
-      - {cell: B9, label: "Jornada Max Diaria", control: number_input, range: [4, 12], default: 8}
-  navigation:
-    - {from: "00_Config", via: "hyperlink A2", to: "10_Registro_HE"}
-    - {from: "00_Config", via: "hyperlink A3", to: "20_Dashboard"}
-  visual_constraints:
-    no_border_radius: true
-    no_floating_shapes: true
-    text_rotation_allowed: [0, 90]
-    fill_patterns: "standard_google_sheets only (no custom images)"
-    frozen_rows_policy: "header siempre congelado en hojas transaccionales"
-
-# ─────────────────────────────────────────────────────────────
-# FORMULA STRATEGY — simplificada con modelo working surface
-# ─────────────────────────────────────────────────────────────
-formula_strategy:
-  # CORR-1: lookup directo contra 01_Feriados_PE (sin acumulación)
-  detection_dia:
-    desc: "Clasificar cada fila en Normal/Sabado/Domingo/Feriado"
-    cells: "10_Registro_HE!C2:E110 (y por extensión 98_DB_YYYY_MM!C2:E1550)"
-    approach: "WEEKDAY(A,2) + COUNTIF(01_Feriados_PE!D:D, A2)"
-    rows_effective: 110      # solo grid visible
-  horas_normales:
-    desc: "Horas dentro de jornada normal"
-    cells: "10_Registro_HE!L2:L110"
-    approach: "IF(Tipo=Normal, MIN(K, $B$9), 0)"   # B9 ahora es jornada max
-  horas_extras:
-    desc: "Horas sobre jornada o en día no-laboral"
-    cells: "10_Registro_HE!M2:M110"
-    approach: "K - L"
-  factor_aplicado:
-    desc: "Factor HE según tipo de día y turno"
-    cells: "10_Registro_HE!N2:N110"
-    approach: "INDEX/MATCH sobre matriz_factor (00_Config D6:G9)"
-  iso_week:
-    desc: "Semana ISO 8601"
-    cells: "10_Registro_HE!B2:B110"
-    approach: "WEEKNUM(A, 21) en formato W##"
-  sync_helper:
-    desc: "Columna U (Mes_Año) — sincronización con 98_DB_YYYY_MM"
-    cells: "10_Registro_HE!U2:U110"
-    approach: "TEXT(A2, 'YYYY-MM')"   # drive 08_DBSync.loadMonthToGrid
-  dashboard_kpis:
-    desc: "SUMIFS sobre hoja DB mensual (INDIRECT)"
-    cells: "20_Dashboard"
-    approach: "INDIRECT('98_DB_' & B3 & '_' & TEXT(B2, '00'))!M:M con SUMIFS"
-
-# ─────────────────────────────────────────────────────────────
-# APPS SCRIPT MODULES — contrato, no implementación
-# ─────────────────────────────────────────────────────────────
-apps_script_modules:
-
-  - id: addon_menu
-    name: "00_AddOnMenu.gs"
-    responsibility: "Entry point onOpen() + menú nativo add-on + bootstrap + verificación estructura"
-    public_functions:
-      - onOpen(e)
-      - menuRefrescarConfig
-      - menuSyncManual
-      - menuRefrescarKPIs
-      - menuRefrescarHeatmap
-      - menuVerificarEstructura
-      - menuVerAuditLog
-      - menuTestCache
-      - menuPoblarDropdowns
-      - menuInstalarTriggers
-      - menuQuitarTriggers
-      - menuAcercaDe
-    architecture_notes:
-      - "Requerido por manifest: addOns.homepageTrigger.runFunction='onOpen'"
-      - "Sin HTML — 100% nativo Ui.createAddonMenu"
-      - "Bootstrap silencioso: dropdowns, cache, verificación estructura"
-      - "Alert proactivo si faltan sheets — sugiere deploy completo"
-
-  - id: cfg_loader
-    name: "01_CfgLoader.gs"
-    responsibility: "Lee 00_Config y expone valores a otros módulos via CacheService"
-    public_functions:
-      - getMes()
-      - getAnio()
-      - getSemana()
-      - getFactores()
-      - invalidateCache()
-
-  # CORR-3: simplificado — solo lee 01_Feriados_PE
-  - id: holidays_engine
-    name: "02_HolidaysEngine.gs"
-    responsibility: "Calcula Pascua móvil (Meeus/Jones/Butcher) y mantiene 01_Feriados_PE"
-    public_functions:
-      - calcularPascua(anio) → Date
-      - calcularJuevesSanto(anio) → Date
-      - calcularViernesSanto(anio) → Date
-      - poblarFeriados(anio)
-      - esFeriado(fecha) → boolean
-
-  # CORR-3: ya no maneja fact table acumulable — solo grid de trabajo
-  - id: registro_engine
-    name: "03_RegistroEngine.gs"
-    responsibility: "Maneja grid de trabajo 10_Registro_HE; valida invariantes por fila"
-    public_functions:
-      - upsertRegistro(fecha, idPersona, hIngreso, hSalida, turno, obs)
-      - validarInvariantes()        # simple trigger onEdit
-      - poblarGridVacio(mes, anio)  # crea filas vacías para todas las personas activas del mes
-
-  - id: formulas_recalc
-    name: "04_FormulasRecalc.gs"
-    responsibility: "Forzar recálculo de columnas derivadas cuando cambia un input"
-    public_functions:
-      - onEdit(e)          # simple trigger — delega a 08_DBSync si es B2/B3/B4
-      - recalcularFila(rowNumber)
-      - propagarVLookups()
-
-  - id: dashboard_refresh
-    name: "05_DashboardRefresh.gs"
-    responsibility: "Refresca KPIs de 20_Dashboard; actualiza gráficos desde partición mensual"
-    public_functions:
-      - refrescarKPIs()
-      - refrescarHeatmap()
-      - refrescarGraficoMensual()
-
-  - id: audit_logger
-    name: "06_AuditLogger.gs"
-    responsibility: "Append-only log a 99_Audit_Log (incluye eventos sync grid↔DB)"
-    public_functions:
-      - logAccion(usuario, accion, payload)
-
-  - id: triggers_wiring
-    name: "07_TriggersWiring.gs"
-    responsibility: "Registra time-driven triggers (refresh diario, cierre mensual)"
-    public_functions:
-      - instalarTriggers()
-      - eliminarTriggers()
-      - triggerCierreMes()   # último día del mes 23:00
-
-  # CORR-3: NUEVO módulo — sincronización grid ↔ DB mensual
-  - id: db_sync
-    name: "08_DBSync.gs"
-    responsibility: "Sincroniza 10_Registro_HE ↔ 98_DB_YYYY_MM (working surface ↔ storage)"
-    public_functions:
-      - loadMonthToGrid(mes, anio)            # Lee DB mensual → sobreescribe grid
-      - saveGridToDB(mes, anio)               # Lee grid → escribe en DB mensual
-      - createMonthSheetIfMissing(mes, anio)   # Auto-crea hoja DB oculta si no existe
-      - onConfigChange(e)                     # Trigger cuando cambia B2/B3/B4 en 00_Config
-      - resolveTargetSheet(mes, anio) → String  # '98_DB_2026_03'
-    sync_invariants:
-      - "saveGridToDB() preserva filas existentes en DB que NO están en el grid"
-      - "loadMonthToGrid() limpia grid antes de cargar (excepto header)"
-      - "createMonthSheetIfMissing() copia header de 10_Registro_HE"
-
-# ─────────────────────────────────────────────────────────────
-# CONDITIONAL FORMATTING — reglas pre-armadas
-# ─────────────────────────────────────────────────────────────
-conditional_formatting_rules:
-
-  - id: cf_feriado
-    range: "10_Registro_HE!E2:E110"
-    condition: "Tipo_Dia = 'Feriado'"
-    format: {fill: "#FEE2E2", text_color: "#991B1B", bold: true}
-
-  - id: cf_finsem
-    range: "10_Registro_HE!E2:E110"
-    condition: "Tipo_Dia IN ('Sabado','Domingo')"
-    format: {fill: "#FEF3C7", text_color: "#92400E"}
-
-  - id: cf_normal
-    range: "10_Registro_HE!E2:E110"
-    condition: "Tipo_Dia = 'Normal'"
-    format: {fill: "#D1FAE5", text_color: "#065F46"}
-
-  - id: cf_he_alta
-    range: "10_Registro_HE!M2:M110"
-    condition: "Horas_Extras > 4"
-    format: {fill: "#FCA5A5", text_color: "#7F1D1D", bold: true}
-
-  - id: cf_pago_alt
-    range: "10_Registro_HE!P2:P110"
-    condition: "Pago_HE_PEN > percentil_90_mes"
-    format: {fill: "#FBBF24", bold: true}
-
-  - id: cf_inactivo
-    range: "10_Registro_HE!F2:F110"
-    condition: "VLOOKUP Activo = FALSE"
-    format: {fill: "#E5E7EB", text_color: "#6B7280"}
-
-  - id: cf_sync_pending
-    range: "10_Registro_HE!V2:V110"
-    condition: "Sync_Status = 'pending'"
-    format: {fill: "#FDE68A", text_color: "#92400E", italic: true}
-
-  - id: cf_sync_conflict
-    range: "10_Registro_HE!V2:V110"
-    condition: "Sync_Status = 'conflict'"
-    format: {fill: "#FCA5A5", text_color: "#7F1D1D", bold: true}
-
-  - id: cf_header
-    range: "10_Registro_HE!A1:V1"
-    format: {fill: "#064E3B", text_color: "#FFFFFF", bold: true, rotation: 0}
-
-  - id: cf_cf_vertical
-    range: "10_Registro_HE!G1:V1"
-    format: {rotation: 90, vertical_align: "bottom", fill: "#064E3B"}
-
-# ─────────────────────────────────────────────────────────────
-# DATA VALIDATION — reglas de validación
-# ─────────────────────────────────────────────────────────────
-data_validation_rules:
-
-  - id: dv_mes
-    range: "00_Config!B2"
-    type: list_of_items
-    values: ["1","2","3","4","5","6","7","8","9","10","11","12"]
-    reject_invalid: true
-
-  - id: dv_anio
-    range: "00_Config!B3"
-    type: list_of_items
-    values: ["2024","2025","2026","2027","2028","2029","2030"]
-    reject_invalid: true
-
-  # CORR-1: nuevo dropdown semana
-  - id: dv_semana
-    range: "00_Config!B4"
-    type: list_of_items
-    values: ["W01","W02","W03","W04","W05","W06","W07","W08","W09","W10","W11","W12","W13","W14","W15","W16","W17","W18","W19","W20","W21","W22","W23","W24","W25","W26","W27","W28","W29","W30","W31","W32","W33","W34","W35","W36","W37","W38","W39","W40","W41","W42","W43","W44","W45","W46","W47","W48","W49","W50","W51","W52","W53"]
-    reject_invalid: true
-
-  - id: dv_persona_filtro
-    range: "00_Config!B5"
-    type: list_from_range
-    source: "02_Personas!C2:C60 where H=TRUE"
-    reject_invalid: true
-
-  - id: dv_cargo
-    range: "02_Personas!D2:D60"
-    type: list_of_items
-    values: ["tecnico","supervisor","jefe_cuadrilla","admin"]
-    reject_invalid: true
-
-  - id: dv_cuadrilla
-    range: "02_Personas!E2:E60"
-    type: list_of_items
-    values: ["A","B","C","D"]
-
-  - id: dv_turno_base
-    range: "02_Personas!F2:F60"
-    type: list_of_items
-    values: ["diurno","nocturno","rotativo"]
-
-  - id: dv_tipo_dia
-    range: "10_Registro_HE!E2:E110"
-    type: list_of_items
-    values: ["Normal","Sabado","Domingo","Feriado"]
-
-  - id: dv_id_persona
-    range: "10_Registro_HE!F2:F110"
-    type: list_from_range
-    source: "02_Personas!A2:A60"
-    reject_invalid: true
-
-  - id: dv_estado
-    range: "10_Registro_HE!T2:T110"
-    type: list_of_items
-    values: ["borrador","validado","aprobado","pagado"]
-
-  - id: dv_horas_total
-    range: "10_Registro_HE!K2:K110"
-    type: number
-    min: 0
-    max: 24
-    reject_invalid: true
-
-  - id: dv_dni
-    range: "02_Personas!B2:B60"
-    type: regex
-    pattern: "^\\d{8}$"
-    reject_invalid: true
-
-# ─────────────────────────────────────────────────────────────
-# PERFORMANCE CONSIDERATIONS — modelo working surface
+# PERFORMANCE & SCALE (REAL)
 # ─────────────────────────────────────────────────────────────
 performance_considerations:
-  expected_scale:    # CORR-1: métricas actualizadas
-    personas: 50
-    dias_por_mes_max: 31
-    grid_visible_rows: 110
-    db_mensual_rows_max: 1550   # 50 × 31
-    celdas_grid: 110 × 22 = 2420
-    celdas_db_mensual: 1550 × 22 = 34100
-    utilizacion_limite_sheets: "0.07% del límite 50k por hoja-mes"
-    total_storage_2026: 12 meses × 34100 = 409200 celdas (distribuidas)
-  working_surface_benefits:
-    - "Cambio dropdown = sobreescritura rápida (~50ms para 110 filas)"
-    - "Fórmulas recalculan solo grid visible, no 18k filas"
-    - "Storage mensual aislado = edición concurrente menos conflictiva"
-    - "Riesgo 50k eliminado — cada mes independiente"
-  bottlenecks_mitigations:
-    - {risk: "INDIRECT en Dashboard", mitigation: "limitar a 12 referencias exactas (un INDIRECT por KPI), preferir INDEX/MATCH directo cuando el mes esté fijado"}
-    - {risk: "Apps Script 6min timeout en saveGridToDB", mitigation: "operar por chunks (semana) en saveGridToDB; ~110 filas cabe en un solo batch"}
-    - {risk: "Triggers quota (30/user)", mitigation: "consolidar en 3 triggers máx (onEdit + onChange + time-driven diario)"}
-    - {risk: "VLOOKUP cadena larga en DB mensual", mitigation: "VLOOKUP solo en G (1 columna), resto derivado por fórmula local"}
-    - {risk: "Auto-crear 12 hojas upfront", mitigation: "createMonthSheetIfMissing() lazy — solo crea cuando usuario accede al mes por primera vez"}
-  caching:
-    use_cache_service: true
-    cache_ttl_sec: 600   # 10 min para feriados del año actual
-    cache_key_prefix: "he_lima_"
-  batch_strategy:
-    on_open: "cargar feriados del año actual a cache"
-    on_edit_grid: "recalcular solo fila afectada + celdas dependientes en 10_Registro_HE"
-    on_edit_config: "08_DBSync.onConfigChange() — saveGridToDB(mes_anterior) + loadMonthToGrid(nuevo_mes)"
-    on_month_close: "snapshot a 99_Audit_Log + crear hoja DB del mes siguiente si no existe"
+  expected_scale:
+    personas: 25
+    semanas_por_mes: 4
+    empleados_visibles: 25
+    holidays_total: 50
+    holidays_years: 4  # 2025-2028
 
 # ─────────────────────────────────────────────────────────────
-# DEPENDENCY DAG — fases de implementación (simplificado)
+# DECISION DAG — historical
 # ─────────────────────────────────────────────────────────────
-dependency_dag:
-  phases:
-    - id: P0
-      name: "Skeleton + Config"
-      delivers:
-        - "00_Config con anclas vacías (B2-B5, B6-B9 factores)"
-        - "00_Config dropdowns (mes, año, semana, persona)"
-      depends_on: []
-      owner: andres
-      eta_days: 1
+decision_log:
+  - date: 2026-09-22
+    decision: "Apps Script DISABLED"
+    reason: "CEO directive — bridge CLI only"
+  - date: 2026-09-29
+    decision: "Tab names UPPERCASE"
+    reason: "Verified live — not the camelCase v0.3.0 spec"
+  - date: 2026-09-29
+    decision: "5 tabs (not 18)"
+    reason: "Verified live — no monthly partitions, no audit log tab"
+  - date: 2026-09-29
+    decision: "Personal schema = 8 cols (N°, DNI, NOMBRES, TEL, HORARIO, ESTADO, CARGO, AREA)"
+    reason: "Verified live — no tarifa, no fecha_ingreso, no cuadrilla, no turno_base"
+  - date: 2026-09-29
+    decision: "HORAS EXTRAS layout = weekly grid (8 header rows, days as cols)"
+    reason: "Verified live — not the 22-col working surface v0.3.0 spec"
 
-    - id: P1
-      name: "Holidays Engine"
-      delivers:
-        - "01_Feriados_PE seed (13 feriados validados D.L. 713)"
-        - "02_HolidaysEngine.gs (Pascua Meeus/Jones/Butcher)"
-      depends_on: [P0]
-      owner: andres
-      eta_days: 1
-      decision_resolved: "Solo 13 feriados nacionales — Carnaval y Aniversario Lima excluidos (CORR-2)"
+# ─────────────────────────────────────────────────────────────
+# DEPRECATED — v0.3.0 spec (kept for git archaeology only)
+# ─────────────────────────────────────────────────────────────
+# The following sections are SUPERSEDED. They encoded a spec that was
+# never deployed. They are kept so future agents can understand what
+# was wrong.
+deprecated_spec:
+  warning: "All deprecated_* fields are FAKE. Do not use for verification."
+  deprecated_sheets_count: 18
+  deprecated_modules_count: 9
+  deprecated_apps_script_status: "NEVER DEPLOYED"
 
-    - id: P2
-      name: "Personas maestro"
-      delivers:
-        - "02_Personas con validaciones + seed 20 personas"
-      depends_on: [P0]
-      owner: andres
-      eta_days: 1
-
-    - id: P3
-      name: "Working surface + DB sync"
-      delivers:
-        - "10_Registro_HE con headers + CF + DV (rango E2:V110)"
-        - "08_DBSync.gs: loadMonthToGrid, saveGridToDB, createMonthSheetIfMissing"
-        - "12 hojas mensuales 98_DB_2026_01..12 (auto-creadas lazy)"
-      depends_on: [P0, P1, P2]
-      owner: andres
-      eta_days: 3
-      decision_resolved: "Modelo working surface — NO fact table acumulable (CORR-1)"
-
-    - id: P4
-      name: "Formulas core + Dashboard"
-      delivers:
-        - "Columnas K,L,M,N,O,P,U,V funcionales en 10_Registro_HE"
-        - "20_Dashboard KPIs vía INDIRECT('98_DB_' & B3 & '_' & TEXT(B2, '00'))"
-        - "03_RegistroEngine.gs upsertRegistro + poblarGridVacio"
-      depends_on: [P3]
-      owner: andres
-      eta_days: 2
-
-    - id: P5
-      name: "Triggers + auditoría + hardening"
-      delivers:
-        - "07_TriggersWiring.gs (onConfigChange → 08_DBSync)"
-        - "06_AuditLogger.gs (incluye eventos sync)"
-        - "99_Audit_Log"
-        - "Tests e2e: cambio dropdown guarda/carga correctamente"
-        - "Perf check 50 personas × 12 meses (working surface mode)"
-      depends_on: [P4]
-      owner: andres + clara (QA)
-      eta_days: 2
-
-  total_eta_days: 10    # antes 12 — simplificación por modelo working surface
-  critical_path: P0 → P1 → P3 → P4 → P5
-  parallelizable:
-    - [P1, P2]   # holidays y personas no se bloquean entre sí
-  dag_simplification_notes:
-    - "P3+P4 fusionados lógicamente: working surface + DB sync son una unidad inseparable"
-    - "P5 absorbió P6 (triggers) y P7 (hardening) — todo el cierre cabe en un sprint"
-    - "Eliminada P5 (Dashboard separada) — Dashboard depende solo de P3+P4, se hace en mismo sprint"
+# ─────────────────────────────────────────────────────────────
+# END — verified 2026-09-29 via live sheet read
+# ─────────────────────────────────────────────────────────────

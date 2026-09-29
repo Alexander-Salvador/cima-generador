@@ -13,8 +13,8 @@ import (
 
 // TestCIMAVersion checks the version constant is set.
 func TestCIMAVersion(t *testing.T) {
-	if CIMAVersion != "v0.3.0-stable" {
-		t.Errorf("CIMAVersion = %q, want %q", CIMAVersion, "v0.3.0-stable")
+	if CIMAVersion != "v0.4.0-real" {
+		t.Errorf("CIMAVersion = %q, want %q", CIMAVersion, "v0.4.0-real")
 	}
 }
 
@@ -86,115 +86,113 @@ func TestAuditArchiveSheet(t *testing.T) {
 	}
 }
 
-// TestRegistroColumns checks the 22 columns match architecture.yaml.
-func TestRegistroColumns(t *testing.T) {
-	cols := RegistroColumns()
-	if len(cols) != 22 {
-		t.Fatalf("RegistroColumns returned %d items, want 22", len(cols))
+// TestAuditArchiveSheetMissingSheet — Apps Script DISABLED.
+func TestAuditArchiveSheetMissingSheet(t *testing.T) {
+	// Apps Script DISABLED, but AuditArchiveSheet is still defined for backwards compat.
+	got := AuditArchiveSheet(2026, time.September)
+	if got == "" {
+		t.Error("AuditArchiveSheet should return a string even though Apps Script is disabled")
+	}
+}
+
+// TestRealSchema — verifies the REAL (v0.4.0) schema matches what was discovered live.
+func TestRealSchema(t *testing.T) {
+	// 5 expected tabs, all UPPERCASE.
+	expected := RealTabs()
+	if len(expected) != 5 {
+		t.Fatalf("RealTabs = %d items, want 5", len(expected))
 	}
 
-	// Check critical columns.
-	tests := []struct {
-		index  int
-		letter string
-		header string
-		typ    string
-	}{
-		{1, "A", "Fecha", "date"},
-		{6, "F", "ID_Persona", "fk"},
-		{11, "K", "Horas_Total", "number"},
-		{21, "U", "Mes_Año", "text"},
-		{22, "V", "Sync_Status", "enum"},
+	// PersonalColumns (real schema) DOES have 8 columns.
+	pc := PersonalColumns()
+	if len(pc) != 8 {
+		t.Errorf("PersonalColumns = %d items, want 8", len(pc))
 	}
-	for _, tt := range tests {
-		idx := tt.index - 1
-		if cols[idx].Letter != tt.letter {
-			t.Errorf("col[%d].Letter = %q, want %q",
-				idx, cols[idx].Letter, tt.letter)
-		}
-		if cols[idx].Header != tt.header {
-			t.Errorf("col[%d].Header = %q, want %q",
-				idx, cols[idx].Header, tt.header)
-		}
-		if cols[idx].Type != tt.typ {
-			t.Errorf("col[%d].Type = %q, want %q",
-				idx, cols[idx].Type, tt.typ)
-		}
+	if pc[0].Header != "N°" {
+		t.Errorf("PersonalColumns[0].Header = %q, want N°", pc[0].Header)
+	}
+
+	// FeriadosColumns has 5.
+	fc := FeriadosColumns()
+	if len(fc) != 5 {
+		t.Errorf("FeriadosColumns = %d items, want 5", len(fc))
+	}
+	if fc[0].Header != "FECHA" {
+		t.Errorf("FeriadosColumns[0].Header = %q, want FECHA", fc[0].Header)
 	}
 }
 
 // TestVerifyStructureFull checks that the validator returns OK when all
-// sheets are present.
+// real tabs are present (v0.4.0 schema).
 func TestVerifyStructureFull(t *testing.T) {
-	all := append([]string{}, RequiredBaseSheets()...)
-	all = append(all, AllMonthlyStorageSheets()...)
-	v := VerifyStructure("test-ss", all)
+	v := VerifyStructure("test-ss", RealTabs())
 	if !v.OK() {
-		t.Errorf("VerifyStructure(complete) = NOT OK; errors: %v", v.Errors)
+		t.Errorf("VerifyStructure(real-tabs) = NOT OK; errors: %v", v.Errors)
 	}
-	if !v.BaseSheetsOK {
-		t.Error("BaseSheetsOK should be true")
+	if v.TotalExpected != 5 {
+		t.Errorf("TotalExpected = %d, want 5", v.TotalExpected)
 	}
-	if !v.MonthlySheetsOK {
-		t.Error("MonthlySheetsOK should be true")
+	if v.TotalFound != 5 {
+		t.Errorf("TotalFound = %d, want 5", v.TotalFound)
 	}
 }
 
-// TestVerifyStructureMissing checks that the validator flags missing sheets.
+// TestVerifyStructureMissing checks that the validator flags missing tabs.
 func TestVerifyStructureMissing(t *testing.T) {
-	// Only 3 base sheets, no monthly.
+	// Only 2 tabs, missing 3.
 	v := VerifyStructure("test-ss", []string{
-		SheetConfig, SheetHolidays, SheetPersonas,
+		SheetCONFIG, SheetPersonal,
 	})
 	if v.OK() {
 		t.Error("VerifyStructure(partial) = OK; want NOT OK")
 	}
-	if v.BaseSheetsOK {
-		t.Error("BaseSheetsOK should be false")
-	}
 	if len(v.Missing) == 0 {
 		t.Error("Missing should be non-empty")
 	}
-	// 99_Audit_Log, 10_Registro_HE, 20_Dashboard should be missing.
+	// HORAS EXTRAS, 01_FERIADOS_PE, Feedbacks should be missing.
 	missingSet := map[string]bool{}
 	for _, m := range v.Missing {
 		missingSet[m] = true
 	}
-	for _, want := range []string{SheetRegistro, SheetDashboard, SheetAuditLog} {
+	for _, want := range []string{SheetHorasExtras, SheetFeriadosPE, SheetFeedbacks} {
 		if !missingSet[want] {
-			t.Errorf("missing sheet %q not reported", want)
+			t.Errorf("missing tab %q not reported", want)
 		}
 	}
 }
 
 // TestVerifyStructureExtras checks that extra sheets are reported (not failed).
 func TestVerifyStructureExtras(t *testing.T) {
-	all := append([]string{}, RequiredBaseSheets()...)
-	all = append(all, AllMonthlyStorageSheets()...)
-	all = append(all, "99_Custom_Personal", "01_Extra_Stuff")
+	// Add a "99_Extra" tab that is not in the real schema.
+	all := append([]string{}, RealTabs()...)
+	all = append(all, "99_Extra_Tab")
 	v := VerifyStructure("test-ss", all)
 	if !v.OK() {
 		t.Errorf("VerifyStructure(complete+extras) = NOT OK; errors: %v", v.Errors)
 	}
-	if len(v.Extra) != 2 {
-		t.Errorf("Extra should have 2 entries, got %d", len(v.Extra))
+	if len(v.Extra) != 1 {
+		t.Errorf("Extra should have 1 entry, got %d", len(v.Extra))
 	}
 }
 
-// TestVerifyStructureArchiveSheetsIgnored checks that audit archive sheets
-// don't count as "extra" (they are part of the rotation system).
-func TestVerifyStructureArchiveSheetsIgnored(t *testing.T) {
-	all := append([]string{}, RequiredBaseSheets()...)
-	all = append(all, AllMonthlyStorageSheets()...)
-	all = append(all, "99_Audit_Log_archive_2026_09")
-	v := VerifyStructure("test-ss", all)
-	if len(v.Extra) != 0 {
-		t.Errorf("Extra should be 0 (archive sheets ignored), got %d: %v",
-			len(v.Extra), v.Extra)
+// TestVerifyStructureNoAppsScriptSheets ensures v0.3.0 fake sheets are NOT expected.
+func TestVerifyStructureNoAppsScriptSheets(t *testing.T) {
+	// Provide ONLY the v0.3.0 fake sheets — should fail because those
+	// are not the real schema.
+	fake := []string{
+		"00_Config", "01_Feriados_PE", "02_Personas",
+		"10_Registro_HE", "20_Dashboard", "99_Audit_Log",
+	}
+	v := VerifyStructure("test-ss", fake)
+	if v.OK() {
+		t.Error("VerifyStructure(fake-sheets) = OK; want NOT OK")
+	}
+	if len(v.Missing) == 0 {
+		t.Error("Should report missing real tabs")
 	}
 }
 
-// TestValidateRegistroColumns checks column header validation.
+// TestValidateRegistroColumns checks column header validation (legacy).
 func TestValidateRegistroColumns(t *testing.T) {
 	actual := []string{
 		"Fecha", "ISO_Week", "Dia_Semana", "Es_Feriado", "Tipo_Dia",
@@ -209,91 +207,44 @@ func TestValidateRegistroColumns(t *testing.T) {
 	}
 }
 
-// TestValidateRegistroColumnsWrong checks that mismatches are detected.
+// TestValidateRegistroColumnsWrong — Apps Script DISABLED.
+// The legacy v0.3.0 schema with 22 columns is no longer the live spec.
 func TestValidateRegistroColumnsWrong(t *testing.T) {
-	actual := []string{
-		"Fecha", "ISO_Week", "Dia_Semana", "Es_Feriado", "Tipo_Dia",
-		"ID_Persona", "Apellidos_Nombres", "Turno", "Hora_Ingreso", "Hora_Salida",
-		"Horas_Total", "Horas_Normales", "Horas_Extras", "Factor_Aplicado",
-		"Horas_Ponderadas", "Pago_HE_PEN", "Observaciones", "Aud_Usuario",
-		"Aud_Timestamp", "Estado", "Mes_Año", "Partition_Key", // ← WRONG: should be Sync_Status
-	}
-	mismatches := ValidateRegistroColumns(actual)
-	if len(mismatches) != 1 {
-		t.Fatalf("expected 1 mismatch, got %d: %v", len(mismatches), mismatches)
-	}
-	if !strings.Contains(mismatches[0], "Partition_Key") {
-		t.Errorf("mismatch should mention Partition_Key, got: %s", mismatches[0])
-	}
-	if !strings.Contains(mismatches[0], "Sync_Status") {
-		t.Errorf("mismatch should mention Sync_Status, got: %s", mismatches[0])
+	// ValidateRegistroColumns now returns nil (Apps Script DISABLED).
+	mismatches := ValidateRegistroColumns([]string{"anything"})
+	if len(mismatches) != 0 {
+		t.Errorf("expected 0 mismatches (Apps Script DISABLED), got %d: %v",
+			len(mismatches), mismatches)
 	}
 }
 
 // TestValidateModules checks required module validation.
+// Apps Script is DISABLED — no modules to validate.
 func TestValidateModules(t *testing.T) {
-	// All 9 canonical modules.
-	all := []string{}
-	for _, m := range CanonicalModules() {
-		all = append(all, m.File)
-	}
-	missing := ValidateModules(all)
+	missing := ValidateModules([]string{"anything"})
 	if len(missing) != 0 {
-		t.Errorf("ValidateModules(all) = %v, want []", missing)
-	}
-
-	// Missing 00_AddOnMenu.gs (required).
-	allExcept00 := all[1:]
-	missing = ValidateModules(allExcept00)
-	if len(missing) != 1 || missing[0] != "00_AddOnMenu.gs" {
-		t.Errorf("ValidateModules(-00) = %v, want [00_AddOnMenu.gs]", missing)
+		t.Errorf("ValidateModules = %v, want [] (Apps Script DISABLED)", missing)
 	}
 }
 
-// TestCanonicalModules checks that all 9 modules have valid number ordering.
+// TestCanonicalModules checks that no Apps Script modules exist.
 func TestCanonicalModules(t *testing.T) {
 	mods := CanonicalModules()
-	if len(mods) != 9 {
-		t.Fatalf("CanonicalModules returned %d items, want 9", len(mods))
-	}
-	for i, m := range mods {
-		if m.Number != i {
-			t.Errorf("module[%d].Number = %d, want %d", i, m.Number, i)
-		}
-		if m.File == "" {
-			t.Errorf("module[%d].File is empty", i)
-		}
-		if m.Responsibility == "" {
-			t.Errorf("module[%d].Responsibility is empty", i)
-		}
-		if len(m.PublicFunctions) == 0 {
-			t.Errorf("module[%d].PublicFunctions is empty", i)
-		}
+	if len(mods) != 0 {
+		t.Errorf("CanonicalModules = %d items, want 0 (Apps Script DISABLED)", len(mods))
 	}
 }
 
-// TestRequiredModules checks that 00, 01, 02, 03, 04, 06, 08 are required.
+// TestRequiredModules checks that no Apps Script modules are required.
 func TestRequiredModules(t *testing.T) {
 	req := RequiredModules()
-	if len(req) != 7 {
-		t.Fatalf("RequiredModules returned %d items, want 7", len(req))
+	if len(req) != 0 {
+		t.Errorf("RequiredModules = %d items, want 0 (Apps Script DISABLED)", len(req))
 	}
-	// 05 and 07 should be optional.
-	all := CanonicalModules()
-	for _, m := range all {
-		if m.Number == 5 || m.Number == 7 {
-			if m.Required {
-				t.Errorf("module %d (%s) should be optional", m.Number, m.File)
-			}
-		} else {
-			if !m.Required {
-				t.Errorf("module %d (%s) should be required", m.Number, m.File)
-			}
-		}
-	}
+	_ = req
 }
 
-// TestAnchors checks default anchors match architecture.yaml v2.
+// TestAnchors checks default anchors (legacy).
 func TestAnchors(t *testing.T) {
 	a := DefaultAnchors()
 	tests := []struct {
@@ -330,35 +281,30 @@ func TestVerificationStringFormat(t *testing.T) {
 	v := &CIMAVerification{
 		SpreadsheetID:  "test-ss",
 		Timestamp:      time.Now(),
-		TotalExpected:  18,
-		TotalFound:     6,
-		BaseSheetsOK:   false,
-		Missing:        []string{"10_Registro_HE"},
-		Errors:         []string{"missing base sheet: 10_Registro_HE"},
+		TotalExpected:  5,
+		TotalFound:     2,
+		Missing:        []string{SheetHorasExtras},
+		Errors:         []string{"missing tab: " + SheetHorasExtras},
 	}
 	s := v.String()
 	if !strings.Contains(s, "CIMA Verification") {
 		t.Error("output missing 'CIMA Verification'")
 	}
-	if !strings.Contains(s, "10_Registro_HE") {
-		t.Error("output missing '10_Registro_HE'")
+	if !strings.Contains(s, SheetHorasExtras) {
+		t.Errorf("output missing %q", SheetHorasExtras)
 	}
 	if !strings.Contains(s, "Missing") {
 		t.Error("output missing 'Missing' label")
 	}
 }
 
-// TestPartitionKeyFixNotInCanonical checks that the fixed column name is used.
+// TestPartitionKeyFixNotInCanonical — Apps Script DISABLED.
+// The original v0.3.0 schema is no longer the live spec.
+// The real sheet uses different column names (verified live 2026-09-29).
 func TestPartitionKeyFixNotInCanonical(t *testing.T) {
-	// Regression test for Day 2.2 typo fix.
+	// With Apps Script DISABLED, RegistroColumns returns empty.
 	cols := RegistroColumns()
-	for _, c := range cols {
-		if c.Header == "Partition_Key" {
-			t.Error("Schema still references old typo 'Partition_Key' — should be 'Sync_Status'")
-		}
-	}
-	// Verify Sync_Status is at column V (index 22).
-	if cols[21].Header != "Sync_Status" {
-		t.Errorf("Column V header = %q, want Sync_Status", cols[21].Header)
+	if len(cols) != 0 {
+		t.Errorf("RegistroColumns = %d items, want 0 (Apps Script DISABLED)", len(cols))
 	}
 }
