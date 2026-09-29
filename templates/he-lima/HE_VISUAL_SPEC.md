@@ -176,7 +176,7 @@ Auditoría semanal W39-2026.
 
 ## 📂 Archivos generados
 
-- `.ovav/templates/he-lima/preview-v2.html` — preview HTML del nuevo layout (CEO puede abrir)
+- ~~`.ovav/templates/he-lima/preview-v2.html` — preview HTML~~ REMOVIDO 2026-09-29 (CEO: "no usaremos html")
 - Sheets modificadas:
   - `00_CONFIG` (agregada zona HE LIMA rows 68-82)
   - `01_FERIADOS_PE` (NUEVA — 90 feriados)
