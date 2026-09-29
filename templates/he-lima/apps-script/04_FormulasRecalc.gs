@@ -7,13 +7,15 @@
  *   - onEdit(e)            → router: delega según hoja y rango afectado
  *   - recalcularFila(row)  → fuerza re-cálculo de fórmulas en una fila
  *   - propagarVLookups()   → reescribe VLOOKUPs en col G si 02_Personas cambió
+ *   - alertasEnOnEdit()    → detecta anomalías (H>14, inactivo, conflict)
  *
  * Anti-patterns evitados:
  *   - NO usar NOW()/TODAY()/RAND() por fila (volátiles)
  *   - NO usar INDIRECT en grid (volátil)
  *   - NO usar ARRAYFORMULA en 1,550 filas (legibilidad)
  *
- * Authority: marco · Implementer: andres
+ * Authority: marco · Implementer: andres · alerts: thavren
+ * Updated: 2026-09-29 — sistema de alertas automáticas
  */
 
 /**
@@ -56,6 +58,7 @@ function onEdit(e) {
     // Validar invariantes en la fila editada
     if (row >= 2 && row <= REGISTRO_MAX_ROWS) {
       recalcularFila(row);
+      alertasEnOnEdit_(row, col);
       validarInvariantes(); // costoso — Apps Script hace debounce interno
     }
     // Si editó I/J → K se recalcula automáticamente
@@ -146,4 +149,108 @@ function recalcularGridCompleto() {
   const valores = rango.getValues();
   rango.setValues(valores);
   SpreadsheetApp.flush();
+}
+
+/**
+ * Detecta anomalías en la fila editada y dispara alertas/al log.
+ * Reglas:
+ *   - H_total > 14 → sospecha fraude o error data entry
+ *   - ID_Persona inactiva (02_Personas!H=FALSE) → inconsistencia
+ *   - Sync_Status = 'conflict' → requiere intervención manual
+ *
+ * Estrategia: silencioso por defecto. Solo log a 99_Audit_Log.
+ * UI alert se agrega si usuario habilita explícitamente via menú.
+ *
+ * @param {number} row Fila editada (2..110)
+ * @param {number} col Columna editada (1..22)
+ * @private
+ */
+function alertasEnOnEdit_(row, col) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SHEET_REGISTRO);
+  if (!sh) return;
+
+  // Solo evaluar cuando cambió K (H_total), F (ID_Persona) o V (Sync_Status)
+  const colEvaluar = [6, 11, 22]; // F, K, V
+  if (colEvaluar.indexOf(col) === -1) return;
+
+  try {
+    const k = sh.getRange(row, 11).getValue(); // H_total
+    const f = sh.getRange(row, 6).getValue();  // ID_Persona
+    const v = sh.getRange(row, 22).getValue(); // Sync_Status
+
+    // Regla 1: H_total > 14
+    if (typeof k === 'number' && k > 14) {
+      logAlerta_('horas_excesivas', row, 'H_total=' + k + ' > 14h umbral', f);
+    }
+
+    // Regla 2: ID_Persona inactiva
+    if (typeof f === 'string' && /^P-\d{3}$/.test(f)) {
+      const personasSh = ss.getSheetByName(SHEET_PERSONAS);
+      if (personasSh) {
+        const filaPersona = buscarFilaPersona_(personasSh, f);
+        if (filaPersona > 0) {
+          const activo = personasSh.getRange(filaPersona, 8).getValue();
+          if (activo === false || activo === 'FALSE' || activo === 0) {
+            logAlerta_('persona_inactiva_con_horas', row, f + ' está Activo=FALSE pero recibe horas', f);
+          }
+        }
+      }
+    }
+
+    // Regla 3: Sync_Status = conflict
+    if (v === 'conflict') {
+      logAlerta_('sync_conflict', row, 'Sync_Status=conflict — requiere intervención manual', f);
+    }
+  } catch (err) {
+    console.warn('alertas_onedit_failed row=' + row + ': ' + err.message);
+  }
+}
+
+/**
+ * Log estructurado de alerta — usa logAccion con prefijo 'alert:'.
+ * Categorías: 'horas_excesivas' | 'persona_inactiva_con_horas' | 'sync_conflict'
+ *
+ * @param {string} tipo
+ * @param {number} row
+ * @param {string} detalle
+ * @param {string} idPersona
+ * @private
+ */
+function logAlerta_(tipo, row, detalle, idPersona) {
+  if (typeof logAccion !== 'function') return;
+  try {
+    logAccion(
+      Session.getActiveUser().getEmail(),
+      'alert:' + tipo,
+      {
+        sheet: SHEET_REGISTRO,
+        row: row,
+        col: 'K',
+        oldValue: '',
+        newValue: detalle + ' (persona=' + (idPersona || 'unknown') + ')',
+      }
+    );
+  } catch (e) {
+    console.warn('log_alerta_failed tipo=' + tipo + ': ' + e.message);
+  }
+}
+
+/**
+ * Busca fila de persona por ID_Persona en 02_Personas.
+ * Retrecó 0 si no encontrada.
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} personasSh
+ * @param {string} idPersona ej: P-007
+ * @returns {number} fila (1-based, 0 si no encontrada)
+ * @private
+ */
+function buscarFilaPersona_(personasSh, idPersona) {
+  const last = personasSh.getLastRow();
+  if (last < 2) return 0;
+  const ids = personasSh.getRange(2, 1, last - 1, 1).getValues();
+  for (let i = 0; i < ids.length; i++) {
+    if (ids[i][0] === idPersona) return i + 2;
+  }
+  return 0;
 }

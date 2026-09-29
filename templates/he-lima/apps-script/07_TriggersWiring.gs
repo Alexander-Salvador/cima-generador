@@ -21,52 +21,66 @@ const TRIGGER_DAILY_FUNC = 'refrescarDashboardCompleto';
 /** @constant {string} ID del trigger time-driven mensual */
 const TRIGGER_MONTHLY_FUNC = 'triggerCierreMes';
 
+/** @constant {number} Lock timeout en ms — instalación de triggers puede tardar */
+const TRIGGER_LOCK_TIMEOUT = 15000;
+
 /**
  * Instala los 3 triggers del sistema.
  * Idempotente: si ya existen, los reemplaza en lugar de duplicar.
  *
  * Cuota Google: max 30 triggers/usuario. OVAV usa 3.
  *
+ * Concurrencia: protegido con LockService.getDocumentLock() para evitar
+ * duplicación cuando 2 admins ejecutan simultáneamente.
+ *
  * @returns {void}
  */
 function instalarTriggers() {
-  // Limpiar triggers previos del proyecto (idempotencia)
-  eliminarTriggers();
+  const lock = LockService.getDocumentLock();
+  lock.waitLock(TRIGGER_LOCK_TIMEOUT);
+  try {
+    // Limpiar triggers previos del proyecto (idempotencia)
+    eliminarTriggers();
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // 1. onChange (installable — captura cambios estructurales)
-  ScriptApp.newTrigger(TRIGGER_FUNC_ON_EDIT)
-    .forSpreadsheet(ss)
-    .onChange()
-    .create();
+    // 1. onChange (installable — captura cambios estructurales)
+    ScriptApp.newTrigger(TRIGGER_FUNC_ON_EDIT)
+      .forSpreadsheet(ss)
+      .onChange()
+      .create();
 
-  // 2. Daily refresh @ 02:00 Lima time
-  ScriptApp.newTrigger(TRIGGER_DAILY_FUNC)
-    .timeBased()
-    .atHour(2)
-    .everyDays(1)
-    .inTimezone('America/Lima')
-    .create();
+    // 2. Daily refresh @ 02:00 Lima time
+    ScriptApp.newTrigger(TRIGGER_DAILY_FUNC)
+      .timeBased()
+      .atHour(2)
+      .everyDays(1)
+      .inTimezone('America/Lima')
+      .create();
 
-  // 3. Monthly close — último día del mes @ 23:00 (ver triggerCierreMes)
-  // Apps Script no soporta "último día del mes" directamente; usamos
-  // diario y triggerCierreMes() verifica si es último día del mes.
-  ScriptApp.newTrigger(TRIGGER_MONTHLY_FUNC)
-    .timeBased()
-    .atHour(23)
-    .everyDays(1)
-    .inTimezone('America/Lima')
-    .create();
+    // 3. Monthly close — último día del mes @ 23:00 (ver triggerCierreMes)
+    // Apps Script no soporta "último día del mes" directamente; usamos
+    // diario y triggerCierreMes() verifica si es último día del mes.
+    ScriptApp.newTrigger(TRIGGER_MONTHLY_FUNC)
+      .timeBased()
+      .atHour(23)
+      .everyDays(1)
+      .inTimezone('America/Lima')
+      .create();
 
-  if (typeof logAccion === 'function') {
-    logAccion(Session.getActiveUser().getEmail(), 'trigger', {
-      sheet: '(system)',
-      row: 0,
-      col: '',
-      oldValue: '',
-      newValue: '3 triggers instalados (onChange + daily + monthly-check)',
-    });
+    if (typeof logAccion === 'function') {
+      logAccion(Session.getActiveUser().getEmail(), 'trigger', {
+        sheet: '(system)',
+        row: 0,
+        col: '',
+        oldValue: '',
+        newValue: '3 triggers instalados (onChange + daily + monthly-check)',
+      });
+    }
+  } finally {
+    if (lock && lock.hasLock && lock.hasLock()) {
+      lock.releaseLock();
+    }
   }
 }
 
