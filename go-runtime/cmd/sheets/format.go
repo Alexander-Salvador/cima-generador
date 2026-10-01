@@ -393,6 +393,11 @@ type CellStyleSpec struct {
 	BorderLeft   bool
 	BorderRight  bool
 	BorderColor  string
+	// NumberFormat sets the cell's number format type ("TEXT" | "NUMBER" |
+	// "DATE" | "PERCENT" | "CURRENCY" | etc.). When set, the bg/fg/borders
+	// are NOT applied — only the number format. Use a separate call for
+	// combined styling.
+	NumberFormat string
 }
 
 // SetCellStyle applies a plain cell style (bg, fg, bold, borders)
@@ -466,9 +471,22 @@ func (cl *Client) SetCellStyle(spec CellStyleSpec) error {
 		}
 		format["borders"] = borders
 	}
+	// NumberFormat-only path: build a separate request.
+	if spec.NumberFormat != "" {
+		nfReq := map[string]any{
+			"repeatCell": map[string]any{
+				"range":  grid,
+				"cell":   map[string]any{"userEnteredFormat": map[string]any{"numberFormat": map[string]any{"type": spec.NumberFormat}}},
+				"fields": "userEnteredFormat.numberFormat",
+			},
+		}
+		nfBody, _ := json.Marshal(map[string]any{"requests": []map[string]any{nfReq}})
+		return cl.batchUpdate(nfBody)
+	}
 	if len(format) == 0 {
 		return fmt.Errorf("SetCellStyle: nothing to apply (need at least bg/fg/bold/borders)")
 	}
+
 	fields := []string{}
 	if _, ok := format["backgroundColor"]; ok {
 		fields = append(fields, "backgroundColor")
@@ -481,6 +499,9 @@ func (cl *Client) SetCellStyle(spec CellStyleSpec) error {
 	}
 	if _, ok := format["borders"]; ok {
 		fields = append(fields, "borders")
+	}
+	if len(fields) == 0 {
+		return fmt.Errorf("SetCellStyle: nothing to apply (need at least bg/fg/bold/borders)")
 	}
 	fieldsJoined := "userEnteredFormat(" + strings.Join(fields, ",") + ")"
 	body, _ := json.Marshal(map[string]any{
