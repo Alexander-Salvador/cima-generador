@@ -579,6 +579,52 @@ func (cl *Client) SetFreezePanes(tabName string, frozenRows, frozenCols int) err
 	return cl.batchUpdate(body)
 }
 
+// ExpandGrid extends a tab's row/column count so writes can target cells
+// beyond the current grid. Use for adding new columns/rows without shifting
+// existing data. tabName: tab to modify. colsToAdd: how many extra columns to append.
+// Returns the new column count.
+func (cl *Client) ExpandGrid(tabName string, colsToAdd int) error {
+	if err := EnsureFresh(cl.c); err != nil {
+		return err
+	}
+	sheetID, err := cl.resolveSheetID(tabName)
+	if err != nil {
+		return fmt.Errorf("expand grid: %w", err)
+	}
+	// First, get current grid properties
+	sheets, err := cl.ListSheets()
+	if err != nil {
+		return fmt.Errorf("expand grid: list sheets: %w", err)
+	}
+	var sheet *SheetMeta
+	for _, s := range sheets {
+		if s.Title == tabName {
+			sheet = &s
+			break
+		}
+	}
+	if sheet == nil {
+		return fmt.Errorf("expand grid: tab %q not found", tabName)
+	}
+	newCols := sheet.Cols + colsToAdd
+	body, _ := json.Marshal(map[string]any{
+		"requests": []map[string]any{
+			{
+				"updateSheetProperties": map[string]any{
+					"properties": map[string]any{
+						"sheetId": sheetID,
+						"gridProperties": map[string]any{
+							"columnCount": newCols,
+						},
+					},
+					"fields": "gridProperties.columnCount",
+				},
+			},
+		},
+	})
+	return cl.batchUpdate(body)
+}
+
 func (cl *Client) resolveSheetID(tabName string) (int64, error) {
 	sheets, err := cl.ListSheets()
 	if err != nil {

@@ -119,6 +119,8 @@ func main() {
 		exitOn(runResizeColumnsCmd(repoRoot, args))
 	case "freeze":
 		exitOn(runFreezeCmd(repoRoot, args))
+	case "expand-grid":
+		exitOn(runExpandGridCmd(repoRoot, args))
 	case "validate":
 		exitOn(runValidateCmd(repoRoot, args))
 	case "protect":
@@ -2220,6 +2222,40 @@ func runFreezeCmd(repoRoot string, args []string) error {
 		"tab": tab, "rows": rows, "cols": cols,
 	}, 1)
 	fmt.Printf("✅ froze %d rows + %d cols on %s\n", rows, cols, tab)
+	return nil
+}
+
+// runExpandGridCmd extends a tab's grid by N columns (or rows).
+// Usage: sheets expand-grid --tab T --cols 1
+func runExpandGridCmd(repoRoot string, args []string) error {
+	tab := flagValue(args, "--tab", "")
+	if tab == "" {
+		return fmt.Errorf("expand-grid: --tab required")
+	}
+	cols, _ := strconv.Atoi(flagValue(args, "--cols", "0"))
+	if cols == 0 {
+		return fmt.Errorf("expand-grid: --cols required (e.g. --cols 1)")
+	}
+	if cols < 0 {
+		return fmt.Errorf("expand-grid: --cols must be positive")
+	}
+	id := pickSpreadsheetID(args)
+	if err := assertAllowed(id); err != nil {
+		return err
+	}
+	store := NewCredStore(repoRoot)
+	creds, err := store.Load()
+	if err != nil {
+		return err
+	}
+	cl := NewClient(creds, id)
+	if err := cl.ExpandGrid(tab, cols); err != nil {
+		return fmt.Errorf("expand-grid: %w", err)
+	}
+	audit(repoRoot, id, "", "expand_grid", map[string]any{
+		"tab": tab, "cols": cols,
+	}, 1)
+	fmt.Printf("✅ expanded %s grid by %d cols\n", tab, cols)
 	return nil
 }
 

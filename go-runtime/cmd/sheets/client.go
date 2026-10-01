@@ -59,13 +59,26 @@ type SheetMeta struct {
 	SheetID int64  `json:"sheetId"`
 	Title   string `json:"title"`
 	Index   int    `json:"index"`
-	Rows    int    `json:"gridProperties.rowCount"`
-	Cols    int    `json:"gridProperties.columnCount"`
+	Rows    int    `json:"rowCount"`
+	Cols    int    `json:"columnCount"`
+}
+
+// sheetProperties is the full nested structure used to parse rowCount/columnCount
+// from gridProperties (Go's json package doesn't handle dotted path tags for
+// inline nested structs).
+type sheetProperties struct {
+	SheetID int64  `json:"sheetId"`
+	Title   string `json:"title"`
+	Index   int    `json:"index"`
+	Grid    struct {
+		Rows int `json:"rowCount"`
+		Cols int `json:"columnCount"`
+	} `json:"gridProperties"`
 }
 
 type spreadsheetResp struct {
 	Sheets []struct {
-		Properties SheetMeta `json:"properties"`
+		Properties sheetProperties `json:"properties"`
 	} `json:"sheets"`
 }
 
@@ -74,7 +87,7 @@ func (cl *Client) ListSheets() ([]SheetMeta, error) {
 	if err := EnsureFresh(cl.c); err != nil {
 		return nil, err
 	}
-	u := fmt.Sprintf("%s/%s?fields=sheets(properties)", sheetsAPIBase, cl.spreadsheetID)
+	u := fmt.Sprintf("%s/%s?fields=sheets/properties(title,sheetId),sheets/properties/gridProperties", sheetsAPIBase, cl.spreadsheetID)
 	req, _ := http.NewRequest(http.MethodGet, u, nil)
 	resp, err := cl.http.Do(req)
 	if err != nil {
@@ -85,13 +98,23 @@ func (cl *Client) ListSheets() ([]SheetMeta, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("sheets: list HTTP %d: %s", resp.StatusCode, truncate(string(body), 240))
 	}
+	// DEBUG
+	if os.Getenv("SHEETS_DEBUG") != "" {
+		fmt.Fprintf(os.Stderr, "DEBUG list body: %s\n", string(body))
+	}
 	var sr spreadsheetResp
 	if err := json.Unmarshal(body, &sr); err != nil {
 		return nil, fmt.Errorf("sheets: parse list: %w", err)
 	}
 	out := make([]SheetMeta, 0, len(sr.Sheets))
 	for _, s := range sr.Sheets {
-		out = append(out, s.Properties)
+		out = append(out, SheetMeta{
+			SheetID: s.Properties.SheetID,
+			Title:   s.Properties.Title,
+			Index:   s.Properties.Index,
+			Rows:    s.Properties.Grid.Rows,
+			Cols:    s.Properties.Grid.Cols,
+		})
 	}
 	return out, nil
 }
