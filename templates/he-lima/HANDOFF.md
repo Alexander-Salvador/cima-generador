@@ -1,10 +1,11 @@
-# CIMA HE Lima — Handoff para próximo chat (2026-09-29)
+# CIMA HE Lima — Handoff para próximo chat (2026-10-01)
 
 > **Para**: Siguiente sesión de chat en esta misma worktree
-> **Branch actual**: `feature/c1ma-desing` (16 commits ahead de Day 2.2)
-> **Estado**: 2 de 5 tabs estabilizados (HORAS EXTRAS ✓, PERSONAL ✓)
+> **Branch actual**: `feature/c1ma-desing`
+> **Estado**: 3 de 5 tabs estabilizados (HORAS EXTRAS ✓, PERSONAL ✓, **Feedbacks ✓**)
 > **OAuth**: OPERACIONAL en `.ovav/vault/credentials/google_oauth.enc` (32 bytes)
 > **Vault key**: `~/.config/ovav/vault.key`
+> **Último trabajo**: FEEDBACKS v0.5.1 (commit pendiente — ver FEEDBACKS_REBUILD.md)
 
 ---
 
@@ -31,6 +32,28 @@
 - Visual: navy title, green header, yellow selector, navy totales, zebra rows
 - Frozen 8 rows (header stays visible)
 - Merged: A1:M1, A6:B6, C6:D6, E6:F6, G6:H6
+
+### ✅ Feedbacks (commit pendiente — ver `FEEDBACKS_REBUILD.md`)
+
+**Layout**: 11 filas × 8 cols
+- Row 1: Title merged (navy bg, white text, size 14)
+- Row 2: Subtitle merged (gris claro bg, italic, size 10)
+- Row 4: Header (N° | FECHA | SUPERVISOR | AGENTE | CALL_IDs | CANT | TIPO | NOTA)
+- Rows 5-11: 7 entries consolidadas
+
+**Consolidación por agente (marcador CANTIDAD)**:
+- IMAN RUJEL YADIRA CATIZZA: 6 calls → CANT=6, CALL_IDs concatenados con `·`
+- CANALES COPLAT ZAYDA JOSCELINE: 2 calls → CANT=2, CALL_IDs concatenados
+- Resto: CANT=1, CALL_ID único
+
+**Funcionalidades**:
+- Freeze 4 rows (header siempre visible)
+- Column widths: N°=50, FECHA=120, SUPERVISOR=260, AGENTE=260, CALL_IDs=400, CANT=55, TIPO=170, NOTA=360
+- Zebra rows (filas 6, 8, 10 con bg `#f4f4f4`)
+- Fila 11 (CANALES, fecha no registrada) con bg `#fff3cd` (amarillo tenue)
+- Center align en columnas N° y CANT
+
+**⚠️ Hallazgo técnico**: Celda `Feedbacks!B11` rechaza writes silenciosamente (probable merge vertical). Workaround: `—` en FECHA, info del período en NOTA.
 
 ### ✅ PERSONAL (commit `6b0b4cb` + `5711b87`)
 
@@ -71,11 +94,6 @@
    - 50+ feriados 2025-2028
    - Tipo: NACIONAL / PASCUA
    - Necesita: validación de tipos, formato de fecha consistente
-
-3. **Feedbacks** (sheetId=1347080845, 1008×7)
-   - Auditoría semanal de calidad
-   - Headers: FECHA | SUPERVISOR | AGENTE | DNI | CALL_ID
-   - Necesita: rebuild limpio como HORAS EXTRAS y PERSONAL
 
 ---
 
@@ -174,11 +192,6 @@ go run -C go-runtime ./cmd/sheets read --range "CONFIG!A1:K35"
 go run -C go-runtime ./cmd/sheets read --range "01_FERIADOS_PE!A1:E55"
 ```
 
-**Prioridad 3: Feedbacks** (7 cols, 9 rows)
-```bash
-go run -C go-runtime ./cmd/sheets read --range "Feedbacks!A1:G15"
-```
-
 ### 5. Patrón a seguir para cada tab:
 
 Igual que hice con HORAS EXTRAS y PERSONAL:
@@ -227,7 +240,7 @@ Tabs (5):
 • 01_FERIADOS_PE   (1000×5)   ← PENDIENTE rebuild
 • PERSONAL         (950×9)    ← ✅ REBUILT v0.5.1 (clean)
 • HORAS EXTRAS     (927×47)   ← ✅ REBUILT v0.5.1 (clean)
-• Feedbacks        (1008×8)   ← PENDIENTE rebuild
+• Feedbacks        (1008×8)   ← ✅ REBUILT v0.5.1 (clean, consolidado con CANT)
 ```
 
 ---
@@ -264,6 +277,8 @@ Posts anteriores: "86/86 integrity PASS" → todos false positive (verificaba mi
 
 ---
 
-*Generated 2026-09-29 14:30 · thavren · OVAV v0.5.1*
+*Updated 2026-10-01 14:55 · thavren · OVAV v0.5.1*
 
 **Próximo chat: leer este archivo PRIMERO, luego `cima-verify` para confirmar OAuth.**
+
+**Feedbacks rebuild 2026-10-01**: 7 entries consolidadas con marcador CANT (IMAN=6, CANALES=2). Hallazgo: B11 bloqueada — workaround aplicado. Ver `FEEDBACKS_REBUILD.md` para detalle completo.
