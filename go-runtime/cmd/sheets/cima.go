@@ -34,11 +34,11 @@ import (
 
 const (
 	// CIMAVersion is the current package version reflecting real schema.
-	CIMAVersion = "v0.4.0-real"
+	CIMAVersion = "v0.5.2-real"
 
 	// Tab names — UPPERCASE (verified against live sheet).
+	// v0.5.2: Feriados PE absorbed into CONFIG (no separate tab).
 	SheetCONFIG        = "CONFIG"
-	SheetFeriadosPE    = "01_FERIADOS_PE"
 	SheetPersonal      = "PERSONAL"
 	SheetHorasExtras   = "HORAS EXTRAS"
 	SheetFeedbacks     = "Feedbacks"
@@ -46,6 +46,10 @@ const (
 	// Apps Script is disabled.
 	AppsScriptEnabled = false
 )
+
+// SheetFeriadosPE retained as empty constant for legacy code paths that
+// still reference it. No longer a real tab; feriados live inside CONFIG.
+const SheetFeriadosPE = "01_FERIADOS_PE_LEGACY"
 
 // ─────────────────────────────────────────────────────────────────
 // HORAS EXTRAS — layout constants (verified live 2026-09-29)
@@ -119,26 +123,25 @@ func PersonalColumns() []PersonalColumn {
 // SHEET QUERIES
 // ─────────────────────────────────────────────────────────────────
 
-// RealTabs returns the 5 actual tabs in the live spreadsheet.
+// RealTabs returns the 4 actual tabs in the live spreadsheet.
+// v0.5.2: Feriados PE merged into CONFIG (CEO directive 2026-10-01).
 func RealTabs() []string {
 	return []string{
 		SheetCONFIG,
-		SheetFeriadosPE,
 		SheetPersonal,
 		SheetHorasExtras,
 		SheetFeedbacks,
 	}
 }
 
-// RequiredTabs returns the same as RealTabs (all 5 are required).
-// The legacy v0.3.0 had 18 expected sheets; in reality there are 5.
+// RequiredTabs returns the same as RealTabs (all 4 are required).
 func RequiredTabs() []string {
 	return RealTabs()
 }
 
 // TotalExpectedTabs returns the count of expected tabs.
 func TotalExpectedTabs() int {
-	return 5
+	return 4
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -222,10 +225,10 @@ func (v *CIMAVerification) OK() bool {
 // String returns a human-readable summary.
 func (v *CIMAVerification) String() string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "📋 CIMA Verification (REAL schema v0.4.0) @ %s\n",
+	fmt.Fprintf(&b, "📋 CIMA Verification (REAL schema v0.5.2) @ %s\n",
 		v.Timestamp.Format(time.RFC3339))
 	fmt.Fprintf(&b, "  Spreadsheet: %s\n", v.SpreadsheetID)
-	fmt.Fprintf(&b, "  Expected: %d tabs (REAL: CONFIG, 01_FERIADOS_PE, PERSONAL, HORAS EXTRAS, Feedbacks)\n",
+	fmt.Fprintf(&b, "  Expected: %d tabs (REAL: CONFIG (con feriados), PERSONAL, HORAS EXTRAS, Feedbacks)\n",
 		v.TotalExpected)
 	fmt.Fprintf(&b, "  Found: %d tabs\n", v.TotalFound)
 	if len(v.Missing) > 0 {
@@ -254,7 +257,7 @@ func (v *CIMAVerification) String() string {
 
 const (
 	deprecatedSheetConfig    = "00_Config" // REAL: CONFIG
-	deprecatedSheetHolidays  = "01_Feriados_PE" // REAL: 01_FERIADOS_PE
+	deprecatedSheetHolidays  = "01_Feriados_PE" // REAL: merged into CONFIG (v0.5.2)
 	deprecatedSheetPersonas  = "02_Personas" // REAL: PERSONAL
 	deprecatedSheetRegistro  = "10_Registro_HE" // REAL: HORAS EXTRAS
 	deprecatedSheetDashboard = "20_Dashboard" // REAL: Feedbacks (audit)
@@ -343,7 +346,7 @@ const CIMASpreadsheetName = "CIMA — Tracking Horas Extras Lima"
 // Deprecated constants for backwards compat.
 const (
 	SheetConfig    = "00_Config"      // REAL: CONFIG
-	SheetHolidays  = "01_Feriados_PE"  // REAL: 01_FERIADOS_PE
+	SheetHolidays  = "01_Feriados_PE"  // REAL: merged into CONFIG (v0.5.2)
 	SheetPersonas  = "02_Personas"     // REAL: PERSONAL
 	SheetRegistro  = "10_Registro_HE"  // REAL: HORAS EXTRAS
 	SheetDashboard = "20_Dashboard"    // REAL: Feedbacks

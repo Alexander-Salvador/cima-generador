@@ -13,8 +13,8 @@ import (
 
 // TestCIMAVersion checks the version constant is set.
 func TestCIMAVersion(t *testing.T) {
-	if CIMAVersion != "v0.4.0-real" {
-		t.Errorf("CIMAVersion = %q, want %q", CIMAVersion, "v0.4.0-real")
+	if CIMAVersion != "v0.5.2-real" {
+		t.Errorf("CIMAVersion = %q, want %q", CIMAVersion, "v0.5.2-real")
 	}
 }
 
@@ -95,12 +95,12 @@ func TestAuditArchiveSheetMissingSheet(t *testing.T) {
 	}
 }
 
-// TestRealSchema — verifies the REAL (v0.4.0) schema matches what was discovered live.
+// TestRealSchema — verifies the REAL (v0.5.2) schema matches what was discovered live.
 func TestRealSchema(t *testing.T) {
-	// 5 expected tabs, all UPPERCASE.
+	// 4 expected tabs, all UPPERCASE (Feriados PE merged into CONFIG).
 	expected := RealTabs()
-	if len(expected) != 5 {
-		t.Fatalf("RealTabs = %d items, want 5", len(expected))
+	if len(expected) != 4 {
+		t.Fatalf("RealTabs = %d items, want 4", len(expected))
 	}
 
 	// PersonalColumns (real schema) DOES have 8 columns.
@@ -123,17 +123,17 @@ func TestRealSchema(t *testing.T) {
 }
 
 // TestVerifyStructureFull checks that the validator returns OK when all
-// real tabs are present (v0.4.0 schema).
+// real tabs are present (v0.5.2 schema — 4 tabs after Feriados PE merge).
 func TestVerifyStructureFull(t *testing.T) {
 	v := VerifyStructure("test-ss", RealTabs())
 	if !v.OK() {
 		t.Errorf("VerifyStructure(real-tabs) = NOT OK; errors: %v", v.Errors)
 	}
-	if v.TotalExpected != 5 {
-		t.Errorf("TotalExpected = %d, want 5", v.TotalExpected)
+	if v.TotalExpected != 4 {
+		t.Errorf("TotalExpected = %d, want 4", v.TotalExpected)
 	}
-	if v.TotalFound != 5 {
-		t.Errorf("TotalFound = %d, want 5", v.TotalFound)
+	if v.TotalFound != 4 {
+		t.Errorf("TotalFound = %d, want 4", v.TotalFound)
 	}
 }
 
@@ -149,12 +149,12 @@ func TestVerifyStructureMissing(t *testing.T) {
 	if len(v.Missing) == 0 {
 		t.Error("Missing should be non-empty")
 	}
-	// HORAS EXTRAS, 01_FERIADOS_PE, Feedbacks should be missing.
+	// HORAS EXTRAS and Feedbacks should be missing (v0.5.2: Feriados PE merged into CONFIG).
 	missingSet := map[string]bool{}
 	for _, m := range v.Missing {
 		missingSet[m] = true
 	}
-	for _, want := range []string{SheetHorasExtras, SheetFeriadosPE, SheetFeedbacks} {
+	for _, want := range []string{SheetHorasExtras, SheetFeedbacks} {
 		if !missingSet[want] {
 			t.Errorf("missing tab %q not reported", want)
 		}

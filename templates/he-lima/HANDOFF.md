@@ -2,10 +2,11 @@
 
 > **Para**: Siguiente sesión de chat en esta misma worktree
 > **Branch actual**: `feature/c1ma-desing`
-> **Estado**: 3 de 5 tabs estabilizados (HORAS EXTRAS ✓, PERSONAL ✓, **Feedbacks ✓**)
+> **Estado**: 4 de 4 tabs estabilizados (HORAS EXTRAS ✓, PERSONAL ✓, Feedbacks ✓, CONFIG ✓)
+> **Schema**: v0.5.2-real (Feriados PE merged into CONFIG)
 > **OAuth**: OPERACIONAL en `.ovav/vault/credentials/google_oauth.enc` (32 bytes)
 > **Vault key**: `~/.config/ovav/vault.key`
-> **Último trabajo**: FEEDBACKS v0.5.1 (commit pendiente — ver FEEDBACKS_REBUILD.md)
+> **Último trabajo**: CONFIG v0.5.2 + Feedbacks v0.5.3 (dual block linked)
 
 ---
 
@@ -33,27 +34,41 @@
 - Frozen 8 rows (header stays visible)
 - Merged: A1:M1, A6:B6, C6:D6, E6:F6, G6:H6
 
-### ✅ Feedbacks (commit pendiente — ver `FEEDBACKS_REBUILD.md`)
+### ✅ Feedbacks (commit pendiente — ver `FEEDBACKS_V3_REBUILD.md`)
 
-**Layout**: 11 filas × 8 cols
-- Row 1: Title merged (navy bg, white text, size 14)
-- Row 2: Subtitle merged (gris claro bg, italic, size 10)
-- Row 4: Header (N° | FECHA | SUPERVISOR | AGENTE | CALL_IDs | CANT | TIPO | NOTA)
-- Rows 5-11: 7 entries consolidadas
+**Layout DUAL-BLOCK**: 27 filas × 7 cols
+- **BLOQUE 1 — RESUMEN** (filas 1-11): 7 entries consolidadas con HYPERLINK en CANT
+  - Row 4: Header — N° | AGENTE | SUPERVISOR | CANT | ÚLTIMO TIPO | ÚLTIMA NOTA | STATUS
+  - Rows 5-11: 7 entries
+  - Celdas D5:D11 = `=HYPERLINK("#A{row}","{cant}")` con formato azul bold
+  - Al click → salta al detalle del agente
+- **BLOQUE 2 — DETALLE** (filas 13-27): 13 entries con todas las calls individuales
+  - Row 13: Section header "DETALLE DE LLAMADAS — Click en CANT del resumen"
+  - Row 14: Header — N° | FECHA | SUPERVISOR | AGENTE | CALL_ID | TIPO | NOTA
+  - Rows 15-27: 13 calls (N° formato "agente.call" ej: 6.1, 6.2, ...)
 
-**Consolidación por agente (marcador CANTIDAD)**:
-- IMAN RUJEL YADIRA CATIZZA: 6 calls → CANT=6, CALL_IDs concatenados con `·`
-- CANALES COPLAT ZAYDA JOSCELINE: 2 calls → CANT=2, CALL_IDs concatenados
-- Resto: CANT=1, CALL_ID único
+**Consolidación por agente**:
+- IMAN RUJEL YADIRA CATIZZA: 6 calls → CANT=6, link a fila 21
+- CANALES COPLAT ZAYDA JOSCELINE: 2 calls → CANT=2, link a fila 27
+- Resto: CANT=1
 
-**Funcionalidades**:
-- Freeze 4 rows (header siempre visible)
-- Column widths: N°=50, FECHA=120, SUPERVISOR=260, AGENTE=260, CALL_IDs=400, CANT=55, TIPO=170, NOTA=360
-- Zebra rows (filas 6, 8, 10 con bg `#f4f4f4`)
-- Fila 11 (CANALES, fecha no registrada) con bg `#fff3cd` (amarillo tenue)
-- Center align en columnas N° y CANT
+**⚠️ Workarounds declarados**: B11, B26, C26 protegidas. Info movida a NOTA en filas afectadas (sin pérdida de datos).
 
-**⚠️ Hallazgo técnico**: Celda `Feedbacks!B11` rechaza writes silenciosamente (probable merge vertical). Workaround: `—` en FECHA, info del período en NOTA.
+### ✅ CONFIG (commit pendiente — ver `CONFIG_REBUILD.md`)
+
+**Layout 5-SECCIONES**: 104 filas × 11 cols
+- **SECCIÓN 1 — ZONA ORIENTATIVA** (filas 4-11): REFERENCIA, Empresa, Owner, Convenciones colores
+- **SECCIÓN 2 — PARÁMETROS OPERATIVOS** (filas 13-22): Año, Mes, Semana, Max HE, etc.
+- **SECCIÓN 3 — CATÁLOGO TURNOS** (filas 24-34): T01-T10 con horarios
+- **SECCIÓN 4 — CATÁLOGO TIPOS OPERACIÓN** (filas 36-40): HORAS_EXTRA, CAMBIO_HORARIO, etc.
+- **SECCIÓN 5 — FERIADOS PE 2025-2028** (filas 43-103): 60 feriados absorbidos de 01_FERIADOS_PE
+
+**Cambios en código Go (schema bump)**:
+- `cima.go`: CIMAVersion v0.4.0 → v0.5.2; RealTabs ahora 4 (sin Feriados)
+- `cima_test.go`: tests actualizados a esperar 4 tabs
+
+**Hoja eliminada**:
+- ✗ `01_FERIADOS_PE` — absorbida en CONFIG SECCIÓN 5
 
 ### ✅ PERSONAL (commit `6b0b4cb` + `5711b87`)
 
@@ -84,16 +99,13 @@
 
 ### Pendientes por hacer:
 
-1. **CONFIG** (sheetId=1497962081, 1000×11)
-   - Tiene "ZONA ORIENTATIVA" y "ZONA OPERATIVA" mezcladas
-   - Necesita: limpiar y alinear labels, agregar DV para parámetros operativos
-   - Status en sesión previa: 30×3, había entendido como params panel
+🎉 **TODOS LOS TABS ESTABILIZADOS** (4/4) — schema v0.5.2 real
 
-2. **01_FERIADOS_PE** (sheetId=1407735723, 1000×5)
-   - Contiene: FECHA | NOMBRE | AÑO | TIPO | OBSERVACIONES
-   - 50+ feriados 2025-2028
-   - Tipo: NACIONAL / PASCUA
-   - Necesita: validación de tipos, formato de fecha consistente
+Posibles mejoras futuras (no urgentes):
+1. **HORAS EXTRAS** — aplicar patrón dual-block (resumen + detalle) como Feedbacks
+2. **CONFIG** — completar header fila 14 (B14/C14/D14 protegidas actualmente)
+3. **CIMA test harness** — actualizar tests que referencian `01_FERIADOS_PE` legacy
+4. **Validaciones DV** — agregar dropdowns en CONFIG para Año/Mes/Semana/Tipo Op
 
 ---
 
@@ -178,19 +190,12 @@ go run -C go-runtime ./cmd/sheets cima-verify
 # Expected: ✅ Structure matches real schema
 ```
 
-### 4. Continuar trabajo en este orden:
+### 4. Estado actual
 
-**Prioridad 1: CONFIG** (más simple, 11 cols, 30 rows)
-```bash
-# Inspeccionar primero
-go run -C go-runtime ./cmd/sheets read --range "CONFIG!A1:K35"
-# Luego rebuild
-```
-
-**Prioridad 2: 01_FERIADOS_PE** (5 cols, 50+ rows)
-```bash
-go run -C go-runtime ./cmd/sheets read --range "01_FERIADOS_PE!A1:E55"
-```
+🎉 **Sistema completo estabilizado** (4/4 tabs). Próximas sesiones pueden enfocarse en:
+- Aplicar patrón dual-block a HORAS EXTRAS
+- Agregar DV (data validation) en CONFIG
+- Workarounds pendientes (B11/B26/C26 Feedbacks, A14:D14 CONFIG)
 
 ### 5. Patrón a seguir para cada tab:
 
@@ -235,13 +240,15 @@ ls -la .ovav/vault/credentials/google_oauth.enc
 ```
 URL: https://docs.google.com/spreadsheets/d/1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y/edit
 
-Tabs (5):
-• CONFIG          (1000×11)  ← PENDIENTE rebuild
-• 01_FERIADOS_PE   (1000×5)   ← PENDIENTE rebuild
+Tabs (4 — v0.5.2):
+• CONFIG          (1000×11)  ← ✅ REBUILT v0.5.2 (5 secciones, Feriados absorbidos)
 • PERSONAL         (950×9)    ← ✅ REBUILT v0.5.1 (clean)
 • HORAS EXTRAS     (927×47)   ← ✅ REBUILT v0.5.1 (clean)
-• Feedbacks        (1008×8)   ← ✅ REBUILT v0.5.1 (clean, consolidado con CANT)
+• Feedbacks        (1008×8)   ← ✅ REBUILT v0.5.3 (dual block linked)
 ```
+
+**Tabs eliminadas en v0.5.2**:
+- ✗ 01_FERIADOS_PE → absorbida en CONFIG SECCIÓN 5
 
 ---
 
@@ -277,8 +284,10 @@ Posts anteriores: "86/86 integrity PASS" → todos false positive (verificaba mi
 
 ---
 
-*Updated 2026-10-01 14:55 · thavren · OVAV v0.5.1*
+*Updated 2026-10-01 18:55 · thavren · OVAV v0.5.2*
 
 **Próximo chat: leer este archivo PRIMERO, luego `cima-verify` para confirmar OAuth.**
 
-**Feedbacks rebuild 2026-10-01**: 7 entries consolidadas con marcador CANT (IMAN=6, CANALES=2). Hallazgo: B11 bloqueada — workaround aplicado. Ver `FEEDBACKS_REBUILD.md` para detalle completo.
+**Feedbacks v0.5.3** (dual block linked): 7 entries resumen con HYPERLINK en CANT → 13 entries detalle. Ver `FEEDBACKS_V3_REBUILD.md`.
+
+**CONFIG v0.5.2** (5 secciones + Feriados absorbidos): Schema bump v0.4.0→v0.5.2. Hoja 01_FERIADOS_PE eliminada. Ver `CONFIG_REBUILD.md`.
