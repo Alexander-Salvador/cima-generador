@@ -1,19 +1,47 @@
-# CITRIX_UPDATE_LOG — Sustento RRHH/Nómina (2026-10-02)
+# CITRIX Update Log — Documento APARTE para RRHH/Nómina (2026-10-02)
 
-> **Estado**: ✅ Sheet creado + datos cargados + estilos aplicados
-> **Spreadsheet**: 1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y
-> **Tab**: CITRIX_UPDATE_LOG (sheetId=1093924438)
+> **Estado**: ✅ Documento aparte creado — Excel .xlsx + HTML portable
+> **Para**: Compartir con otras compañeras que rellenarán fecha/hora
 > **Authority**: thavren (lead) · Owner: WILLIAMS ALEXANDER HUERTA SALVADOR
-> **Directiva CEO**: "crea otro documento aparte con estas caracteristicas — DNI, Apellidos y Nombres, Fecha, Hora Inicio, Hora Fin. Para emitir sustento a la empresa de que los agentes tuvieron una actualización en aplicativo CITRIX para que RRHH/nómina contabilice tiempo sin trabajo"
+> **Directiva CEO**: "no quiero que sea una hoja si no un documento aparte de CIMA, ya que este nuevo doc lo compartire con otras compañeras para que puedan rellenarlo"
 
 ---
 
 ## 🎯 Propósito
 
-Documento formal de **sustento empresarial** para presentar a RRHH / Nómina justificando
-el **tiempo SIN TRABAJO** de los agentes mientras se actualiza el aplicativo CITRIX.
+Documento **separado del spreadsheet de CIMA** que se compartirá con otras compañeras
+para que completen la fecha/hora del CITRIX update. Diseñado para **sustento empresarial**
+ante RRHH/Nómina justificando el **tiempo SIN TRABAJO** de los agentes.
 
 Empresa: **Teleatento del Perú S.A.C. (Atento Perú)**
+Aplicativo: **CITRIX** (sistema de virtualización)
+
+---
+
+## 📂 Archivos generados (documento aparte)
+
+| Archivo | Formato | Tamaño | Uso |
+|---|---|---|---|
+| `.ovav/templates/citrix/CITRIX_UPDATE_LOG_RRHH.xlsx` | Microsoft Excel 2007+ | 7,724 B | **PRINCIPAL** — portable, editable, compartible |
+| `.ovav/templates/citrix/CITRIX_UPDATE_LOG_RRHH.html` | HTML | 10,478 B | Vista imprimible / web preview |
+
+### Por qué Excel y NO Google Sheets del CIMA
+
+CEO pidió **"documento aparte, NO hoja"**. Opciones evaluadas:
+
+| Opción | Por qué NO |
+|---|---|
+| Tab extra en spreadsheet de CIMA | ❌ CEO explícitamente pidió "NO hoja" |
+| Google Sheet NUEVO separado | ⚠️ Requiere login Google para editar |
+| **Excel .xlsx** | ✅ Portable, NO requiere login, cualquier app puede abrirlo |
+| HTML | ⚠️ Read-only por defecto |
+
+**Excel .xlsx es el approach óptimo** porque:
+1. CEO puede subirlo a Google Drive → se convierte automáticamente a Google Sheets
+2. Las compañeras pueden editarlo online (vía Sheets) o localmente (vía Excel)
+3. Es **compartible** por email, Drive, Slack, WhatsApp
+4. Tiene **fórmulas funcionales** (DURACIÓN se calcula automáticamente)
+5. **NO requiere autenticación Google** para abrir/editar localmente
 
 ---
 
@@ -36,12 +64,16 @@ Empresa: **Teleatento del Perú S.A.C. (Atento Perú)**
 
 ### SECCIÓN 2: AGENTES AFECTADOS (filas 12-38)
 
-**Columnas**: DNI | APELLIDOS_Y_NOMBRES | FECHA | HORA_INICIO | HORA_FIN | OBSERVACIONES
+**Columnas** (7 cols):
+- A: **DNI** (formato texto, preserva leading zeros)
+- B: **APELLIDOS_Y_NOMBRES**
+- C: **FECHA** (⏳ PENDIENTE)
+- D: **HORA_INICIO** (⏳ PENDIENTE)
+- E: **HORA_FIN** (⏳ PENDIENTE)
+- F: **DURACIÓN (h)** — 🧮 *FÓRMULA* `=IF(OR(D{i}="PENDIENTE",E{i}="PENDIENTE"),"",(E{i}-D{i})*24)` — solo se calcula cuando CEEE está lleno
+- G: **OBSERVACIONES**
 
-**25 empleados** de PERSONAL precargados:
-- DNIs con formato TEXT (preserva leading zeros: 09887772, 41418003, etc.)
-- Nombres completos desde hoja PERSONAL
-- FECHA/HORA_INICIO/HORA_FIN: ⏳ PENDIENTE (CEO completa antes de enviar)
+**25 empleados** de PERSONAL precargados con DNI y nombre completo.
 
 ---
 
@@ -49,72 +81,102 @@ Empresa: **Teleatento del Perú S.A.C. (Atento Perú)**
 
 ### Hallazgo: Leading zeros en DNIs
 
-Detecté que el DNI `09887772` perdía el leading zero cuando se escribía como número
-(Sheets lo convierte a `9887772`). Solución aplicada:
+Detecté que el DNI `09887772` (con leading zero) se convierte a `9887772` (número) por defecto en Sheets/Excel.
+**Solución aplicada en .xlsx**: `number_format = "@"` (texto) en columna A.
 
-1. Aplicado `numberFormat.type=TEXT` al rango A14:A38
-2. Re-escritos todos los DNIs para preservar el formato
-3. Verificado: los 25 DNIs ahora muestran los 8 dígitos correctamente
+### Fórmula de duración
 
-### Estilos aplicados
+```excel
+=IF(OR(D14="PENDIENTE",E14="PENDIENTE"),"",(E14-D14)*24)
+```
+
+- Muestra vacío si HORA_INICIO o HORA_FIN están pendientes
+- Calcula horas decimales cuando se completan los valores
+- Formato de celda: `0.00` (2 decimales)
+
+### Estilos aplicados (openpyxl)
 
 | Elemento | Style |
 |---|---|
-| Title A1 | Navy bg, white, bold, size 14, merged |
-| Subtitle A2 | Gris bg, italic, size 10, merged |
-| Section headers | Dark gray bg, white, bold, size 12, merged |
-| Column headers | Verde bg, white, bold, size 11 |
-| Zebra rows (datos) | `#f8f9fa` en filas pares |
-| Pendientes | Amarillo `#fff3cd` con texto `#856404` (alto contraste para CEO) |
-| Freeze | 13 rows (header datos siempre visible) |
-| Column widths | DNI=100, NOMBRES=280, FECHA=110, HORA=110, HORA=110, OBS=200 |
+| Title | Navy `#1A3A5C`, white, bold, size 14 |
+| Subtitle | Gris `#E8E8E8`, italic, size 10 |
+| Section headers | Dark gray `#4A5568`, white, bold, size 12 |
+| Column headers | Verde `#2E7D32`, white, bold, size 11 |
+| Zebra rows | `#F8F9FA` en filas pares |
+| Pendientes | Amarillo `#FFF3CD` con texto `#856404` |
+| DNI | Monospace, centrado, formato texto (`@`) |
+| Bordes | `#D0D0D0` thin |
 
-### Estructura final
+---
 
+## 🎯 Pasos para CEO
+
+### Paso 1: Compartir con otras compañeras
+
+**Opción A — Email**:
 ```
-Row 1:     TITLE "SUSTENTO DE ACTUALIZACIÓN DE SISTEMA CITRIX" (merged A1:F1)
-Row 2:     SUBTITLE "Teleatento del Perú ... RRHH/Nómina" (merged A2:F2)
-Row 3:     (vacío)
-Row 4:     SECCIÓN 1 HEADER (merged A4:F4)
-Row 5:     Headers: CAMPO | VALOR
-Row 6-10:  5 metadata rows
-Row 11:    (vacío)
-Row 12:    SECCIÓN 2 HEADER (merged A12:F12)
-Row 13:    Headers: DNI | APELLIDOS_Y_NOMBRES | FECHA | HORA_INICIO | HORA_FIN | OBSERVACIONES
-Row 14-38: 25 empleados
+Subject: [RRHH] Sustento actualización CITRIX — completar
+Adjunto: CITRIX_UPDATE_LOG_RRHH.xlsx
+Body: Por favor completar las columnas amarillas con fecha/hora del CITRIX update.
+```
+
+**Opción B — Google Drive**:
+1. Abrir https://drive.google.com
+2. Subir `CITRIX_UPDATE_LOG_RRHH.xlsx`
+3. Click derecho → "Compartir" → agregar emails de las compañeras
+4. Permiso: "Editor" para que puedan editar
+
+**Opción C — OneDrive/SharePoint**:
+1. Subir a OneDrive
+2. Generar link compartible
+3. Mismas instrucciones que Opción B
+
+### Paso 2: Otrascompañeras completan
+
+Marcos **PENDIENTE** (en amarillo) deben ser reemplazados con:
+- **Sección 1** (filas 8-10): Fecha/hora del evento real
+- **Sección 2** (filas 14-38): Misma fecha/hora para todos los agentes (o escalonadas)
+
+### Paso 3: CEO envía a RRHH/Nómina
+
+Una vez completado:
+- **Exportar como PDF** (File → Save As → PDF)
+- O **imprimir directamente** (Ctrl+P)
+- Enviar a RRHH/Nómina por email
+
+---
+
+## 🧪 Verificación del documento
+
+```python
+import openpyxl
+wb = openpyxl.load_workbook("CITRIX_UPDATE_LOG_RRHH.xlsx")
+ws = wb.active
+print(f"Filas: {ws.max_row}, Columnas: {ws.max_column}")
+print(f"Empleados cargados: {ws.max_row - 13}")
+print(f"Fórmula duración F14: {ws['F14'].value}")
+print(f"Formato DNI A14: {ws['A14'].number_format}")
+```
+
+Output esperado:
+```
+Filas: 38, Columnas: 7
+Empleados cargados: 25
+Fórmula duración F14: =IF(OR(D14="PENDIENTE",E14="PENDIENTE"),"",(E14-D14)*24)
+Formato DNI A14: @
 ```
 
 ---
 
-## 📋 Pendiente para CEO
-
-Antes de enviar a RRHH/Nómina, **completar manualmente** en amarillo:
-
-1. **Sección 1, fila 8**: Fecha del evento (ej: `2026-09-30`)
-2. **Sección 1, fila 9**: Hora inicio (ej: `02:00`)
-3. **Sección 1, fila 10**: Hora fin (ej: `04:00`)
-4. **Sección 2, filas 14-38**: Reemplazar cada `PENDIENTE` con la misma fecha/hora del evento
-   (o fechas individuales si fueron escalonadas)
-
----
-
-## 📂 Artefactos generados
+## 📂 Backups en `/tmp/opencode/`
 
 | Archivo | Descripción |
 |---|---|
-| Sheet `CITRIX_UPDATE_LOG` (sheetId=1093924438) | Sheet en Google Sheets |
-| `/tmp/opencode/CITRIX_UPDATE_LOG_FINAL.csv` | CSV portable para enviar a RRHH |
-| `/tmp/opencode/citrix_backup_FINAL.json` | Backup estado final |
+| `CITRIX_UPDATE_LOG_RRHH.xlsx` | Excel portable (master) |
+| `CITRIX_UPDATE_LOG_RRHH.html` | HTML imprimible (alternativa) |
+| `citrix_data.json` | 25 empleados JSON source |
+| `citrix_backup_FINAL.json` | Snapshot del sheet en CIMA |
 
 ---
 
-## 🎯 Próximos pasos sugeridos
-
-1. **CEO completa fecha/hora reales** en las celdas amarillas
-2. **Opcional**: agregar duración calculada (`=HORA_FIN - HORA_INICIO`) para RRHH
-3. **Una vez completado**: download como PDF y enviar a RRHH
-4. **Si RRHH necesita CSV**: ya está disponible en `/tmp/opencode/CITRIX_UPDATE_LOG_FINAL.csv`
-
----
-
-*Generated 2026-10-02 16:30 · thavren · OVAV v0.5.2 · CRIT-009 AVANZADO+*
+*Generated 2026-10-02 16:35 · thavren · OVAV v0.5.2 · CRIT-009 AVANZADO+*
