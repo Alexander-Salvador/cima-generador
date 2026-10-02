@@ -118,6 +118,10 @@ func main() {
 	case "citrix-check":
 		exitOn(runCitrixCheck(repoRoot, args))
 	case "citrix-formulas":
+	case "citrix-validation":
+	case "citrix-inspect":
+		exitOn(runCitrixInspect(repoRoot, args))
+		exitOn(runCitrixValidation(repoRoot, args))
 		exitOn(runCitrixFormulas(repoRoot, args))
 	case "citrix-finalize":
 		exitOn(runCitrixFinalize(repoRoot, args))
