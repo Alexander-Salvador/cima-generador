@@ -350,3 +350,56 @@ Row 14+: data + cols D,E,F bg amarillo (pendientes)
 # Re-aplica todos los refinamientos visuales después de cambios manuales
 go run -C go-runtime ./cmd/sheets citrix-finalize
 ```
+
+---
+
+## 🧮 v0.5.6 — Fórmulas inteligentes 24h aplicadas (2026-10-02)
+
+CEO directive: "Las columna de fecha solo 1 row tiene la formula para agregar fecha las demas no la tienen. debes extenderlo hasta el final hasta la ultima con un maximo de 100 duracion de inicio y fin deben tener la formula de 24horas de manera inteligente y al agregarlas se calcula solo el tiempo duracion."
+
+### Cambios aplicados
+
+1. **Cleared rows 4-100** (vacías con bg amarillo antiguo)
+2. **Smart formula extendida a G4:G100** (filas en mismo rango)
+3. **Updated G3** con la versión inteligente (resuelve bug de 08:00 vs 04:00)
+
+### Fórmula inteligente (rows 3-100)
+
+```
+=IF(OR(E[i]="",F[i]=""),"",IF(F[i]<E[i],(F[i]-E[i]+1)*24,(F[i]-E[i])*24))
+```
+
+### Lógica
+
+| Caso | Comportamiento |
+|---|---|
+| E[i] o F[i] vacías | "" (vía celda) |
+| F[i] >= E[i] | (F[i] - E[i]) * 24 (caso normal) |
+| **F[i] < E[i]** | (F[i] - E[i] + 1) * 24 (cambio de día / wrap-around 24h) |
+
+### Bug del -4.00 corregido
+
+Antes: G3 con fórmula simple `(F3-E3)*24` con E3=08:00, F3=04:00 → -4.00 ❌
+Ahora: G3 con fórmula inteligente → 20.00 ✅ (20 horas continuas: 08:00 del día 1 hasta 04:00 del día 2)
+
+### Formatos aplicados
+
+- D4:D100 — DATE `yyyy-mm-dd`
+- E4:F100 — TIME `hh:mm`
+- G4:G100 — NUMBER `0.00`
+- D4:F100 — bg amarillo [255,241,204] (pendientes)
+
+### Cómo usar
+
+1. Supervisoras de RRHH/Nómina abren el sheet
+2. Filan FECHA (col D), HORA_INICIO (col E), HORA_FIN (col F) en cada fila
+3. Col G (DURACIÓN) se calcula automáticamente
+5. Si termina al día siguiente (HORA_FIN < HORA_INICIO), suma 24h automáticamente
+
+### Comandos Go
+
+```bash
+# Re-aplica fórmulas después de cambios manuales
+go run -C go-runtime ./cmd/sheets citrix-formulas
+```
+

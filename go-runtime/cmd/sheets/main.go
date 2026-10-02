@@ -117,6 +117,8 @@ func main() {
 		exitOn(runCimaDrift(repoRoot, args))
 	case "citrix-check":
 		exitOn(runCitrixCheck(repoRoot, args))
+	case "citrix-formulas":
+		exitOn(runCitrixFormulas(repoRoot, args))
 	case "citrix-finalize":
 		exitOn(runCitrixFinalize(repoRoot, args))
 	case "resize-columns":
