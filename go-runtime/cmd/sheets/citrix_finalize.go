@@ -21,7 +21,7 @@ func runCitrixFinalize(repoRoot string, args []string) error {
 
 	fmt.Println("=== STEP 1: Re-write complete sheet with correct order ===")
 	values := [][]interface{}{
-		// Row 1: TITLE (will be merged across A1:H1)
+		// Row 1: TITLE (will be merged across A1:I1)
 		{"SUSTENTO DE ACTUALIZACIÓN DE SISTEMA CITRIX", "", "", "", "", "", "", ""},
 		// Row 2: SUBTITLE (will be merged across A2:H2)
 		{"Para RRHH/Nómina — Tiempo SIN TRABAJO por mantenimiento", "", "", "", "", "", "", ""},
@@ -42,12 +42,12 @@ func runCitrixFinalize(repoRoot string, args []string) error {
 		// Row 12: SECCIÓN 2 header (merged A12:H12)
 		{"═══ SECCIÓN 2: AGENTES ═══", "", "", "", "", "", "", ""},
 		// Row 13: Column headers
-		{"N°", "DNI", "APELLIDOS_Y_NOMBRES", "FECHA", "HORA_INICIO", "HORA_FIN", "DURACIÓN", "OBSERVACIONES"},
+		{"N°", "DNI", "APELLIDOS_Y_NOMBRES", "FECHA", "HORA_INICIO", "HORA_FIN", "DURACIÓN", "OBSERVACIONES", "SUPERVISOR"},
 		// Row 14: 1 fila de prueba
-		{"1", "'09887772", "URIBE DAVILA MONICA PAHOLA", "2026-09-30", "02:00", "04:00", "=IF(OR(E14=\"\",F14=\"\"),\"\",(F14-E14)*24)", "Actualización CITRIX"},
+		{"1", "'09887772", "URIBE DAVILA MONICA PAHOLA", "2026-09-30", "02:00", "04:00", "=IF(OR(E14=\"\",F14=\"\"),\"\",(F14-E14)*24)", "Actualización CITRIX", "WILLIAMS ALEXANDER HUERTA SALVADOR"},
 	}
 	updateBody, _ := json.Marshal(map[string]any{"values": values})
-	req, _ := http.NewRequest("PUT", fmt.Sprintf("https://sheets.googleapis.com/v4/spreadsheets/%s/values/CITRIX_UPDATE_LOG!A1:H14?valueInputOption=USER_ENTERED", finalizeSheetID), bytes.NewReader(updateBody))
+	req, _ := http.NewRequest("PUT", fmt.Sprintf("https://sheets.googleapis.com/v4/spreadsheets/%s/values/CITRIX_UPDATE_LOG!A1:I14?valueInputOption=USER_ENTERED", finalizeSheetID), bytes.NewReader(updateBody))
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
@@ -296,6 +296,9 @@ func runCitrixFinalize(repoRoot string, args []string) error {
 		{"updateDimensionProperties": map[string]any{
 			"range": map[string]any{"sheetId": finalizeSheetNum, "dimension": "COLUMNS", "startIndex": 7, "endIndex": 8},
 			"properties": map[string]any{"pixelSize": 280}, "fields": "pixelSize"}},
+		{"updateDimensionProperties": map[string]any{
+			"range": map[string]any{"sheetId": finalizeSheetNum, "dimension": "COLUMNS", "startIndex": 8, "endIndex": 9},
+			"properties": map[string]any{"pixelSize": 220}, "fields": "pixelSize"}},
 		// Freeze rows 13 (AGENTES header always visible)
 		{"updateSheetProperties": map[string]any{
 			"properties": map[string]any{

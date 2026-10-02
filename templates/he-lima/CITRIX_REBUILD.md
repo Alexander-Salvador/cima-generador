@@ -245,3 +245,60 @@ Row 15-60: VACÍAS para que CEO complete
 # Finalizar el sheet (re-aplica formato después de cambios manuales)
 go run -C go-runtime ./cmd/sheets citrix-finalize
 ```
+
+---
+
+## 🔄 v0.5.4 — Columna SUPERVISOR agregada (2026-10-02)
+
+CEO directive: "Agregale una columna mas de supervisores para que agreguen sus nombres"
+
+### Cambios v0.5.4
+
+| Antes | Después |
+|---|---|
+| 8 columnas (A-H) | **9 columnas (A-I)** |
+| Última col: OBSERVACIONES | Última col: **SUPERVISOR** |
+
+### Nueva estructura (9 cols)
+
+```
+A: N°
+B: DNI
+C: APELLIDOS_Y_NOMBRES
+D: FECHA
+E: HORA_INICIO
+F: HORA_FIN
+G: DURACIÓN (auto-calculada)
+H: OBSERVACIONES
+I: SUPERVISOR ← NUEVA (220 px ancho)
+```
+
+### Widths actualizados
+
+| Col | Campo | Width |
+|---|---|---|
+| A | N° | 50 px |
+| B | DNI | 110 px |
+| C | NOMBRES | 280 px |
+| D | FECHA | 130 px |
+| E | HORA_INICIO | 110 px |
+| F | HORA_FIN | 110 px |
+| G | DURACIÓN | 110 px |
+| H | OBSERVACIONES | 280 px |
+| **I** | **SUPERVISOR** | **220 px** ← NUEVA |
+
+### Fila de ejemplo actualizada (row 14)
+
+```
+1 | 09887772 | URIBE DAVILA MONICA PAHOLA | 2026-09-30 | 02:00 | 04:00 | 2.00 | Actualización CITRIX | WILLIAMS ALEXANDER HUERTA SALVADOR
+```
+
+Supervisor de ejemplo: **WILLIAMS ALEXANDER HUERTA SALVADOR** (el CEO).
+
+### Para las demás filas (vacías)
+
+Las supervisoras de RRHH pueden escribir el nombre de cada supervisor en col I.
+
+### Total width
+
+9 columnas × anchos: 50+110+280+130+110+110+110+280+220 = **1400 px** (no comprimido)
