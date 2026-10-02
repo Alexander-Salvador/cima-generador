@@ -291,3 +291,36 @@ Posts anteriores: "86/86 integrity PASS" → todos false positive (verificaba mi
 **Feedbacks v0.5.3** (dual block linked): 7 entries resumen con HYPERLINK en CANT → 13 entries detalle. Ver `FEEDBACKS_V3_REBUILD.md`.
 
 **CONFIG v0.5.2** (5 secciones + Feriados absorbidos): Schema bump v0.4.0→v0.5.2. Hoja 01_FERIADOS_PE eliminada. Ver `CONFIG_REBUILD.md`.
+---
+
+## 🔄 FEEDBACKS v0.5.4 — End-to-end fix (2026-10-01)
+
+**CEO feedback 2026-10-01**: "Sigue quedando visualmente mal y en logica igual... al darle click al numero te lleve a la base pero no al documento si no a la base real del agente y poder ver todas sus llamadas... la uxui diseño esta roto y la funcionalidad igual"
+
+**Cambios**:
+- ✅ N° ahora es HYPERLINK a PERSONAL (`#gid=1395452450&range=A{row}`) → base real del agente
+- ✅ AGENTE ahora es HYPERLINK a PERSONAL → ficha completa del agente
+- ✅ CANT sigue siendo HYPERLINK al detalle del agente en Feedbacks
+- ✅ Resize columns corregido: AGENTE=280, SUPERVISOR=280, CANT=60, NOTA=400
+- ✅ Zebra rows aplicadas correctamente a todas las filas pares (resumen + detalle)
+- ✅ Header detalle completo (fila 14): N° | FECHA | SUPERVISOR | AGENTE | CALL_ID | TIPO | NOTA
+- ✅ Subtitle explica las 3 acciones (click N°/AGENTE/CANT)
+- ✅ Style consistente: title navy, headers gris oscuro, section header verde, zebra gris claro
+- ✅ Freeze 4 rows + center align en N°/CANT/STATUS
+
+**Posiciones en PERSONAL**:
+- RAMIREZ HUAMAN JOHNN MILTON → A6
+- VARGAS TAPIA ISABEL → A11
+- GOMEZ FLORES JONATHAN ARTURO → A21
+- MENDOZA CARMEN CECILIA LILIANA → A12
+- LLAMPASI CRISOSTOMO LIZET YULY → A19
+- IMAN RUJEL YADIRA CATIZZA → A23
+- CANALES COPLAT ZAYDA JOSCELINE → A16
+
+**Verificación HYPERLINK formulas via API directa** (`--render formula`):
+```
+A5:  =HYPERLINK("#gid=1395452450&range=A6","1")
+B5:  =HYPERLINK("#gid=1395452450&range=A6","RAMIREZ HUAMAN JOHNN MILTON")
+D5:  =HYPERLINK("#A15","1")
+... (todas verificadas)
+```
