@@ -457,11 +457,15 @@ func runRead(repoRoot string, args []string) error {
 		return err
 	}
 	cl := NewClient(creds, id)
-	vr, err := cl.ReadRange(rng)
+	renderOpt := flagValue(args, "--render", "FORMATTED_VALUE")
+	if renderOpt == "formula" {
+		renderOpt = "FORMULA"
+	}
+	vr, err := cl.ReadRangeRender(rng, renderOpt)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Range: %s  rows=%d\n", vr.Range, len(vr.Values))
+	fmt.Printf("Range: %s  rows=%d (render=%s)\n", vr.Range, len(vr.Values), renderOpt)
 	for i, row := range vr.Values {
 		fmt.Printf("  %2d: %s\n", i+1, strings.Join(row, " | "))
 	}

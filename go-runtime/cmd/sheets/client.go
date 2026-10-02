@@ -128,13 +128,19 @@ type ValueRange struct {
 // ReadRange returns the A1-notated range. Pass empty majorDimension to
 // default to ROWS.
 func (cl *Client) ReadRange(a1Range string) (*ValueRange, error) {
+	return cl.ReadRangeRender(a1Range, "FORMATTED_VALUE")
+}
+
+// ReadRangeRender returns the A1-notated range with a custom
+// valueRenderOption (FORMATTED_VALUE, UNFORMATTED_VALUE, FORMULA).
+func (cl *Client) ReadRangeRender(a1Range, renderOpt string) (*ValueRange, error) {
 	if err := EnsureFresh(cl.c); err != nil {
 		return nil, err
 	}
 	q := url.Values{}
-	q.Set("valueRenderOption", "FORMATTED_VALUE")
+	q.Set("valueRenderOption", renderOpt)
 	u := fmt.Sprintf("%s/%s/values/%s?%s", sheetsAPIBase, cl.spreadsheetID, url.PathEscape(a1Range), q.Encode())
-	req, _ := http.NewRequest(http.MethodGet, u, nil)
+	req, _ := http.NewRequest("GET", u, nil)
 	resp, err := cl.http.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("sheets: read: %w", err)
