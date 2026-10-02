@@ -302,3 +302,51 @@ Las supervisoras de RRHH pueden escribir el nombre de cada supervisor en col I.
 ### Total width
 
 9 columnas × anchos: 50+110+280+130+110+110+110+280+220 = **1400 px** (no comprimido)
+
+---
+
+## 🎨 v0.5.5 — Refinamientos visuales (2026-10-02)
+
+CEO directive: "Mira como se ve ahora y no agregues ni rompas el diseño, solo mejoralo, encuadralo tunealo organizalo"
+
+### Mejoras aplicadas (sin agregar/quitar nada)
+
+| Mejora | Detalle |
+|---|---|
+| **Clear sheet** | Limpiado todo y reescrito con arrays consistentes (9 cols) |
+| **Merges restaurados** | 4 merges: TITLE, SUBTITLE, SECCIÓN 1, SECCIÓN 2 |
+| **Bordes en TITLE** | Bottom border 2px negro (encuadrar) |
+| **Bordes en SECCIÓN headers** | Top+Bottom border 1px gris (encuadrar) |
+| **CENTER alignment** | TITLE, SECCIÓN headers, CAMPO|VALOR, AGENTES headers, N° |
+| **MIDDLE vertical** | Todas las celdas con bg/color |
+| **Wrap strategy** | Headers AGENTES + OBSERVACIONES + SUPERVISOR (texto largo) |
+| **Freeze panes** | 13 rows congelados (header AGENTES siempre visible al scroll) |
+
+### Verificación visual (post-fix)
+
+```
+Frozen rows: 13
+Merges: 4
+  1: R0-R1 C0-C9   (TITLE)
+  2: R1-R2 C0-C9   (SUBTITLE)
+  3: R3-R4 C0-C9   (SECCIÓN 1)
+  4: R11-R12 C0-C9 (SECCIÓN 2)
+
+Row 1: TITLE bg navy [25,57,91] - white bold 14
+Row 2: SUBTITLE bg gray [231,231,231] - italic 10
+Row 3: BLANCO [255,255,255] - separator limpio (sin bg verde raro)
+Row 4: SECCIÓN 1 bg dark gray [73,84,102] - white bold 12 + borders
+Row 5: CAMPO|VALOR bg green [45,123,51] - white bold
+Row 6-10: metadata bg light gray [246,246,249]
+Row 8-10 col B: amarillo [255,241,204] (pendientes)
+Row 12: SECCIÓN 2 bg dark gray [73,84,102] - white bold 12 + borders
+Row 13: AGENTES headers bg green [45,123,51] - white bold CENTER
+Row 14+: data + cols D,E,F bg amarillo (pendientes)
+```
+
+### Comandos disponibles
+
+```bash
+# Re-aplica todos los refinamientos visuales después de cambios manuales
+go run -C go-runtime ./cmd/sheets citrix-finalize
+```
