@@ -180,3 +180,68 @@ Formato DNI A14: @
 ---
 
 *Generated 2026-10-02 16:35 · thavren · OVAV v0.5.2 · CRIT-009 AVANZADO+*
+
+---
+
+## 🔄 v0.5.3 — Simplificado y publicado en Google Drive (2026-10-02)
+
+CEO directive: "No metas datos solo rellena 1 con datos de prueba, lo demas lo hare manual, encargate que sea utilizable y que se use el width para que no este comprimido."
+
+### Cambios v0.5.3
+
+| Antes | Después |
+|---|---|
+| 25 filas con datos precargados | **1 fila de ejemplo** con datos completos |
+| Filas vacías después | **Filas vacías** (rows 15-60) para CEO completar manualmente |
+| Column widths comprimidos | **Widths amplios**: N°=50, DNI=110, NOMBRES=280, FECHA=130, HORA=110, DUR=110, OBS=280 |
+| Sheet en CIMA sin acceso | **Sheet en Google Drive del CEO** (separado) |
+
+### Spreadsheet publicado
+
+- **ID**: `1imL6DD1ygTRyX95F3bwD1IIUQjV8YIlO_8umDTg3KEw`
+- **URL**: https://docs.google.com/spreadsheets/d/1imL6DD1ygTRyX95F3bwD1IIUQjV8YIlO_8umDTg3KEw/edit
+- **Permisos**: anyone with link can WRITE
+- **Mimetype**: `application/vnd.google-apps.spreadsheet` (Google Sheets nativo)
+
+### Estructura final del sheet
+
+```
+Row 1:  TITLE merged  "SUSTENTO DE ACTUALIZACIÓN DE SISTEMA CITRIX" (navy)
+Row 2:  SUBTITLE merged  "Para RRHH/Nómina — Tiempo SIN TRABAJO..." (gris)
+Row 3:  [empty]
+Row 4:  SECTION 1 merged "═══ SECCIÓN 1: DATOS DEL EVENTO ═══" (dark gray)
+Row 5:  CAMPO | VALOR headers (verde)
+Row 6:  Aplicativo | CITRIX
+Row 7:  Motivo | Actualización de sistema
+Row 8:  Fecha del evento | (vacío, amarillo)
+Row 9:  Hora inicio | (vacío, amarillo)
+Row 10: Hora fin | (vacío, amarillo)
+Row 11: [empty]
+Row 12: SECTION 2 merged "═══ SECCIÓN 2: AGENTES ═══" (dark gray)
+Row 13: N°|DNI|APELLIDOS_Y_NOMBRES|FECHA|HORA_INICIO|HORA_FIN|DURACIÓN|OBSERVACIONES (verde)
+Row 14: 1|09887772|URIBE DAVILA MONICA PAHOLA|2026-09-30|02:00|04:00|2.00|Actualización CITRIX
+Row 15-60: VACÍAS para que CEO complete
+```
+
+### Formatos aplicados
+
+| Celda | Formato |
+|---|---|
+| DNI (B) | TEXT (preserva leading zeros `09887772`) |
+| FECHA (D) | DATE `yyyy-mm-dd` |
+| HORA_INICIO (E), HORA_FIN (F) | TIME `hh:mm` |
+| DURACIÓN (G) | NUMBER `0.00` |
+
+### Cómo completar manualmente
+
+1. Abrir el link
+2. **Sección 1**: Click en B8 (Fecha), B9 (Hora inicio), B10 (Hora fin) — escribir los valores
+3. **Sección 2**: Click en A15+ — escribir N°, DNI (con leading zeros), nombre, fecha, horas
+4. La columna G (DURACIÓN) se calcula automáticamente
+
+### Comandos Go disponibles
+
+```bash
+# Finalizar el sheet (re-aplica formato después de cambios manuales)
+go run -C go-runtime ./cmd/sheets citrix-finalize
+```

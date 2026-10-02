@@ -115,6 +115,8 @@ func main() {
 		exitOn(runCimaCI(repoRoot, args))
 	case "cima-drift":
 		exitOn(runCimaDrift(repoRoot, args))
+	case "citrix-finalize":
+		exitOn(runCitrixFinalize(repoRoot, args))
 	case "resize-columns":
 		exitOn(runResizeColumnsCmd(repoRoot, args))
 	case "freeze":
