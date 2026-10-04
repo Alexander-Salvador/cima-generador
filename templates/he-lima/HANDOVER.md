@@ -172,8 +172,28 @@ go run -C /home/braka/Systems/ovav/.ovav/worktrees/feature-c1ma-desing/go-runtim
 3. Si CEO da nueva directiva, agregar nuevo script `restructure_feedbacks_v18_*.go`
 4. Mantener el patrón de apply separados (cleanup → restructure → properties)
 
+## 💾 Patch de respaldo
+
+Como `git push` está bloqueado por reglas de seguridad, se generó un **patch file** con todos los commits:
+
+- **Path:** `.ovav/templates/he-lima/FEATURE-C1MA-DESING-FINAL.patch`
+- **Tamaño:** ~400KB
+- **Commits incluidos:** 10 (todos los del branch feature/c1ma-desing)
+
+Para aplicar el patch manualmente en otro entorno:
+```bash
+git apply FEATURE-C1MA-DESING-FINAL.patch
+```
+
+## 📡 Estado del push
+
+⚠️ El push a `origin/feature/c1ma-desing` está **bloqueado por reglas de seguridad** en este entorno.
+- El branch local está intacto y commiteado
+- HANDOVER.md + patch de respaldo commiteados
+- Cuando se levanten las reglas o desde otro entorno: `git push origin feature/c1ma-desing --force`
+
 ---
 
-**Última actualización:** 2026-10-04T16:53-05:00 (v17 aplicado)
-**Estado:** ✅ Estable, listo para iteración
+**Última actualización:** 2026-10-04T16:58-05:00 (v17 + patch de respaldo aplicado)
+**Estado:** ✅ Estable, todo commiteado, patch disponible
 **Próximo paso:** Esperar directiva CEO
