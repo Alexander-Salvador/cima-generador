@@ -47,9 +47,9 @@ C = {
     "tab_config": (110, 110, 26),
 }
 
-# Master layout (FEEDBACK): A-N (14 cols)
-MASTER_COL_WIDTHS = [30, 180, 160, 70, 110, 100, 90, 90, 110, 300, 110, 110, 130, 70]
-MASTER_HEADERS = ["ID", "AGENTE", "SUPERVISOR", "CANT_CALLS", "TIPO_FEEDBACK", "FECHA_FEEDBACK", "FECHA_BASE", "FECHA_EVAL", "ÚLTIMO_TIPO", "ÚLTIMA_NOTA", "COMPROMISO_FECHA", "CUMPLIDO_FECHA", "ESTADO", "RIESGO"]
+# Master layout (FEEDBACK v14 — refactored 8 cols)
+MASTER_COL_WIDTHS = [200, 110, 110, 100, 350, 100, 220, 200]
+MASTER_HEADERS = ["AGENTE", "TIPO_FEEDBACK", "FECHA_FEEDBACK", "FECHA_BASE", "OBSERVACIÓN", "CANT_CALLS", "ESTADO", "SUPERVISOR"]
 
 # Detail layout (FEEDBACK-DETALLE_LLAMADA): A-L (12 cols)
 DETAIL_COL_WIDTHS = [40, 40, 100, 150, 170, 130, 130, 220, 110, 60, 90, 150]
@@ -162,21 +162,19 @@ def render_master(draw, x_start, y_start, data_rows):
             cell = cells[col_idx] if col_idx < len(cells) else {}
             val = cell.get("formattedValue", "")
 
-            # Highlight ESTADO col (col 12, 0-based)
+            # Highlight ESTADO col (col 6 = G, 0-based)
             cell_bg = bg
-            if col_idx == 12 and val in ESTADO_COLORS:
+            if col_idx == 6 and val in ESTADO_COLORS:
                 cell_bg = ESTADO_COLORS[val]
-            # Highlight TIPO_FEEDBACK col (col 4)
-            if col_idx == 4 and val in ESTADO_COLORS:
+            # Highlight TIPO_FEEDBACK col (col 1 = B)
+            if col_idx == 1 and val in ESTADO_COLORS:
                 cell_bg = ESTADO_COLORS[val]
 
             # HYPERLINK styling
             fg = C["text"]
             font = fonts["data"]
-            underline = False
-            if col_idx in [1, 3]:  # B (AGENTE), D (CANT)
+            if col_idx in [0, 5]:  # A (AGENTE), F (CANT)
                 fg = C["hyperlink"]
-                underline = True
 
             draw.rectangle([x, y, x + w, y + row_h], fill=cell_bg, outline=C["border"], width=1)
             tx = truncate(draw, str(val), font, w - 6)
