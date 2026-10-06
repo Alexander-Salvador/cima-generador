@@ -33,9 +33,9 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
                      │
                      ▼
             ┌──────────────────┐
-             │   FEEDBACK       │  8 cols: N° | AGENTE | TIPO | SUBTIPO | FECHA | OBSERVACIÓN | ESTADO | N°_DETALLES
+             │   FEEDBACK       │  8 cols: N° | AGENTE | TIPO | N°_DETALLES | SUBTIPO | FECHA | OBSERVACIÓN | ESTADO
              │   (1)            │  FK → PERSONAL (AGENTE = "ID - NOMBRE_COMPLETO")
-             │                  │  AGENTE en col B (orden CEO); N°_DETALLES = COUNTIF('FEEDBACK-DETALLE'!A:A, A) — única fuente de verdad
+             │                  │  N°_DETALLES = COUNTIF('FEEDBACK-DETALLE_LLAMADA'!A:A, A2) — fórmula, fuente de verdad
              │                  │  Taxonomía TIPO: KPI_AUDIT, ATTITUDINAL, CALIBRACION, ESCUCHA_VIVO, GRABACION, FEEDBACK_POSITIVO, CARTA_COMPROMISO, REMOCION
              │                  │  Taxonomía SUBTIPO: FCR_BAJO, AHT_ALTO, QA_SCORE_BAJO, FIRST_CALL_NOT_RESOLVED, FALTA_INJUSTIFICADA, TARDANZA, ABANDONO, ESTADOS_NO_AUTORIZADOS, USO_INDEBIDO_HERRAMIENTAS, INCUMPLIMIENTO_PROTOCOLO, NO_DEVUELVE_LLAMADA, RECONOCIMIENTO, DESTITUCION, ABANDONO_VOLUNTARIO + más
             └──────────────────┘
@@ -44,6 +44,7 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
             ┌──────────────────┐
              │  FEEDBACK-DETALLE│  5 cols: N°_FEEDBACK | N°_SECUENCIA | FECHA_LLAMADA | TIPO_INCIDENTE | OBSERVACIÓN
              │   (N)            │  FK → FEEDBACK (N°); AGENTE/NOMBRE/TEL se resuelven via FK → FEEDBACK → PERSONAL
+             │                  │  Nota: tab original tenía merge en row 1 — usar 'unmerge-cells' si se reescribe header
             └──────────────────┘
                      │
                      ▼
