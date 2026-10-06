@@ -33,9 +33,9 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
                      │
                      ▼
             ┌──────────────────┐
-             │   FEEDBACK       │  9 cols: N° | TIPO | SUBTIPO | AGENTE | FECHA | OBSERVACIÓN | ESTADO | CANT_CALLS | N°_DETALLES
-             │   (1)            │  FK → PERSONAL (AGENTE = "ID - NOMBRE")
-             │                  │  CANT_CALLS = cantidad real de calls grabados; N°_DETALLES = COUNTIF('FEEDBACK-DETALLE'!A:A, A)
+             │   FEEDBACK       │  8 cols: N° | AGENTE | TIPO | SUBTIPO | FECHA | OBSERVACIÓN | ESTADO | N°_DETALLES
+             │   (1)            │  FK → PERSONAL (AGENTE = "ID - NOMBRE_COMPLETO")
+             │                  │  AGENTE en col B (orden CEO); N°_DETALLES = COUNTIF('FEEDBACK-DETALLE'!A:A, A) — única fuente de verdad
              │                  │  Taxonomía TIPO: KPI_AUDIT, ATTITUDINAL, CALIBRACION, ESCUCHA_VIVO, GRABACION, FEEDBACK_POSITIVO, CARTA_COMPROMISO, REMOCION
              │                  │  Taxonomía SUBTIPO: FCR_BAJO, AHT_ALTO, QA_SCORE_BAJO, FIRST_CALL_NOT_RESOLVED, FALTA_INJUSTIFICADA, TARDANZA, ABANDONO, ESTADOS_NO_AUTORIZADOS, USO_INDEBIDO_HERRAMIENTAS, INCUMPLIMIENTO_PROTOCOLO, NO_DEVUELVE_LLAMADA, RECONOCIMIENTO, DESTITUCION, ABANDONO_VOLUNTARIO + más
             └──────────────────┘
@@ -43,7 +43,7 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
                      ▼ (1 ←→ N)
             ┌──────────────────┐
              │  FEEDBACK-DETALLE│  5 cols: N°_FEEDBACK | N°_SECUENCIA | FECHA_LLAMADA | TIPO_INCIDENTE | OBSERVACIÓN
-             │   (N)            │  FK → FEEDBACK (N°); AGENTE y TELEFONO se resuelven via FK → FEEDBACK → PERSONAL
+             │   (N)            │  FK → FEEDBACK (N°); AGENTE/NOMBRE/TEL se resuelven via FK → FEEDBACK → PERSONAL
             └──────────────────┘
                      │
                      ▼
