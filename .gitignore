@@ -1,0 +1,42 @@
+# Go
+*.test
+*.out
+go-runtime/bin/
+go-runtime/build/
+go-runtime/coverage.out
+
+# Secrets — NUNCA commit
+*.env
+.env.production
+*.enc
+oauth_*.json
+
+# Playwright cache
+.playwright-mcp/
+
+# OS
+.DS_Store
+Thumbs.db
+*.deb
+*.tar.gz
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Temporary
+*.tmp
+*.bak
+*.log
+
+# Worktrees (if any local)
+.worktrees/
+
+# Migration staging
+/migration-staging/
+
+# Screenshots staging (kept in repo, but ignore temp render)
+screenshots/*.tmp.png
