@@ -1,216 +1,179 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independiente**, separada de la memoria OVAV global.
+Memoria persistente. Última actualización: **2026-10-06**.
 
 ---
 
-## Identidad del proyecto
+## Identidad
 
-- **Nombre:** CIMA
-- **Significado:** **C**all center **I**ntelligent **M**anagement & **A**nalytics
+- **Proyecto:** CIMA — Call center Intelligent Management & Analytics
 - **Operación:** Call center técnico campaña MOVIL (operadora móvil)
-- **Identidad WhatsApp:** El grupo de WhatsApp del equipo se llama **"CIMA"** — esa es la marca interna del equipo técnico
- - **Spreadsheet ID:** `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`
+- **Marca interna:** Grupo WhatsApp "CIMA"
+- **Spreadsheet:** `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`
 
 ---
 
-## Sistema de Sheets — flujo por agente
+## Estructura actual — tabs y columnas
 
+### PERSONAL (950 rows × 9 cols)
 ```
-                 SUPERVISOR
-                     │
-                     ▼
-            ┌──────────────────┐
-            │   HE (L-V)       │  Horas extras semanales, rollover automático
-            │   7 cols         │  rows 13-30+
-            └──────────────────┘
-                     │
-                     ▼
-            ┌──────────────────┐
-            │   TE (FT only)   │  Turno especial: 6h/day o TE
-            │   semanal        │  solo agentes FT
-            └──────────────────┘
-                     │
-                     ▼
-            ┌──────────────────┐
-             │   FEEDBACK       │  8 cols: N° | AGENTE | TIPO | N°_DETALLES | SUBTIPO | FECHA | OBSERVACIÓN | ESTADO
-             │   (1)            │  FK → PERSONAL (AGENTE = "ID - NOMBRE_COMPLETO")
-             │                  │  N°_DETALLES = COUNTIF('FEEDBACK-DETALLE_LLAMADA'!A:A, A2) — fórmula, fuente de verdad
-             │                  │  Taxonomía TIPO: KPI_AUDIT, ATTITUDINAL, CALIBRACION, ESCUCHA_VIVO, GRABACION, FEEDBACK_POSITIVO, CARTA_COMPROMISO, REMOCION
-             │                  │  Taxonomía SUBTIPO: FCR_BAJO, AHT_ALTO, QA_SCORE_BAJO, FIRST_CALL_NOT_RESOLVED, FALTA_INJUSTIFICADA, TARDANZA, ABANDONO, ESTADOS_NO_AUTORIZADOS, USO_INDEBIDO_HERRAMIENTAS, INCUMPLIMIENTO_PROTOCOLO, NO_DEVUELVE_LLAMADA, RECONOCIMIENTO, DESTITUCION, ABANDONO_VOLUNTARIO + más
-            └──────────────────┘
-                     │
-                     ▼ (1 ←→ N)
-            ┌──────────────────┐
-             │  FEEDBACK-DETALLE│  5 cols: N°_FEEDBACK | N°_SECUENCIA | FECHA_LLAMADA | TIPO_INCIDENTE | OBSERVACIÓN
-             │   (N)            │  FK → FEEDBACK (N°); AGENTE/NOMBRE/TEL se resuelven via FK → FEEDBACK → PERSONAL
-             │                  │  Nota: tab original tenía merge en row 1 — usar 'unmerge-cells' si se reescribe header
-            └──────────────────┘
-                     │
-                     ▼
-            ┌──────────────────┐
-            │   CONFIG         │  catálogos: TIPO_TURNO, ESTADOS, SUPERVISOR, TIPO_FEEDBACK, SUBTIPO_FEEDBACK
-            └──────────────────┘
+N° | DNI | NOMBRES_COMPLETOS | TELEFONO | HORARIO | ESTADO | CARGO | ANYDESK | OBSERVACIONES
+```
+PK = N°. Agentes activos = 25. Estados: Activo, Cese, CAMBIO_SUPERVISOR.
 
-CITRIX (RRHH, separado):
-            ┌──────────────────┐
-            │ CITRIX_UPDATE_   │  Control horario, validación fechas
-            │ LOG_RRHH.xlsx    │  D4:D100 date picker, formulas HH:MM
-            └──────────────────┘
+### FEEDBACK (982 rows × 8 cols) ⭐
+```
+N° | AGENTE | TIPO | N°_DETALLES | SUBTIPO | FECHA | OBSERVACIÓN | ESTADO
+```
+**Orden CEO (AGENTE en col B).** N°_DETALLES es COUNTIF fórmula, fuente de verdad.
+
+| Col | Contenido |
+|-----|-----------|
+| A | N° (PK, seq 1-9) |
+| B | AGENTE = "ID - NOMBRE_COMPLETO" (ej: "3 - RAMIREZ HUAMAN JOHNN MILTON") |
+| C | TIPO (catálogo: 8 valores) |
+| D | N°_DETALLES = COUNTIF('FEEDBACK-DETALLE_LLAMADA'!A:A, A2) — fórmula |
+| E | SUBTIPO (catálogo: 24 valores) |
+| F | FECHA (dd/mm/yyyy) |
+| G | OBSERVACIÓN (texto libre) |
+| H | ESTADO (Cumplido / Feedback dado / Pendiente) |
+
+**Data validations activos:**
+- B (AGENTE): dropdown valores "ID - NOMBRE_COMPLETO" para los 25 agentes
+- C (TIPO): 8 valores del catálogo CONFIG
+- E (SUBTIPO): 24 valores del catálogo CONFIG
+
+### FEEDBACK-DETALLE_LLAMADA (101 rows × 5 cols) ⭐
+```
+N°_FEEDBACK | N°_SECUENCIA | FECHA_LLAMADA | TIPO_INCIDENTE | OBSERVACIÓN
+```
+FK: N°_FEEDBACK → FEEDBACK.N°. AGENTE se resuelve vía FK → FEEDBACK → PERSONAL.
+
+| Col | Contenido |
+|-----|-----------|
+| A | N°_FEEDBACK (FK → FEEDBACK.N°) |
+| B | N°_SECUENCIA (seq 1-N por grupo de N°_FEEDBACK) |
+| C | FECHA_LLAMADA (dd/mm/yyyy, o dd/mm/yyyy HH:MM:SS) |
+| D | TIPO_INCIDENTE (catálogo: 24 valores) |
+| E | OBSERVACIÓN (texto libre) |
+
+**Data validations activos:**
+- D (TIPO_INCIDENTE): dropdown 24 valores del catálogo CONFIG
+
+**⚠️ Nota técnica:** Row 1 de este tab tenía merge. Para reescribir header, primero ejecutar:
+```bash
+go run ./cmd/sheets/ unmerge-cells --tab "FEEDBACK-DETALLE_LLAMADA" --range "A1:E1"
+```
+
+### HORAS EXTRAS (927 rows × 47 cols)
+HE semanales L-V con rollover. 7 cols configurables. Rows 13-30+ por agente.
+
+### CONFIG (1000 rows × 11 cols)
+Catálogos de soporte. No modificar manualmente.
+
+---
+
+## Catálogos — CONFIG
+
+### TIPO_FEEDBACK (CONFIG rows ~106-113)
+```
+KPI_AUDIT / ATTITUDINAL / CALIBRACION / ESCUCHA_VIVO /
+GRABACION / FEEDBACK_POSITIVO / CARTA_COMPROMISO / REMOCION
+```
+
+### SUBTIPO_FEEDBACK (CONFIG rows ~117-140)
+```
+KPI_AUDIT:        FCR_BAJO, AHT_ALTO, QA_SCORE_BAJO, FIRST_CALL_NOT_RESOLVED
+ATTITUDINAL:      FALTA_INJUSTIFICADA, TARDANZA, ABANDONO, ESTADOS_NO_AUTORIZADOS,
+                  USO_INDEBIDO_HERRAMIENTAS, INCUMPLIMIENTO_PROTOCOLO, NO_DEVUELVE_LLAMADA
+CALIBRACION:      CALIBRACION_OK, CALIBRACION_NOK
+ESCUCHA_VIVO:     ESCUCHA_OK, ESCUCHA_NOK
+GRABACION:        GRABACION_OK, GRABACION_NOK
+FEEDBACK_POSITIVO: RECONOCIMIENTO
+CARTA_COMPROMISO: COMPROMISO_FIRMANTE, SEGUNDA_CARTA, TERCERA_CARTA, REINGRESO_COMPROMETIDO
+REMOCION:         DESTITUCION, ABANDONO_VOLUNTARIO
 ```
 
 ---
 
 ## Decisiones arquitectónicas (ADRs)
 
-#### ADR-001: SHEETS_API > APPS_SCRIPT (2026-09-26)
-- **Status:** Accepted
-- **Contexto:** Apps Script requería reload manual, no se podía automatizar deploy, rompía en cambios de scope OAuth.
-- **Decisión:** Toda la lógica de Sheets pasa por Google Sheets API via `ovav-sheets` Go bridge. Apps Script queda solo para cosas legacy.
-- **Consecuencia:** Más control, CI/CD posible, ~50% menos código.
-
-#### ADR-002: Migración OVAV → CIMA standalone (2026-10-05)
-- **Status:** Accepted
-- **Contexto:** El sheets-bridge y templates CIMA contaminaban OVAV develop (~110 commits ahead, +49,890 líneas, 370 archivos).
-- **Decisión:** CIMA se separa a repo independiente (`/home/braka/Systems/projects/work/cima/`). OVAV root queda limpio.
-- **Consecuencia:** OVAV sigue siendo la plataforma. CIMA es un consumidor de OVAV runtime + Sheets API. Historia preservada via format-patch + git am.
-
-#### ADR-003: CITRIX separado de la CIMA spreadsheet principal (v0.5.6)
-- **Status:** Accepted
-- **Contexto:** RRHH necesita control horario que NO debe mezclarse con la operación de call center.
-- **Decisión:** CITRIX_UPDATE_LOG_RRHH.xlsx es archivo aparte. CIMA sheet principal solo tiene HE/TE/FEEDBACK/CONFIG.
-
-#### ADR-004: FEEDBACK schema 9 cols + catálogo TIPO/SUBTIPO (2026-10-06)
-- **Status:** Accepted
-- **Contexto:** Schema anterior (7 cols) tenía EVALUACION como free text, sin taxonomía. Imposible auditar por tipo (KPIs, actitudinal, calibración, etc.).
-- **Decisión:** Schema 9 cols: N° | TIPO | SUBTIPO | AGENTE (FK→PERSONAL) | FECHA | OBSERVACIÓN | ESTADO | SUPERVISOR | N°_DETALLES. TIPO y SUBTIPO son catálogos en CONFIG.
-- **Consecuencia:** Auditorías por categoría posibles. Relación 1:N con FEEDBACK-DETALLE.
-
-#### ADR-005: FEEDBACK-DETALLE — relación 1:N por N°_FEEDBACK
-- **Status:** Accepted
-- **Contexto:** Cada feedback puede tener N detalles de llamada (ej: 12 llamadas abandonadas = 12 filas en detalle).
-- **Decisión:** FEEDBACK-DETALLE tiene N°_FEEDBACK como FK a FEEDBACK (N°). Permite consolidar llamadas individuales por feedback.
-- **FK:** AGENTE en FEEDBACK-DETALLE también FK → PERSONAL (N°).
-
+| ADR | Título | Status |
+|-----|--------|--------|
+| ADR-001 | Sheets API > Apps Script | Accepted |
+| ADR-002 | Migración OVAV → CIMA standalone | Accepted |
+| ADR-003 | CITRIX separado de spreadsheet principal | Accepted |
+| ADR-004 | FEEDBACK schema con taxonomía TIPO/SUBTIPO | Accepted |
+| ADR-005 | FEEDBACK-DETALLE relación 1:N por N°_FEEDBACK | Accepted |
 
 ---
 
-## Catálogos — TIPO_FEEDBACK y SUBTIPO_FEEDBACK
+## Lecciones aprendidas
 
-### TIPO_FEEDBACK (CONFIG rows 106-113)
+### L-001: merge en row 1 rompe writes
+Si al escribir header el write retorna ✅ pero la celda no persiste → ejecutar `unmerge-cells` primero.
+
+### L-002: JSON escaping de comillas simples en fórmulas
+COUNTIF con nombre de sheet entre comillas simples requiere `\u0027` en JSON:
 ```
-KPI_AUDIT              — Auditoría por KPIs (FCR, AHT, QA)
-ATTITUDINAL            — Temas actitudinales y disciplina
-CALIBRACION            — Calibración supervisor-agente
-ESCUCHA_VIVO           — Monitoreo de llamada en vivo
-GRABACION              — Auditoría de grabación
-FEEDBACK_POSITIVO      — Reconocimiento positivo
-CARTA_COMPROMISO       — Compromiso formal
-REMOCION               — Remoción definitiva
+=COUNTIF(\u0027FEEDBACK-DETALLE_LLAMADA\u0027!A:A, A2)
 ```
 
-### SUBTIPO_FEEDBACK (CONFIG rows 117-140)
+### L-003: Verificar siempre estructura antes de refactor
+Usar `go run ./cmd/sheets/ list` + read de headers antes de cualquier cambio.
+
+---
+
+## Git — estado actual
+
 ```
-KPI_AUDIT:
-  FCR_BAJO / AHT_ALTO / QA_SCORE_BAJO / FIRST_CALL_NOT_RESOLVED
+develop (HEAD) — 3 commits ahead of origin/develop, push bloqueado por gobernanza
+```
 
-ATTITUDINAL:
-  FALTA_INJUSTIFICADA / TARDANZA / ABANDONO / ESTADOS_NO_AUTORIZADOS /
-  USO_INDEBIDO_HERRAMIENTAS / INCUMPLIMIENTO_PROTOCOLO / NO_DEVUELVE_LLAMADA
+**Commits pendientes de push:**
+```
+6a8b3aa docs(cima): FEEDBACK — CEO column order (N°_DETALLES after TIPO), unmerge header row note
+77fd2ca docs(cima): FEEDBACK — full agent names, remove CANT_CALLS, AGENTE to col B per CEO
+56f11f5 docs(cima): remove redundant columns — FEEDBACK (-SUPERVISOR), FEEDBACK-DETALLE (-AGENTE,-TELEFONO,-FEEDBACK_DADO)
+```
 
-CALIBRACION:
-  CALIBRACION_OK / CALIBRACION_NOK
-
-ESCUCHA_VIVO:
-  ESCUCHA_OK / ESCUCHA_NOK
-
-GRABACION:
-  GRABACION_OK / GRABACION_NOK
-
-FEEDBACK_POSITIVO:
-  RECONOCIMIENTO
-
-CARTA_COMPROMISO:
-  COMPROMISO_FIRMANTE / SEGUNDA_CARTA / TERCERA_CARTA / REINGRESO_COMPROMETIDO
-
-REMOCION:
-  DESTITUCION / ABANDONO_VOLUNTARIO
+**Para hacer push:**
+```bash
+git push origin develop
+# Requiere aprobación CEO
 ```
 
 ---
 
-## Reglas operacionales
+## Stack
 
-### R-001: Latencia < 1s para reads de supervisor
-- **Origen:** Sesión 2026-09-26 — supervisor consultando HE a las 9am, no puede esperar.
-- **Acción:** Cache de reads en Sheets Bridge, formulas pre-calculadas en cells.
+- **Sheets bridge:** `go-runtime/cmd/sheets/` — CLI: list, read, write, validate, unmerge-cells
+- **Auth:** OAuth con token en vault cifrado (AES-256-GCM)
+- **Spreadsheet:** Google Sheets API v4
 
-### R-002: Histórico preservado
-- **Origen:** Auditoría RRHH 2026-09-15.
-- **Acción:** Cada cambio a un agente (HE/TE/FEEDBACK) tiene `modified_at` y `modified_by`. NO se borra histórico, solo se marca como archivado.
+### Comandos útiles
+```bash
+cd go-runtime
 
-### R-003: Apps Script solo para legacy v0.4.x
-- **Origen:** ADR-001.
-- **Acción:** No agregar Apps Script features nuevas. Migrar a Sheets API si se pide una nueva feature.
+# Listar tabs
+go run ./cmd/sheets/ list
 
-### R-004: CITRIX es RRHH, no Sup. operación
-- **Acción:** Si supervisor pide cambios en CITRIX, redirigir a RRHH.
+# Leer rango
+go run ./cmd/sheets/ read --range "FEEDBACK!A1:H10"
 
----
+# Escribir (values-json en JSON plano, comillas simples como \u0027)
+go run ./cmd/sheets/ write --spreadsheet "1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y" \
+  --range "FEEDBACK!H2:H10" \
+  --values-json '[["=COUNTIF(\u0027FEEDBACK-DETALLE_LLAMADA\u0027!A:A,A2)"]]'
 
-## Hitos del proyecto
+# Validación dropdown
+go run ./cmd/sheets/ validate --spreadsheet "..." --range "FEEDBACK!C2:C100" \
+  --type "ONE_OF_LIST" --values "KPI_AUDIT,ATTITUDINAL,..."
 
-| Fecha | Hito | Notas |
-|---|---|---|
-| 2026-07-19 | CIMA v0.1 — first Sheets schema | Spreadsheet inicial 14 cols |
-| 2026-08-15 | CIMA v0.3 — Apps Script Bridge | Bridge + onOpen menu |
-| 2026-09-15 | CIMA v0.4 — Feedbacks tab | Master-detail FK |
-| 2026-09-21 | CIMA v0.5 — FEEDBACK schema 8 cols | Simplificación mobile |
-| 2026-09-24 | CIMA v0.5.3 — HE/TE weekly tracker | Year/month/week tracking |
-| 2026-09-26 | CIMA v0.5.5 — Apps Script eliminated | Sheets API total |
-| 2026-10-04 | CIMA v0.5.6 — CITRIX_RRHH separado | v0.5.6 latest |
-| 2026-10-05 | **Migración OVAV → CIMA standalone** | Repo independiente |
+# Desmergear antes de escribir header
+go run ./cmd/sheets/ unmerge-cells --tab "FEEDBACK-DETALLE_LLAMADA" --range "A1:E1"
+```
 
 ---
 
-## Lessons learned (CIMA-specific)
-
-### L-001: updateCells sin coords borra toda la hoja
-- **Origen:** Sesión 2026-10-04, FEEDBACK rebuild.
-- **Síntoma:** Llamar `sheets.UpdateCells(...)` sin especificar range borra TODO el contenido.
-- **Fix:** Siempre pasar range explícito: `UpdateCells(spreadsheetID, "FEEDBACK!A1:G100", values)`.
-
-### L-002: Raw strings con `"` no escapan (literal)
-- **Origen:** Sesión 2026-10-04, CITRIX formula insert.
-- **Síntoma:** Strings con `"` se insertan literalmente sin escapar.
-- **Fix:** Usar `strconv.Quote()` o template rendering con escape.
-
-### L-003: No asumir estructura sin verificar
-- **Origen:** Sesión 2026-10-04, FEEDBACK layout.
-- **Síntoma:** Columnas en posiciones incorrectas después de refactor.
-- **Fix:** Antes de cada refactor, hacer `get_columns_schema(spreadsheetID, sheetName)` y validar.
-
-### L-004: Apps Script reload manual bloquea deploys
-- **Origen:** Sesión 2026-09-26, deploy HE v0.2.
-- **Síntoma:** Cambios en Apps Script requieren reload manual del spreadsheet.
-- **Fix:** Migrar a Sheets API (ADR-001).
-
----
-
-## Stack técnico (heredado de OVAV)
-
-CIMA consume:
-- **OVAV Sheets Bridge:** `go-runtime/cmd/sheets/` (en CIMA: `go-runtime/cmd/sheets/`)
-- **OVAV Vault:** AES-256-CBC + PBKDF2 200k iter, key en `~/.config/ovav/vault.key`
-- **OVAV Worktree System (OWS):** para features nuevas
-- **OVAV Validators:** F0-F5 antes de commit
-- **OVAV AGENTS.md pattern:** este archivo
-
-CIMA **NO** consume:
-- OVAV cpanel (UI)
-- OVAV OpenCode harness (es solo platform)
-- OVAV governors de otros proyectos
-
----
-
-*Last updated: 2026-10-05 — Thavren migration*
+*Última actualización: 2026-10-06 — Thavren*
