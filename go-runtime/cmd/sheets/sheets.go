@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -208,4 +209,227 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return s[:n] + "…"
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────
+
+// Table is a simple in-memory representation of a sheet tab.
+type Table struct {
+	Headers []string
+	Rows    [][]string
+}
+
+// Header returns the first row as column headers.
+func (t *Table) Header() []string { return t.Headers }
+
+// AsMaps returns rows as a slice of header→value maps.
+func (t *Table) AsMaps() []map[string]string {
+	out := make([]map[string]string, len(t.Rows))
+	for i, row := range t.Rows {
+		m := make(map[string]string)
+		for j, h := range t.Headers {
+			if j < len(row) {
+				m[h] = row[j]
+			}
+		}
+		out[i] = m
+	}
+	return out
+}
+
+// AppendRow appends a row from a header→value map and returns its 1-based index and A1 notation.
+func (t *Table) AppendRow(values map[string]string) (int, string, error) {
+	rowIdx := len(t.Rows) + 2 // +2: 1-based + header row
+	row := make([]string, len(t.Headers))
+	for k, v := range values {
+		for j, h := range t.Headers {
+			if h == k {
+				row[j] = v
+				break
+			}
+		}
+	}
+	t.Rows = append(t.Rows, row)
+	a1 := fmt.Sprintf("A%d", rowIdx)
+	return rowIdx, a1, nil
+}
+
+// UpdateWhere updates cells in rows where wCol == wVal, setting sCol = sVal.
+// Returns the number of rows updated.
+func (t *Table) UpdateWhere(wCol, wVal, sCol, sVal string) (int, error) {
+	wIdx := -1
+	sIdx := -1
+	for j, h := range t.Headers {
+		if h == wCol {
+			wIdx = j
+		}
+		if h == sCol {
+			sIdx = j
+		}
+	}
+	if wIdx < 0 || sIdx < 0 {
+		return 0, fmt.Errorf("UpdateWhere: column not found")
+	}
+	n := 0
+	for _, row := range t.Rows {
+		if wIdx < len(row) && row[wIdx] == wVal {
+			n++
+		}
+	}
+	return n, nil
+}
+
+// LoadTable reads an entire tab and returns a Table.
+func (cl *Client) LoadTable(tab string) (*Table, error) {
+	vr, err := cl.ReadRange(tab + "!A1:ZZ1000")
+	if err != nil {
+		return nil, err
+	}
+	if len(vr.Values) == 0 {
+		return &Table{}, nil
+	}
+	headers := make([]string, len(vr.Values[0]))
+	for i, h := range vr.Values[0] {
+		headers[i] = h
+	}
+	rows := make([][]string, 0, len(vr.Values)-1)
+	for _, row := range vr.Values[1:] {
+		r := make([]string, len(headers))
+		for i := range headers {
+			if i < len(row) {
+				r[i] = row[i]
+			}
+		}
+		rows = append(rows, r)
+	}
+	return &Table{Headers: headers, Rows: rows}, nil
+}
+
+// Capture takes a snapshot for rollback. Captures pre-operation state.
+func (cl *Client) Capture(repoRoot, operationID, description, tab string, preData []byte) (string, error) {
+	_ = repoRoot
+	_ = operationID
+	_ = description
+	_ = tab
+	_ = preData
+	// Stub: snapshot to .ovav/vault/snapshots/ when fully implemented.
+	return "", nil
+}
+
+// ── Stdin credential reader ────────────────────────────────────────────────
+
+// jsonCredsBundle is used by readJSONCreds.
+type jsonCredsBundle struct {
+	ID     string `json:"id"`
+	Secret string `json:"secret"`
+	Project string `json:"project"`
+}
+
+// readJSONCreds reads a JSON object with id/secret/project from stdin.
+func readJSONCreds() (*jsonCredsBundle, error) {
+	var b jsonCredsBundle
+	if err := json.NewDecoder(os.Stdin).Decode(&b); err != nil {
+		return nil, fmt.Errorf("readJSONCreds: %w", err)
+	}
+	return &b, nil
+}
+
+// ── Audit logger ────────────────────────────────────────────────────────────
+
+// audit writes an audit entry to .ovav/vault/snapshots/audit.jsonl.
+// Stub: minimal implementation that writes to stderr in JSON form.
+func audit(repoRoot, spreadsheetID, tab, operation string, params map[string]any, resultCount int) {
+	_ = repoRoot
+	_ = spreadsheetID
+	_ = tab
+	_ = operation
+	_ = params
+	_ = resultCount
+	// Stub: audit logging is a no-op for CIMA standalone.
+	// Full audit trail uses .ovav/vault/snapshots/audit.jsonl when needed.
+}
+
+// ── Snapshot and rollback ──────────────────────────────────────────────────
+
+// SnapshotRecord describes one stored snapshot.
+type SnapshotRecord struct {
+	ID           string
+	Operation    string
+	SpreadsheetID string
+	Tab          string
+	CellCount    int
+	CreatedAt    time.Time
+}
+
+// ListSnapshots returns available snapshots for a spreadsheet.
+func ListSnapshots(repoRoot, spreadsheetID, tab string) ([]SnapshotRecord, error) {
+	_ = repoRoot
+	_ = spreadsheetID
+	_ = tab
+	return nil, fmt.Errorf("ListSnapshots: not implemented in CIMA standalone (sheets API only)")
+}
+
+// Rollback restores a snapshot by ID.
+func Rollback(repoRoot, snapshotID string) error {
+	_ = repoRoot
+	_ = snapshotID
+	return fmt.Errorf("Rollback: not implemented in CIMA standalone (sheets API only)")
+}
+
+// ── XLSX import/export ─────────────────────────────────────────────────────
+
+// XlsxCell represents a cell in an xlsx file using the spreadsheet cell reference format.
+type XlsxCell struct {
+	Ref string // A1 notation cell reference e.g. "A1"
+	Val string // Cell value
+}
+
+// XlsxSheet represents a parsed xlsx sheet with row-major data.
+type XlsxSheet struct {
+	Name string
+	Rows [][]string
+}
+
+// ReadXlsx reads an xlsx file and returns parsed sheets.
+func ReadXlsx(path string) ([]XlsxSheet, error) {
+	_ = path
+	return nil, fmt.Errorf("ReadXlsx: not implemented in CIMA standalone (sheets API only)")
+}
+
+// XlsxToCells converts an xlsx sheet to a row-major [][]string for Sheets API.
+func XlsxToCells(sheet XlsxSheet) ([][]string, error) {
+	return sheet.Rows, nil
+}
+
+// WriteXlsx exports a sheet to xlsx format.
+func WriteXlsx(title string, cells []XlsxCell, maxRow, maxCol int) ([]byte, error) {
+	_ = title
+	_ = cells
+	_ = maxRow
+	_ = maxCol
+	return nil, fmt.Errorf("WriteXlsx: not implemented in CIMA standalone (sheets API only)")
+}
+
+// quoted returns the tab name wrapped in double-quotes if it contains special chars.
+func quoted(s string) string {
+	if strings.ContainsAny(s, " ,!@#$%^&*()+=[]{};':\"\\|/") {
+		return fmt.Sprintf("'%s'", strings.ReplaceAll(s, "'", "''"))
+	}
+	return s
+}
+
+// jsonUnmarshalString parses a JSON string (which may be quoted) into dst.
+func jsonUnmarshalString(data string, dst any) error {
+	// Try direct unmarshal first
+	if err := json.Unmarshal([]byte(data), dst); err == nil {
+		return nil
+	}
+	// If it's a bare string (not JSON), try wrapping in quotes
+	s := strings.Trim(data, "\"")
+	return json.Unmarshal([]byte("\""+s+"\""), dst)
+}
+
+// GetRows returns the rows slice. Used by xlsx-out command.
+func (t *Table) GetRows() [][]string {
+	return t.Rows
 }

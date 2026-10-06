@@ -737,3 +737,25 @@ func parseA1Cell(cell string) (col, row int, err error) {
 	}
 	return col, row, nil
 }
+
+// colLetterInverse converts A1 column letters to a 1-based integer.
+// Examples: A→1, Z→26, AA→27, AZ→52, BA→53.
+func colLetterInverse(letters string) int {
+	result := 0
+	for _, ch := range letters {
+		result = result*26 + int(ch-'A'+1)
+	}
+	return result
+}
+
+// colLetter converts a 1-based column index to A1 letters.
+// Examples: 1→A, 26→Z, 27→AA.
+func colLetter(col int) string {
+	result := ""
+	for col > 0 {
+		col--
+		result = string(rune('A'+col%26)) + result
+		col /= 26
+	}
+	return result
+}

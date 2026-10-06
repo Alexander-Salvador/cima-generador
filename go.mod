@@ -2,4 +2,4 @@ module cima
 
 go 1.26
 
-require github.com/ovav/ovav v0.0.0
+require gopkg.in/yaml.v3 v3.0.1

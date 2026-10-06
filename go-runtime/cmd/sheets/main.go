@@ -943,7 +943,10 @@ func runXlsxIn(repoRoot string, args []string) error {
 	if _, err := cl.AddSheet(tab, nil); err != nil {
 		_ = err
 	}
-	rows := XlsxToCells(sheets2[0])
+	rows, err := XlsxToCells(sheets2[0])
+	if err != nil {
+		return err
+	}
 	if len(rows) == 0 {
 		return fmt.Errorf("xlsx: no rows")
 	}
@@ -982,7 +985,7 @@ func runXlsxOut(repoRoot string, args []string) error {
 	}
 	maxR := 1
 	maxC := len(t.Header())
-	for ri, r := range t.Rows() {
+	for ri, r := range t.GetRows() {
 		for ci, v := range r {
 			cells = append(cells, XlsxCell{Ref: fmt.Sprintf("%s%d", colLetter(ci+1), ri+2), Val: v})
 		}
