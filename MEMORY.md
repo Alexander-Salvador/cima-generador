@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-06**.
+Memoria persistente. Última actualización: **2026-10-06 — Hardening 2026 aplicado (potenciación Sheets v2)**.
 
 ---
 
@@ -108,6 +108,144 @@ REMOCION:         DESTITUCION, ABANDONO_VOLUNTARIO
 
 ---
 
+## Arquitectura de correlación inteligente (v2 — 2026-10-06)
+
+### Cadena PK-FK completa
+
+```
+PERSONAL.N° (PK)  ──┐
+                     │  "3 - RAMIREZ HUAMAN JOHNN MILTON"
+                     ▼
+                  FEEDBACK.AGENTE (col B)  ◄── dropdown dropdown valor "N° - NOMBRE"
+                     │
+                     │  FK
+                     ▼
+              FEEDBACK.N° (PK)  ──┐
+                                   │
+                                   ▼
+                  FEEDBACK-DETALLE_LLAMADA.N°_FEEDBACK (FK)
+                                   │
+                                   ▼
+                          N°_SECUENCIA (1..N por grupo)
+```
+
+### Catálogo en CONFIG (single source of truth)
+
+```
+CONFIG!B108:B115 ──► 8 TIPO_FEEDBACK
+  KPI_AUDIT | ATTITUDINAL | CALIBRACION | ESCUCHA_VIVO | GRABACION |
+  FEEDBACK_POSITIVO | CARTA_COMPROMISO | REMOCION
+
+CONFIG!B119:D142 ──► 24 SUBTIPO_FEEDBACK + TIPO_PADRE (FK)
+  Cada subtipo conoce su tipo padre → coherencia automática
+
+CONFIG!B5:C29 ──► Mapping table (FK_FEEDBACK ↔ PERSONAL_N ↔ NOMBRE)
+  Permite VLOOKUP desde FEEDBACK hacia PERSONAL sin hardcodear
+```
+
+### Reglas de coherencia (enforcement)
+
+| Regla | Origen | Validación |
+|---|---|---|
+| FEEDBACK.AGENTE ∈ PERSONAL | PERSONAL!A4:A26 | Dropdown (manual) + VLOOKUP formula |
+| FEEDBACK.TIPO ∈ CONFIG catálogos | CONFIG!B108:B115 | Dropdown ONE_OF_LIST |
+| FEEDBACK.SUBTIPO ∈ CONFIG catálogos | CONFIG!B119:B142 | Dropdown ONE_OF_LIST |
+| FEEDBACK.SUBTIPO.TIPO_PADRE = FEEDBACK.TIPO | CONFIG!C119:C142 | Cross-validation via VLOOKUP |
+| PERSONAL.ESTADO ∈ {Activo, Cese, CAMBIO_SUPERVISOR} | Dropdown | Dropdown ONE_OF_LIST |
+| FEEDBACK.ESTADO ∈ {Cumplido, Feedback dado, Pendiente} | Dropdown | Dropdown ONE_OF_LIST |
+| FEEDBACK-DETALLE_LLAMADA.N°_FEEDBACK ∈ FEEDBACK.N° | FK constraint | VLOOKUP manual check |
+
+### Named ranges semánticos (hoja↔referencia)
+
+| Nombre | Rango | Uso en fórmula |
+|---|---|---|
+| `cfg_tipo_feedback` | `CONFIG!B108:B115` | Data validation FEEDBACK!C |
+| `cfg_subtipo_feedback` | `CONFIG!B119:B142` | Data validation FEEDBACK!E, FEEDBACK-DETALLE_LLAMADA!D |
+| `cfg_tipo_padre_map` | `CONFIG!B119:D142` | VLOOKUP SUBTIPO→TIPO_PADRE |
+| `personal_activos` | `PERSONAL!A4:F26` | 23 agentes activos en una referencia |
+| `feedback_historico` | `FEEDBACK!A2:H982` | Histórico completo para KPIs |
+| `feedback_detalle_historico` | `'FEEDBACK-DETALLE_LLAMADA'!A2:E101` | Detalle para COUNTIF |
+
+**Beneficio**: si movemos CONFIG!B108 a B109, las fórmulas `cfg_tipo_feedback` siguen funcionando. Sin búsqueda/reemplazo masivo.
+
+---
+
+## Estructura de potenciación 2026 (Hardening v2 aplicado)
+
+### Data Validation — Dropdowns activos (5 reglas)
+
+| Rango | Tipo | Lista |
+|---|---|---|
+| `PERSONAL!F4:F26` | ONE_OF_LIST | Activo, Cese, CAMBIO_SUPERVISOR |
+| `FEEDBACK!C2:C982` | ONE_OF_LIST | 8 TIPO_FEEDBACK (dropdown literal) |
+| `FEEDBACK!E2:E982` | ONE_OF_LIST | 24 SUBTIPO_FEEDBACK (dropdown literal) |
+| `FEEDBACK!H2:H982` | ONE_OF_LIST | Cumplido, Feedback dado, Pendiente |
+| `'FEEDBACK-DETALLE_LLAMADA'!D2:D101` | ONE_OF_LIST | 24 SUBTIPO_FEEDBACK |
+
+### Protected Ranges — Invariantes protegidos (5 reglas)
+
+| Rango | Tipo | Razón |
+|---|---|---|
+| `PERSONAL!A3:A26` | warning-only | PK agente — no modificar |
+| `FEEDBACK!A1:A982` | warning-only | PK feedback — no modificar |
+| `'FEEDBACK-DETALLE_LLAMADA'!A1:B101` | warning-only | FK + secuencia — auto-computed |
+| `CONFIG!A1:F145` | hard | CONFIG: catálogos sistema — NO modificar manualmente |
+| `PERSONAL!A1:I2` | warning-only | Header/title row |
+
+### Conditional Formatting — Alertas visuales (6 reglas)
+
+| Rango | Condición | Color | Significado |
+|---|---|---|---|
+| `FEEDBACK!H2:H982` | TEXT_EQ Pendiente | #FFE599 amarillo | Acción requerida |
+| `FEEDBACK!H2:H982` | TEXT_EQ Cumplido | #D9EAD3 verde claro | Cerrado OK |
+| `FEEDBACK!C2:C982` | TEXT_EQ REMOCION | #F4CCCC rojo bold | Crítico |
+| `FEEDBACK!C2:C982` | TEXT_EQ CARTA_COMPROMISO | #FFE599 amarillo | Alerta |
+| `PERSONAL!F4:F26` | TEXT_EQ Cese | #D9D9D9 gris | Inactivo |
+| `PERSONAL!F4:F26` | TEXT_EQ CAMBIO_SUPERVISOR | #FFE599 amarillo | Seguimiento |
+
+### Freeze Panes — Contexto siempre visible
+
+| Tab | Filas | Cols | Razón |
+|---|---|---|---|
+| PERSONAL | 3 | 1 | Header (row 3) + PK (col A) |
+| FEEDBACK | 1 | 1 | Header (row 1) + PK (col A) |
+| FEEDBACK-DETALLE_LLAMADA | 1 | 0 | Header (row 1, contiene merge) |
+| HORAS EXTRAS | 3 | 0 | Summary + headers (row 3, contiene merge) |
+| CONFIG | 5 | 0 | Title + headers + mapping |
+
+---
+
+## Decisiones arquitectónicas (ADRs)
+
+| ADR | Título | Status |
+|-----|--------|--------|
+| ADR-001 | Sheets API > Apps Script | Accepted |
+| ADR-002 | Migración OVAV → CIMA standalone | Accepted |
+| ADR-003 | CITRIX separado de spreadsheet principal | Accepted |
+| ADR-004 | FEEDBACK schema con taxonomía TIPO/SUBTIPO | Accepted |
+| ADR-005 | FEEDBACK-DETALLE relación 1:N por N°_FEEDBACK | Accepted |
+| ADR-006 | Hardening Sheets 2026 (v2 potenciación) | Accepted |
+
+### ADR-006 — Hardening Sheets 2026 (v2 potenciación)
+
+**Contexto:** Plan operativo call center con errores humanos recurrentes en FEEDBACK/HE/PERSONAL — valores fuera de catálogo, fórmulas rotas, historial modificado por accidente.
+
+**Decisión:** Aplicar 6 capas de potenciación nativa sin código:
+1. **Named ranges semánticos** → fórmulas legibles, migración segura
+2. **Data validation dropdowns** → rechaza input fuera de catálogo
+3. **Protected ranges** → bloquea borrado accidental de PKs/CONFIG
+4. **Conditional formatting** → alertas visuales (Pendiente/REMOCION)
+5. **Freeze panes** → contexto siempre visible
+6. **Catálogos CONFIG** → single source of truth (TIPO, SUBTIPO)
+
+**Consecuencias:**
+- 0 código Apps Script nuevo (cumple regla CIMA v0.5.0)
+- Cambios reversibles via Version History
+- Coherencia automática TIPO↔SUBTIPO via dropdowns
+- Inspector visual detecta "Pendiente" sin leer celda por celda
+
+---
+
 ## Lecciones aprendidas
 
 ### L-001: merge en row 1 rompe writes
@@ -121,6 +259,15 @@ COUNTIF con nombre de sheet entre comillas simples requiere `\u0027` en JSON:
 
 ### L-003: Verificar siempre estructura antes de refactor
 Usar `go run ./cmd/sheets/ list` + read de headers antes de cualquier cambio.
+
+### L-004: Hardening v2 — todas las herramientas son nativas (sin Apps Script)
+Aplicado 2026-10-06: 6 named ranges + 5 dropdowns + 5 protected + 6 conditional formats + 5 freeze. Total ~27 operaciones batch update. Latencia < 1s mantenida. Sin dependencia externa.
+
+### L-005: Coordenadas exactas de catálogos CONFIG
+- TIPO_FEEDBACK: `CONFIG!B108:B115` (8 tipos)
+- SUBTIPO_FEEDBACK: `CONFIG!B119:B142` (24 subtipos)
+- TIPO_PADRE map: `CONFIG!B119:D142`
+- Mapping table: `CONFIG!B5:C29` (FK_FEEDBACK ↔ PERSONAL_N)
 
 ---
 
