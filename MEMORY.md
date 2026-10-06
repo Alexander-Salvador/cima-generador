@@ -10,7 +10,7 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
 - **Significado:** **C**all center **I**ntelligent **M**anagement & **A**nalytics
 - **Operación:** Call center técnico campaña MOVIL (operadora móvil)
 - **Identidad WhatsApp:** El grupo de WhatsApp del equipo se llama **"CIMA"** — esa es la marca interna del equipo técnico
-- **Spreadsheet ID:** `1CPHU_PLACEHOLDER` (CITRIX RRHH: `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`)
+ - **Spreadsheet ID:** `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y`
 
 ---
 
@@ -33,13 +33,20 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
                      │
                      ▼
             ┌──────────────────┐
-            │   FEEDBACK       │  Master-detail: AGENTE → OBSERVACIÓN → ESTADO
-            │   8 cols         │  con HYPERLINKs + workflow states
+            │   FEEDBACK       │  9 cols: N° | TIPO | SUBTIPO | AGENTE | FECHA | OBSERVACIÓN | ESTADO | SUPERVISOR | N°_DETALLES
+            │   (1)            │  FK → PERSONAL (AGENTE, SUPERVISOR)
+            │                  │  Taxonomía: KPI_AUDIT, ATTITUDINAL, CALIBRACION, ESCUCHA_VIVO, GRABACION, FEEDBACK_POSITIVO, CARTA_COMPROMISO, REMOCION
+            └──────────────────┘
+                     │
+                     ▼ (1 ←→ N)
+            ┌──────────────────┐
+            │  FEEDBACK-DETALLE│  8 cols: N°_FEEDBACK | N°_SECUENCIA | FECHA_LLAMADA | AGENTE | TELEFONO | TIPO_INCIDENTE | OBSERVACIÓN | FEEDBACK_DADO
+            │   (N)            │  FK → FEEDBACK (N°), FK → PERSONAL (AGENTE)
             └──────────────────┘
                      │
                      ▼
             ┌──────────────────┐
-            │   CONFIG         │  catálogos: TIPO_TURNO, ESTADOS, SUPERVISOR
+            │   CONFIG         │  catálogos: TIPO_TURNO, ESTADOS, SUPERVISOR, TIPO_FEEDBACK, SUBTIPO_FEEDBACK
             └──────────────────┘
 
 CITRIX (RRHH, separado):
@@ -70,10 +77,62 @@ CITRIX (RRHH, separado):
 - **Contexto:** RRHH necesita control horario que NO debe mezclarse con la operación de call center.
 - **Decisión:** CITRIX_UPDATE_LOG_RRHH.xlsx es archivo aparte. CIMA sheet principal solo tiene HE/TE/FEEDBACK/CONFIG.
 
-#### ADR-004: FEEDBACK schema 8 cols (sin ID, eval, último_tipo, compromiso, cumplido, riesgo)
+#### ADR-004: FEEDBACK schema 9 cols + catálogo TIPO/SUBTIPO (2026-10-06)
 - **Status:** Accepted
-- **Contexto:** Schema original tenía 14 cols, demasiado complejo para mobile del supervisor.
-- **Decisión:** 8 cols finales: AGENTE | CANT_CALLS | FECHA_FEEDBACK | EVALUACION | OBSERVACIÓN | ESTADO | SUPERVISOR.
+- **Contexto:** Schema anterior (7 cols) tenía EVALUACION como free text, sin taxonomía. Imposible auditar por tipo (KPIs, actitudinal, calibración, etc.).
+- **Decisión:** Schema 9 cols: N° | TIPO | SUBTIPO | AGENTE (FK→PERSONAL) | FECHA | OBSERVACIÓN | ESTADO | SUPERVISOR | N°_DETALLES. TIPO y SUBTIPO son catálogos en CONFIG.
+- **Consecuencia:** Auditorías por categoría posibles. Relación 1:N con FEEDBACK-DETALLE.
+
+#### ADR-005: FEEDBACK-DETALLE — relación 1:N por N°_FEEDBACK
+- **Status:** Accepted
+- **Contexto:** Cada feedback puede tener N detalles de llamada (ej: 12 llamadas abandonadas = 12 filas en detalle).
+- **Decisión:** FEEDBACK-DETALLE tiene N°_FEEDBACK como FK a FEEDBACK (N°). Permite consolidar llamadas individuales por feedback.
+- **FK:** AGENTE en FEEDBACK-DETALLE también FK → PERSONAL (N°).
+
+
+---
+
+## Catálogos — TIPO_FEEDBACK y SUBTIPO_FEEDBACK
+
+### TIPO_FEEDBACK (CONFIG rows 106-113)
+```
+KPI_AUDIT              — Auditoría por KPIs (FCR, AHT, QA)
+ATTITUDINAL            — Temas actitudinales y disciplina
+CALIBRACION            — Calibración supervisor-agente
+ESCUCHA_VIVO           — Monitoreo de llamada en vivo
+GRABACION              — Auditoría de grabación
+FEEDBACK_POSITIVO      — Reconocimiento positivo
+CARTA_COMPROMISO       — Compromiso formal
+REMOCION               — Remoción definitiva
+```
+
+### SUBTIPO_FEEDBACK (CONFIG rows 117-140)
+```
+KPI_AUDIT:
+  FCR_BAJO / AHT_ALTO / QA_SCORE_BAJO / FIRST_CALL_NOT_RESOLVED
+
+ATTITUDINAL:
+  FALTA_INJUSTIFICADA / TARDANZA / ABANDONO / ESTADOS_NO_AUTORIZADOS /
+  USO_INDEBIDO_HERRAMIENTAS / INCUMPLIMIENTO_PROTOCOLO / NO_DEVUELVE_LLAMADA
+
+CALIBRACION:
+  CALIBRACION_OK / CALIBRACION_NOK
+
+ESCUCHA_VIVO:
+  ESCUCHA_OK / ESCUCHA_NOK
+
+GRABACION:
+  GRABACION_OK / GRABACION_NOK
+
+FEEDBACK_POSITIVO:
+  RECONOCIMIENTO
+
+CARTA_COMPROMISO:
+  COMPROMISO_FIRMANTE / SEGUNDA_CARTA / TERCERA_CARTA / REINGRESO_COMPROMETIDO
+
+REMOCION:
+  DESTITUCION / ABANDONO_VOLUNTARIO
+```
 
 ---
 
