@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ovav/ovav/internal/vault"
+	"cima/go-runtime/internal/vault"
 )
 
 const (

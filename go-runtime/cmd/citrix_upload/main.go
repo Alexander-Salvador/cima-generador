@@ -9,9 +9,6 @@
 // Path resolution (env override available):
 //   CIMA_EXCEL_PATH  — path to CITRIX_UPDATE_LOG_RRHH.xlsx
 //   CIMA_ROOT        — CIMA project root (for cred store)
-//
-// Defaults (relative to $HOME):
-//   $HOME/Systems/CIMA/templates/citrix/CITRIX_UPDATE_LOG_RRHH.xlsx
 package main
 
 import (
@@ -23,8 +20,69 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ovav/ovav/go-runtime/cmd/sheets"
+	"cima/go-runtime/internal/vault"
 )
+
+const (
+	// CIMA vault layout
+	credFileName = "google_oauth.enc"
+	defaultKey   = ".ovav/vault/vault.key"
+	defaultCreds = ".ovav/vault/credentials/google_oauth.enc"
+)
+
+type Creds struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	AccessToken  string `json:"access_token,omitempty"`
+	TokenExpiry  int64  `json:"token_expiry_unix,omitempty"`
+}
+
+type credStore struct {
+	keyPath   string
+	credsPath string
+}
+
+func newCredStore(repoRoot string) *credStore {
+	key := globalVaultKey()
+	if key == "" {
+		key = filepath.Join(repoRoot, defaultKey)
+	}
+	return &credStore{
+		keyPath:   key,
+		credsPath: filepath.Join(repoRoot, defaultCreds),
+	}
+}
+
+func globalVaultKey() string {
+	if x := os.Getenv("XDG_CONFIG_HOME"); x != "" {
+		return filepath.Join(x, "ovav", "vault.key")
+	}
+	if h, err := os.UserHomeDir(); err == nil {
+		return filepath.Join(h, ".config", "ovav", "vault.key")
+	}
+	return ""
+}
+
+func (s *credStore) Load() (*Creds, error) {
+	ct, err := os.ReadFile(s.credsPath)
+	if err != nil {
+		return nil, fmt.Errorf("read creds: %w", err)
+	}
+	key, err := os.ReadFile(s.keyPath)
+	if err != nil {
+		return nil, fmt.Errorf("read key: %w", err)
+	}
+	pt, err := vault.Decrypt(ct, key)
+	if err != nil {
+		return nil, fmt.Errorf("decrypt: %w", err)
+	}
+	var c Creds
+	if err := json.Unmarshal(pt, &c); err != nil {
+		return nil, fmt.Errorf("unmarshal: %w", err)
+	}
+	return &c, nil
+}
 
 func main() {
 	home, err := os.UserHomeDir()
@@ -46,18 +104,18 @@ func main() {
 	fmt.Printf("CIMA root: %s\n", cimaRoot)
 	fmt.Printf("Excel path: %s\n", excelPath)
 
-	v := sheets.NewCredStore(cimaRoot)
+	v := newCredStore(cimaRoot)
 	creds, err := v.Load()
 	if err != nil {
 		fmt.Println("ERROR load:", err)
 		os.Exit(1)
 	}
-	if err := creds.EnsureFresh(); err != nil {
-		fmt.Println("ERROR fresh:", err)
-		os.Exit(1)
-	}
 
 	token := creds.AccessToken
+	if token == "" {
+		fmt.Println("ERROR: no access_token in creds (run sheets auth first)")
+		os.Exit(1)
+	}
 
 	// ============================================================
 	// STEP 1: Subir .xlsx a Google Drive como Google Sheets
