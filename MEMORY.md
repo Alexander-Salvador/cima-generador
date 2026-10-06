@@ -1,6 +1,16 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-06 — Hardening 2026 aplicado (potenciación Sheets v2)**.
+Memoria persistente. Última actualización: **2026-10-06 — Hardening v2 + Dashboard + Smart Fill local**.
+
+### Política de push (CRÍTICO)
+
+⚠️ **NO PUSH REMOTO — trabajamos únicamente en local.**
+
+- Branch: `develop`
+- HEAD local: ver `git log --oneline -1`
+- Push bloqueado por gobernanza (regla del CEO)
+- Cada sesión de trabajo termina con commit local + SAFE_STOP report
+- NO ejecutar `git push` ni `gh pr create` salvo CEO explícito
 
 ---
 
@@ -70,6 +80,10 @@ HE semanales L-V con rollover. 7 cols configurables. Rows 13-30+ por agente.
 
 ### CONFIG (1000 rows × 11 cols)
 Catálogos de soporte. No modificar manualmente.
+
+### _DASHBOARD (sheetId=941101301)
+Tab KPI ejecutivo creado 2026-10-06 vía `create-tab`. 6 bloques con QUERY() cross-sheet + COUNTIF + COUNTA.
+Ver sección "Tab _DASHBOARD — KPIs en vivo" abajo para detalle completo.
 
 ---
 
@@ -212,6 +226,81 @@ CONFIG!B5:C29 ──► Mapping table (FK_FEEDBACK ↔ PERSONAL_N ↔ NOMBRE)
 | FEEDBACK-DETALLE_LLAMADA | 1 | 0 | Header (row 1, contiene merge) |
 | HORAS EXTRAS | 3 | 0 | Summary + headers (row 3, contiene merge) |
 | CONFIG | 5 | 0 | Title + headers + mapping |
+| _DASHBOARD | 2 | 0 | Title (merged A1:F1) + first data row |
+
+---
+
+## Tab _DASHBOARD — KPIs en vivo (creada 2026-10-06)
+
+**Sheet ID:** 941101301 | **Fila:** tabs[5] | **Foco:** supervisor de turno
+
+### Bloque A: Métricas resumen (A3:B10)
+
+| Celda | Fórmula | Significado |
+|---|---|---|
+| B4 | `=COUNTA(PERSONAL!A4:A26)` | Total agentes (23) |
+| B5 | `=COUNTIF(PERSONAL!F4:F26,"Activo")` | Activos (19) |
+| B6 | `=COUNTIF(PERSONAL!F4:F26,"Cese")` | Ceses (2) |
+| B7 | `=COUNTIF(PERSONAL!F4:F26,"CAMBIO_SUPERVISOR")` | Cambio supervisor (2) |
+| B8 | `=COUNTA(FEEDBACK!A2:A982)` | Total feedback (9) |
+| B9 | `=COUNTIF(FEEDBACK!H2:H982,"Pendiente")` | Pendientes (2) |
+| B10 | `=COUNTIF(FEEDBACK!H2:H982,"Cumplido")` | Cumplidos (3) |
+
+### Bloque B: TIPO_FEEDBACK distribución (D3:E12)
+
+QUERY cross-sheet con GROUP BY:
+```
+=QUERY(FEEDBACK!A:H,"SELECT C,COUNT(A) WHERE C<>'' GROUP BY C ORDER BY COUNT(A) DESC LABEL C 'Tipo', COUNT(A) 'Total'",1)
+```
+
+### Bloque C: SUBTIPO_FEEDBACK top (G3:H20)
+
+```
+=QUERY(FEEDBACK!A:H,"SELECT E,COUNT(A) WHERE E<>'' GROUP BY E ORDER BY COUNT(A) DESC LABEL E 'Subtipo', COUNT(A) 'Total'",1)
+```
+
+### Bloque D: ESTADO feedback distribución (A14:B20)
+
+```
+=QUERY(FEEDBACK!A:H,"SELECT H,COUNT(A) WHERE H<>'' GROUP BY H ORDER BY COUNT(A) DESC",1)
+```
+
+### Bloque E: Top 5 agentes con feedback PENDIENTE (D14:E20)
+
+```
+=QUERY(FEEDBACK!B:H,"SELECT B,COUNT(B) WHERE H='Pendiente' GROUP BY B ORDER BY COUNT(B) DESC LIMIT 5",1)
+```
+
+### Bloque F: Agentes activos (J3:L30)
+
+QUERY desde PERSONAL filtrando Estado=Activo, ordenando por N°:
+```
+=QUERY(PERSONAL!A:F,"SELECT A,C,F WHERE F='Activo' ORDER BY A LABEL A 'N°', C 'Nombre', F 'Estado'",1)
+```
+
+### Conditional Formatting en _DASHBOARD (3 reglas)
+
+| Rango | Condición | Color |
+|---|---|---|
+| B4:B10 | NUMBER_GREATER 0 | #E8F0FE azul claro |
+| B9:B10 | TEXT_EQ 0 (alert si 0) | #F4CCCC rojo |
+| E15:E20 | NUMBER_GREATER (Top pendientes) | #FFE599 amarillo bold |
+
+### Estilo _DASHBOARD
+
+- Título A1:F1 merged con bg #1F2937 / fg blanco / bold / size 14
+- Headers de bloque bg #374151 / fg blanco / bold / borders
+- Contenido borders #D1D5DB (gris claro)
+- Columnas resizeadas: A=180, B=140, D=200, E=100, G=200, H=100, J=60, K=240, L=160
+- Filas 22-23 italic gris #6B7280 — nota de refresh + stack técnico
+
+### Limitación conocida
+
+`COUNTIF` y `COUNTA` **NO soportan named ranges en sintaxis `name!col`**. Usar A1 directo:
+- ❌ `COUNTIF(personal_activos!F4:F26, ...)`
+- ✅ `COUNTIF(PERSONAL!F4:F26, ...)`
+
+`QUERY()` también requiere A1, no acepta named ranges.
 
 ---
 
@@ -273,21 +362,17 @@ Aplicado 2026-10-06: 6 named ranges + 5 dropdowns + 5 protected + 6 conditional 
 
 ## Git — estado actual
 
+⚠️ **POLÍTICA CEO: NO PUSH REMOTO. Solo trabajo local.**
+
 ```
-develop (HEAD) — 3 commits ahead of origin/develop, push bloqueado por gobernanza
+develop (HEAD) — local-only, push deshabilitado por directiva
 ```
 
-**Commits pendientes de push:**
-```
-6a8b3aa docs(cima): FEEDBACK — CEO column order (N°_DETALLES after TIPO), unmerge header row note
-77fd2ca docs(cima): FEEDBACK — full agent names, remove CANT_CALLS, AGENTE to col B per CEO
-56f11f5 docs(cima): remove redundant columns — FEEDBACK (-SUPERVISOR), FEEDBACK-DETALLE (-AGENTE,-TELEFONO,-FEEDBACK_DADO)
-```
-
-**Para hacer push:**
+**Verificar estado:**
 ```bash
-git push origin develop
-# Requiere aprobación CEO
+git log --oneline -5    # historial local
+git status              # working tree
+# NO ejecutar git push, git push origin, ni gh pr create
 ```
 
 ---
