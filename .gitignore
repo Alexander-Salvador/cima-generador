@@ -4,12 +4,15 @@
 go-runtime/bin/
 go-runtime/build/
 go-runtime/coverage.out
+go-runtime/sheets
+go-runtime/citrix_upload
 
 # Secrets — NUNCA commit
 *.env
 .env.production
 *.enc
 oauth_*.json
+.ovav/
 
 # Playwright cache
 .playwright-mcp/
