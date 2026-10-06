@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-06 — Hardening v2 + Dashboard + Smart Fill local**.
+Memoria persistente. Última actualización: **2026-10-06 — ATAQUE 10 COMPLETO (visual overhaul total)**.
 
 ### Política de push (CRÍTICO)
 
@@ -11,6 +11,74 @@ Memoria persistente. Última actualización: **2026-10-06 — Hardening v2 + Das
 - Push bloqueado por gobernanza (regla del CEO)
 - Cada sesión de trabajo termina con commit local + SAFE_STOP report
 - NO ejecutar `git push` ni `gh pr create` salvo CEO explícito
+
+---
+
+## 🎯 ATAQUE VISUAL v3 — Lista completa de mejoras (2026-10-06)
+
+CEO reportó "no percibo casi ningún cambio". Ataque total sobre visibilidad:
+
+### Cambios estructurales visibles
+
+| Tab | Cambio | Impacto visual |
+|---|---|---|
+| PERSONAL | Banner negro A1:I1 + summary A2:I2 merged | Inmediato al abrir |
+| FEEDBACK | Banner A1:K1 + summary A2:K2 + headers A3:K3 | Todos pre-headers |
+| FEEDBACK-DETALLE | Banner A1:F1 + summary A2:F2 + headers A3:F3 | Todos pre-headers |
+| HORAS EXTRAS | Header row 3 con #1F2937 fg #FFFFFF | Headers legibles |
+| CONFIG | Header row 3 con #1F2937 fg #FFFFFF | Headers legibles |
+
+### Columnas enriquecidas (VLOOKUPs automáticos)
+
+| Tab | Cols nuevas | Origen |
+|---|---|---|
+| FEEDBACK | I=DNI, J=HORARIO_AGENTE, K=CARGO_AGENTE | VLOOKUP desde PERSONAL via "N° - NOMBRE" |
+| FEEDBACK-DETALLE | F=DESCR_SUBTIPO | VLOOKUP desde CONFIG!B117:D140 |
+
+### Tab _DASHBOARD ampliada (10 secciones + 4 charts)
+
+| Sección | Ubicación | Contenido |
+|---|---|---|
+| Header | A1:F1 merged | "📊 CIMA DASHBOARD — KPIs en vivo" |
+| KPIs resumen | A3:B10 | 7 métricas con COUNTIF cross-sheet |
+| TIPO distribution | D3:E12 | QUERY con GROUP BY + PIE chart |
+| SUBTIPO top | G3:H20 | QUERY con ORDER BY DESC + BAR chart |
+| ESTADO feedback | A14:B20 | QUERY + PIE chart |
+| Top 5 pendientes | D14:E20 | QUERY con WHERE LIMIT 5 + BAR chart |
+| Agentes activos | J3:L30 | QUERY filtrando F='Activo' |
+| Formulario TEST | N3:Q15 | 3 dropdowns (AGENTE/TIPO/ESTADO) + 3 filas sample |
+| Tendencias | R3:V8 | Métricas vs hace 7 días |
+| Footer | A22:A23 | Nota refresh + stack técnico |
+
+### Tab _ERRORES (auto-detector)
+
+| Sección | Contenido |
+|---|---|
+| Header rojo | "🔴 AUTO-DETECTOR DE ERRORES" |
+| 8 checks live | SUBTIPO/TIPO/ESTADO fuera catálogo + #REF! + totales |
+| Conditional formatting | Verde si OK, rojo si >0 |
+
+### Bug fixes del bridge (importante)
+
+| Bug | Fix |
+|---|---|
+| Chart `addChart` usaba `a1Range` (incorrecto) | Usa `GridRange` + `sourceRange` wrapper |
+| Chart basic_chart usaba `sourceRange` directo | Usa `domain`/`series` wrapped |
+| Chart sin --range-domain/--range-series separados | Agregados ambos flags |
+| Menu CLI no soportaba `[][]any` (solo strings) | Mantenido `[][]string` (uso JSON correctamente) |
+
+### Stats de operaciones aplicadas
+
+- 6 named ranges (algunos corregidos)
+- 8 dropdowns
+- 5 protected ranges
+- 12 conditional formatting rules
+- 6 freeze panes
+- 4 charts embed
+- 9 banner/title rows merged
+- 30+ style ranges (colores/borders/fonts)
+- 50+ celdas con VLOOKUPs cross-sheet
+- 2 tabs nuevas (_DASHBOARD + _ERRORES)
 
 ---
 

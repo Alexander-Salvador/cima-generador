@@ -264,18 +264,21 @@ func (cl *Client) AddNamedRange(name, a1Range string) error {
 
 // ── Charts ───────────────────────────────────────────────────────────
 
-// AddChart inserts a basic chart of the given type over a1Range.
+// AddChart inserts a chart with optional separate domain and series ranges.
+// If rngDomain and rngSeries are empty, the entire rng is used for both.
 // Supported types: BAR, LINE, PIE, AREA, COLUMN, SCATTER.
-func (cl *Client) AddChart(tabName, a1Range, chartType, title string) error {
+func (cl *Client) AddChart(tabName, a1Range, a1RangeDomain, a1RangeSeries, chartType, title string) error {
 	if err := EnsureFresh(cl.c); err != nil {
 		return err
 	}
-	// Resolve sheetId from tab name.
 	tab, err := cl.resolveSheetID(tabName)
 	if err != nil {
 		return err
 	}
-	spec := buildChartSpec(chartType, title, a1Range)
+	spec, err := buildChartSpec(cl, a1Range, a1RangeDomain, a1RangeSeries, chartType, title)
+	if err != nil {
+		return err
+	}
 	body, _ := json.Marshal(map[string]any{
 		"requests": []map[string]any{
 			{"addChart": map[string]any{
@@ -295,51 +298,58 @@ func (cl *Client) AddChart(tabName, a1Range, chartType, title string) error {
 	return cl.batchUpdate(body)
 }
 
-func buildChartSpec(chartType, title, a1Range string) map[string]any {
-	var basicChartType string
+func buildChartSpec(client *Client, a1Range, a1RangeDomain, a1RangeSeries, chartType, title string) (map[string]any, error) {
+	gridAll, err := client.a1ToGrid(a1Range)
+	if err != nil {
+		return nil, err
+	}
+	gridDomain := gridAll
+	gridSeries := gridAll
+	if a1RangeDomain != "" {
+		gridDomain, err = client.a1ToGrid(a1RangeDomain)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if a1RangeSeries != "" {
+		gridSeries, err = client.a1ToGrid(a1RangeSeries)
+		if err != nil {
+			return nil, err
+		}
+	}
+	sourceRangeDomain := map[string]any{
+		"sourceRange": map[string]any{"sources": []map[string]any{gridDomain}},
+	}
+	sourceRangeSeries := map[string]any{
+		"sourceRange": map[string]any{"sources": []map[string]any{gridSeries}},
+	}
 	switch chartType {
 	case "PIE":
 		return map[string]any{
 			"title": title,
 			"pieChart": map[string]any{
 				"legendPosition": "RIGHT_LEGEND",
-				"domain":         chartSource(a1Range, 0)["domain"],
-				"series":         chartSource(a1Range, 1)["domain"],
+				"domain":         sourceRangeDomain,
+				"series":         sourceRangeSeries,
 			},
-		}
-	case "LINE":
-		basicChartType = "LINE"
-	case "AREA":
-		basicChartType = "AREA"
-	case "SCATTER":
-		basicChartType = "SCATTER"
+		}, nil
 	default:
-		basicChartType = chartType // BAR or COLUMN
-	}
-	return map[string]any{
-		"title": title,
-		"basicChart": map[string]any{
-			"chartType":      basicChartType,
-			"domains":        []map[string]any{chartSource(a1Range, 0)},
-			"series":         []map[string]any{chartSource(a1Range, 1)},
-			"legendPosition": "RIGHT_LEGEND",
-			"axis": map[string]any{
-				"position": "BOTTOM_AXIS",
-				"title":    "",
-			},
-		},
-	}
-}
-
-func chartSource(a1Range string, columnIndex int) map[string]any {
-	return map[string]any{
-		"domain": map[string]any{
-			"sourceRange": map[string]any{
-				"sources": []map[string]any{
-					{"a1Range": a1Range},
+		basicChartType := chartType // BAR, LINE, AREA, COLUMN, SCATTER
+		domainWrapped := map[string]any{"domain": sourceRangeDomain}
+		seriesWrapped := map[string]any{"series": sourceRangeSeries}
+		return map[string]any{
+			"title": title,
+			"basicChart": map[string]any{
+				"chartType":      basicChartType,
+				"domains":        []map[string]any{domainWrapped},
+				"series":         []map[string]any{seriesWrapped},
+				"legendPosition": "RIGHT_LEGEND",
+				"axis": map[string]any{
+					"position": "BOTTOM_AXIS",
+					"title":    "",
 				},
 			},
-		},
+		}, nil
 	}
 }
 

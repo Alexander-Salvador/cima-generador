@@ -1412,6 +1412,8 @@ func runChartCmd(repoRoot string, args []string) error {
 	id := pickSpreadsheetID(args)
 	tab := flagValue(args, "--tab", "")
 	rng := flagValue(args, "--range", "")
+	rngDomain := flagValue(args, "--range-domain", "")
+	rngSeries := flagValue(args, "--range-series", "")
 	chartType := flagValue(args, "--type", "BAR")
 	title := flagValue(args, "--title", "Chart")
 	if tab == "" || rng == "" {
@@ -1426,7 +1428,7 @@ func runChartCmd(repoRoot string, args []string) error {
 		return err
 	}
 	cl := NewClient(creds, id)
-	if err := cl.AddChart(tab, rng, chartType, title); err != nil {
+	if err := cl.AddChart(tab, rng, rngDomain, rngSeries, chartType, title); err != nil {
 		return err
 	}
 	audit(repoRoot, id, tab, "chart", map[string]any{
