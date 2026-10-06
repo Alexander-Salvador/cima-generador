@@ -33,9 +33,11 @@ Memoria persistente del sistema CIMA. Esta es la **memoria del proyecto independ
                      │
                      ▼
             ┌──────────────────┐
-            │   FEEDBACK       │  9 cols: N° | TIPO | SUBTIPO | AGENTE | FECHA | OBSERVACIÓN | ESTADO | SUPERVISOR | N°_DETALLES
-            │   (1)            │  FK → PERSONAL (AGENTE, SUPERVISOR)
-            │                  │  Taxonomía: KPI_AUDIT, ATTITUDINAL, CALIBRACION, ESCUCHA_VIVO, GRABACION, FEEDBACK_POSITIVO, CARTA_COMPROMISO, REMOCION
+             │   FEEDBACK       │  10 cols: N° | TIPO | SUBTIPO | AGENTE | FECHA | OBSERVACIÓN | ESTADO | SUPERVISOR | CANT_CALLS | N°_DETALLES
+             │   (1)            │  FK → PERSONAL (AGENTE, SUPERVISOR)
+             │                  │  CANT_CALLS = cantidad real de calls grabados; N°_DETALLES = COUNTIF('FEEDBACK-DETALLE'!A:A, A)
+             │                  │  Taxonomía TIPO: KPI_AUDIT, ATTITUDINAL, CALIBRACION, ESCUCHA_VIVO, GRABACION, FEEDBACK_POSITIVO, CARTA_COMPROMISO, REMOCION
+             │                  │  Taxonomía SUBTIPO: FCR_BAJO, AHT_ALTO, QA_SCORE_BAJO, FIRST_CALL_NOT_RESOLVED, FALTA_INJUSTIFICADA, TARDANZA, ABANDONO, ESTADOS_NO_AUTORIZADOS, USO_INDEBIDO_HERRAMIENTAS, INCUMPLIMIENTO_PROTOCOLO, NO_DEVUELVE_LLAMADA, RECONOCIMIENTO, DESTITUCION, ABANDONO_VOLUNTARIO + más
             └──────────────────┘
                      │
                      ▼ (1 ←→ N)
