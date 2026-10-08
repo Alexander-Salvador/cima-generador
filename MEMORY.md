@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-06 — ATAQUE 10 COMPLETO (visual overhaul total)**.
+Memoria persistente. Última actualización: **2026-10-06 — FEEDBACK reparado + 2 rows nuevas (Rosalía + Pablo)**.
 
 ### Política de push (CRÍTICO)
 
@@ -11,6 +11,54 @@ Memoria persistente. Última actualización: **2026-10-06 — ATAQUE 10 COMPLETO
 - Push bloqueado por gobernanza (regla del CEO)
 - Cada sesión de trabajo termina con commit local + SAFE_STOP report
 - NO ejecutar `git push` ni `gh pr create` salvo CEO explícito
+
+---
+
+## 🔧 FEEDBACK — Reparación 2026-10-06 (post ATAQUE v3)
+
+**Problema reportado:** "datos invisibles y en agente no se puede ver todos los nombres"
+
+**Causa raíz:**
+1. Texto con color de fondo inapropiado (posiblemente blanco sobre blanco)
+2. Columnas B (AGENTE) y G (OBSERVACIÓN) sin `wrapStrategy: WRAP` — nombres largos se truncaban
+3. 2 rows nuevas solicitadas por CEO
+
+**Reparación aplicada:**
+
+| Fix | Comando | Resultado |
+|---|---|---|
+| Forzar fg=#000000 + bg=#FFFFFF | `style --fg 000000 --bg FFFFFF` | Texto visible garantizado |
+| Text wrap B (AGENTE) | `style --wrap` | Nombres largos multi-line |
+| Text wrap G (OBSERVACIÓN) | `style --wrap` | Observaciones multi-line |
+| Borders #D1D5DB | `style --border-all` | Separación visual filas |
+
+**Rows nuevas agregadas (CEO directive):**
+
+| N° | AGENTE | TIPO | SUBTIPO | FECHA | OBSERVACIÓN | ESTADO | DNI | HORARIO |
+|---|---|---|---|---|---|---|---|---|
+| 10 | 21 - YANA JUNCO ROSALIA ROCIO | ATTITUDINAL | ABANDONO | 06/10/2026 | Reiterados abandonos de llamada — feedback por incumplimiento en gestión de llamadas | Pendiente | 75777997 | 12:00 - 21:00 |
+| 11 | 25 - ARBIETO DIAZ PABLO ANTONIO | CARTA_COMPROMISO | ABANDONO | 06/10/2026 | Carta de compromiso por abandono de llamadas y desconexión sin aviso | Pendiente | 78287555 | 12:00 - 21:00 |
+
+**VLOOKUPs aplicados:** cols I (DNI), J (HORARIO), K (CARGO) auto-poblados via PERSONAL.
+
+**N°_DETALLES (col D):** `=COUNTIF('FEEDBACK-DETALLE_LLAMADA'!A:A, N)` — 0 inicialmente, se actualiza cuando se agregan detalles.
+
+**Summary actualizado:**
+- Total: 11 registros (era 9)
+- Pendientes: 4 (era 2)
+- Cumplidos: 3
+- Tasa cierre: 36% (3/11)
+
+**Bridge fix incluido:**
+- Agregado flag `--wrap` al comando `style` para aplicar `wrapStrategy: WRAP`
+- Modificado `CellStyleSpec.Wrap bool` en format.go
+- Modificado `buildFormat` en SetCellStyle para incluir wrapStrategy en fields
+
+**Conditional format extendido:**
+- `FEEDBACK!H13:H14` TEXT_EQ Pendiente → amarillo
+- `FEEDBACK!C13:C14` TEXT_EQ CARTA_COMPROMISO → amarillo
+
+**Dashboard actualizado automáticamente:** _DASHBOARD!B8 ahora muestra 11, B9 muestra 4 (COUNTIF recalculado en vivo).
 
 ---
 

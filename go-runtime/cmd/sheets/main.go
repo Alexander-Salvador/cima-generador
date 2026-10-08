@@ -2147,6 +2147,7 @@ func runStyleCmd(repoRoot string, args []string) error {
 	spec.BorderLeft = hasFlag(args, "--border-left")
 	spec.BorderRight = hasFlag(args, "--border-right")
 	spec.NumberFormat = flagValue(args, "--number-format", "")
+	spec.Wrap = hasFlag(args, "--wrap")
 	if err := cl.SetCellStyle(spec); err != nil {
 		return err
 	}

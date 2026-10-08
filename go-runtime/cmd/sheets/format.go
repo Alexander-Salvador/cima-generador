@@ -408,6 +408,8 @@ type CellStyleSpec struct {
 	// are NOT applied — only the number format. Use a separate call for
 	// combined styling.
 	NumberFormat string
+	// Wrap enables wrapStrategy "WRAP" (text wraps to fit column width).
+	Wrap bool
 }
 
 // SetCellStyle applies a plain cell style (bg, fg, bold, borders)
@@ -451,6 +453,9 @@ func (cl *Client) SetCellStyle(spec CellStyleSpec) error {
 	}
 	if spec.Align != "" {
 		format["horizontalAlignment"] = strings.ToUpper(spec.Align)
+	}
+	if spec.Wrap {
+		format["wrapStrategy"] = "WRAP"
 	}
 	if spec.BorderAll || spec.BorderTop || spec.BorderBottom || spec.BorderLeft || spec.BorderRight {
 		borderColor := spec.BorderColor
@@ -506,6 +511,9 @@ func (cl *Client) SetCellStyle(spec CellStyleSpec) error {
 	}
 	if _, ok := format["horizontalAlignment"]; ok {
 		fields = append(fields, "horizontalAlignment")
+	}
+	if _, ok := format["wrapStrategy"]; ok {
+		fields = append(fields, "wrapStrategy")
 	}
 	if _, ok := format["borders"]; ok {
 		fields = append(fields, "borders")
