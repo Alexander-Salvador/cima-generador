@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — cima-generador v2.0.1 (feature ZONAS APAGADAS + data separada por seguridad)**.
+Memoria persistente. Última actualización: **2026-10-14 — v2.0.1 confirmado funcional, v2.0.2 PENDIENTE (syntax error en patch)**.
 
 ---
 
@@ -456,6 +456,68 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 - Grupo 2 (APAGADO.pdf): 31 ccpp — parser parcial
 - Grupo 3 (APAGADO2.pdf): 21 ccpp — visual OCR manual
 - ⏳ 205 zonas de Grupo 2 pendientes (parser falla, requiere OCR/IA)
+
+### ⏳ v2.0.2 — OPTIMIZACIÓN PENDIENTE (syntax error en patch)
+
+**CEO directive 2026-10-14:**
+- "Amoldar los nuevos datos para no cargar/relentizar nuestro sistema"
+- "Distintiguirse la data de las bases de apagado"
+- "Alerta en el frontend http://127.0.0.1:8765/index.html"
+- "Reducir botón de RESULTADO y agregar 2do button que sea COBERTURA OFF"
+
+**Diseño v2.0.2 (intentado, revertido por syntax error):**
+
+| Cambio | Detalle |
+|---|---|
+| **Data compacta** | Set<string> con ubigeos: d6 (62) + d4 (39) + d2 (15) = 116 ubigeos. Reducción 67% vs v2.0.1 (1,176 vs 3,606 chars) |
+| **Lookup O(1)** | `getUbigeoCodesForAddress(dep, prov, dist)` retorna {d2, d4, d6} usando UBIGEO inline |
+| **Check optimizado** | `ZONAS_APAGADAS.d6.has(codes.d6)` etc. (Set.has) en vez de indexOf en arrays |
+| **UI 2 botones** | Grid 1fr 1fr: RESULTADO (reducido) + COBERTURA OFF (semáforo) |
+| **Estados cobertura** | `pending` (gris) / `ok` (verde ✓) / `off` (rojo ⚠️ + pulse) |
+| **CSS animación** | `@keyframes pulseDanger` para resaltar COBERTURA OFF |
+| **VERSION** | 2.0.1 → 2.0.2 |
+
+**Bugs en el patch v2.0.2:**
+- `apply_patch_v202.py` dejó código con brace mismatch (2545 open, 2544 close)
+- `node --check` falla: "Unexpected end of input" línea 1091
+- `initPopupMode()` o su IIFE envolvente perdió un `}`
+
+**Reversión aplicada:**
+- `git checkout HEAD -- apps/cima-generador/index.html VERSION`
+- Restaurado a v2.0.1 funcional commiteado en HEAD (`60c91e0`)
+- v2.0.2 NO commiteado — pendiente fix de sintaxis
+
+**Recursos para re-intentar v2.0.2:**
+- `/tmp/opencode/popup_v202_broken.html` — versión rota guardada
+- `/tmp/opencode/bases_apagado/optimize_v202.py` — script de optimización (corre)
+- `/tmp/opencode/bases_apagado/apply_patch_v202.py` — script de aplicación (BUG)
+- `/tmp/opencode/bases_apagado/patch_*.txt` — patches JS/CSS/HTML generados
+- `/tmp/opencode/bases_apagado/zonas_inline.txt` — data compacta (1,176 bytes)
+
+**Próximo intento v2.0.2:**
+1. Aplicar cada patch POR SEPARADO y verificar con `node --check` después de cada uno
+2. Identificar exactamente qué patch rompe el balance
+3. Re-aplicar con orden correcto
+4. Verificar brace count antes de commit
+
+### 📋 Resumen ejecutivo del estado actual
+
+**Operativo (commitado en HEAD `60c91e0`):**
+- ✅ Popup v2.0.1 STANDALONE (745KB data inline)
+- ✅ 29/29 tests integridad PASS
+- ✅ 0 issues security
+- ✅ Code review 🟢 GOOD
+- ✅ LICENSE MIT + atribución GeoNames/RitchieRD
+- ✅ Feature ZONAS APAGADAS con data separada
+- ✅ gitignore protegiendo Bases de Apagado/ y data/zonas_apagadas.json
+
+**Pendiente (no commiteado):**
+- ⏳ v2.0.2 — optimización data + UI 2 botones (syntax error)
+- ⏳ 205 zonas de Grupo 2 (parser falla, requiere OCR/IA)
+- ⏳ Diana security 2da pasada (completada, no en commit final)
+- ⏳ Pablo code review (completado, no en commit final)
+- ⏳ CEO confirma autorización legal para usar data Movistar
+- ⏳ Push a GitHub Pages (bloqueado por política NO PUSH + requiere v2.0.2 funcional)
 
 ### Diferencia local vs GitHub Pages
 
