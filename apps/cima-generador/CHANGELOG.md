@@ -1,5 +1,32 @@
 # Changelog — cima-generador
 
+## [2.0.3] - 2026-10-14 — ZONAS APAGADAS full dataset (239 zonas, OCR end-to-end)
+
+### Changed
+- **Dataset expandido 68 → 239 zonas** (+251%):
+  - Grupo 1 (APAGADO.pdf + APAGADP1.pdf): pdfplumber extracción 3 pages + OCR visual 16 zonas nuevas
+  - Grupo 3 (APAGADO2.pdf): OCR visual 21 zonas (PDF era imagen escaneada)
+  - 2 entries descartadas (errores tipográficos en PDF: CAJAMARCA/CAJABAMBA/CAJAMARCA, LORETO/MARISCAL RAMON CASTILLA/SANTA ROSA DE LORETO — distritos inexistentes en UBIGEO oficial)
+- **Fuzzy match** automático: NFKC normalization + diff-lib cutoff 0.7-0.75 corrige typos de tildes (OCA×OCOÑA, MUÑANI×MUNANI, CASTAÑEDA×CASTANEDA, etc.)
+- Inline data: 1,176 → **2,802 bytes** (+138% comp ratio vs 17,043 JSON expandido)
+
+### Added
+- **Cobertura jerárquica** ahora cubre 23/25 departamentos (vs 15 antes), 106 provincias (vs 39), 192 distritos (vs 62)
+- Test_popup.py: bloque "ZONAS_APAGADAS data integrity" con 17 tests E2E:
+  - d6/d4/d2 size + uniqueness + code length
+  - Sample lookup tests (zonas nuevas v2.0.3 + regresión v2.0.1)
+- 4 nuevos departamentos incluidos: PASCO (19), UCAYALI (25), HUANUCO (10), MOQUEGUA (18)
+
+### Fixed
+- 12 typos de tildes automáticamente corregidos vía fuzzy match
+- Resolución jerárquica 3 niveles (depto→prov→dist) ahora infalible para derivados de PDF Movistar
+
+### Tests
+- De 36 → **53 tests** (+17): PASS 53/53
+- `node --check popup.js` → EXIT 0 (711,997 chars)
+- Diana security: 🟢 CLEAN
+- Pablo code review: 🟢 GOOD (194 inline comments)
+
 ## [2.0.2] - 2026-10-14 — ZONAS APAGADAS active (data inline + UI semáforo)
 
 ### Changed
