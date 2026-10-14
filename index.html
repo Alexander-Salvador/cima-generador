@@ -751,7 +751,43 @@
     border-color: var(--danger);
     border-style: solid;
   }
-  .output-box:hover:not(.placeholder) {
+
+  .zona-apagada-badge {
+    display: none;
+    margin-top: var(--space-2);
+    padding: 8px 10px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1.5px solid #f59e0b;
+    border-radius: var(--radius-md);
+    color: #78350f;
+    font-size: 11px;
+    line-height: 1.3;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .zona-apagada-badge.show { display: flex; }
+  .zona-apagada-badge .badge-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .zona-apagada-badge .badge-text {
+    flex: 1;
+    font-weight: 600;
+  }
+  .zona-apagada-badge .badge-text strong {
+    color: #92400e;
+  }
+  .zona-apagada-badge .badge-detail {
+    font-size: 9px;
+    color: #78350f;
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+    .output-box:hover:not(.placeholder) {
     border-color: var(--text-faint);
   }
   .output-box.copied {
@@ -1103,6 +1139,7 @@ font-size: 10px;
         </button>
       </div>
     </div>
+    <div id="zonaApagadaBadge" class="zona-apagada-badge"></div>
   </div>
 
   <!-- ═══════════ GRID 2: TIPIFICACIÓN (D-22: CTA honesto, sin promesa falsa) ═══════════ -->
@@ -1349,6 +1386,88 @@ const CCPP_LOADED = true;
 
 
 // ══════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════════
+// ZONAS APAGADAS MOVISTAR (v2.0.1) — data inline + check function
+// ══════════════════════════════════════════════════════════════════════
+// ZONAS_APAGADAS se inyecta desde data/zonas_apagadas.json (gitignored)
+// Para activar feature, CEO debe regenerar data e inyectar const.
+// Shape esperado: { by_ubigeo: [], by_dist: [], by_prov: [], by_depto: [], total: N, fuente: '', fecha: '' }
+const ZONAS_APAGADAS = { by_ubigeo: [], by_dist: [], by_prov: [], by_depto: [], total: 0, fuente: '', fecha: '' };
+
+
+// ══════════════════════════════════════════════════════════════════════
+// ZONAS APAGADAS MOVISTAR (v2.0.1) — detecta si la búsqueda es zona de retiro
+// ══════════════════════════════════════════════════════════════════════
+function checkZonaApagada(depto, prov, dist, ccpp) {
+  if (typeof ZONAS_APAGADAS === 'undefined') return null;
+  if (!depto) return null;
+  var d = depto.toUpperCase();
+  var p = (prov || '').toUpperCase();
+  var di = (dist || '').toUpperCase();
+  var c = (ccpp || '').toUpperCase();
+
+  // Most specific first: ubigeo 6d
+  if (c && di && p) {
+    // Build ubigeo from PERÚ scheme (we need deptos order)
+    // For simplicity, check dist level + ccpp name match
+  }
+
+  // Check distrito level
+  if (di && p && ZONAS_APAGADAS.by_dist.indexOf(d + '|' + p + '|' + di) !== -1) {
+    return { nivel: 'distrito', mensaje: 'Distrito completo en zona de apagado Movistar' };
+  }
+  // Check provincia level
+  if (p && ZONAS_APAGADAS.by_prov.indexOf(d + '|' + p) !== -1) {
+    return { nivel: 'provincia', mensaje: 'Provincia completa en zona de apagado Movistar' };
+  }
+  // Check depto level
+  if (ZONAS_APAGADAS.by_depto.indexOf(d) !== -1) {
+    return { nivel: 'departamento', mensaje: 'Departamento completo en zona de apagado Movistar' };
+  }
+  return null;
+}
+
+function renderZonaApagadaBadge(check) {
+  if (!check) return '';
+  var labels = {
+    'distrito': 'Distrito completo',
+    'provincia': 'Provincia completa',
+    'departamento': 'Departamento completo'
+  };
+  var label = labels[check.nivel] || check.nivel;
+  return '<div class="zona-apagada-badge" role="alert" aria-live="polite">' +
+    '<span class="badge-icon">⚠️</span>' +
+    '<span class="badge-text"><strong>ZONA DE APAGADO — MOVISTAR RETIRA COBERTURA</strong></span>' +
+    '<span class="badge-detail">' + escapeHtml(label) + ' — ' + escapeHtml(check.mensaje) + '</span>' +
+    '</div>';
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"'\/]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;' }[c];
+  });
+}
+
+
+// ZONAS APAGADAS: check on every address change
+function checkAndRenderZonaApagada() {
+  var dep = upper('departamento');
+  var prov = upper('provincia');
+  var dist = upper('distrito');
+  var ccpp = upper('ccpp');
+  var check = checkZonaApagada(dep, prov, dist, ccpp);
+  var badgeArea = $('zonaApagadaBadge');
+  if (!badgeArea) return;
+  if (check) {
+    badgeArea.innerHTML = renderZonaApagadaBadge(check);
+    badgeArea.classList.add('show');
+  } else {
+    badgeArea.innerHTML = '';
+    badgeArea.classList.remove('show');
+  }
+}
+
 // DATA VALIDATION (v2.0.0) — surface errors at startup (FIX #7)
 // ══════════════════════════════════════════════════════════════════════
 (function validateInlineData() {
@@ -2058,7 +2177,9 @@ function updateAddress() {
   var out = buildAddressForMaps();
   var box = $('outAddress');
   if (!box) return;
-  if (out) {
+  // v2.0.1: check zonas apagadas
+  checkAndRenderZonaApagada();
+    if (out) {
     // D-27: guardar texto completo y truncar visualmente a 1 línea.
     // El texto completo sigue accesible para copiar.
     box.dataset.full = out;
