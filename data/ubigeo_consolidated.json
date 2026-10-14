@@ -1,0 +1,8896 @@
+{
+"AMAZONAS": {
+"_ubigeo": "01",
+"_id": 1,
+"provincias": {
+"CHACHAPOYAS": {
+"_ubigeo": "0101",
+"_id": 1,
+"distritos": {
+"CHACHAPOYAS": {
+"_ubigeo": "010101",
+"_id": 1
+},
+"ASUNCION": {
+"_ubigeo": "010102",
+"_id": 2
+},
+"BALSAS": {
+"_ubigeo": "010103",
+"_id": 3
+},
+"CHETO": {
+"_ubigeo": "010104",
+"_id": 4
+},
+"CHILIQUIN": {
+"_ubigeo": "010105",
+"_id": 5
+},
+"CHUQUIBAMBA": {
+"_ubigeo": "010106",
+"_id": 6
+},
+"GRANADA": {
+"_ubigeo": "010107",
+"_id": 7
+},
+"HUANCAS": {
+"_ubigeo": "010108",
+"_id": 8
+},
+"LA JALCA": {
+"_ubigeo": "010109",
+"_id": 9
+},
+"LEIMEBAMBA": {
+"_ubigeo": "010110",
+"_id": 10
+},
+"LEVANTO": {
+"_ubigeo": "010111",
+"_id": 11
+},
+"MAGDALENA": {
+"_ubigeo": "010112",
+"_id": 12
+},
+"MARISCAL CASTILLA": {
+"_ubigeo": "010113",
+"_id": 13
+},
+"MOLINOPAMPA": {
+"_ubigeo": "010114",
+"_id": 14
+},
+"MONTEVIDEO": {
+"_ubigeo": "010115",
+"_id": 15
+},
+"OLLEROS": {
+"_ubigeo": "010116",
+"_id": 16
+},
+"QUINJALCA": {
+"_ubigeo": "010117",
+"_id": 17
+},
+"SAN FRANCISCO DE DAGUAS": {
+"_ubigeo": "010118",
+"_id": 18
+},
+"SAN ISIDRO DE MAINO": {
+"_ubigeo": "010119",
+"_id": 19
+},
+"SOLOCO": {
+"_ubigeo": "010120",
+"_id": 20
+},
+"SONCHE": {
+"_ubigeo": "010121",
+"_id": 21
+}
+}
+},
+"BAGUA": {
+"_ubigeo": "0102",
+"_id": 2,
+"distritos": {
+"BAGUA": {
+"_ubigeo": "010201",
+"_id": 22
+},
+"ARAMANGO": {
+"_ubigeo": "010202",
+"_id": 23
+},
+"COPALLIN": {
+"_ubigeo": "010203",
+"_id": 24
+},
+"EL PARCO": {
+"_ubigeo": "010204",
+"_id": 25
+},
+"IMAZA": {
+"_ubigeo": "010205",
+"_id": 26
+},
+"LA PECA": {
+"_ubigeo": "010206",
+"_id": 27
+}
+}
+},
+"BONGARA": {
+"_ubigeo": "0103",
+"_id": 3,
+"distritos": {
+"JUMBILLA": {
+"_ubigeo": "010301",
+"_id": 28
+},
+"CHISQUILLA": {
+"_ubigeo": "010302",
+"_id": 29
+},
+"CHURUJA": {
+"_ubigeo": "010303",
+"_id": 30
+},
+"COROSHA": {
+"_ubigeo": "010304",
+"_id": 31
+},
+"CUISPES": {
+"_ubigeo": "010305",
+"_id": 32
+},
+"FLORIDA": {
+"_ubigeo": "010306",
+"_id": 33
+},
+"JAZAN": {
+"_ubigeo": "010307",
+"_id": 34
+},
+"RECTA": {
+"_ubigeo": "010308",
+"_id": 35
+},
+"SAN CARLOS": {
+"_ubigeo": "010309",
+"_id": 36
+},
+"SHIPASBAMBA": {
+"_ubigeo": "010310",
+"_id": 37
+},
+"VALERA": {
+"_ubigeo": "010311",
+"_id": 38
+},
+"YAMBRASBAMBA": {
+"_ubigeo": "010312",
+"_id": 39
+}
+}
+},
+"CONDORCANQUI": {
+"_ubigeo": "0104",
+"_id": 4,
+"distritos": {
+"NIEVA": {
+"_ubigeo": "010401",
+"_id": 40
+},
+"EL CENEPA": {
+"_ubigeo": "010402",
+"_id": 41
+},
+"RIO SANTIAGO": {
+"_ubigeo": "010403",
+"_id": 42
+}
+}
+},
+"LUYA": {
+"_ubigeo": "0105",
+"_id": 5,
+"distritos": {
+"LAMUD": {
+"_ubigeo": "010501",
+"_id": 43
+},
+"CAMPORREDONDO": {
+"_ubigeo": "010502",
+"_id": 44
+},
+"COCABAMBA": {
+"_ubigeo": "010503",
+"_id": 45
+},
+"COLCAMAR": {
+"_ubigeo": "010504",
+"_id": 46
+},
+"CONILA": {
+"_ubigeo": "010505",
+"_id": 47
+},
+"INGUILPATA": {
+"_ubigeo": "010506",
+"_id": 48
+},
+"LONGUITA": {
+"_ubigeo": "010507",
+"_id": 49
+},
+"LONYA CHICO": {
+"_ubigeo": "010508",
+"_id": 50
+},
+"LUYA": {
+"_ubigeo": "010509",
+"_id": 51
+},
+"LUYA VIEJO": {
+"_ubigeo": "010510",
+"_id": 52
+},
+"MARIA": {
+"_ubigeo": "010511",
+"_id": 53
+},
+"OCALLI": {
+"_ubigeo": "010512",
+"_id": 54
+},
+"OCUMAL": {
+"_ubigeo": "010513",
+"_id": 55
+},
+"PISUQUIA": {
+"_ubigeo": "010514",
+"_id": 56
+},
+"PROVIDENCIA": {
+"_ubigeo": "010515",
+"_id": 57
+},
+"SAN CRISTOBAL": {
+"_ubigeo": "010516",
+"_id": 58
+},
+"SAN FRANCISCO DEL YESO": {
+"_ubigeo": "010517",
+"_id": 59
+},
+"SAN JERONIMO": {
+"_ubigeo": "010518",
+"_id": 60
+},
+"SAN JUAN DE LOPECANCHA": {
+"_ubigeo": "010519",
+"_id": 61
+},
+"SANTA CATALINA": {
+"_ubigeo": "010520",
+"_id": 62
+},
+"SANTO TOMAS": {
+"_ubigeo": "010521",
+"_id": 63
+},
+"TINGO": {
+"_ubigeo": "010522",
+"_id": 64
+},
+"TRITA": {
+"_ubigeo": "010523",
+"_id": 65
+}
+}
+},
+"RODRIGUEZ DE MENDOZA": {
+"_ubigeo": "0106",
+"_id": 6,
+"distritos": {
+"SAN NICOLAS": {
+"_ubigeo": "010601",
+"_id": 66
+},
+"CHIRIMOTO": {
+"_ubigeo": "010602",
+"_id": 67
+},
+"COCHAMAL": {
+"_ubigeo": "010603",
+"_id": 68
+},
+"HUAMBO": {
+"_ubigeo": "010604",
+"_id": 69
+},
+"LIMABAMBA": {
+"_ubigeo": "010605",
+"_id": 70
+},
+"LONGAR": {
+"_ubigeo": "010606",
+"_id": 71
+},
+"MARISCAL BENAVIDES": {
+"_ubigeo": "010607",
+"_id": 72
+},
+"MILPUC": {
+"_ubigeo": "010608",
+"_id": 73
+},
+"OMIA": {
+"_ubigeo": "010609",
+"_id": 74
+},
+"SANTA ROSA": {
+"_ubigeo": "010610",
+"_id": 75
+},
+"TOTORA": {
+"_ubigeo": "010611",
+"_id": 76
+},
+"VISTA ALEGRE": {
+"_ubigeo": "010612",
+"_id": 77
+}
+}
+},
+"UTCUBAMBA": {
+"_ubigeo": "0107",
+"_id": 7,
+"distritos": {
+"BAGUA GRANDE": {
+"_ubigeo": "010701",
+"_id": 78
+},
+"CAJARURO": {
+"_ubigeo": "010702",
+"_id": 79
+},
+"CUMBA": {
+"_ubigeo": "010703",
+"_id": 80
+},
+"EL MILAGRO": {
+"_ubigeo": "010704",
+"_id": 81
+},
+"JAMALCA": {
+"_ubigeo": "010705",
+"_id": 82
+},
+"LONYA GRANDE": {
+"_ubigeo": "010706",
+"_id": 83
+},
+"YAMON": {
+"_ubigeo": "010707",
+"_id": 84
+}
+}
+}
+}
+},
+"ANCASH": {
+"_ubigeo": "02",
+"_id": 2,
+"provincias": {
+"HUARAZ": {
+"_ubigeo": "0201",
+"_id": 8,
+"distritos": {
+"HUARAZ": {
+"_ubigeo": "020101",
+"_id": 85
+},
+"COCHABAMBA": {
+"_ubigeo": "020102",
+"_id": 86
+},
+"COLCABAMBA": {
+"_ubigeo": "020103",
+"_id": 87
+},
+"HUANCHAY": {
+"_ubigeo": "020104",
+"_id": 88
+},
+"INDEPENDENCIA": {
+"_ubigeo": "020105",
+"_id": 89
+},
+"JANGAS": {
+"_ubigeo": "020106",
+"_id": 90
+},
+"LA LIBERTAD": {
+"_ubigeo": "020107",
+"_id": 91
+},
+"OLLEROS": {
+"_ubigeo": "020108",
+"_id": 92
+},
+"PAMPAS": {
+"_ubigeo": "020109",
+"_id": 93
+},
+"PARIACOTO": {
+"_ubigeo": "020110",
+"_id": 94
+},
+"PIRA": {
+"_ubigeo": "020111",
+"_id": 95
+},
+"TARICA": {
+"_ubigeo": "020112",
+"_id": 96
+}
+}
+},
+"AIJA": {
+"_ubigeo": "0202",
+"_id": 9,
+"distritos": {
+"AIJA": {
+"_ubigeo": "020201",
+"_id": 97
+},
+"CORIS": {
+"_ubigeo": "020202",
+"_id": 98
+},
+"HUACLLAN": {
+"_ubigeo": "020203",
+"_id": 99
+},
+"LA MERCED": {
+"_ubigeo": "020204",
+"_id": 100
+},
+"SUCCHA": {
+"_ubigeo": "020205",
+"_id": 101
+}
+}
+},
+"ANTONIO RAYMONDI": {
+"_ubigeo": "0203",
+"_id": 10,
+"distritos": {
+"LLAMELLIN": {
+"_ubigeo": "020301",
+"_id": 102
+},
+"ACZO": {
+"_ubigeo": "020302",
+"_id": 103
+},
+"CHACCHO": {
+"_ubigeo": "020303",
+"_id": 104
+},
+"CHINGAS": {
+"_ubigeo": "020304",
+"_id": 105
+},
+"MIRGAS": {
+"_ubigeo": "020305",
+"_id": 106
+},
+"SAN JUAN DE RONTOY": {
+"_ubigeo": "020306",
+"_id": 107
+}
+}
+},
+"ASUNCION": {
+"_ubigeo": "0204",
+"_id": 11,
+"distritos": {
+"CHACAS": {
+"_ubigeo": "020401",
+"_id": 108
+},
+"ACOCHACA": {
+"_ubigeo": "020402",
+"_id": 109
+}
+}
+},
+"BOLOGNESI": {
+"_ubigeo": "0205",
+"_id": 12,
+"distritos": {
+"CHIQUIAN": {
+"_ubigeo": "020501",
+"_id": 110
+},
+"ABELARDO PARDO LEZAMETA": {
+"_ubigeo": "020502",
+"_id": 111
+},
+"ANTONIO RAYMONDI": {
+"_ubigeo": "020503",
+"_id": 112
+},
+"AQUIA": {
+"_ubigeo": "020504",
+"_id": 113
+},
+"CAJACAY": {
+"_ubigeo": "020505",
+"_id": 114
+},
+"CANIS": {
+"_ubigeo": "020506",
+"_id": 115
+},
+"COLQUIOC": {
+"_ubigeo": "020507",
+"_id": 116
+},
+"HUALLANCA": {
+"_ubigeo": "020508",
+"_id": 117
+},
+"HUASTA": {
+"_ubigeo": "020509",
+"_id": 118
+},
+"HUAYLLACAYAN": {
+"_ubigeo": "020510",
+"_id": 119
+},
+"LA PRIMAVERA": {
+"_ubigeo": "020511",
+"_id": 120
+},
+"MANGAS": {
+"_ubigeo": "020512",
+"_id": 121
+},
+"PACLLON": {
+"_ubigeo": "020513",
+"_id": 122
+},
+"SAN MIGUEL DE CORPANQUI": {
+"_ubigeo": "020514",
+"_id": 123
+},
+"TICLLOS": {
+"_ubigeo": "020515",
+"_id": 124
+}
+}
+},
+"CARHUAZ": {
+"_ubigeo": "0206",
+"_id": 13,
+"distritos": {
+"CARHUAZ": {
+"_ubigeo": "020601",
+"_id": 125
+},
+"ACOPAMPA": {
+"_ubigeo": "020602",
+"_id": 126
+},
+"AMASHCA": {
+"_ubigeo": "020603",
+"_id": 127
+},
+"ANTA": {
+"_ubigeo": "020604",
+"_id": 128
+},
+"ATAQUERO": {
+"_ubigeo": "020605",
+"_id": 129
+},
+"MARCARA": {
+"_ubigeo": "020606",
+"_id": 130
+},
+"PARIAHUANCA": {
+"_ubigeo": "020607",
+"_id": 131
+},
+"SAN MIGUEL DE ACO": {
+"_ubigeo": "020608",
+"_id": 132
+},
+"SHILLA": {
+"_ubigeo": "020609",
+"_id": 133
+},
+"TINCO": {
+"_ubigeo": "020610",
+"_id": 134
+},
+"YUNGAR": {
+"_ubigeo": "020611",
+"_id": 135
+}
+}
+},
+"CARLOS FERMIN FITZCARRALD": {
+"_ubigeo": "0207",
+"_id": 14,
+"distritos": {
+"SAN LUIS": {
+"_ubigeo": "020701",
+"_id": 136
+},
+"SAN NICOLAS": {
+"_ubigeo": "020702",
+"_id": 137
+},
+"YAUYA": {
+"_ubigeo": "020703",
+"_id": 138
+}
+}
+},
+"CASMA": {
+"_ubigeo": "0208",
+"_id": 15,
+"distritos": {
+"CASMA": {
+"_ubigeo": "020801",
+"_id": 139
+},
+"BUENA VISTA ALTA": {
+"_ubigeo": "020802",
+"_id": 140
+},
+"COMANDANTE NOEL": {
+"_ubigeo": "020803",
+"_id": 141
+},
+"YAUTAN": {
+"_ubigeo": "020804",
+"_id": 142
+}
+}
+},
+"CORONGO": {
+"_ubigeo": "0209",
+"_id": 16,
+"distritos": {
+"CORONGO": {
+"_ubigeo": "020901",
+"_id": 143
+},
+"ACO": {
+"_ubigeo": "020902",
+"_id": 144
+},
+"BAMBAS": {
+"_ubigeo": "020903",
+"_id": 145
+},
+"CUSCA": {
+"_ubigeo": "020904",
+"_id": 146
+},
+"LA PAMPA": {
+"_ubigeo": "020905",
+"_id": 147
+},
+"YANAC": {
+"_ubigeo": "020906",
+"_id": 148
+},
+"YUPAN": {
+"_ubigeo": "020907",
+"_id": 149
+}
+}
+},
+"HUARI": {
+"_ubigeo": "0210",
+"_id": 17,
+"distritos": {
+"HUARI": {
+"_ubigeo": "021001",
+"_id": 150
+},
+"ANRA": {
+"_ubigeo": "021002",
+"_id": 151
+},
+"CAJAY": {
+"_ubigeo": "021003",
+"_id": 152
+},
+"CHAVIN DE HUANTAR": {
+"_ubigeo": "021004",
+"_id": 153
+},
+"HUACACHI": {
+"_ubigeo": "021005",
+"_id": 154
+},
+"HUACCHIS": {
+"_ubigeo": "021006",
+"_id": 155
+},
+"HUACHIS": {
+"_ubigeo": "021007",
+"_id": 156
+},
+"HUANTAR": {
+"_ubigeo": "021008",
+"_id": 157
+},
+"MASIN": {
+"_ubigeo": "021009",
+"_id": 158
+},
+"PAUCAS": {
+"_ubigeo": "021010",
+"_id": 159
+},
+"PONTO": {
+"_ubigeo": "021011",
+"_id": 160
+},
+"RAHUAPAMPA": {
+"_ubigeo": "021012",
+"_id": 161
+},
+"RAPAYAN": {
+"_ubigeo": "021013",
+"_id": 162
+},
+"SAN MARCOS": {
+"_ubigeo": "021014",
+"_id": 163
+},
+"SAN PEDRO DE CHANA": {
+"_ubigeo": "021015",
+"_id": 164
+},
+"UCO": {
+"_ubigeo": "021016",
+"_id": 165
+}
+}
+},
+"HUARMEY": {
+"_ubigeo": "0211",
+"_id": 18,
+"distritos": {
+"HUARMEY": {
+"_ubigeo": "021101",
+"_id": 166
+},
+"COCHAPETI": {
+"_ubigeo": "021102",
+"_id": 167
+},
+"CULEBRAS": {
+"_ubigeo": "021103",
+"_id": 168
+},
+"HUAYAN": {
+"_ubigeo": "021104",
+"_id": 169
+},
+"MALVAS": {
+"_ubigeo": "021105",
+"_id": 170
+}
+}
+},
+"HUAYLAS": {
+"_ubigeo": "0212",
+"_id": 19,
+"distritos": {
+"CARAZ": {
+"_ubigeo": "021201",
+"_id": 171
+},
+"HUALLANCA": {
+"_ubigeo": "021202",
+"_id": 172
+},
+"HUATA": {
+"_ubigeo": "021203",
+"_id": 173
+},
+"HUAYLAS": {
+"_ubigeo": "021204",
+"_id": 174
+},
+"MATO": {
+"_ubigeo": "021205",
+"_id": 175
+},
+"PAMPAROMAS": {
+"_ubigeo": "021206",
+"_id": 176
+},
+"PUEBLO LIBRE": {
+"_ubigeo": "021207",
+"_id": 177
+},
+"SANTA CRUZ": {
+"_ubigeo": "021208",
+"_id": 178
+},
+"SANTO TORIBIO": {
+"_ubigeo": "021209",
+"_id": 179
+},
+"YURACMARCA": {
+"_ubigeo": "021210",
+"_id": 180
+}
+}
+},
+"MARISCAL LUZURIAGA": {
+"_ubigeo": "0213",
+"_id": 20,
+"distritos": {
+"PISCOBAMBA": {
+"_ubigeo": "021301",
+"_id": 181
+},
+"CASCA": {
+"_ubigeo": "021302",
+"_id": 182
+},
+"ELEAZAR GUZMAN BARRON": {
+"_ubigeo": "021303",
+"_id": 183
+},
+"FIDEL OLIVAS ESCUDERO": {
+"_ubigeo": "021304",
+"_id": 184
+},
+"LLAMA": {
+"_ubigeo": "021305",
+"_id": 185
+},
+"LLUMPA": {
+"_ubigeo": "021306",
+"_id": 186
+},
+"LUCMA": {
+"_ubigeo": "021307",
+"_id": 187
+},
+"MUSGA": {
+"_ubigeo": "021308",
+"_id": 188
+}
+}
+},
+"OCROS": {
+"_ubigeo": "0214",
+"_id": 21,
+"distritos": {
+"OCROS": {
+"_ubigeo": "021401",
+"_id": 189
+},
+"ACAS": {
+"_ubigeo": "021402",
+"_id": 190
+},
+"CAJAMARQUILLA": {
+"_ubigeo": "021403",
+"_id": 191
+},
+"CARHUAPAMPA": {
+"_ubigeo": "021404",
+"_id": 192
+},
+"COCHAS": {
+"_ubigeo": "021405",
+"_id": 193
+},
+"CONGAS": {
+"_ubigeo": "021406",
+"_id": 194
+},
+"LLIPA": {
+"_ubigeo": "021407",
+"_id": 195
+},
+"SAN CRISTOBAL DE RAJAN": {
+"_ubigeo": "021408",
+"_id": 196
+},
+"SAN PEDRO": {
+"_ubigeo": "021409",
+"_id": 197
+},
+"SANTIAGO DE CHILCAS": {
+"_ubigeo": "021410",
+"_id": 198
+}
+}
+},
+"PALLASCA": {
+"_ubigeo": "0215",
+"_id": 22,
+"distritos": {
+"CABANA": {
+"_ubigeo": "021501",
+"_id": 199
+},
+"BOLOGNESI": {
+"_ubigeo": "021502",
+"_id": 200
+},
+"CONCHUCOS": {
+"_ubigeo": "021503",
+"_id": 201
+},
+"HUACASCHUQUE": {
+"_ubigeo": "021504",
+"_id": 202
+},
+"HUANDOVAL": {
+"_ubigeo": "021505",
+"_id": 203
+},
+"LACABAMBA": {
+"_ubigeo": "021506",
+"_id": 204
+},
+"LLAPO": {
+"_ubigeo": "021507",
+"_id": 205
+},
+"PALLASCA": {
+"_ubigeo": "021508",
+"_id": 206
+},
+"PAMPAS": {
+"_ubigeo": "021509",
+"_id": 207
+},
+"SANTA ROSA": {
+"_ubigeo": "021510",
+"_id": 208
+},
+"TAUCA": {
+"_ubigeo": "021511",
+"_id": 209
+}
+}
+},
+"POMABAMBA": {
+"_ubigeo": "0216",
+"_id": 23,
+"distritos": {
+"POMABAMBA": {
+"_ubigeo": "021601",
+"_id": 210
+},
+"HUAYLLAN": {
+"_ubigeo": "021602",
+"_id": 211
+},
+"PAROBAMBA": {
+"_ubigeo": "021603",
+"_id": 212
+},
+"QUINUABAMBA": {
+"_ubigeo": "021604",
+"_id": 213
+}
+}
+},
+"RECUAY": {
+"_ubigeo": "0217",
+"_id": 24,
+"distritos": {
+"RECUAY": {
+"_ubigeo": "021701",
+"_id": 214
+},
+"CATAC": {
+"_ubigeo": "021702",
+"_id": 215
+},
+"COTAPARACO": {
+"_ubigeo": "021703",
+"_id": 216
+},
+"HUAYLLAPAMPA": {
+"_ubigeo": "021704",
+"_id": 217
+},
+"LLACLLIN": {
+"_ubigeo": "021705",
+"_id": 218
+},
+"MARCA": {
+"_ubigeo": "021706",
+"_id": 219
+},
+"PAMPAS CHICO": {
+"_ubigeo": "021707",
+"_id": 220
+},
+"PARARIN": {
+"_ubigeo": "021708",
+"_id": 221
+},
+"TAPACOCHA": {
+"_ubigeo": "021709",
+"_id": 222
+},
+"TICAPAMPA": {
+"_ubigeo": "021710",
+"_id": 223
+}
+}
+},
+"SANTA": {
+"_ubigeo": "0218",
+"_id": 25,
+"distritos": {
+"CHIMBOTE": {
+"_ubigeo": "021801",
+"_id": 224
+},
+"CACERES DEL PERU": {
+"_ubigeo": "021802",
+"_id": 225
+},
+"COISHCO": {
+"_ubigeo": "021803",
+"_id": 226
+},
+"MACATE": {
+"_ubigeo": "021804",
+"_id": 227
+},
+"MORO": {
+"_ubigeo": "021805",
+"_id": 228
+},
+"NEPEÑA": {
+"_ubigeo": "021806",
+"_id": 229
+},
+"SAMANCO": {
+"_ubigeo": "021807",
+"_id": 230
+},
+"SANTA": {
+"_ubigeo": "021808",
+"_id": 231
+},
+"NUEVO CHIMBOTE": {
+"_ubigeo": "021809",
+"_id": 232
+}
+}
+},
+"SIHUAS": {
+"_ubigeo": "0219",
+"_id": 26,
+"distritos": {
+"SIHUAS": {
+"_ubigeo": "021901",
+"_id": 233
+},
+"ACOBAMBA": {
+"_ubigeo": "021902",
+"_id": 234
+},
+"ALFONSO UGARTE": {
+"_ubigeo": "021903",
+"_id": 235
+},
+"CASHAPAMPA": {
+"_ubigeo": "021904",
+"_id": 236
+},
+"CHINGALPO": {
+"_ubigeo": "021905",
+"_id": 237
+},
+"HUAYLLABAMBA": {
+"_ubigeo": "021906",
+"_id": 238
+},
+"QUICHES": {
+"_ubigeo": "021907",
+"_id": 239
+},
+"RAGASH": {
+"_ubigeo": "021908",
+"_id": 240
+},
+"SAN JUAN": {
+"_ubigeo": "021909",
+"_id": 241
+},
+"SICSIBAMBA": {
+"_ubigeo": "021910",
+"_id": 242
+}
+}
+},
+"YUNGAY": {
+"_ubigeo": "0220",
+"_id": 27,
+"distritos": {
+"YUNGAY": {
+"_ubigeo": "022001",
+"_id": 243
+},
+"CASCAPARA": {
+"_ubigeo": "022002",
+"_id": 244
+},
+"MANCOS": {
+"_ubigeo": "022003",
+"_id": 245
+},
+"MATACOTO": {
+"_ubigeo": "022004",
+"_id": 246
+},
+"QUILLO": {
+"_ubigeo": "022005",
+"_id": 247
+},
+"RANRAHIRCA": {
+"_ubigeo": "022006",
+"_id": 248
+},
+"SHUPLUY": {
+"_ubigeo": "022007",
+"_id": 249
+},
+"YANAMA": {
+"_ubigeo": "022008",
+"_id": 250
+}
+}
+}
+}
+},
+"APURIMAC": {
+"_ubigeo": "03",
+"_id": 3,
+"provincias": {
+"ABANCAY": {
+"_ubigeo": "0301",
+"_id": 28,
+"distritos": {
+"ABANCAY": {
+"_ubigeo": "030101",
+"_id": 251
+},
+"CHACOCHE": {
+"_ubigeo": "030102",
+"_id": 252
+},
+"CIRCA": {
+"_ubigeo": "030103",
+"_id": 253
+},
+"CURAHUASI": {
+"_ubigeo": "030104",
+"_id": 254
+},
+"HUANIPACA": {
+"_ubigeo": "030105",
+"_id": 255
+},
+"LAMBRAMA": {
+"_ubigeo": "030106",
+"_id": 256
+},
+"PICHIRHUA": {
+"_ubigeo": "030107",
+"_id": 257
+},
+"SAN PEDRO DE CACHORA": {
+"_ubigeo": "030108",
+"_id": 258
+},
+"TAMBURCO": {
+"_ubigeo": "030109",
+"_id": 259
+}
+}
+},
+"ANDAHUAYLAS": {
+"_ubigeo": "0302",
+"_id": 29,
+"distritos": {
+"ANDAHUAYLAS": {
+"_ubigeo": "030201",
+"_id": 260
+},
+"ANDARAPA": {
+"_ubigeo": "030202",
+"_id": 261
+},
+"CHIARA": {
+"_ubigeo": "030203",
+"_id": 262
+},
+"HUANCARAMA": {
+"_ubigeo": "030204",
+"_id": 263
+},
+"HUANCARAY": {
+"_ubigeo": "030205",
+"_id": 264
+},
+"HUAYANA": {
+"_ubigeo": "030206",
+"_id": 265
+},
+"KISHUARA": {
+"_ubigeo": "030207",
+"_id": 266
+},
+"PACOBAMBA": {
+"_ubigeo": "030208",
+"_id": 267
+},
+"PACUCHA": {
+"_ubigeo": "030209",
+"_id": 268
+},
+"PAMPACHIRI": {
+"_ubigeo": "030210",
+"_id": 269
+},
+"POMACOCHA": {
+"_ubigeo": "030211",
+"_id": 270
+},
+"SAN ANTONIO DE CACHI": {
+"_ubigeo": "030212",
+"_id": 271
+},
+"SAN JERONIMO": {
+"_ubigeo": "030213",
+"_id": 272
+},
+"SAN MIGUEL DE CHACCRAMPA": {
+"_ubigeo": "030214",
+"_id": 273
+},
+"SANTA MARIA DE CHICMO": {
+"_ubigeo": "030215",
+"_id": 274
+},
+"TALAVERA": {
+"_ubigeo": "030216",
+"_id": 275
+},
+"TUMAY HUARACA": {
+"_ubigeo": "030217",
+"_id": 276
+},
+"TURPO": {
+"_ubigeo": "030218",
+"_id": 277
+},
+"KAQUIABAMBA": {
+"_ubigeo": "030219",
+"_id": 278
+},
+"JOSE MARIA ARGUEDAS": {
+"_ubigeo": "030220",
+"_id": 279
+}
+}
+},
+"ANTABAMBA": {
+"_ubigeo": "0303",
+"_id": 30,
+"distritos": {
+"ANTABAMBA": {
+"_ubigeo": "030301",
+"_id": 280
+},
+"EL ORO": {
+"_ubigeo": "030302",
+"_id": 281
+},
+"HUAQUIRCA": {
+"_ubigeo": "030303",
+"_id": 282
+},
+"JUAN ESPINOZA MEDRANO": {
+"_ubigeo": "030304",
+"_id": 283
+},
+"OROPESA": {
+"_ubigeo": "030305",
+"_id": 284
+},
+"PACHACONAS": {
+"_ubigeo": "030306",
+"_id": 285
+},
+"SABAINO": {
+"_ubigeo": "030307",
+"_id": 286
+}
+}
+},
+"AYMARAES": {
+"_ubigeo": "0304",
+"_id": 31,
+"distritos": {
+"CHALHUANCA": {
+"_ubigeo": "030401",
+"_id": 287
+},
+"CAPAYA": {
+"_ubigeo": "030402",
+"_id": 288
+},
+"CARAYBAMBA": {
+"_ubigeo": "030403",
+"_id": 289
+},
+"CHAPIMARCA": {
+"_ubigeo": "030404",
+"_id": 290
+},
+"COLCABAMBA": {
+"_ubigeo": "030405",
+"_id": 291
+},
+"COTARUSE": {
+"_ubigeo": "030406",
+"_id": 292
+},
+"HUAYLLO": {
+"_ubigeo": "030407",
+"_id": 293
+},
+"JUSTO APU SAHUARAURA": {
+"_ubigeo": "030408",
+"_id": 294
+},
+"LUCRE": {
+"_ubigeo": "030409",
+"_id": 295
+},
+"POCOHUANCA": {
+"_ubigeo": "030410",
+"_id": 296
+},
+"SAN JUAN DE CHACÑA": {
+"_ubigeo": "030411",
+"_id": 297
+},
+"SAÑAYCA": {
+"_ubigeo": "030412",
+"_id": 298
+},
+"SORAYA": {
+"_ubigeo": "030413",
+"_id": 299
+},
+"TAPAIRIHUA": {
+"_ubigeo": "030414",
+"_id": 300
+},
+"TINTAY": {
+"_ubigeo": "030415",
+"_id": 301
+},
+"TORAYA": {
+"_ubigeo": "030416",
+"_id": 302
+},
+"YANACA": {
+"_ubigeo": "030417",
+"_id": 303
+}
+}
+},
+"COTABAMBAS": {
+"_ubigeo": "0305",
+"_id": 32,
+"distritos": {
+"TAMBOBAMBA": {
+"_ubigeo": "030501",
+"_id": 304
+},
+"COTABAMBAS": {
+"_ubigeo": "030502",
+"_id": 305
+},
+"COYLLURQUI": {
+"_ubigeo": "030503",
+"_id": 306
+},
+"HAQUIRA": {
+"_ubigeo": "030504",
+"_id": 307
+},
+"MARA": {
+"_ubigeo": "030505",
+"_id": 308
+},
+"CHALLHUAHUACHO": {
+"_ubigeo": "030506",
+"_id": 309
+}
+}
+},
+"CHINCHEROS": {
+"_ubigeo": "0306",
+"_id": 33,
+"distritos": {
+"CHINCHEROS": {
+"_ubigeo": "030601",
+"_id": 310
+},
+"ANCO-HUALLO": {
+"_ubigeo": "030602",
+"_id": 311
+},
+"COCHARCAS": {
+"_ubigeo": "030603",
+"_id": 312
+},
+"HUACCANA": {
+"_ubigeo": "030604",
+"_id": 313
+},
+"OCOBAMBA": {
+"_ubigeo": "030605",
+"_id": 314
+},
+"ONGOY": {
+"_ubigeo": "030606",
+"_id": 315
+},
+"URANMARCA": {
+"_ubigeo": "030607",
+"_id": 316
+},
+"RANRACANCHA": {
+"_ubigeo": "030608",
+"_id": 317
+},
+"ROCCHACC": {
+"_ubigeo": "030609",
+"_id": 318
+},
+"EL PORVENIR": {
+"_ubigeo": "030610",
+"_id": 319
+},
+"LOS CHANKAS": {
+"_ubigeo": "030611",
+"_id": 320
+},
+"AHUAYRO": {
+"_ubigeo": "030612",
+"_id": 321
+}
+}
+},
+"GRAU": {
+"_ubigeo": "0307",
+"_id": 34,
+"distritos": {
+"CHUQUIBAMBILLA": {
+"_ubigeo": "030701",
+"_id": 322
+},
+"CURPAHUASI": {
+"_ubigeo": "030702",
+"_id": 323
+},
+"GAMARRA": {
+"_ubigeo": "030703",
+"_id": 324
+},
+"HUAYLLATI": {
+"_ubigeo": "030704",
+"_id": 325
+},
+"MAMARA": {
+"_ubigeo": "030705",
+"_id": 326
+},
+"MICAELA BASTIDAS": {
+"_ubigeo": "030706",
+"_id": 327
+},
+"PATAYPAMPA": {
+"_ubigeo": "030707",
+"_id": 328
+},
+"PROGRESO": {
+"_ubigeo": "030708",
+"_id": 329
+},
+"SAN ANTONIO": {
+"_ubigeo": "030709",
+"_id": 330
+},
+"SANTA ROSA": {
+"_ubigeo": "030710",
+"_id": 331
+},
+"TURPAY": {
+"_ubigeo": "030711",
+"_id": 332
+},
+"VILCABAMBA": {
+"_ubigeo": "030712",
+"_id": 333
+},
+"VIRUNDO": {
+"_ubigeo": "030713",
+"_id": 334
+},
+"CURASCO": {
+"_ubigeo": "030714",
+"_id": 335
+}
+}
+}
+}
+},
+"AREQUIPA": {
+"_ubigeo": "04",
+"_id": 4,
+"provincias": {
+"AREQUIPA": {
+"_ubigeo": "0401",
+"_id": 35,
+"distritos": {
+"AREQUIPA": {
+"_ubigeo": "040101",
+"_id": 336
+},
+"ALTO SELVA ALEGRE": {
+"_ubigeo": "040102",
+"_id": 337
+},
+"CAYMA": {
+"_ubigeo": "040103",
+"_id": 338
+},
+"CERRO COLORADO": {
+"_ubigeo": "040104",
+"_id": 339
+},
+"CHARACATO": {
+"_ubigeo": "040105",
+"_id": 340
+},
+"CHIGUATA": {
+"_ubigeo": "040106",
+"_id": 341
+},
+"JACOBO HUNTER": {
+"_ubigeo": "040107",
+"_id": 342
+},
+"LA JOYA": {
+"_ubigeo": "040108",
+"_id": 343
+},
+"MARIANO MELGAR": {
+"_ubigeo": "040109",
+"_id": 344
+},
+"MIRAFLORES": {
+"_ubigeo": "040110",
+"_id": 345
+},
+"MOLLEBAYA": {
+"_ubigeo": "040111",
+"_id": 346
+},
+"PAUCARPATA": {
+"_ubigeo": "040112",
+"_id": 347
+},
+"POCSI": {
+"_ubigeo": "040113",
+"_id": 348
+},
+"POLOBAYA": {
+"_ubigeo": "040114",
+"_id": 349
+},
+"QUEQUEÑA": {
+"_ubigeo": "040115",
+"_id": 350
+},
+"SABANDIA": {
+"_ubigeo": "040116",
+"_id": 351
+},
+"SACHACA": {
+"_ubigeo": "040117",
+"_id": 352
+},
+"SAN JUAN DE SIGUAS": {
+"_ubigeo": "040118",
+"_id": 353
+},
+"SAN JUAN DE TARUCANI": {
+"_ubigeo": "040119",
+"_id": 354
+},
+"SANTA ISABEL DE SIGUAS": {
+"_ubigeo": "040120",
+"_id": 355
+},
+"SANTA RITA DE SIGUAS": {
+"_ubigeo": "040121",
+"_id": 356
+},
+"SOCABAYA": {
+"_ubigeo": "040122",
+"_id": 357
+},
+"TIABAYA": {
+"_ubigeo": "040123",
+"_id": 358
+},
+"UCHUMAYO": {
+"_ubigeo": "040124",
+"_id": 359
+},
+"VITOR": {
+"_ubigeo": "040125",
+"_id": 360
+},
+"YANAHUARA": {
+"_ubigeo": "040126",
+"_id": 361
+},
+"YARABAMBA": {
+"_ubigeo": "040127",
+"_id": 362
+},
+"YURA": {
+"_ubigeo": "040128",
+"_id": 363
+},
+"JOSE LUIS BUSTAMANTE Y RIVERO": {
+"_ubigeo": "040129",
+"_id": 364
+}
+}
+},
+"CAMANA": {
+"_ubigeo": "0402",
+"_id": 36,
+"distritos": {
+"CAMANA": {
+"_ubigeo": "040201",
+"_id": 365
+},
+"JOSE MARIA QUIMPER": {
+"_ubigeo": "040202",
+"_id": 366
+},
+"MARIANO NICOLAS VALCARCEL": {
+"_ubigeo": "040203",
+"_id": 367
+},
+"MARISCAL CACERES": {
+"_ubigeo": "040204",
+"_id": 368
+},
+"NICOLAS DE PIEROLA": {
+"_ubigeo": "040205",
+"_id": 369
+},
+"OCOÑA": {
+"_ubigeo": "040206",
+"_id": 370
+},
+"QUILCA": {
+"_ubigeo": "040207",
+"_id": 371
+},
+"SAMUEL PASTOR": {
+"_ubigeo": "040208",
+"_id": 372
+}
+}
+},
+"CARAVELI": {
+"_ubigeo": "0403",
+"_id": 37,
+"distritos": {
+"CARAVELI": {
+"_ubigeo": "040301",
+"_id": 373
+},
+"ACARI": {
+"_ubigeo": "040302",
+"_id": 374
+},
+"ATICO": {
+"_ubigeo": "040303",
+"_id": 375
+},
+"ATIQUIPA": {
+"_ubigeo": "040304",
+"_id": 376
+},
+"BELLA UNION": {
+"_ubigeo": "040305",
+"_id": 377
+},
+"CAHUACHO": {
+"_ubigeo": "040306",
+"_id": 378
+},
+"CHALA": {
+"_ubigeo": "040307",
+"_id": 379
+},
+"CHAPARRA": {
+"_ubigeo": "040308",
+"_id": 380
+},
+"HUANUHUANU": {
+"_ubigeo": "040309",
+"_id": 381
+},
+"JAQUI": {
+"_ubigeo": "040310",
+"_id": 382
+},
+"LOMAS": {
+"_ubigeo": "040311",
+"_id": 383
+},
+"QUICACHA": {
+"_ubigeo": "040312",
+"_id": 384
+},
+"YAUCA": {
+"_ubigeo": "040313",
+"_id": 385
+}
+}
+},
+"CASTILLA": {
+"_ubigeo": "0404",
+"_id": 38,
+"distritos": {
+"APLAO": {
+"_ubigeo": "040401",
+"_id": 386
+},
+"ANDAGUA": {
+"_ubigeo": "040402",
+"_id": 387
+},
+"AYO": {
+"_ubigeo": "040403",
+"_id": 388
+},
+"CHACHAS": {
+"_ubigeo": "040404",
+"_id": 389
+},
+"CHILCAYMARCA": {
+"_ubigeo": "040405",
+"_id": 390
+},
+"CHOCO": {
+"_ubigeo": "040406",
+"_id": 391
+},
+"HUANCARQUI": {
+"_ubigeo": "040407",
+"_id": 392
+},
+"MACHAGUAY": {
+"_ubigeo": "040408",
+"_id": 393
+},
+"ORCOPAMPA": {
+"_ubigeo": "040409",
+"_id": 394
+},
+"PAMPACOLCA": {
+"_ubigeo": "040410",
+"_id": 395
+},
+"TIPAN": {
+"_ubigeo": "040411",
+"_id": 396
+},
+"UÑON": {
+"_ubigeo": "040412",
+"_id": 397
+},
+"URACA": {
+"_ubigeo": "040413",
+"_id": 398
+},
+"VIRACO": {
+"_ubigeo": "040414",
+"_id": 399
+}
+}
+},
+"CAYLLOMA": {
+"_ubigeo": "0405",
+"_id": 39,
+"distritos": {
+"CHIVAY": {
+"_ubigeo": "040501",
+"_id": 400
+},
+"ACHOMA": {
+"_ubigeo": "040502",
+"_id": 401
+},
+"CABANACONDE": {
+"_ubigeo": "040503",
+"_id": 402
+},
+"CALLALLI": {
+"_ubigeo": "040504",
+"_id": 403
+},
+"CAYLLOMA": {
+"_ubigeo": "040505",
+"_id": 404
+},
+"COPORAQUE": {
+"_ubigeo": "040506",
+"_id": 405
+},
+"HUAMBO": {
+"_ubigeo": "040507",
+"_id": 406
+},
+"HUANCA": {
+"_ubigeo": "040508",
+"_id": 407
+},
+"ICHUPAMPA": {
+"_ubigeo": "040509",
+"_id": 408
+},
+"LARI": {
+"_ubigeo": "040510",
+"_id": 409
+},
+"LLUTA": {
+"_ubigeo": "040511",
+"_id": 410
+},
+"MACA": {
+"_ubigeo": "040512",
+"_id": 411
+},
+"MADRIGAL": {
+"_ubigeo": "040513",
+"_id": 412
+},
+"SAN ANTONIO DE CHUCA": {
+"_ubigeo": "040514",
+"_id": 413
+},
+"SIBAYO": {
+"_ubigeo": "040515",
+"_id": 414
+},
+"TAPAY": {
+"_ubigeo": "040516",
+"_id": 415
+},
+"TISCO": {
+"_ubigeo": "040517",
+"_id": 416
+},
+"TUTI": {
+"_ubigeo": "040518",
+"_id": 417
+},
+"YANQUE": {
+"_ubigeo": "040519",
+"_id": 418
+},
+"MAJES": {
+"_ubigeo": "040520",
+"_id": 419
+}
+}
+},
+"CONDESUYOS": {
+"_ubigeo": "0406",
+"_id": 40,
+"distritos": {
+"CHUQUIBAMBA": {
+"_ubigeo": "040601",
+"_id": 420
+},
+"ANDARAY": {
+"_ubigeo": "040602",
+"_id": 421
+},
+"CAYARANI": {
+"_ubigeo": "040603",
+"_id": 422
+},
+"CHICHAS": {
+"_ubigeo": "040604",
+"_id": 423
+},
+"IRAY": {
+"_ubigeo": "040605",
+"_id": 424
+},
+"RIO GRANDE": {
+"_ubigeo": "040606",
+"_id": 425
+},
+"SALAMANCA": {
+"_ubigeo": "040607",
+"_id": 426
+},
+"YANAQUIHUA": {
+"_ubigeo": "040608",
+"_id": 427
+}
+}
+},
+"ISLAY": {
+"_ubigeo": "0407",
+"_id": 41,
+"distritos": {
+"MOLLENDO": {
+"_ubigeo": "040701",
+"_id": 428
+},
+"COCACHACRA": {
+"_ubigeo": "040702",
+"_id": 429
+},
+"DEAN VALDIVIA": {
+"_ubigeo": "040703",
+"_id": 430
+},
+"ISLAY": {
+"_ubigeo": "040704",
+"_id": 431
+},
+"MEJIA": {
+"_ubigeo": "040705",
+"_id": 432
+},
+"PUNTA DE BOMBON": {
+"_ubigeo": "040706",
+"_id": 433
+}
+}
+},
+"LA UNION": {
+"_ubigeo": "0408",
+"_id": 42,
+"distritos": {
+"COTAHUASI": {
+"_ubigeo": "040801",
+"_id": 434
+},
+"ALCA": {
+"_ubigeo": "040802",
+"_id": 435
+},
+"CHARCANA": {
+"_ubigeo": "040803",
+"_id": 436
+},
+"HUAYNACOTAS": {
+"_ubigeo": "040804",
+"_id": 437
+},
+"PAMPAMARCA": {
+"_ubigeo": "040805",
+"_id": 438
+},
+"PUYCA": {
+"_ubigeo": "040806",
+"_id": 439
+},
+"QUECHUALLA": {
+"_ubigeo": "040807",
+"_id": 440
+},
+"SAYLA": {
+"_ubigeo": "040808",
+"_id": 441
+},
+"TAURIA": {
+"_ubigeo": "040809",
+"_id": 442
+},
+"TOMEPAMPA": {
+"_ubigeo": "040810",
+"_id": 443
+},
+"TORO": {
+"_ubigeo": "040811",
+"_id": 444
+}
+}
+}
+}
+},
+"AYACUCHO": {
+"_ubigeo": "05",
+"_id": 5,
+"provincias": {
+"HUAMANGA": {
+"_ubigeo": "0501",
+"_id": 43,
+"distritos": {
+"AYACUCHO": {
+"_ubigeo": "050101",
+"_id": 445
+},
+"ACOCRO": {
+"_ubigeo": "050102",
+"_id": 446
+},
+"ACOS VINCHOS": {
+"_ubigeo": "050103",
+"_id": 447
+},
+"CARMEN ALTO": {
+"_ubigeo": "050104",
+"_id": 448
+},
+"CHIARA": {
+"_ubigeo": "050105",
+"_id": 449
+},
+"OCROS": {
+"_ubigeo": "050106",
+"_id": 450
+},
+"PACAYCASA": {
+"_ubigeo": "050107",
+"_id": 451
+},
+"QUINUA": {
+"_ubigeo": "050108",
+"_id": 452
+},
+"SAN JOSE DE TICLLAS": {
+"_ubigeo": "050109",
+"_id": 453
+},
+"SAN JUAN BAUTISTA": {
+"_ubigeo": "050110",
+"_id": 454
+},
+"SANTIAGO DE PISCHA": {
+"_ubigeo": "050111",
+"_id": 455
+},
+"SOCOS": {
+"_ubigeo": "050112",
+"_id": 456
+},
+"TAMBILLO": {
+"_ubigeo": "050113",
+"_id": 457
+},
+"VINCHOS": {
+"_ubigeo": "050114",
+"_id": 458
+},
+"JESUS NAZARENO": {
+"_ubigeo": "050115",
+"_id": 459
+},
+"ANDRES AVELINO CACERES DORREGARAY": {
+"_ubigeo": "050116",
+"_id": 460
+}
+}
+},
+"CANGALLO": {
+"_ubigeo": "0502",
+"_id": 44,
+"distritos": {
+"CANGALLO": {
+"_ubigeo": "050201",
+"_id": 461
+},
+"CHUSCHI": {
+"_ubigeo": "050202",
+"_id": 462
+},
+"LOS MOROCHUCOS": {
+"_ubigeo": "050203",
+"_id": 463
+},
+"MARIA PARADO DE BELLIDO": {
+"_ubigeo": "050204",
+"_id": 464
+},
+"PARAS": {
+"_ubigeo": "050205",
+"_id": 465
+},
+"TOTOS": {
+"_ubigeo": "050206",
+"_id": 466
+}
+}
+},
+"HUANCA SANCOS": {
+"_ubigeo": "0503",
+"_id": 45,
+"distritos": {
+"SANCOS": {
+"_ubigeo": "050301",
+"_id": 467
+},
+"CARAPO": {
+"_ubigeo": "050302",
+"_id": 468
+},
+"SACSAMARCA": {
+"_ubigeo": "050303",
+"_id": 469
+},
+"SANTIAGO DE LUCANAMARCA": {
+"_ubigeo": "050304",
+"_id": 470
+}
+}
+},
+"HUANTA": {
+"_ubigeo": "0504",
+"_id": 46,
+"distritos": {
+"HUANTA": {
+"_ubigeo": "050401",
+"_id": 471
+},
+"AYAHUANCO": {
+"_ubigeo": "050402",
+"_id": 472
+},
+"HUAMANGUILLA": {
+"_ubigeo": "050403",
+"_id": 473
+},
+"IGUAIN": {
+"_ubigeo": "050404",
+"_id": 474
+},
+"LURICOCHA": {
+"_ubigeo": "050405",
+"_id": 475
+},
+"SANTILLANA": {
+"_ubigeo": "050406",
+"_id": 476
+},
+"SIVIA": {
+"_ubigeo": "050407",
+"_id": 477
+},
+"LLOCHEGUA": {
+"_ubigeo": "050408",
+"_id": 478
+},
+"CANAYRE": {
+"_ubigeo": "050409",
+"_id": 479
+},
+"UCHURACCAY": {
+"_ubigeo": "050410",
+"_id": 480
+},
+"PUCACOLPA": {
+"_ubigeo": "050411",
+"_id": 481
+},
+"CHACA": {
+"_ubigeo": "050412",
+"_id": 482
+},
+"PUTIS": {
+"_ubigeo": "050413",
+"_id": 483
+}
+}
+},
+"LA MAR": {
+"_ubigeo": "0505",
+"_id": 47,
+"distritos": {
+"SAN MIGUEL": {
+"_ubigeo": "050501",
+"_id": 484
+},
+"ANCO": {
+"_ubigeo": "050502",
+"_id": 485
+},
+"AYNA": {
+"_ubigeo": "050503",
+"_id": 486
+},
+"CHILCAS": {
+"_ubigeo": "050504",
+"_id": 487
+},
+"CHUNGUI": {
+"_ubigeo": "050505",
+"_id": 488
+},
+"LUIS CARRANZA": {
+"_ubigeo": "050506",
+"_id": 489
+},
+"SANTA ROSA": {
+"_ubigeo": "050507",
+"_id": 490
+},
+"TAMBO": {
+"_ubigeo": "050508",
+"_id": 491
+},
+"SAMUGARI": {
+"_ubigeo": "050509",
+"_id": 492
+},
+"ANCHIHUAY": {
+"_ubigeo": "050510",
+"_id": 493
+},
+"ORONCCOY": {
+"_ubigeo": "050511",
+"_id": 494
+},
+"UNION PROGRESO": {
+"_ubigeo": "050512",
+"_id": 495
+},
+"RIO MAGDALENA": {
+"_ubigeo": "050513",
+"_id": 496
+},
+"NINABAMBA": {
+"_ubigeo": "050514",
+"_id": 497
+},
+"PATIBAMBA": {
+"_ubigeo": "050515",
+"_id": 498
+}
+}
+},
+"LUCANAS": {
+"_ubigeo": "0506",
+"_id": 48,
+"distritos": {
+"PUQUIO": {
+"_ubigeo": "050601",
+"_id": 499
+},
+"AUCARA": {
+"_ubigeo": "050602",
+"_id": 500
+},
+"CABANA": {
+"_ubigeo": "050603",
+"_id": 501
+},
+"CARMEN SALCEDO": {
+"_ubigeo": "050604",
+"_id": 502
+},
+"CHAVIÑA": {
+"_ubigeo": "050605",
+"_id": 503
+},
+"CHIPAO": {
+"_ubigeo": "050606",
+"_id": 504
+},
+"HUAC-HUAS": {
+"_ubigeo": "050607",
+"_id": 505
+},
+"LARAMATE": {
+"_ubigeo": "050608",
+"_id": 506
+},
+"LEONCIO PRADO": {
+"_ubigeo": "050609",
+"_id": 507
+},
+"LLAUTA": {
+"_ubigeo": "050610",
+"_id": 508
+},
+"LUCANAS": {
+"_ubigeo": "050611",
+"_id": 509
+},
+"OCAÑA": {
+"_ubigeo": "050612",
+"_id": 510
+},
+"OTOCA": {
+"_ubigeo": "050613",
+"_id": 511
+},
+"SAISA": {
+"_ubigeo": "050614",
+"_id": 512
+},
+"SAN CRISTOBAL": {
+"_ubigeo": "050615",
+"_id": 513
+},
+"SAN JUAN": {
+"_ubigeo": "050616",
+"_id": 514
+},
+"SAN PEDRO": {
+"_ubigeo": "050617",
+"_id": 515
+},
+"SAN PEDRO DE PALCO": {
+"_ubigeo": "050618",
+"_id": 516
+},
+"SANCOS": {
+"_ubigeo": "050619",
+"_id": 517
+},
+"SANTA ANA DE HUAYCAHUACHO": {
+"_ubigeo": "050620",
+"_id": 518
+},
+"SANTA LUCIA": {
+"_ubigeo": "050621",
+"_id": 519
+}
+}
+},
+"PARINACOCHAS": {
+"_ubigeo": "0507",
+"_id": 49,
+"distritos": {
+"CORACORA": {
+"_ubigeo": "050701",
+"_id": 520
+},
+"CHUMPI": {
+"_ubigeo": "050702",
+"_id": 521
+},
+"CORONEL CASTAÑEDA": {
+"_ubigeo": "050703",
+"_id": 522
+},
+"PACAPAUSA": {
+"_ubigeo": "050704",
+"_id": 523
+},
+"PULLO": {
+"_ubigeo": "050705",
+"_id": 524
+},
+"PUYUSCA": {
+"_ubigeo": "050706",
+"_id": 525
+},
+"SAN FRANCISCO DE RAVACAYCO": {
+"_ubigeo": "050707",
+"_id": 526
+},
+"UPAHUACHO": {
+"_ubigeo": "050708",
+"_id": 527
+}
+}
+},
+"PAUCAR DEL SARA SARA": {
+"_ubigeo": "0508",
+"_id": 50,
+"distritos": {
+"PAUSA": {
+"_ubigeo": "050801",
+"_id": 528
+},
+"COLTA": {
+"_ubigeo": "050802",
+"_id": 529
+},
+"CORCULLA": {
+"_ubigeo": "050803",
+"_id": 530
+},
+"LAMPA": {
+"_ubigeo": "050804",
+"_id": 531
+},
+"MARCABAMBA": {
+"_ubigeo": "050805",
+"_id": 532
+},
+"OYOLO": {
+"_ubigeo": "050806",
+"_id": 533
+},
+"PARARCA": {
+"_ubigeo": "050807",
+"_id": 534
+},
+"SAN JAVIER DE ALPABAMBA": {
+"_ubigeo": "050808",
+"_id": 535
+},
+"SAN JOSE DE USHUA": {
+"_ubigeo": "050809",
+"_id": 536
+},
+"SARA SARA": {
+"_ubigeo": "050810",
+"_id": 537
+}
+}
+},
+"SUCRE": {
+"_ubigeo": "0509",
+"_id": 51,
+"distritos": {
+"QUEROBAMBA": {
+"_ubigeo": "050901",
+"_id": 538
+},
+"BELEN": {
+"_ubigeo": "050902",
+"_id": 539
+},
+"CHALCOS": {
+"_ubigeo": "050903",
+"_id": 540
+},
+"CHILCAYOC": {
+"_ubigeo": "050904",
+"_id": 541
+},
+"HUACAÑA": {
+"_ubigeo": "050905",
+"_id": 542
+},
+"MORCOLLA": {
+"_ubigeo": "050906",
+"_id": 543
+},
+"PAICO": {
+"_ubigeo": "050907",
+"_id": 544
+},
+"SAN PEDRO DE LARCAY": {
+"_ubigeo": "050908",
+"_id": 545
+},
+"SAN SALVADOR DE QUIJE": {
+"_ubigeo": "050909",
+"_id": 546
+},
+"SANTIAGO DE PAUCARAY": {
+"_ubigeo": "050910",
+"_id": 547
+},
+"SORAS": {
+"_ubigeo": "050911",
+"_id": 548
+}
+}
+},
+"VICTOR FAJARDO": {
+"_ubigeo": "0510",
+"_id": 52,
+"distritos": {
+"HUANCAPI": {
+"_ubigeo": "051001",
+"_id": 549
+},
+"ALCAMENCA": {
+"_ubigeo": "051002",
+"_id": 550
+},
+"APONGO": {
+"_ubigeo": "051003",
+"_id": 551
+},
+"ASQUIPATA": {
+"_ubigeo": "051004",
+"_id": 552
+},
+"CANARIA": {
+"_ubigeo": "051005",
+"_id": 553
+},
+"CAYARA": {
+"_ubigeo": "051006",
+"_id": 554
+},
+"COLCA": {
+"_ubigeo": "051007",
+"_id": 555
+},
+"HUAMANQUIQUIA": {
+"_ubigeo": "051008",
+"_id": 556
+},
+"HUANCARAYLLA": {
+"_ubigeo": "051009",
+"_id": 557
+},
+"HUAYA": {
+"_ubigeo": "051010",
+"_id": 558
+},
+"SARHUA": {
+"_ubigeo": "051011",
+"_id": 559
+},
+"VILCANCHOS": {
+"_ubigeo": "051012",
+"_id": 560
+}
+}
+},
+"VILCAS HUAMAN": {
+"_ubigeo": "0511",
+"_id": 53,
+"distritos": {
+"VILCAS HUAMAN": {
+"_ubigeo": "051101",
+"_id": 561
+},
+"ACCOMARCA": {
+"_ubigeo": "051102",
+"_id": 562
+},
+"CARHUANCA": {
+"_ubigeo": "051103",
+"_id": 563
+},
+"CONCEPCION": {
+"_ubigeo": "051104",
+"_id": 564
+},
+"HUAMBALPA": {
+"_ubigeo": "051105",
+"_id": 565
+},
+"INDEPENDENCIA": {
+"_ubigeo": "051106",
+"_id": 566
+},
+"SAURAMA": {
+"_ubigeo": "051107",
+"_id": 567
+},
+"VISCHONGO": {
+"_ubigeo": "051108",
+"_id": 568
+}
+}
+}
+}
+},
+"CAJAMARCA": {
+"_ubigeo": "06",
+"_id": 6,
+"provincias": {
+"CAJAMARCA": {
+"_ubigeo": "0601",
+"_id": 54,
+"distritos": {
+"CAJAMARCA": {
+"_ubigeo": "060101",
+"_id": 569
+},
+"ASUNCION": {
+"_ubigeo": "060102",
+"_id": 570
+},
+"CHETILLA": {
+"_ubigeo": "060103",
+"_id": 571
+},
+"COSPAN": {
+"_ubigeo": "060104",
+"_id": 572
+},
+"ENCAÑADA": {
+"_ubigeo": "060105",
+"_id": 573
+},
+"JESUS": {
+"_ubigeo": "060106",
+"_id": 574
+},
+"LLACANORA": {
+"_ubigeo": "060107",
+"_id": 575
+},
+"LOS BAÑOS DEL INCA": {
+"_ubigeo": "060108",
+"_id": 576
+},
+"MAGDALENA": {
+"_ubigeo": "060109",
+"_id": 577
+},
+"MATARA": {
+"_ubigeo": "060110",
+"_id": 578
+},
+"NAMORA": {
+"_ubigeo": "060111",
+"_id": 579
+},
+"SAN JUAN": {
+"_ubigeo": "060112",
+"_id": 580
+}
+}
+},
+"CAJABAMBA": {
+"_ubigeo": "0602",
+"_id": 55,
+"distritos": {
+"CAJABAMBA": {
+"_ubigeo": "060201",
+"_id": 581
+},
+"CACHACHI": {
+"_ubigeo": "060202",
+"_id": 582
+},
+"CONDEBAMBA": {
+"_ubigeo": "060203",
+"_id": 583
+},
+"SITACOCHA": {
+"_ubigeo": "060204",
+"_id": 584
+}
+}
+},
+"CELENDIN": {
+"_ubigeo": "0603",
+"_id": 56,
+"distritos": {
+"CELENDIN": {
+"_ubigeo": "060301",
+"_id": 585
+},
+"CHUMUCH": {
+"_ubigeo": "060302",
+"_id": 586
+},
+"CORTEGANA": {
+"_ubigeo": "060303",
+"_id": 587
+},
+"HUASMIN": {
+"_ubigeo": "060304",
+"_id": 588
+},
+"JORGE CHAVEZ": {
+"_ubigeo": "060305",
+"_id": 589
+},
+"JOSE GALVEZ": {
+"_ubigeo": "060306",
+"_id": 590
+},
+"MIGUEL IGLESIAS": {
+"_ubigeo": "060307",
+"_id": 591
+},
+"OXAMARCA": {
+"_ubigeo": "060308",
+"_id": 592
+},
+"SOROCHUCO": {
+"_ubigeo": "060309",
+"_id": 593
+},
+"SUCRE": {
+"_ubigeo": "060310",
+"_id": 594
+},
+"UTCO": {
+"_ubigeo": "060311",
+"_id": 595
+},
+"LA LIBERTAD DE PALLAN": {
+"_ubigeo": "060312",
+"_id": 596
+}
+}
+},
+"CHOTA": {
+"_ubigeo": "0604",
+"_id": 57,
+"distritos": {
+"CHOTA": {
+"_ubigeo": "060401",
+"_id": 597
+},
+"ANGUIA": {
+"_ubigeo": "060402",
+"_id": 598
+},
+"CHADIN": {
+"_ubigeo": "060403",
+"_id": 599
+},
+"CHIGUIRIP": {
+"_ubigeo": "060404",
+"_id": 600
+},
+"CHIMBAN": {
+"_ubigeo": "060405",
+"_id": 601
+},
+"CHOROPAMPA": {
+"_ubigeo": "060406",
+"_id": 602
+},
+"COCHABAMBA": {
+"_ubigeo": "060407",
+"_id": 603
+},
+"CONCHAN": {
+"_ubigeo": "060408",
+"_id": 604
+},
+"HUAMBOS": {
+"_ubigeo": "060409",
+"_id": 605
+},
+"LAJAS": {
+"_ubigeo": "060410",
+"_id": 606
+},
+"LLAMA": {
+"_ubigeo": "060411",
+"_id": 607
+},
+"MIRACOSTA": {
+"_ubigeo": "060412",
+"_id": 608
+},
+"PACCHA": {
+"_ubigeo": "060413",
+"_id": 609
+},
+"PION": {
+"_ubigeo": "060414",
+"_id": 610
+},
+"QUEROCOTO": {
+"_ubigeo": "060415",
+"_id": 611
+},
+"SAN JUAN DE LICUPIS": {
+"_ubigeo": "060416",
+"_id": 612
+},
+"TACABAMBA": {
+"_ubigeo": "060417",
+"_id": 613
+},
+"TOCMOCHE": {
+"_ubigeo": "060418",
+"_id": 614
+},
+"CHALAMARCA": {
+"_ubigeo": "060419",
+"_id": 615
+}
+}
+},
+"CONTUMAZA": {
+"_ubigeo": "0605",
+"_id": 58,
+"distritos": {
+"CONTUMAZA": {
+"_ubigeo": "060501",
+"_id": 616
+},
+"CHILETE": {
+"_ubigeo": "060502",
+"_id": 617
+},
+"CUPISNIQUE": {
+"_ubigeo": "060503",
+"_id": 618
+},
+"GUZMANGO": {
+"_ubigeo": "060504",
+"_id": 619
+},
+"SAN BENITO": {
+"_ubigeo": "060505",
+"_id": 620
+},
+"SANTA CRUZ DE TOLEDO": {
+"_ubigeo": "060506",
+"_id": 621
+},
+"TANTARICA": {
+"_ubigeo": "060507",
+"_id": 622
+},
+"YONAN": {
+"_ubigeo": "060508",
+"_id": 623
+}
+}
+},
+"CUTERVO": {
+"_ubigeo": "0606",
+"_id": 59,
+"distritos": {
+"CUTERVO": {
+"_ubigeo": "060601",
+"_id": 624
+},
+"CALLAYUC": {
+"_ubigeo": "060602",
+"_id": 625
+},
+"CHOROS": {
+"_ubigeo": "060603",
+"_id": 626
+},
+"CUJILLO": {
+"_ubigeo": "060604",
+"_id": 627
+},
+"LA RAMADA": {
+"_ubigeo": "060605",
+"_id": 628
+},
+"PIMPINGOS": {
+"_ubigeo": "060606",
+"_id": 629
+},
+"QUEROCOTILLO": {
+"_ubigeo": "060607",
+"_id": 630
+},
+"SAN ANDRES DE CUTERVO": {
+"_ubigeo": "060608",
+"_id": 631
+},
+"SAN JUAN DE CUTERVO": {
+"_ubigeo": "060609",
+"_id": 632
+},
+"SAN LUIS DE LUCMA": {
+"_ubigeo": "060610",
+"_id": 633
+},
+"SANTA CRUZ": {
+"_ubigeo": "060611",
+"_id": 634
+},
+"SANTO DOMINGO DE LA CAPILLA": {
+"_ubigeo": "060612",
+"_id": 635
+},
+"SANTO TOMAS": {
+"_ubigeo": "060613",
+"_id": 636
+},
+"SOCOTA": {
+"_ubigeo": "060614",
+"_id": 637
+},
+"TORIBIO CASANOVA": {
+"_ubigeo": "060615",
+"_id": 638
+}
+}
+},
+"HUALGAYOC": {
+"_ubigeo": "0607",
+"_id": 60,
+"distritos": {
+"BAMBAMARCA": {
+"_ubigeo": "060701",
+"_id": 639
+},
+"CHUGUR": {
+"_ubigeo": "060702",
+"_id": 640
+},
+"HUALGAYOC": {
+"_ubigeo": "060703",
+"_id": 641
+}
+}
+},
+"JAEN": {
+"_ubigeo": "0608",
+"_id": 61,
+"distritos": {
+"JAEN": {
+"_ubigeo": "060801",
+"_id": 642
+},
+"BELLAVISTA": {
+"_ubigeo": "060802",
+"_id": 643
+},
+"CHONTALI": {
+"_ubigeo": "060803",
+"_id": 644
+},
+"COLASAY": {
+"_ubigeo": "060804",
+"_id": 645
+},
+"HUABAL": {
+"_ubigeo": "060805",
+"_id": 646
+},
+"LAS PIRIAS": {
+"_ubigeo": "060806",
+"_id": 647
+},
+"POMAHUACA": {
+"_ubigeo": "060807",
+"_id": 648
+},
+"PUCARA": {
+"_ubigeo": "060808",
+"_id": 649
+},
+"SALLIQUE": {
+"_ubigeo": "060809",
+"_id": 650
+},
+"SAN FELIPE": {
+"_ubigeo": "060810",
+"_id": 651
+},
+"SAN JOSE DEL ALTO": {
+"_ubigeo": "060811",
+"_id": 652
+},
+"SANTA ROSA": {
+"_ubigeo": "060812",
+"_id": 653
+}
+}
+},
+"SAN IGNACIO": {
+"_ubigeo": "0609",
+"_id": 62,
+"distritos": {
+"SAN IGNACIO": {
+"_ubigeo": "060901",
+"_id": 654
+},
+"CHIRINOS": {
+"_ubigeo": "060902",
+"_id": 655
+},
+"HUARANGO": {
+"_ubigeo": "060903",
+"_id": 656
+},
+"LA COIPA": {
+"_ubigeo": "060904",
+"_id": 657
+},
+"NAMBALLE": {
+"_ubigeo": "060905",
+"_id": 658
+},
+"SAN JOSE DE LOURDES": {
+"_ubigeo": "060906",
+"_id": 659
+},
+"TABACONAS": {
+"_ubigeo": "060907",
+"_id": 660
+}
+}
+},
+"SAN MARCOS": {
+"_ubigeo": "0610",
+"_id": 63,
+"distritos": {
+"PEDRO GALVEZ": {
+"_ubigeo": "061001",
+"_id": 661
+},
+"CHANCAY": {
+"_ubigeo": "061002",
+"_id": 662
+},
+"EDUARDO VILLANUEVA": {
+"_ubigeo": "061003",
+"_id": 663
+},
+"GREGORIO PITA": {
+"_ubigeo": "061004",
+"_id": 664
+},
+"ICHOCAN": {
+"_ubigeo": "061005",
+"_id": 665
+},
+"JOSE MANUEL QUIROZ": {
+"_ubigeo": "061006",
+"_id": 666
+},
+"JOSE SABOGAL": {
+"_ubigeo": "061007",
+"_id": 667
+}
+}
+},
+"SAN MIGUEL": {
+"_ubigeo": "0611",
+"_id": 64,
+"distritos": {
+"SAN MIGUEL": {
+"_ubigeo": "061101",
+"_id": 668
+},
+"BOLIVAR": {
+"_ubigeo": "061102",
+"_id": 669
+},
+"CALQUIS": {
+"_ubigeo": "061103",
+"_id": 670
+},
+"CATILLUC": {
+"_ubigeo": "061104",
+"_id": 671
+},
+"EL PRADO": {
+"_ubigeo": "061105",
+"_id": 672
+},
+"LA FLORIDA": {
+"_ubigeo": "061106",
+"_id": 673
+},
+"LLAPA": {
+"_ubigeo": "061107",
+"_id": 674
+},
+"NANCHOC": {
+"_ubigeo": "061108",
+"_id": 675
+},
+"NIEPOS": {
+"_ubigeo": "061109",
+"_id": 676
+},
+"SAN GREGORIO": {
+"_ubigeo": "061110",
+"_id": 677
+},
+"SAN SILVESTRE DE COCHAN": {
+"_ubigeo": "061111",
+"_id": 678
+},
+"TONGOD": {
+"_ubigeo": "061112",
+"_id": 679
+},
+"UNION AGUA BLANCA": {
+"_ubigeo": "061113",
+"_id": 680
+}
+}
+},
+"SAN PABLO": {
+"_ubigeo": "0612",
+"_id": 65,
+"distritos": {
+"SAN PABLO": {
+"_ubigeo": "061201",
+"_id": 681
+},
+"SAN BERNARDINO": {
+"_ubigeo": "061202",
+"_id": 682
+},
+"SAN LUIS": {
+"_ubigeo": "061203",
+"_id": 683
+},
+"TUMBADEN": {
+"_ubigeo": "061204",
+"_id": 684
+}
+}
+},
+"SANTA CRUZ": {
+"_ubigeo": "0613",
+"_id": 66,
+"distritos": {
+"SANTA CRUZ": {
+"_ubigeo": "061301",
+"_id": 685
+},
+"ANDABAMBA": {
+"_ubigeo": "061302",
+"_id": 686
+},
+"CATACHE": {
+"_ubigeo": "061303",
+"_id": 687
+},
+"CHANCAYBAÑOS": {
+"_ubigeo": "061304",
+"_id": 688
+},
+"LA ESPERANZA": {
+"_ubigeo": "061305",
+"_id": 689
+},
+"NINABAMBA": {
+"_ubigeo": "061306",
+"_id": 690
+},
+"PULAN": {
+"_ubigeo": "061307",
+"_id": 691
+},
+"SAUCEPAMPA": {
+"_ubigeo": "061308",
+"_id": 692
+},
+"SEXI": {
+"_ubigeo": "061309",
+"_id": 693
+},
+"UTICYACU": {
+"_ubigeo": "061310",
+"_id": 694
+},
+"YAUYUCAN": {
+"_ubigeo": "061311",
+"_id": 695
+}
+}
+}
+}
+},
+"CALLAO": {
+"_ubigeo": "07",
+"_id": 7,
+"provincias": {
+"CALLAO": {
+"_ubigeo": "0701",
+"_id": 67,
+"distritos": {
+"CALLAO": {
+"_ubigeo": "070101",
+"_id": 696
+},
+"BELLAVISTA": {
+"_ubigeo": "070102",
+"_id": 697
+},
+"CARMEN DE LA LEGUA REYNOSO": {
+"_ubigeo": "070103",
+"_id": 698
+},
+"LA PERLA": {
+"_ubigeo": "070104",
+"_id": 699
+},
+"LA PUNTA": {
+"_ubigeo": "070105",
+"_id": 700
+},
+"VENTANILLA": {
+"_ubigeo": "070106",
+"_id": 701
+},
+"MI PERU": {
+"_ubigeo": "070107",
+"_id": 702
+}
+}
+}
+}
+},
+"CUSCO": {
+"_ubigeo": "08",
+"_id": 8,
+"provincias": {
+"CUSCO": {
+"_ubigeo": "0801",
+"_id": 68,
+"distritos": {
+"CUSCO": {
+"_ubigeo": "080101",
+"_id": 703
+},
+"CCORCA": {
+"_ubigeo": "080102",
+"_id": 704
+},
+"POROY": {
+"_ubigeo": "080103",
+"_id": 705
+},
+"SAN JERONIMO": {
+"_ubigeo": "080104",
+"_id": 706
+},
+"SAN SEBASTIAN": {
+"_ubigeo": "080105",
+"_id": 707
+},
+"SANTIAGO": {
+"_ubigeo": "080106",
+"_id": 708
+},
+"SAYLLA": {
+"_ubigeo": "080107",
+"_id": 709
+},
+"WANCHAQ": {
+"_ubigeo": "080108",
+"_id": 710
+}
+}
+},
+"ACOMAYO": {
+"_ubigeo": "0802",
+"_id": 69,
+"distritos": {
+"ACOMAYO": {
+"_ubigeo": "080201",
+"_id": 711
+},
+"ACOPIA": {
+"_ubigeo": "080202",
+"_id": 712
+},
+"ACOS": {
+"_ubigeo": "080203",
+"_id": 713
+},
+"MOSOC LLACTA": {
+"_ubigeo": "080204",
+"_id": 714
+},
+"POMACANCHI": {
+"_ubigeo": "080205",
+"_id": 715
+},
+"RONDOCAN": {
+"_ubigeo": "080206",
+"_id": 716
+},
+"SANGARARA": {
+"_ubigeo": "080207",
+"_id": 717
+}
+}
+},
+"ANTA": {
+"_ubigeo": "0803",
+"_id": 70,
+"distritos": {
+"ANTA": {
+"_ubigeo": "080301",
+"_id": 718
+},
+"ANCAHUASI": {
+"_ubigeo": "080302",
+"_id": 719
+},
+"CACHIMAYO": {
+"_ubigeo": "080303",
+"_id": 720
+},
+"CHINCHAYPUJIO": {
+"_ubigeo": "080304",
+"_id": 721
+},
+"HUAROCONDO": {
+"_ubigeo": "080305",
+"_id": 722
+},
+"LIMATAMBO": {
+"_ubigeo": "080306",
+"_id": 723
+},
+"MOLLEPATA": {
+"_ubigeo": "080307",
+"_id": 724
+},
+"PUCYURA": {
+"_ubigeo": "080308",
+"_id": 725
+},
+"ZURITE": {
+"_ubigeo": "080309",
+"_id": 726
+}
+}
+},
+"CALCA": {
+"_ubigeo": "0804",
+"_id": 71,
+"distritos": {
+"CALCA": {
+"_ubigeo": "080401",
+"_id": 727
+},
+"COYA": {
+"_ubigeo": "080402",
+"_id": 728
+},
+"LAMAY": {
+"_ubigeo": "080403",
+"_id": 729
+},
+"LARES": {
+"_ubigeo": "080404",
+"_id": 730
+},
+"PISAC": {
+"_ubigeo": "080405",
+"_id": 731
+},
+"SAN SALVADOR": {
+"_ubigeo": "080406",
+"_id": 732
+},
+"TARAY": {
+"_ubigeo": "080407",
+"_id": 733
+},
+"YANATILE": {
+"_ubigeo": "080408",
+"_id": 734
+}
+}
+},
+"CANAS": {
+"_ubigeo": "0805",
+"_id": 72,
+"distritos": {
+"YANAOCA": {
+"_ubigeo": "080501",
+"_id": 735
+},
+"CHECCA": {
+"_ubigeo": "080502",
+"_id": 736
+},
+"KUNTURKANKI": {
+"_ubigeo": "080503",
+"_id": 737
+},
+"LANGUI": {
+"_ubigeo": "080504",
+"_id": 738
+},
+"LAYO": {
+"_ubigeo": "080505",
+"_id": 739
+},
+"PAMPAMARCA": {
+"_ubigeo": "080506",
+"_id": 740
+},
+"QUEHUE": {
+"_ubigeo": "080507",
+"_id": 741
+},
+"TUPAC AMARU": {
+"_ubigeo": "080508",
+"_id": 742
+}
+}
+},
+"CANCHIS": {
+"_ubigeo": "0806",
+"_id": 73,
+"distritos": {
+"SICUANI": {
+"_ubigeo": "080601",
+"_id": 743
+},
+"CHECACUPE": {
+"_ubigeo": "080602",
+"_id": 744
+},
+"COMBAPATA": {
+"_ubigeo": "080603",
+"_id": 745
+},
+"MARANGANI": {
+"_ubigeo": "080604",
+"_id": 746
+},
+"PITUMARCA": {
+"_ubigeo": "080605",
+"_id": 747
+},
+"SAN PABLO": {
+"_ubigeo": "080606",
+"_id": 748
+},
+"SAN PEDRO": {
+"_ubigeo": "080607",
+"_id": 749
+},
+"TINTA": {
+"_ubigeo": "080608",
+"_id": 750
+}
+}
+},
+"CHUMBIVILCAS": {
+"_ubigeo": "0807",
+"_id": 74,
+"distritos": {
+"SANTO TOMAS": {
+"_ubigeo": "080701",
+"_id": 751
+},
+"CAPACMARCA": {
+"_ubigeo": "080702",
+"_id": 752
+},
+"CHAMACA": {
+"_ubigeo": "080703",
+"_id": 753
+},
+"COLQUEMARCA": {
+"_ubigeo": "080704",
+"_id": 754
+},
+"LIVITACA": {
+"_ubigeo": "080705",
+"_id": 755
+},
+"LLUSCO": {
+"_ubigeo": "080706",
+"_id": 756
+},
+"QUIÑOTA": {
+"_ubigeo": "080707",
+"_id": 757
+},
+"VELILLE": {
+"_ubigeo": "080708",
+"_id": 758
+}
+}
+},
+"ESPINAR": {
+"_ubigeo": "0808",
+"_id": 75,
+"distritos": {
+"ESPINAR": {
+"_ubigeo": "080801",
+"_id": 759
+},
+"CONDOROMA": {
+"_ubigeo": "080802",
+"_id": 760
+},
+"COPORAQUE": {
+"_ubigeo": "080803",
+"_id": 761
+},
+"OCORURO": {
+"_ubigeo": "080804",
+"_id": 762
+},
+"PALLPATA": {
+"_ubigeo": "080805",
+"_id": 763
+},
+"PICHIGUA": {
+"_ubigeo": "080806",
+"_id": 764
+},
+"SUYCKUTAMBO": {
+"_ubigeo": "080807",
+"_id": 765
+},
+"ALTO PICHIGUA": {
+"_ubigeo": "080808",
+"_id": 766
+}
+}
+},
+"LA CONVENCION": {
+"_ubigeo": "0809",
+"_id": 76,
+"distritos": {
+"SANTA ANA": {
+"_ubigeo": "080901",
+"_id": 767
+},
+"ECHARATE": {
+"_ubigeo": "080902",
+"_id": 768
+},
+"HUAYOPATA": {
+"_ubigeo": "080903",
+"_id": 769
+},
+"MARANURA": {
+"_ubigeo": "080904",
+"_id": 770
+},
+"OCOBAMBA": {
+"_ubigeo": "080905",
+"_id": 771
+},
+"QUELLOUNO": {
+"_ubigeo": "080906",
+"_id": 772
+},
+"QUIMBIRI": {
+"_ubigeo": "080907",
+"_id": 773
+},
+"SANTA TERESA": {
+"_ubigeo": "080908",
+"_id": 774
+},
+"VILCABAMBA": {
+"_ubigeo": "080909",
+"_id": 775
+},
+"PICHARI": {
+"_ubigeo": "080910",
+"_id": 776
+},
+"INKAWASI": {
+"_ubigeo": "080911",
+"_id": 777
+},
+"VILLA VIRGEN": {
+"_ubigeo": "080912",
+"_id": 778
+},
+"VILLA KINTIARINA": {
+"_ubigeo": "080913",
+"_id": 779
+},
+"MEGANTONI": {
+"_ubigeo": "080914",
+"_id": 780
+},
+"KUMPIRUSHIATO": {
+"_ubigeo": "080915",
+"_id": 781
+},
+"CIELO PUNCO": {
+"_ubigeo": "080916",
+"_id": 782
+},
+"MANITEA": {
+"_ubigeo": "080917",
+"_id": 783
+},
+"UNION ASHÁNINKA": {
+"_ubigeo": "080918",
+"_id": 784
+}
+}
+},
+"PARURO": {
+"_ubigeo": "0810",
+"_id": 77,
+"distritos": {
+"PARURO": {
+"_ubigeo": "081001",
+"_id": 785
+},
+"ACCHA": {
+"_ubigeo": "081002",
+"_id": 786
+},
+"CCAPI": {
+"_ubigeo": "081003",
+"_id": 787
+},
+"COLCHA": {
+"_ubigeo": "081004",
+"_id": 788
+},
+"HUANOQUITE": {
+"_ubigeo": "081005",
+"_id": 789
+},
+"OMACHA": {
+"_ubigeo": "081006",
+"_id": 790
+},
+"PACCARITAMBO": {
+"_ubigeo": "081007",
+"_id": 791
+},
+"PILLPINTO": {
+"_ubigeo": "081008",
+"_id": 792
+},
+"YAURISQUE": {
+"_ubigeo": "081009",
+"_id": 793
+}
+}
+},
+"PAUCARTAMBO": {
+"_ubigeo": "0811",
+"_id": 78,
+"distritos": {
+"PAUCARTAMBO": {
+"_ubigeo": "081101",
+"_id": 794
+},
+"CAICAY": {
+"_ubigeo": "081102",
+"_id": 795
+},
+"CHALLABAMBA": {
+"_ubigeo": "081103",
+"_id": 796
+},
+"COLQUEPATA": {
+"_ubigeo": "081104",
+"_id": 797
+},
+"HUANCARANI": {
+"_ubigeo": "081105",
+"_id": 798
+},
+"KOSÑIPATA": {
+"_ubigeo": "081106",
+"_id": 799
+}
+}
+},
+"QUISPICANCHI": {
+"_ubigeo": "0812",
+"_id": 79,
+"distritos": {
+"URCOS": {
+"_ubigeo": "081201",
+"_id": 800
+},
+"ANDAHUAYLILLAS": {
+"_ubigeo": "081202",
+"_id": 801
+},
+"CAMANTI": {
+"_ubigeo": "081203",
+"_id": 802
+},
+"CCARHUAYO": {
+"_ubigeo": "081204",
+"_id": 803
+},
+"CCATCA": {
+"_ubigeo": "081205",
+"_id": 804
+},
+"CUSIPATA": {
+"_ubigeo": "081206",
+"_id": 805
+},
+"HUARO": {
+"_ubigeo": "081207",
+"_id": 806
+},
+"LUCRE": {
+"_ubigeo": "081208",
+"_id": 807
+},
+"MARCAPATA": {
+"_ubigeo": "081209",
+"_id": 808
+},
+"OCONGATE": {
+"_ubigeo": "081210",
+"_id": 809
+},
+"OROPESA": {
+"_ubigeo": "081211",
+"_id": 810
+},
+"QUIQUIJANA": {
+"_ubigeo": "081212",
+"_id": 811
+}
+}
+},
+"URUBAMBA": {
+"_ubigeo": "0813",
+"_id": 80,
+"distritos": {
+"URUBAMBA": {
+"_ubigeo": "081301",
+"_id": 812
+},
+"CHINCHERO": {
+"_ubigeo": "081302",
+"_id": 813
+},
+"HUAYLLABAMBA": {
+"_ubigeo": "081303",
+"_id": 814
+},
+"MACHUPICCHU": {
+"_ubigeo": "081304",
+"_id": 815
+},
+"MARAS": {
+"_ubigeo": "081305",
+"_id": 816
+},
+"OLLANTAYTAMBO": {
+"_ubigeo": "081306",
+"_id": 817
+},
+"YUCAY": {
+"_ubigeo": "081307",
+"_id": 818
+}
+}
+}
+}
+},
+"HUANCAVELICA": {
+"_ubigeo": "09",
+"_id": 9,
+"provincias": {
+"HUANCAVELICA": {
+"_ubigeo": "0901",
+"_id": 81,
+"distritos": {
+"HUANCAVELICA": {
+"_ubigeo": "090101",
+"_id": 819
+},
+"ACOBAMBILLA": {
+"_ubigeo": "090102",
+"_id": 820
+},
+"ACORIA": {
+"_ubigeo": "090103",
+"_id": 821
+},
+"CONAYCA": {
+"_ubigeo": "090104",
+"_id": 822
+},
+"CUENCA": {
+"_ubigeo": "090105",
+"_id": 823
+},
+"HUACHOCOLPA": {
+"_ubigeo": "090106",
+"_id": 824
+},
+"HUAYLLAHUARA": {
+"_ubigeo": "090107",
+"_id": 825
+},
+"IZCUCHACA": {
+"_ubigeo": "090108",
+"_id": 826
+},
+"LARIA": {
+"_ubigeo": "090109",
+"_id": 827
+},
+"MANTA": {
+"_ubigeo": "090110",
+"_id": 828
+},
+"MARISCAL CACERES": {
+"_ubigeo": "090111",
+"_id": 829
+},
+"MOYA": {
+"_ubigeo": "090112",
+"_id": 830
+},
+"NUEVO OCCORO": {
+"_ubigeo": "090113",
+"_id": 831
+},
+"PALCA": {
+"_ubigeo": "090114",
+"_id": 832
+},
+"PILCHACA": {
+"_ubigeo": "090115",
+"_id": 833
+},
+"VILCA": {
+"_ubigeo": "090116",
+"_id": 834
+},
+"YAULI": {
+"_ubigeo": "090117",
+"_id": 835
+},
+"ASCENSION": {
+"_ubigeo": "090118",
+"_id": 836
+},
+"HUANDO": {
+"_ubigeo": "090119",
+"_id": 837
+}
+}
+},
+"ACOBAMBA": {
+"_ubigeo": "0902",
+"_id": 82,
+"distritos": {
+"ACOBAMBA": {
+"_ubigeo": "090201",
+"_id": 838
+},
+"ANDABAMBA": {
+"_ubigeo": "090202",
+"_id": 839
+},
+"ANTA": {
+"_ubigeo": "090203",
+"_id": 840
+},
+"CAJA": {
+"_ubigeo": "090204",
+"_id": 841
+},
+"MARCAS": {
+"_ubigeo": "090205",
+"_id": 842
+},
+"PAUCARA": {
+"_ubigeo": "090206",
+"_id": 843
+},
+"POMACOCHA": {
+"_ubigeo": "090207",
+"_id": 844
+},
+"ROSARIO": {
+"_ubigeo": "090208",
+"_id": 845
+}
+}
+},
+"ANGARAES": {
+"_ubigeo": "0903",
+"_id": 83,
+"distritos": {
+"LIRCAY": {
+"_ubigeo": "090301",
+"_id": 846
+},
+"ANCHONGA": {
+"_ubigeo": "090302",
+"_id": 847
+},
+"CALLANMARCA": {
+"_ubigeo": "090303",
+"_id": 848
+},
+"CCOCHACCASA": {
+"_ubigeo": "090304",
+"_id": 849
+},
+"CHINCHO": {
+"_ubigeo": "090305",
+"_id": 850
+},
+"CONGALLA": {
+"_ubigeo": "090306",
+"_id": 851
+},
+"HUANCA-HUANCA": {
+"_ubigeo": "090307",
+"_id": 852
+},
+"HUAYLLAY GRANDE": {
+"_ubigeo": "090308",
+"_id": 853
+},
+"JULCAMARCA": {
+"_ubigeo": "090309",
+"_id": 854
+},
+"SAN ANTONIO DE ANTAPARCO": {
+"_ubigeo": "090310",
+"_id": 855
+},
+"SANTO TOMAS DE PATA": {
+"_ubigeo": "090311",
+"_id": 856
+},
+"SECCLLA": {
+"_ubigeo": "090312",
+"_id": 857
+}
+}
+},
+"CASTROVIRREYNA": {
+"_ubigeo": "0904",
+"_id": 84,
+"distritos": {
+"CASTROVIRREYNA": {
+"_ubigeo": "090401",
+"_id": 858
+},
+"ARMA": {
+"_ubigeo": "090402",
+"_id": 859
+},
+"AURAHUA": {
+"_ubigeo": "090403",
+"_id": 860
+},
+"CAPILLAS": {
+"_ubigeo": "090404",
+"_id": 861
+},
+"CHUPAMARCA": {
+"_ubigeo": "090405",
+"_id": 862
+},
+"COCAS": {
+"_ubigeo": "090406",
+"_id": 863
+},
+"HUACHOS": {
+"_ubigeo": "090407",
+"_id": 864
+},
+"HUAMATAMBO": {
+"_ubigeo": "090408",
+"_id": 865
+},
+"MOLLEPAMPA": {
+"_ubigeo": "090409",
+"_id": 866
+},
+"SAN JUAN": {
+"_ubigeo": "090410",
+"_id": 867
+},
+"SANTA ANA": {
+"_ubigeo": "090411",
+"_id": 868
+},
+"TANTARA": {
+"_ubigeo": "090412",
+"_id": 869
+},
+"TICRAPO": {
+"_ubigeo": "090413",
+"_id": 870
+}
+}
+},
+"CHURCAMPA": {
+"_ubigeo": "0905",
+"_id": 85,
+"distritos": {
+"CHURCAMPA": {
+"_ubigeo": "090501",
+"_id": 871
+},
+"ANCO": {
+"_ubigeo": "090502",
+"_id": 872
+},
+"CHINCHIHUASI": {
+"_ubigeo": "090503",
+"_id": 873
+},
+"EL CARMEN": {
+"_ubigeo": "090504",
+"_id": 874
+},
+"LA MERCED": {
+"_ubigeo": "090505",
+"_id": 875
+},
+"LOCROJA": {
+"_ubigeo": "090506",
+"_id": 876
+},
+"PAUCARBAMBA": {
+"_ubigeo": "090507",
+"_id": 877
+},
+"SAN MIGUEL DE MAYOCC": {
+"_ubigeo": "090508",
+"_id": 878
+},
+"SAN PEDRO DE CORIS": {
+"_ubigeo": "090509",
+"_id": 879
+},
+"PACHAMARCA": {
+"_ubigeo": "090510",
+"_id": 880
+},
+"COSME": {
+"_ubigeo": "090511",
+"_id": 881
+}
+}
+},
+"HUAYTARA": {
+"_ubigeo": "0906",
+"_id": 86,
+"distritos": {
+"HUAYTARA": {
+"_ubigeo": "090601",
+"_id": 882
+},
+"AYAVI": {
+"_ubigeo": "090602",
+"_id": 883
+},
+"CORDOVA": {
+"_ubigeo": "090603",
+"_id": 884
+},
+"HUAYACUNDO ARMA": {
+"_ubigeo": "090604",
+"_id": 885
+},
+"LARAMARCA": {
+"_ubigeo": "090605",
+"_id": 886
+},
+"OCOYO": {
+"_ubigeo": "090606",
+"_id": 887
+},
+"PILPICHACA": {
+"_ubigeo": "090607",
+"_id": 888
+},
+"QUERCO": {
+"_ubigeo": "090608",
+"_id": 889
+},
+"QUITO-ARMA": {
+"_ubigeo": "090609",
+"_id": 890
+},
+"SAN ANTONIO DE CUSICANCHA": {
+"_ubigeo": "090610",
+"_id": 891
+},
+"SAN FRANCISCO DE SANGAYAICO": {
+"_ubigeo": "090611",
+"_id": 892
+},
+"SAN ISIDRO": {
+"_ubigeo": "090612",
+"_id": 893
+},
+"SANTIAGO DE CHOCORVOS": {
+"_ubigeo": "090613",
+"_id": 894
+},
+"SANTIAGO DE QUIRAHUARA": {
+"_ubigeo": "090614",
+"_id": 895
+},
+"SANTO DOMINGO DE CAPILLAS": {
+"_ubigeo": "090615",
+"_id": 896
+},
+"TAMBO": {
+"_ubigeo": "090616",
+"_id": 897
+}
+}
+},
+"TAYACAJA": {
+"_ubigeo": "0907",
+"_id": 87,
+"distritos": {
+"PAMPAS": {
+"_ubigeo": "090701",
+"_id": 898
+},
+"ACOSTAMBO": {
+"_ubigeo": "090702",
+"_id": 899
+},
+"ACRAQUIA": {
+"_ubigeo": "090703",
+"_id": 900
+},
+"AHUAYCHA": {
+"_ubigeo": "090704",
+"_id": 901
+},
+"COLCABAMBA": {
+"_ubigeo": "090705",
+"_id": 902
+},
+"DANIEL HERNANDEZ": {
+"_ubigeo": "090706",
+"_id": 903
+},
+"HUACHOCOLPA": {
+"_ubigeo": "090707",
+"_id": 904
+},
+"HUARIBAMBA": {
+"_ubigeo": "090709",
+"_id": 905
+},
+"ÑAHUIMPUQUIO": {
+"_ubigeo": "090710",
+"_id": 906
+},
+"PAZOS": {
+"_ubigeo": "090711",
+"_id": 907
+},
+"QUISHUAR": {
+"_ubigeo": "090713",
+"_id": 908
+},
+"SALCABAMBA": {
+"_ubigeo": "090714",
+"_id": 909
+},
+"SALCAHUASI": {
+"_ubigeo": "090715",
+"_id": 910
+},
+"SAN MARCOS DE ROCCHAC": {
+"_ubigeo": "090716",
+"_id": 911
+},
+"SURCUBAMBA": {
+"_ubigeo": "090717",
+"_id": 912
+},
+"TINTAY PUNCU": {
+"_ubigeo": "090718",
+"_id": 913
+},
+"QUICHUAS": {
+"_ubigeo": "090719",
+"_id": 914
+},
+"ANDAYMARCA": {
+"_ubigeo": "090720",
+"_id": 915
+},
+"ROBLE": {
+"_ubigeo": "090721",
+"_id": 916
+},
+"PICHOS": {
+"_ubigeo": "090722",
+"_id": 917
+},
+"SANTIAGO DE TUCUMA": {
+"_ubigeo": "090723",
+"_id": 918
+},
+"LAMBRAS": {
+"_ubigeo": "090724",
+"_id": 919
+},
+"COCHABAMBA": {
+"_ubigeo": "090725",
+"_id": 920
+}
+}
+}
+}
+},
+"HUANUCO": {
+"_ubigeo": "10",
+"_id": 10,
+"provincias": {
+"HUANUCO": {
+"_ubigeo": "1001",
+"_id": 88,
+"distritos": {
+"HUANUCO": {
+"_ubigeo": "100101",
+"_id": 921
+},
+"AMARILIS": {
+"_ubigeo": "100102",
+"_id": 922
+},
+"CHINCHAO": {
+"_ubigeo": "100103",
+"_id": 923
+},
+"CHURUBAMBA": {
+"_ubigeo": "100104",
+"_id": 924
+},
+"MARGOS": {
+"_ubigeo": "100105",
+"_id": 925
+},
+"QUISQUI": {
+"_ubigeo": "100106",
+"_id": 926
+},
+"SAN FRANCISCO DE CAYRAN": {
+"_ubigeo": "100107",
+"_id": 927
+},
+"SAN PEDRO DE CHAULAN": {
+"_ubigeo": "100108",
+"_id": 928
+},
+"SANTA MARIA DEL VALLE": {
+"_ubigeo": "100109",
+"_id": 929
+},
+"YARUMAYO": {
+"_ubigeo": "100110",
+"_id": 930
+},
+"PILLCO MARCA": {
+"_ubigeo": "100111",
+"_id": 931
+},
+"YACUS": {
+"_ubigeo": "100112",
+"_id": 932
+},
+"SAN PABLO DE PILLAO": {
+"_ubigeo": "100113",
+"_id": 933
+}
+}
+},
+"AMBO": {
+"_ubigeo": "1002",
+"_id": 89,
+"distritos": {
+"AMBO": {
+"_ubigeo": "100201",
+"_id": 934
+},
+"CAYNA": {
+"_ubigeo": "100202",
+"_id": 935
+},
+"COLPAS": {
+"_ubigeo": "100203",
+"_id": 936
+},
+"CONCHAMARCA": {
+"_ubigeo": "100204",
+"_id": 937
+},
+"HUACAR": {
+"_ubigeo": "100205",
+"_id": 938
+},
+"SAN FRANCISCO": {
+"_ubigeo": "100206",
+"_id": 939
+},
+"SAN RAFAEL": {
+"_ubigeo": "100207",
+"_id": 940
+},
+"TOMAY KICHWA": {
+"_ubigeo": "100208",
+"_id": 941
+}
+}
+},
+"DOS DE MAYO": {
+"_ubigeo": "1003",
+"_id": 90,
+"distritos": {
+"LA UNION": {
+"_ubigeo": "100301",
+"_id": 942
+},
+"CHUQUIS": {
+"_ubigeo": "100307",
+"_id": 943
+},
+"MARIAS": {
+"_ubigeo": "100311",
+"_id": 944
+},
+"PACHAS": {
+"_ubigeo": "100313",
+"_id": 945
+},
+"QUIVILLA": {
+"_ubigeo": "100316",
+"_id": 946
+},
+"RIPAN": {
+"_ubigeo": "100317",
+"_id": 947
+},
+"SHUNQUI": {
+"_ubigeo": "100321",
+"_id": 948
+},
+"SILLAPATA": {
+"_ubigeo": "100322",
+"_id": 949
+},
+"YANAS": {
+"_ubigeo": "100323",
+"_id": 950
+}
+}
+},
+"HUACAYBAMBA": {
+"_ubigeo": "1004",
+"_id": 91,
+"distritos": {
+"HUACAYBAMBA": {
+"_ubigeo": "100401",
+"_id": 951
+},
+"CANCHABAMBA": {
+"_ubigeo": "100402",
+"_id": 952
+},
+"COCHABAMBA": {
+"_ubigeo": "100403",
+"_id": 953
+},
+"PINRA": {
+"_ubigeo": "100404",
+"_id": 954
+}
+}
+},
+"HUAMALIES": {
+"_ubigeo": "1005",
+"_id": 92,
+"distritos": {
+"LLATA": {
+"_ubigeo": "100501",
+"_id": 955
+},
+"ARANCAY": {
+"_ubigeo": "100502",
+"_id": 956
+},
+"CHAVIN DE PARIARCA": {
+"_ubigeo": "100503",
+"_id": 957
+},
+"JACAS GRANDE": {
+"_ubigeo": "100504",
+"_id": 958
+},
+"JIRCAN": {
+"_ubigeo": "100505",
+"_id": 959
+},
+"MIRAFLORES": {
+"_ubigeo": "100506",
+"_id": 960
+},
+"MONZON": {
+"_ubigeo": "100507",
+"_id": 961
+},
+"PUNCHAO": {
+"_ubigeo": "100508",
+"_id": 962
+},
+"PUÑOS": {
+"_ubigeo": "100509",
+"_id": 963
+},
+"SINGA": {
+"_ubigeo": "100510",
+"_id": 964
+},
+"TANTAMAYO": {
+"_ubigeo": "100511",
+"_id": 965
+}
+}
+},
+"LEONCIO PRADO": {
+"_ubigeo": "1006",
+"_id": 93,
+"distritos": {
+"RUPA-RUPA": {
+"_ubigeo": "100601",
+"_id": 966
+},
+"DANIEL ALOMIAS ROBLES": {
+"_ubigeo": "100602",
+"_id": 967
+},
+"HERMILIO VALDIZAN": {
+"_ubigeo": "100603",
+"_id": 968
+},
+"JOSE CRESPO Y CASTILLO": {
+"_ubigeo": "100604",
+"_id": 969
+},
+"LUYANDO": {
+"_ubigeo": "100605",
+"_id": 970
+},
+"MARIANO DAMASO BERAUN": {
+"_ubigeo": "100606",
+"_id": 971
+},
+"PUCAYACU": {
+"_ubigeo": "100607",
+"_id": 972
+},
+"CASTILLO GRANDE": {
+"_ubigeo": "100608",
+"_id": 973
+},
+"PUEBLO NUEVO": {
+"_ubigeo": "100609",
+"_id": 974
+},
+"SANTO DOMINGO DE ANDA": {
+"_ubigeo": "100610",
+"_id": 975
+}
+}
+},
+"MARAÑON": {
+"_ubigeo": "1007",
+"_id": 94,
+"distritos": {
+"HUACRACHUCO": {
+"_ubigeo": "100701",
+"_id": 976
+},
+"CHOLON": {
+"_ubigeo": "100702",
+"_id": 977
+},
+"SAN BUENAVENTURA": {
+"_ubigeo": "100703",
+"_id": 978
+},
+"LA MORADA": {
+"_ubigeo": "100704",
+"_id": 979
+},
+"SANTA ROSA DE ALTO YANAJANCA": {
+"_ubigeo": "100705",
+"_id": 980
+}
+}
+},
+"PACHITEA": {
+"_ubigeo": "1008",
+"_id": 95,
+"distritos": {
+"PANAO": {
+"_ubigeo": "100801",
+"_id": 981
+},
+"CHAGLLA": {
+"_ubigeo": "100802",
+"_id": 982
+},
+"MOLINO": {
+"_ubigeo": "100803",
+"_id": 983
+},
+"UMARI": {
+"_ubigeo": "100804",
+"_id": 984
+}
+}
+},
+"PUERTO INCA": {
+"_ubigeo": "1009",
+"_id": 96,
+"distritos": {
+"PUERTO INCA": {
+"_ubigeo": "100901",
+"_id": 985
+},
+"CODO DEL POZUZO": {
+"_ubigeo": "100902",
+"_id": 986
+},
+"HONORIA": {
+"_ubigeo": "100903",
+"_id": 987
+},
+"TOURNAVISTA": {
+"_ubigeo": "100904",
+"_id": 988
+},
+"YUYAPICHIS": {
+"_ubigeo": "100905",
+"_id": 989
+}
+}
+},
+"LAURICOCHA": {
+"_ubigeo": "1010",
+"_id": 97,
+"distritos": {
+"JESUS": {
+"_ubigeo": "101001",
+"_id": 990
+},
+"BAÑOS": {
+"_ubigeo": "101002",
+"_id": 991
+},
+"JIVIA": {
+"_ubigeo": "101003",
+"_id": 992
+},
+"QUEROPALCA": {
+"_ubigeo": "101004",
+"_id": 993
+},
+"RONDOS": {
+"_ubigeo": "101005",
+"_id": 994
+},
+"SAN FRANCISCO DE ASIS": {
+"_ubigeo": "101006",
+"_id": 995
+},
+"SAN MIGUEL DE CAURI": {
+"_ubigeo": "101007",
+"_id": 996
+}
+}
+},
+"YAROWILCA": {
+"_ubigeo": "1011",
+"_id": 98,
+"distritos": {
+"CHAVINILLO": {
+"_ubigeo": "101101",
+"_id": 997
+},
+"CAHUAC": {
+"_ubigeo": "101102",
+"_id": 998
+},
+"CHACABAMBA": {
+"_ubigeo": "101103",
+"_id": 999
+},
+"APARICIO POMARES": {
+"_ubigeo": "101104",
+"_id": 1000
+},
+"JACAS CHICO": {
+"_ubigeo": "101105",
+"_id": 1001
+},
+"OBAS": {
+"_ubigeo": "101106",
+"_id": 1002
+},
+"PAMPAMARCA": {
+"_ubigeo": "101107",
+"_id": 1003
+},
+"CHORAS": {
+"_ubigeo": "101108",
+"_id": 1004
+}
+}
+}
+}
+},
+"ICA": {
+"_ubigeo": "11",
+"_id": 11,
+"provincias": {
+"ICA": {
+"_ubigeo": "1101",
+"_id": 99,
+"distritos": {
+"ICA": {
+"_ubigeo": "110101",
+"_id": 1005
+},
+"LA TINGUIÑA": {
+"_ubigeo": "110102",
+"_id": 1006
+},
+"LOS AQUIJES": {
+"_ubigeo": "110103",
+"_id": 1007
+},
+"OCUCAJE": {
+"_ubigeo": "110104",
+"_id": 1008
+},
+"PACHACUTEC": {
+"_ubigeo": "110105",
+"_id": 1009
+},
+"PARCONA": {
+"_ubigeo": "110106",
+"_id": 1010
+},
+"PUEBLO NUEVO": {
+"_ubigeo": "110107",
+"_id": 1011
+},
+"SALAS": {
+"_ubigeo": "110108",
+"_id": 1012
+},
+"SAN JOSE DE LOS MOLINOS": {
+"_ubigeo": "110109",
+"_id": 1013
+},
+"SAN JUAN BAUTISTA": {
+"_ubigeo": "110110",
+"_id": 1014
+},
+"SANTIAGO": {
+"_ubigeo": "110111",
+"_id": 1015
+},
+"SUBTANJALLA": {
+"_ubigeo": "110112",
+"_id": 1016
+},
+"TATE": {
+"_ubigeo": "110113",
+"_id": 1017
+},
+"YAUCA DEL ROSARIO": {
+"_ubigeo": "110114",
+"_id": 1018
+}
+}
+},
+"CHINCHA": {
+"_ubigeo": "1102",
+"_id": 100,
+"distritos": {
+"CHINCHA ALTA": {
+"_ubigeo": "110201",
+"_id": 1019
+},
+"ALTO LARAN": {
+"_ubigeo": "110202",
+"_id": 1020
+},
+"CHAVIN": {
+"_ubigeo": "110203",
+"_id": 1021
+},
+"CHINCHA BAJA": {
+"_ubigeo": "110204",
+"_id": 1022
+},
+"EL CARMEN": {
+"_ubigeo": "110205",
+"_id": 1023
+},
+"GROCIO PRADO": {
+"_ubigeo": "110206",
+"_id": 1024
+},
+"PUEBLO NUEVO": {
+"_ubigeo": "110207",
+"_id": 1025
+},
+"SAN JUAN DE YANAC": {
+"_ubigeo": "110208",
+"_id": 1026
+},
+"SAN PEDRO DE HUACARPANA": {
+"_ubigeo": "110209",
+"_id": 1027
+},
+"SUNAMPE": {
+"_ubigeo": "110210",
+"_id": 1028
+},
+"TAMBO DE MORA": {
+"_ubigeo": "110211",
+"_id": 1029
+}
+}
+},
+"NAZCA": {
+"_ubigeo": "1103",
+"_id": 101,
+"distritos": {
+"NAZCA": {
+"_ubigeo": "110301",
+"_id": 1030
+},
+"CHANGUILLO": {
+"_ubigeo": "110302",
+"_id": 1031
+},
+"EL INGENIO": {
+"_ubigeo": "110303",
+"_id": 1032
+},
+"MARCONA": {
+"_ubigeo": "110304",
+"_id": 1033
+},
+"VISTA ALEGRE": {
+"_ubigeo": "110305",
+"_id": 1034
+}
+}
+},
+"PALPA": {
+"_ubigeo": "1104",
+"_id": 102,
+"distritos": {
+"PALPA": {
+"_ubigeo": "110401",
+"_id": 1035
+},
+"LLIPATA": {
+"_ubigeo": "110402",
+"_id": 1036
+},
+"RIO GRANDE": {
+"_ubigeo": "110403",
+"_id": 1037
+},
+"SANTA CRUZ": {
+"_ubigeo": "110404",
+"_id": 1038
+},
+"TIBILLO": {
+"_ubigeo": "110405",
+"_id": 1039
+}
+}
+},
+"PISCO": {
+"_ubigeo": "1105",
+"_id": 103,
+"distritos": {
+"PISCO": {
+"_ubigeo": "110501",
+"_id": 1040
+},
+"HUANCANO": {
+"_ubigeo": "110502",
+"_id": 1041
+},
+"HUMAY": {
+"_ubigeo": "110503",
+"_id": 1042
+},
+"INDEPENDENCIA": {
+"_ubigeo": "110504",
+"_id": 1043
+},
+"PARACAS": {
+"_ubigeo": "110505",
+"_id": 1044
+},
+"SAN ANDRES": {
+"_ubigeo": "110506",
+"_id": 1045
+},
+"SAN CLEMENTE": {
+"_ubigeo": "110507",
+"_id": 1046
+},
+"TUPAC AMARU INCA": {
+"_ubigeo": "110508",
+"_id": 1047
+}
+}
+}
+}
+},
+"JUNIN": {
+"_ubigeo": "12",
+"_id": 12,
+"provincias": {
+"HUANCAYO": {
+"_ubigeo": "1201",
+"_id": 104,
+"distritos": {
+"HUANCAYO": {
+"_ubigeo": "120101",
+"_id": 1048
+},
+"CARHUACALLANGA": {
+"_ubigeo": "120104",
+"_id": 1049
+},
+"CHACAPAMPA": {
+"_ubigeo": "120105",
+"_id": 1050
+},
+"CHICCHE": {
+"_ubigeo": "120106",
+"_id": 1051
+},
+"CHILCA": {
+"_ubigeo": "120107",
+"_id": 1052
+},
+"CHONGOS ALTO": {
+"_ubigeo": "120108",
+"_id": 1053
+},
+"CHUPURO": {
+"_ubigeo": "120111",
+"_id": 1054
+},
+"COLCA": {
+"_ubigeo": "120112",
+"_id": 1055
+},
+"CULLHUAS": {
+"_ubigeo": "120113",
+"_id": 1056
+},
+"EL TAMBO": {
+"_ubigeo": "120114",
+"_id": 1057
+},
+"HUACRAPUQUIO": {
+"_ubigeo": "120116",
+"_id": 1058
+},
+"HUALHUAS": {
+"_ubigeo": "120117",
+"_id": 1059
+},
+"HUANCAN": {
+"_ubigeo": "120119",
+"_id": 1060
+},
+"HUASICANCHA": {
+"_ubigeo": "120120",
+"_id": 1061
+},
+"HUAYUCACHI": {
+"_ubigeo": "120121",
+"_id": 1062
+},
+"INGENIO": {
+"_ubigeo": "120122",
+"_id": 1063
+},
+"PARIAHUANCA": {
+"_ubigeo": "120124",
+"_id": 1064
+},
+"PILCOMAYO": {
+"_ubigeo": "120125",
+"_id": 1065
+},
+"PUCARA": {
+"_ubigeo": "120126",
+"_id": 1066
+},
+"QUICHUAY": {
+"_ubigeo": "120127",
+"_id": 1067
+},
+"QUILCAS": {
+"_ubigeo": "120128",
+"_id": 1068
+},
+"SAN AGUSTIN": {
+"_ubigeo": "120129",
+"_id": 1069
+},
+"SAN JERONIMO DE TUNAN": {
+"_ubigeo": "120130",
+"_id": 1070
+},
+"SAÑO": {
+"_ubigeo": "120132",
+"_id": 1071
+},
+"SAPALLANGA": {
+"_ubigeo": "120133",
+"_id": 1072
+},
+"SICAYA": {
+"_ubigeo": "120134",
+"_id": 1073
+},
+"SANTO DOMINGO DE ACOBAMBA": {
+"_ubigeo": "120135",
+"_id": 1074
+},
+"VIQUES": {
+"_ubigeo": "120136",
+"_id": 1075
+}
+}
+},
+"CONCEPCION": {
+"_ubigeo": "1202",
+"_id": 105,
+"distritos": {
+"CONCEPCION": {
+"_ubigeo": "120201",
+"_id": 1076
+},
+"ACO": {
+"_ubigeo": "120202",
+"_id": 1077
+},
+"ANDAMARCA": {
+"_ubigeo": "120203",
+"_id": 1078
+},
+"CHAMBARA": {
+"_ubigeo": "120204",
+"_id": 1079
+},
+"COCHAS": {
+"_ubigeo": "120205",
+"_id": 1080
+},
+"COMAS": {
+"_ubigeo": "120206",
+"_id": 1081
+},
+"HEROINAS TOLEDO": {
+"_ubigeo": "120207",
+"_id": 1082
+},
+"MANZANARES": {
+"_ubigeo": "120208",
+"_id": 1083
+},
+"MARISCAL CASTILLA": {
+"_ubigeo": "120209",
+"_id": 1084
+},
+"MATAHUASI": {
+"_ubigeo": "120210",
+"_id": 1085
+},
+"MITO": {
+"_ubigeo": "120211",
+"_id": 1086
+},
+"NUEVE DE JULIO": {
+"_ubigeo": "120212",
+"_id": 1087
+},
+"ORCOTUNA": {
+"_ubigeo": "120213",
+"_id": 1088
+},
+"SAN JOSE DE QUERO": {
+"_ubigeo": "120214",
+"_id": 1089
+},
+"SANTA ROSA DE OCOPA": {
+"_ubigeo": "120215",
+"_id": 1090
+}
+}
+},
+"CHANCHAMAYO": {
+"_ubigeo": "1203",
+"_id": 106,
+"distritos": {
+"CHANCHAMAYO": {
+"_ubigeo": "120301",
+"_id": 1091
+},
+"PERENE": {
+"_ubigeo": "120302",
+"_id": 1092
+},
+"PICHANAQUI": {
+"_ubigeo": "120303",
+"_id": 1093
+},
+"SAN LUIS DE SHUARO": {
+"_ubigeo": "120304",
+"_id": 1094
+},
+"SAN RAMON": {
+"_ubigeo": "120305",
+"_id": 1095
+},
+"VITOC": {
+"_ubigeo": "120306",
+"_id": 1096
+}
+}
+},
+"JAUJA": {
+"_ubigeo": "1204",
+"_id": 107,
+"distritos": {
+"JAUJA": {
+"_ubigeo": "120401",
+"_id": 1097
+},
+"ACOLLA": {
+"_ubigeo": "120402",
+"_id": 1098
+},
+"APATA": {
+"_ubigeo": "120403",
+"_id": 1099
+},
+"ATAURA": {
+"_ubigeo": "120404",
+"_id": 1100
+},
+"CANCHAYLLO": {
+"_ubigeo": "120405",
+"_id": 1101
+},
+"CURICACA": {
+"_ubigeo": "120406",
+"_id": 1102
+},
+"EL MANTARO": {
+"_ubigeo": "120407",
+"_id": 1103
+},
+"HUAMALI": {
+"_ubigeo": "120408",
+"_id": 1104
+},
+"HUARIPAMPA": {
+"_ubigeo": "120409",
+"_id": 1105
+},
+"HUERTAS": {
+"_ubigeo": "120410",
+"_id": 1106
+},
+"JANJAILLO": {
+"_ubigeo": "120411",
+"_id": 1107
+},
+"JULCAN": {
+"_ubigeo": "120412",
+"_id": 1108
+},
+"LEONOR ORDOÑEZ": {
+"_ubigeo": "120413",
+"_id": 1109
+},
+"LLOCLLAPAMPA": {
+"_ubigeo": "120414",
+"_id": 1110
+},
+"MARCO": {
+"_ubigeo": "120415",
+"_id": 1111
+},
+"MASMA": {
+"_ubigeo": "120416",
+"_id": 1112
+},
+"MASMA CHICCHE": {
+"_ubigeo": "120417",
+"_id": 1113
+},
+"MOLINOS": {
+"_ubigeo": "120418",
+"_id": 1114
+},
+"MONOBAMBA": {
+"_ubigeo": "120419",
+"_id": 1115
+},
+"MUQUI": {
+"_ubigeo": "120420",
+"_id": 1116
+},
+"MUQUIYAUYO": {
+"_ubigeo": "120421",
+"_id": 1117
+},
+"PACA": {
+"_ubigeo": "120422",
+"_id": 1118
+},
+"PACCHA": {
+"_ubigeo": "120423",
+"_id": 1119
+},
+"PANCAN": {
+"_ubigeo": "120424",
+"_id": 1120
+},
+"PARCO": {
+"_ubigeo": "120425",
+"_id": 1121
+},
+"POMACANCHA": {
+"_ubigeo": "120426",
+"_id": 1122
+},
+"RICRAN": {
+"_ubigeo": "120427",
+"_id": 1123
+},
+"SAN LORENZO": {
+"_ubigeo": "120428",
+"_id": 1124
+},
+"SAN PEDRO DE CHUNAN": {
+"_ubigeo": "120429",
+"_id": 1125
+},
+"SAUSA": {
+"_ubigeo": "120430",
+"_id": 1126
+},
+"SINCOS": {
+"_ubigeo": "120431",
+"_id": 1127
+},
+"TUNAN MARCA": {
+"_ubigeo": "120432",
+"_id": 1128
+},
+"YAULI": {
+"_ubigeo": "120433",
+"_id": 1129
+},
+"YAUYOS": {
+"_ubigeo": "120434",
+"_id": 1130
+}
+}
+},
+"JUNIN": {
+"_ubigeo": "1205",
+"_id": 108,
+"distritos": {
+"JUNIN": {
+"_ubigeo": "120501",
+"_id": 1131
+},
+"CARHUAMAYO": {
+"_ubigeo": "120502",
+"_id": 1132
+},
+"ONDORES": {
+"_ubigeo": "120503",
+"_id": 1133
+},
+"ULCUMAYO": {
+"_ubigeo": "120504",
+"_id": 1134
+}
+}
+},
+"SATIPO": {
+"_ubigeo": "1206",
+"_id": 109,
+"distritos": {
+"SATIPO": {
+"_ubigeo": "120601",
+"_id": 1135
+},
+"COVIRIALI": {
+"_ubigeo": "120602",
+"_id": 1136
+},
+"LLAYLLA": {
+"_ubigeo": "120603",
+"_id": 1137
+},
+"MAZAMARI": {
+"_ubigeo": "120604",
+"_id": 1138
+},
+"PAMPA HERMOSA": {
+"_ubigeo": "120605",
+"_id": 1139
+},
+"PANGOA": {
+"_ubigeo": "120606",
+"_id": 1140
+},
+"RIO NEGRO": {
+"_ubigeo": "120607",
+"_id": 1141
+},
+"RIO TAMBO": {
+"_ubigeo": "120608",
+"_id": 1142
+},
+"VIZCATAN DEL ENE": {
+"_ubigeo": "120609",
+"_id": 1143
+}
+}
+},
+"TARMA": {
+"_ubigeo": "1207",
+"_id": 110,
+"distritos": {
+"TARMA": {
+"_ubigeo": "120701",
+"_id": 1144
+},
+"ACOBAMBA": {
+"_ubigeo": "120702",
+"_id": 1145
+},
+"HUARICOLCA": {
+"_ubigeo": "120703",
+"_id": 1146
+},
+"HUASAHUASI": {
+"_ubigeo": "120704",
+"_id": 1147
+},
+"LA UNION": {
+"_ubigeo": "120705",
+"_id": 1148
+},
+"PALCA": {
+"_ubigeo": "120706",
+"_id": 1149
+},
+"PALCAMAYO": {
+"_ubigeo": "120707",
+"_id": 1150
+},
+"SAN PEDRO DE CAJAS": {
+"_ubigeo": "120708",
+"_id": 1151
+},
+"TAPO": {
+"_ubigeo": "120709",
+"_id": 1152
+}
+}
+},
+"YAULI": {
+"_ubigeo": "1208",
+"_id": 111,
+"distritos": {
+"LA OROYA": {
+"_ubigeo": "120801",
+"_id": 1153
+},
+"CHACAPALPA": {
+"_ubigeo": "120802",
+"_id": 1154
+},
+"HUAY-HUAY": {
+"_ubigeo": "120803",
+"_id": 1155
+},
+"MARCAPOMACOCHA": {
+"_ubigeo": "120804",
+"_id": 1156
+},
+"MOROCOCHA": {
+"_ubigeo": "120805",
+"_id": 1157
+},
+"PACCHA": {
+"_ubigeo": "120806",
+"_id": 1158
+},
+"SANTA BARBARA DE CARHUACAYAN": {
+"_ubigeo": "120807",
+"_id": 1159
+},
+"SANTA ROSA DE SACCO": {
+"_ubigeo": "120808",
+"_id": 1160
+},
+"SUITUCANCHA": {
+"_ubigeo": "120809",
+"_id": 1161
+},
+"YAULI": {
+"_ubigeo": "120810",
+"_id": 1162
+}
+}
+},
+"CHUPACA": {
+"_ubigeo": "1209",
+"_id": 112,
+"distritos": {
+"CHUPACA": {
+"_ubigeo": "120901",
+"_id": 1163
+},
+"AHUAC": {
+"_ubigeo": "120902",
+"_id": 1164
+},
+"CHONGOS BAJO": {
+"_ubigeo": "120903",
+"_id": 1165
+},
+"HUACHAC": {
+"_ubigeo": "120904",
+"_id": 1166
+},
+"HUAMANCACA CHICO": {
+"_ubigeo": "120905",
+"_id": 1167
+},
+"SAN JUAN DE YSCOS": {
+"_ubigeo": "120906",
+"_id": 1168
+},
+"SAN JUAN DE JARPA": {
+"_ubigeo": "120907",
+"_id": 1169
+},
+"TRES DE DICIEMBRE": {
+"_ubigeo": "120908",
+"_id": 1170
+},
+"YANACANCHA": {
+"_ubigeo": "120909",
+"_id": 1171
+}
+}
+}
+}
+},
+"LA LIBERTAD": {
+"_ubigeo": "13",
+"_id": 13,
+"provincias": {
+"TRUJILLO": {
+"_ubigeo": "1301",
+"_id": 113,
+"distritos": {
+"TRUJILLO": {
+"_ubigeo": "130101",
+"_id": 1172
+},
+"EL PORVENIR": {
+"_ubigeo": "130102",
+"_id": 1173
+},
+"FLORENCIA DE MORA": {
+"_ubigeo": "130103",
+"_id": 1174
+},
+"HUANCHACO": {
+"_ubigeo": "130104",
+"_id": 1175
+},
+"LA ESPERANZA": {
+"_ubigeo": "130105",
+"_id": 1176
+},
+"LAREDO": {
+"_ubigeo": "130106",
+"_id": 1177
+},
+"MOCHE": {
+"_ubigeo": "130107",
+"_id": 1178
+},
+"POROTO": {
+"_ubigeo": "130108",
+"_id": 1179
+},
+"SALAVERRY": {
+"_ubigeo": "130109",
+"_id": 1180
+},
+"SIMBAL": {
+"_ubigeo": "130110",
+"_id": 1181
+},
+"VICTOR LARCO HERRERA": {
+"_ubigeo": "130111",
+"_id": 1182
+}
+}
+},
+"ASCOPE": {
+"_ubigeo": "1302",
+"_id": 114,
+"distritos": {
+"ASCOPE": {
+"_ubigeo": "130201",
+"_id": 1183
+},
+"CHICAMA": {
+"_ubigeo": "130202",
+"_id": 1184
+},
+"CHOCOPE": {
+"_ubigeo": "130203",
+"_id": 1185
+},
+"MAGDALENA DE CAO": {
+"_ubigeo": "130204",
+"_id": 1186
+},
+"PAIJAN": {
+"_ubigeo": "130205",
+"_id": 1187
+},
+"RAZURI": {
+"_ubigeo": "130206",
+"_id": 1188
+},
+"SANTIAGO DE CAO": {
+"_ubigeo": "130207",
+"_id": 1189
+},
+"CASA GRANDE": {
+"_ubigeo": "130208",
+"_id": 1190
+}
+}
+},
+"BOLIVAR": {
+"_ubigeo": "1303",
+"_id": 115,
+"distritos": {
+"BOLIVAR": {
+"_ubigeo": "130301",
+"_id": 1191
+},
+"BAMBAMARCA": {
+"_ubigeo": "130302",
+"_id": 1192
+},
+"CONDORMARCA": {
+"_ubigeo": "130303",
+"_id": 1193
+},
+"LONGOTEA": {
+"_ubigeo": "130304",
+"_id": 1194
+},
+"UCHUMARCA": {
+"_ubigeo": "130305",
+"_id": 1195
+},
+"UCUNCHA": {
+"_ubigeo": "130306",
+"_id": 1196
+}
+}
+},
+"CHEPEN": {
+"_ubigeo": "1304",
+"_id": 116,
+"distritos": {
+"CHEPEN": {
+"_ubigeo": "130401",
+"_id": 1197
+},
+"PACANGA": {
+"_ubigeo": "130402",
+"_id": 1198
+},
+"PUEBLO NUEVO": {
+"_ubigeo": "130403",
+"_id": 1199
+}
+}
+},
+"JULCAN": {
+"_ubigeo": "1305",
+"_id": 117,
+"distritos": {
+"JULCAN": {
+"_ubigeo": "130501",
+"_id": 1200
+},
+"CALAMARCA": {
+"_ubigeo": "130502",
+"_id": 1201
+},
+"CARABAMBA": {
+"_ubigeo": "130503",
+"_id": 1202
+},
+"HUASO": {
+"_ubigeo": "130504",
+"_id": 1203
+}
+}
+},
+"OTUZCO": {
+"_ubigeo": "1306",
+"_id": 118,
+"distritos": {
+"OTUZCO": {
+"_ubigeo": "130601",
+"_id": 1204
+},
+"AGALLPAMPA": {
+"_ubigeo": "130602",
+"_id": 1205
+},
+"CHARAT": {
+"_ubigeo": "130604",
+"_id": 1206
+},
+"HUARANCHAL": {
+"_ubigeo": "130605",
+"_id": 1207
+},
+"LA CUESTA": {
+"_ubigeo": "130606",
+"_id": 1208
+},
+"MACHE": {
+"_ubigeo": "130608",
+"_id": 1209
+},
+"PARANDAY": {
+"_ubigeo": "130610",
+"_id": 1210
+},
+"SALPO": {
+"_ubigeo": "130611",
+"_id": 1211
+},
+"SINSICAP": {
+"_ubigeo": "130613",
+"_id": 1212
+},
+"USQUIL": {
+"_ubigeo": "130614",
+"_id": 1213
+}
+}
+},
+"PACASMAYO": {
+"_ubigeo": "1307",
+"_id": 119,
+"distritos": {
+"SAN PEDRO DE LLOC": {
+"_ubigeo": "130701",
+"_id": 1214
+},
+"GUADALUPE": {
+"_ubigeo": "130702",
+"_id": 1215
+},
+"JEQUETEPEQUE": {
+"_ubigeo": "130703",
+"_id": 1216
+},
+"PACASMAYO": {
+"_ubigeo": "130704",
+"_id": 1217
+},
+"SAN JOSE": {
+"_ubigeo": "130705",
+"_id": 1218
+}
+}
+},
+"PATAZ": {
+"_ubigeo": "1308",
+"_id": 120,
+"distritos": {
+"TAYABAMBA": {
+"_ubigeo": "130801",
+"_id": 1219
+},
+"BULDIBUYO": {
+"_ubigeo": "130802",
+"_id": 1220
+},
+"CHILLIA": {
+"_ubigeo": "130803",
+"_id": 1221
+},
+"HUANCASPATA": {
+"_ubigeo": "130804",
+"_id": 1222
+},
+"HUAYLILLAS": {
+"_ubigeo": "130805",
+"_id": 1223
+},
+"HUAYO": {
+"_ubigeo": "130806",
+"_id": 1224
+},
+"ONGON": {
+"_ubigeo": "130807",
+"_id": 1225
+},
+"PARCOY": {
+"_ubigeo": "130808",
+"_id": 1226
+},
+"PATAZ": {
+"_ubigeo": "130809",
+"_id": 1227
+},
+"PIAS": {
+"_ubigeo": "130810",
+"_id": 1228
+},
+"SANTIAGO DE CHALLAS": {
+"_ubigeo": "130811",
+"_id": 1229
+},
+"TAURIJA": {
+"_ubigeo": "130812",
+"_id": 1230
+},
+"URPAY": {
+"_ubigeo": "130813",
+"_id": 1231
+}
+}
+},
+"SANCHEZ CARRION": {
+"_ubigeo": "1309",
+"_id": 121,
+"distritos": {
+"HUAMACHUCO": {
+"_ubigeo": "130901",
+"_id": 1232
+},
+"CHUGAY": {
+"_ubigeo": "130902",
+"_id": 1233
+},
+"COCHORCO": {
+"_ubigeo": "130903",
+"_id": 1234
+},
+"CURGOS": {
+"_ubigeo": "130904",
+"_id": 1235
+},
+"MARCABAL": {
+"_ubigeo": "130905",
+"_id": 1236
+},
+"SANAGORAN": {
+"_ubigeo": "130906",
+"_id": 1237
+},
+"SARIN": {
+"_ubigeo": "130907",
+"_id": 1238
+},
+"SARTIMBAMBA": {
+"_ubigeo": "130908",
+"_id": 1239
+}
+}
+},
+"SANTIAGO DE CHUCO": {
+"_ubigeo": "1310",
+"_id": 122,
+"distritos": {
+"SANTIAGO DE CHUCO": {
+"_ubigeo": "131001",
+"_id": 1240
+},
+"ANGASMARCA": {
+"_ubigeo": "131002",
+"_id": 1241
+},
+"CACHICADAN": {
+"_ubigeo": "131003",
+"_id": 1242
+},
+"MOLLEBAMBA": {
+"_ubigeo": "131004",
+"_id": 1243
+},
+"MOLLEPATA": {
+"_ubigeo": "131005",
+"_id": 1244
+},
+"QUIRUVILCA": {
+"_ubigeo": "131006",
+"_id": 1245
+},
+"SANTA CRUZ DE CHUCA": {
+"_ubigeo": "131007",
+"_id": 1246
+},
+"SITABAMBA": {
+"_ubigeo": "131008",
+"_id": 1247
+}
+}
+},
+"GRAN CHIMU": {
+"_ubigeo": "1311",
+"_id": 123,
+"distritos": {
+"CASCAS": {
+"_ubigeo": "131101",
+"_id": 1248
+},
+"LUCMA": {
+"_ubigeo": "131102",
+"_id": 1249
+},
+"MARMOT": {
+"_ubigeo": "131103",
+"_id": 1250
+},
+"SAYAPULLO": {
+"_ubigeo": "131104",
+"_id": 1251
+}
+}
+},
+"VIRU": {
+"_ubigeo": "1312",
+"_id": 124,
+"distritos": {
+"VIRU": {
+"_ubigeo": "131201",
+"_id": 1252
+},
+"CHAO": {
+"_ubigeo": "131202",
+"_id": 1253
+},
+"GUADALUPITO": {
+"_ubigeo": "131203",
+"_id": 1254
+}
+}
+}
+}
+},
+"LAMBAYEQUE": {
+"_ubigeo": "14",
+"_id": 14,
+"provincias": {
+"CHICLAYO": {
+"_ubigeo": "1401",
+"_id": 125,
+"distritos": {
+"CHICLAYO": {
+"_ubigeo": "140101",
+"_id": 1255
+},
+"CHONGOYAPE": {
+"_ubigeo": "140102",
+"_id": 1256
+},
+"ETEN": {
+"_ubigeo": "140103",
+"_id": 1257
+},
+"ETEN PUERTO": {
+"_ubigeo": "140104",
+"_id": 1258
+},
+"JOSE LEONARDO ORTIZ": {
+"_ubigeo": "140105",
+"_id": 1259
+},
+"LA VICTORIA": {
+"_ubigeo": "140106",
+"_id": 1260
+},
+"LAGUNAS": {
+"_ubigeo": "140107",
+"_id": 1261
+},
+"MONSEFU": {
+"_ubigeo": "140108",
+"_id": 1262
+},
+"NUEVA ARICA": {
+"_ubigeo": "140109",
+"_id": 1263
+},
+"OYOTUN": {
+"_ubigeo": "140110",
+"_id": 1264
+},
+"PICSI": {
+"_ubigeo": "140111",
+"_id": 1265
+},
+"PIMENTEL": {
+"_ubigeo": "140112",
+"_id": 1266
+},
+"REQUE": {
+"_ubigeo": "140113",
+"_id": 1267
+},
+"SANTA ROSA": {
+"_ubigeo": "140114",
+"_id": 1268
+},
+"SAÑA": {
+"_ubigeo": "140115",
+"_id": 1269
+},
+"CAYALTI": {
+"_ubigeo": "140116",
+"_id": 1270
+},
+"PATAPO": {
+"_ubigeo": "140117",
+"_id": 1271
+},
+"POMALCA": {
+"_ubigeo": "140118",
+"_id": 1272
+},
+"PUCALA": {
+"_ubigeo": "140119",
+"_id": 1273
+},
+"TUMAN": {
+"_ubigeo": "140120",
+"_id": 1274
+}
+}
+},
+"FERREÑAFE": {
+"_ubigeo": "1402",
+"_id": 126,
+"distritos": {
+"FERREÑAFE": {
+"_ubigeo": "140201",
+"_id": 1275
+},
+"CAÑARIS": {
+"_ubigeo": "140202",
+"_id": 1276
+},
+"INCAHUASI": {
+"_ubigeo": "140203",
+"_id": 1277
+},
+"MANUEL ANTONIO MESONES MURO": {
+"_ubigeo": "140204",
+"_id": 1278
+},
+"PITIPO": {
+"_ubigeo": "140205",
+"_id": 1279
+},
+"PUEBLO NUEVO": {
+"_ubigeo": "140206",
+"_id": 1280
+}
+}
+},
+"LAMBAYEQUE": {
+"_ubigeo": "1403",
+"_id": 127,
+"distritos": {
+"LAMBAYEQUE": {
+"_ubigeo": "140301",
+"_id": 1281
+},
+"CHOCHOPE": {
+"_ubigeo": "140302",
+"_id": 1282
+},
+"ILLIMO": {
+"_ubigeo": "140303",
+"_id": 1283
+},
+"JAYANCA": {
+"_ubigeo": "140304",
+"_id": 1284
+},
+"MOCHUMI": {
+"_ubigeo": "140305",
+"_id": 1285
+},
+"MORROPE": {
+"_ubigeo": "140306",
+"_id": 1286
+},
+"MOTUPE": {
+"_ubigeo": "140307",
+"_id": 1287
+},
+"OLMOS": {
+"_ubigeo": "140308",
+"_id": 1288
+},
+"PACORA": {
+"_ubigeo": "140309",
+"_id": 1289
+},
+"SALAS": {
+"_ubigeo": "140310",
+"_id": 1290
+},
+"SAN JOSE": {
+"_ubigeo": "140311",
+"_id": 1291
+},
+"TUCUME": {
+"_ubigeo": "140312",
+"_id": 1292
+}
+}
+}
+}
+},
+"LIMA": {
+"_ubigeo": "15",
+"_id": 15,
+"provincias": {
+"LIMA": {
+"_ubigeo": "1501",
+"_id": 128,
+"distritos": {
+"LIMA": {
+"_ubigeo": "150101",
+"_id": 1293
+},
+"ANCON": {
+"_ubigeo": "150102",
+"_id": 1294
+},
+"ATE": {
+"_ubigeo": "150103",
+"_id": 1295
+},
+"BARRANCO": {
+"_ubigeo": "150104",
+"_id": 1296
+},
+"BREÑA": {
+"_ubigeo": "150105",
+"_id": 1297
+},
+"CARABAYLLO": {
+"_ubigeo": "150106",
+"_id": 1298
+},
+"CHACLACAYO": {
+"_ubigeo": "150107",
+"_id": 1299
+},
+"CHORRILLOS": {
+"_ubigeo": "150108",
+"_id": 1300
+},
+"CIENEGUILLA": {
+"_ubigeo": "150109",
+"_id": 1301
+},
+"COMAS": {
+"_ubigeo": "150110",
+"_id": 1302
+},
+"EL AGUSTINO": {
+"_ubigeo": "150111",
+"_id": 1303
+},
+"INDEPENDENCIA": {
+"_ubigeo": "150112",
+"_id": 1304
+},
+"JESUS MARIA": {
+"_ubigeo": "150113",
+"_id": 1305
+},
+"LA MOLINA": {
+"_ubigeo": "150114",
+"_id": 1306
+},
+"LA VICTORIA": {
+"_ubigeo": "150115",
+"_id": 1307
+},
+"LINCE": {
+"_ubigeo": "150116",
+"_id": 1308
+},
+"LOS OLIVOS": {
+"_ubigeo": "150117",
+"_id": 1309
+},
+"LURIGANCHO": {
+"_ubigeo": "150118",
+"_id": 1310
+},
+"LURIN": {
+"_ubigeo": "150119",
+"_id": 1311
+},
+"MAGDALENA DEL MAR": {
+"_ubigeo": "150120",
+"_id": 1312
+},
+"PUEBLO LIBRE": {
+"_ubigeo": "150121",
+"_id": 1313
+},
+"MIRAFLORES": {
+"_ubigeo": "150122",
+"_id": 1314
+},
+"PACHACAMAC": {
+"_ubigeo": "150123",
+"_id": 1315
+},
+"PUCUSANA": {
+"_ubigeo": "150124",
+"_id": 1316
+},
+"PUENTE PIEDRA": {
+"_ubigeo": "150125",
+"_id": 1317
+},
+"PUNTA HERMOSA": {
+"_ubigeo": "150126",
+"_id": 1318
+},
+"PUNTA NEGRA": {
+"_ubigeo": "150127",
+"_id": 1319
+},
+"RIMAC": {
+"_ubigeo": "150128",
+"_id": 1320
+},
+"SAN BARTOLO": {
+"_ubigeo": "150129",
+"_id": 1321
+},
+"SAN BORJA": {
+"_ubigeo": "150130",
+"_id": 1322
+},
+"SAN ISIDRO": {
+"_ubigeo": "150131",
+"_id": 1323
+},
+"SAN JUAN DE LURIGANCHO": {
+"_ubigeo": "150132",
+"_id": 1324
+},
+"SAN JUAN DE MIRAFLORES": {
+"_ubigeo": "150133",
+"_id": 1325
+},
+"SAN LUIS": {
+"_ubigeo": "150134",
+"_id": 1326
+},
+"SAN MARTIN DE PORRES": {
+"_ubigeo": "150135",
+"_id": 1327
+},
+"SAN MIGUEL": {
+"_ubigeo": "150136",
+"_id": 1328
+},
+"SANTA ANITA": {
+"_ubigeo": "150137",
+"_id": 1329
+},
+"SANTA MARIA DEL MAR": {
+"_ubigeo": "150138",
+"_id": 1330
+},
+"SANTA ROSA": {
+"_ubigeo": "150139",
+"_id": 1331
+},
+"SANTIAGO DE SURCO": {
+"_ubigeo": "150140",
+"_id": 1332
+},
+"SURQUILLO": {
+"_ubigeo": "150141",
+"_id": 1333
+},
+"VILLA EL SALVADOR": {
+"_ubigeo": "150142",
+"_id": 1334
+},
+"VILLA MARIA DEL TRIUNFO": {
+"_ubigeo": "150143",
+"_id": 1335
+},
+"SANTA MARIA DE HUACHIPA": {
+"_ubigeo": "150144",
+"_id": 1336
+}
+}
+},
+"BARRANCA": {
+"_ubigeo": "1502",
+"_id": 129,
+"distritos": {
+"BARRANCA": {
+"_ubigeo": "150201",
+"_id": 1337
+},
+"PARAMONGA": {
+"_ubigeo": "150202",
+"_id": 1338
+},
+"PATIVILCA": {
+"_ubigeo": "150203",
+"_id": 1339
+},
+"SUPE": {
+"_ubigeo": "150204",
+"_id": 1340
+},
+"SUPE PUERTO": {
+"_ubigeo": "150205",
+"_id": 1341
+}
+}
+},
+"CAJATAMBO": {
+"_ubigeo": "1503",
+"_id": 130,
+"distritos": {
+"CAJATAMBO": {
+"_ubigeo": "150301",
+"_id": 1342
+},
+"COPA": {
+"_ubigeo": "150302",
+"_id": 1343
+},
+"GORGOR": {
+"_ubigeo": "150303",
+"_id": 1344
+},
+"HUANCAPON": {
+"_ubigeo": "150304",
+"_id": 1345
+},
+"MANAS": {
+"_ubigeo": "150305",
+"_id": 1346
+}
+}
+},
+"CANTA": {
+"_ubigeo": "1504",
+"_id": 131,
+"distritos": {
+"CANTA": {
+"_ubigeo": "150401",
+"_id": 1347
+},
+"ARAHUAY": {
+"_ubigeo": "150402",
+"_id": 1348
+},
+"HUAMANTANGA": {
+"_ubigeo": "150403",
+"_id": 1349
+},
+"HUAROS": {
+"_ubigeo": "150404",
+"_id": 1350
+},
+"LACHAQUI": {
+"_ubigeo": "150405",
+"_id": 1351
+},
+"SAN BUENAVENTURA": {
+"_ubigeo": "150406",
+"_id": 1352
+},
+"SANTA ROSA DE QUIVES": {
+"_ubigeo": "150407",
+"_id": 1353
+}
+}
+},
+"CAÑETE": {
+"_ubigeo": "1505",
+"_id": 132,
+"distritos": {
+"SAN VICENTE DE CAÑETE": {
+"_ubigeo": "150501",
+"_id": 1354
+},
+"ASIA": {
+"_ubigeo": "150502",
+"_id": 1355
+},
+"CALANGO": {
+"_ubigeo": "150503",
+"_id": 1356
+},
+"CERRO AZUL": {
+"_ubigeo": "150504",
+"_id": 1357
+},
+"CHILCA": {
+"_ubigeo": "150505",
+"_id": 1358
+},
+"COAYLLO": {
+"_ubigeo": "150506",
+"_id": 1359
+},
+"IMPERIAL": {
+"_ubigeo": "150507",
+"_id": 1360
+},
+"LUNAHUANA": {
+"_ubigeo": "150508",
+"_id": 1361
+},
+"MALA": {
+"_ubigeo": "150509",
+"_id": 1362
+},
+"NUEVO IMPERIAL": {
+"_ubigeo": "150510",
+"_id": 1363
+},
+"PACARAN": {
+"_ubigeo": "150511",
+"_id": 1364
+},
+"QUILMANA": {
+"_ubigeo": "150512",
+"_id": 1365
+},
+"SAN ANTONIO": {
+"_ubigeo": "150513",
+"_id": 1366
+},
+"SAN LUIS": {
+"_ubigeo": "150514",
+"_id": 1367
+},
+"SANTA CRUZ DE FLORES": {
+"_ubigeo": "150515",
+"_id": 1368
+},
+"ZUÑIGA": {
+"_ubigeo": "150516",
+"_id": 1369
+}
+}
+},
+"HUARAL": {
+"_ubigeo": "1506",
+"_id": 133,
+"distritos": {
+"HUARAL": {
+"_ubigeo": "150601",
+"_id": 1370
+},
+"ATAVILLOS ALTO": {
+"_ubigeo": "150602",
+"_id": 1371
+},
+"ATAVILLOS BAJO": {
+"_ubigeo": "150603",
+"_id": 1372
+},
+"AUCALLAMA": {
+"_ubigeo": "150604",
+"_id": 1373
+},
+"CHANCAY": {
+"_ubigeo": "150605",
+"_id": 1374
+},
+"IHUARI": {
+"_ubigeo": "150606",
+"_id": 1375
+},
+"LAMPIAN": {
+"_ubigeo": "150607",
+"_id": 1376
+},
+"PACARAOS": {
+"_ubigeo": "150608",
+"_id": 1377
+},
+"SAN MIGUEL DE ACOS": {
+"_ubigeo": "150609",
+"_id": 1378
+},
+"SANTA CRUZ DE ANDAMARCA": {
+"_ubigeo": "150610",
+"_id": 1379
+},
+"SUMBILCA": {
+"_ubigeo": "150611",
+"_id": 1380
+},
+"VEINTISIETE DE NOVIEMBRE": {
+"_ubigeo": "150612",
+"_id": 1381
+}
+}
+},
+"HUAROCHIRI": {
+"_ubigeo": "1507",
+"_id": 134,
+"distritos": {
+"MATUCANA": {
+"_ubigeo": "150701",
+"_id": 1382
+},
+"ANTIOQUIA": {
+"_ubigeo": "150702",
+"_id": 1383
+},
+"CALLAHUANCA": {
+"_ubigeo": "150703",
+"_id": 1384
+},
+"CARAMPOMA": {
+"_ubigeo": "150704",
+"_id": 1385
+},
+"CHICLA": {
+"_ubigeo": "150705",
+"_id": 1386
+},
+"CUENCA": {
+"_ubigeo": "150706",
+"_id": 1387
+},
+"HUACHUPAMPA": {
+"_ubigeo": "150707",
+"_id": 1388
+},
+"HUANZA": {
+"_ubigeo": "150708",
+"_id": 1389
+},
+"HUAROCHIRI": {
+"_ubigeo": "150709",
+"_id": 1390
+},
+"LAHUAYTAMBO": {
+"_ubigeo": "150710",
+"_id": 1391
+},
+"LANGA": {
+"_ubigeo": "150711",
+"_id": 1392
+},
+"LARAOS": {
+"_ubigeo": "150712",
+"_id": 1393
+},
+"MARIATANA": {
+"_ubigeo": "150713",
+"_id": 1394
+},
+"RICARDO PALMA": {
+"_ubigeo": "150714",
+"_id": 1395
+},
+"SAN ANDRES DE TUPICOCHA": {
+"_ubigeo": "150715",
+"_id": 1396
+},
+"SAN ANTONIO": {
+"_ubigeo": "150716",
+"_id": 1397
+},
+"SAN BARTOLOME": {
+"_ubigeo": "150717",
+"_id": 1398
+},
+"SAN DAMIAN": {
+"_ubigeo": "150718",
+"_id": 1399
+},
+"SAN JUAN DE IRIS": {
+"_ubigeo": "150719",
+"_id": 1400
+},
+"SAN JUAN DE TANTARANCHE": {
+"_ubigeo": "150720",
+"_id": 1401
+},
+"SAN LORENZO DE QUINTI": {
+"_ubigeo": "150721",
+"_id": 1402
+},
+"SAN MATEO": {
+"_ubigeo": "150722",
+"_id": 1403
+},
+"SAN MATEO DE OTAO": {
+"_ubigeo": "150723",
+"_id": 1404
+},
+"SAN PEDRO DE CASTA": {
+"_ubigeo": "150724",
+"_id": 1405
+},
+"SAN PEDRO DE HUANCAYRE": {
+"_ubigeo": "150725",
+"_id": 1406
+},
+"SANGALLAYA": {
+"_ubigeo": "150726",
+"_id": 1407
+},
+"SANTA CRUZ DE COCACHACRA": {
+"_ubigeo": "150727",
+"_id": 1408
+},
+"SANTA EULALIA": {
+"_ubigeo": "150728",
+"_id": 1409
+},
+"SANTIAGO DE ANCHUCAYA": {
+"_ubigeo": "150729",
+"_id": 1410
+},
+"SANTIAGO DE TUNA": {
+"_ubigeo": "150730",
+"_id": 1411
+},
+"SANTO DOMINGO DE LOS OLLEROS": {
+"_ubigeo": "150731",
+"_id": 1412
+},
+"SURCO": {
+"_ubigeo": "150732",
+"_id": 1413
+}
+}
+},
+"HUAURA": {
+"_ubigeo": "1508",
+"_id": 135,
+"distritos": {
+"HUACHO": {
+"_ubigeo": "150801",
+"_id": 1414
+},
+"AMBAR": {
+"_ubigeo": "150802",
+"_id": 1415
+},
+"CALETA DE CARQUIN": {
+"_ubigeo": "150803",
+"_id": 1416
+},
+"CHECRAS": {
+"_ubigeo": "150804",
+"_id": 1417
+},
+"HUALMAY": {
+"_ubigeo": "150805",
+"_id": 1418
+},
+"HUAURA": {
+"_ubigeo": "150806",
+"_id": 1419
+},
+"LEONCIO PRADO": {
+"_ubigeo": "150807",
+"_id": 1420
+},
+"PACCHO": {
+"_ubigeo": "150808",
+"_id": 1421
+},
+"SANTA LEONOR": {
+"_ubigeo": "150809",
+"_id": 1422
+},
+"SANTA MARIA": {
+"_ubigeo": "150810",
+"_id": 1423
+},
+"SAYAN": {
+"_ubigeo": "150811",
+"_id": 1424
+},
+"VEGUETA": {
+"_ubigeo": "150812",
+"_id": 1425
+}
+}
+},
+"OYON": {
+"_ubigeo": "1509",
+"_id": 136,
+"distritos": {
+"OYON": {
+"_ubigeo": "150901",
+"_id": 1426
+},
+"ANDAJES": {
+"_ubigeo": "150902",
+"_id": 1427
+},
+"CAUJUL": {
+"_ubigeo": "150903",
+"_id": 1428
+},
+"COCHAMARCA": {
+"_ubigeo": "150904",
+"_id": 1429
+},
+"NAVAN": {
+"_ubigeo": "150905",
+"_id": 1430
+},
+"PACHANGARA": {
+"_ubigeo": "150906",
+"_id": 1431
+}
+}
+},
+"YAUYOS": {
+"_ubigeo": "1510",
+"_id": 137,
+"distritos": {
+"YAUYOS": {
+"_ubigeo": "151001",
+"_id": 1432
+},
+"ALIS": {
+"_ubigeo": "151002",
+"_id": 1433
+},
+"AYAUCA": {
+"_ubigeo": "151003",
+"_id": 1434
+},
+"AYAVIRI": {
+"_ubigeo": "151004",
+"_id": 1435
+},
+"AZANGARO": {
+"_ubigeo": "151005",
+"_id": 1436
+},
+"CACRA": {
+"_ubigeo": "151006",
+"_id": 1437
+},
+"CARANIA": {
+"_ubigeo": "151007",
+"_id": 1438
+},
+"CATAHUASI": {
+"_ubigeo": "151008",
+"_id": 1439
+},
+"CHOCOS": {
+"_ubigeo": "151009",
+"_id": 1440
+},
+"COCHAS": {
+"_ubigeo": "151010",
+"_id": 1441
+},
+"COLONIA": {
+"_ubigeo": "151011",
+"_id": 1442
+},
+"HONGOS": {
+"_ubigeo": "151012",
+"_id": 1443
+},
+"HUAMPARA": {
+"_ubigeo": "151013",
+"_id": 1444
+},
+"HUANCAYA": {
+"_ubigeo": "151014",
+"_id": 1445
+},
+"HUANGASCAR": {
+"_ubigeo": "151015",
+"_id": 1446
+},
+"HUANTAN": {
+"_ubigeo": "151016",
+"_id": 1447
+},
+"HUAÑEC": {
+"_ubigeo": "151017",
+"_id": 1448
+},
+"LARAOS": {
+"_ubigeo": "151018",
+"_id": 1449
+},
+"LINCHA": {
+"_ubigeo": "151019",
+"_id": 1450
+},
+"MADEAN": {
+"_ubigeo": "151020",
+"_id": 1451
+},
+"MIRAFLORES": {
+"_ubigeo": "151021",
+"_id": 1452
+},
+"OMAS": {
+"_ubigeo": "151022",
+"_id": 1453
+},
+"PUTINZA": {
+"_ubigeo": "151023",
+"_id": 1454
+},
+"QUINCHES": {
+"_ubigeo": "151024",
+"_id": 1455
+},
+"QUINOCAY": {
+"_ubigeo": "151025",
+"_id": 1456
+},
+"SAN JOAQUIN": {
+"_ubigeo": "151026",
+"_id": 1457
+},
+"SAN PEDRO DE PILAS": {
+"_ubigeo": "151027",
+"_id": 1458
+},
+"TANTA": {
+"_ubigeo": "151028",
+"_id": 1459
+},
+"TAURIPAMPA": {
+"_ubigeo": "151029",
+"_id": 1460
+},
+"TOMAS": {
+"_ubigeo": "151030",
+"_id": 1461
+},
+"TUPE": {
+"_ubigeo": "151031",
+"_id": 1462
+},
+"VIÑAC": {
+"_ubigeo": "151032",
+"_id": 1463
+},
+"VITIS": {
+"_ubigeo": "151033",
+"_id": 1464
+}
+}
+}
+}
+},
+"LORETO": {
+"_ubigeo": "16",
+"_id": 16,
+"provincias": {
+"MAYNAS": {
+"_ubigeo": "1601",
+"_id": 138,
+"distritos": {
+"IQUITOS": {
+"_ubigeo": "160101",
+"_id": 1465
+},
+"ALTO NANAY": {
+"_ubigeo": "160102",
+"_id": 1466
+},
+"FERNANDO LORES": {
+"_ubigeo": "160103",
+"_id": 1467
+},
+"INDIANA": {
+"_ubigeo": "160104",
+"_id": 1468
+},
+"LAS AMAZONAS": {
+"_ubigeo": "160105",
+"_id": 1469
+},
+"MAZAN": {
+"_ubigeo": "160106",
+"_id": 1470
+},
+"NAPO": {
+"_ubigeo": "160107",
+"_id": 1471
+},
+"PUNCHANA": {
+"_ubigeo": "160108",
+"_id": 1472
+},
+"PUTUMAYO": {
+"_ubigeo": "160109",
+"_id": 1473
+},
+"TORRES CAUSANA": {
+"_ubigeo": "160110",
+"_id": 1474
+},
+"BELEN": {
+"_ubigeo": "160112",
+"_id": 1475
+},
+"SAN JUAN BAUTISTA": {
+"_ubigeo": "160113",
+"_id": 1476
+},
+"TENIENTE MANUEL CLAVERO": {
+"_ubigeo": "160114",
+"_id": 1477
+}
+}
+},
+"ALTO AMAZONAS": {
+"_ubigeo": "1602",
+"_id": 139,
+"distritos": {
+"YURIMAGUAS": {
+"_ubigeo": "160201",
+"_id": 1478
+},
+"BALSAPUERTO": {
+"_ubigeo": "160202",
+"_id": 1479
+},
+"JEBEROS": {
+"_ubigeo": "160205",
+"_id": 1480
+},
+"LAGUNAS": {
+"_ubigeo": "160206",
+"_id": 1481
+},
+"SANTA CRUZ": {
+"_ubigeo": "160210",
+"_id": 1482
+},
+"TENIENTE CESAR LOPEZ ROJAS": {
+"_ubigeo": "160211",
+"_id": 1483
+}
+}
+},
+"LORETO": {
+"_ubigeo": "1603",
+"_id": 140,
+"distritos": {
+"NAUTA": {
+"_ubigeo": "160301",
+"_id": 1484
+},
+"PARINARI": {
+"_ubigeo": "160302",
+"_id": 1485
+},
+"TIGRE": {
+"_ubigeo": "160303",
+"_id": 1486
+},
+"TROMPETEROS": {
+"_ubigeo": "160304",
+"_id": 1487
+},
+"URARINAS": {
+"_ubigeo": "160305",
+"_id": 1488
+}
+}
+},
+"MARISCAL RAMON CASTILLA": {
+"_ubigeo": "1604",
+"_id": 141,
+"distritos": {
+"RAMON CASTILLA": {
+"_ubigeo": "160401",
+"_id": 1489
+},
+"PEBAS": {
+"_ubigeo": "160402",
+"_id": 1490
+},
+"YAVARI": {
+"_ubigeo": "160403",
+"_id": 1491
+},
+"SAN PABLO": {
+"_ubigeo": "160404",
+"_id": 1492
+}
+}
+},
+"REQUENA": {
+"_ubigeo": "1605",
+"_id": 142,
+"distritos": {
+"REQUENA": {
+"_ubigeo": "160501",
+"_id": 1493
+},
+"ALTO TAPICHE": {
+"_ubigeo": "160502",
+"_id": 1494
+},
+"CAPELO": {
+"_ubigeo": "160503",
+"_id": 1495
+},
+"EMILIO SAN MARTIN": {
+"_ubigeo": "160504",
+"_id": 1496
+},
+"MAQUIA": {
+"_ubigeo": "160505",
+"_id": 1497
+},
+"PUINAHUA": {
+"_ubigeo": "160506",
+"_id": 1498
+},
+"SAQUENA": {
+"_ubigeo": "160507",
+"_id": 1499
+},
+"SOPLIN": {
+"_ubigeo": "160508",
+"_id": 1500
+},
+"TAPICHE": {
+"_ubigeo": "160509",
+"_id": 1501
+},
+"JENARO HERRERA": {
+"_ubigeo": "160510",
+"_id": 1502
+},
+"YAQUERANA": {
+"_ubigeo": "160511",
+"_id": 1503
+}
+}
+},
+"UCAYALI": {
+"_ubigeo": "1606",
+"_id": 143,
+"distritos": {
+"CONTAMANA": {
+"_ubigeo": "160601",
+"_id": 1504
+},
+"INAHUAYA": {
+"_ubigeo": "160602",
+"_id": 1505
+},
+"PADRE MARQUEZ": {
+"_ubigeo": "160603",
+"_id": 1506
+},
+"PAMPA HERMOSA": {
+"_ubigeo": "160604",
+"_id": 1507
+},
+"SARAYACU": {
+"_ubigeo": "160605",
+"_id": 1508
+},
+"VARGAS GUERRA": {
+"_ubigeo": "160606",
+"_id": 1509
+}
+}
+},
+"DATEM DEL MARAÑON": {
+"_ubigeo": "1607",
+"_id": 144,
+"distritos": {
+"BARRANCA": {
+"_ubigeo": "160701",
+"_id": 1510
+},
+"CAHUAPANAS": {
+"_ubigeo": "160702",
+"_id": 1511
+},
+"MANSERICHE": {
+"_ubigeo": "160703",
+"_id": 1512
+},
+"MORONA": {
+"_ubigeo": "160704",
+"_id": 1513
+},
+"PASTAZA": {
+"_ubigeo": "160705",
+"_id": 1514
+},
+"ANDOAS": {
+"_ubigeo": "160706",
+"_id": 1515
+}
+}
+},
+"PUTUMAYO": {
+"_ubigeo": "1608",
+"_id": 145,
+"distritos": {
+"PUTUMAYO": {
+"_ubigeo": "160801",
+"_id": 1516
+},
+"ROSA PANDURO": {
+"_ubigeo": "160802",
+"_id": 1517
+},
+"TENIENTE MANUEL CLAVERO": {
+"_ubigeo": "160803",
+"_id": 1518
+},
+"YAGUAS": {
+"_ubigeo": "160804",
+"_id": 1519
+}
+}
+}
+}
+},
+"MADRE DE DIOS": {
+"_ubigeo": "17",
+"_id": 17,
+"provincias": {
+"TAMBOPATA": {
+"_ubigeo": "1701",
+"_id": 146,
+"distritos": {
+"TAMBOPATA": {
+"_ubigeo": "170101",
+"_id": 1520
+},
+"INAMBARI": {
+"_ubigeo": "170102",
+"_id": 1521
+},
+"LAS PIEDRAS": {
+"_ubigeo": "170103",
+"_id": 1522
+},
+"LABERINTO": {
+"_ubigeo": "170104",
+"_id": 1523
+}
+}
+},
+"MANU": {
+"_ubigeo": "1702",
+"_id": 147,
+"distritos": {
+"MANU": {
+"_ubigeo": "170201",
+"_id": 1524
+},
+"FITZCARRALD": {
+"_ubigeo": "170202",
+"_id": 1525
+},
+"MADRE DE DIOS": {
+"_ubigeo": "170203",
+"_id": 1526
+},
+"HUEPETUHE": {
+"_ubigeo": "170204",
+"_id": 1527
+}
+}
+},
+"TAHUAMANU": {
+"_ubigeo": "1703",
+"_id": 148,
+"distritos": {
+"IÑAPARI": {
+"_ubigeo": "170301",
+"_id": 1528
+},
+"IBERIA": {
+"_ubigeo": "170302",
+"_id": 1529
+},
+"TAHUAMANU": {
+"_ubigeo": "170303",
+"_id": 1530
+}
+}
+}
+}
+},
+"MOQUEGUA": {
+"_ubigeo": "18",
+"_id": 18,
+"provincias": {
+"MARISCAL NIETO": {
+"_ubigeo": "1801",
+"_id": 149,
+"distritos": {
+"MOQUEGUA": {
+"_ubigeo": "180101",
+"_id": 1531
+},
+"CARUMAS": {
+"_ubigeo": "180102",
+"_id": 1532
+},
+"CUCHUMBAYA": {
+"_ubigeo": "180103",
+"_id": 1533
+},
+"SAMEGUA": {
+"_ubigeo": "180104",
+"_id": 1534
+},
+"SAN CRISTOBAL": {
+"_ubigeo": "180105",
+"_id": 1535
+},
+"TORATA": {
+"_ubigeo": "180106",
+"_id": 1536
+}
+}
+},
+"GENERAL SANCHEZ CERRO": {
+"_ubigeo": "1802",
+"_id": 150,
+"distritos": {
+"OMATE": {
+"_ubigeo": "180201",
+"_id": 1537
+},
+"CHOJATA": {
+"_ubigeo": "180202",
+"_id": 1538
+},
+"COALAQUE": {
+"_ubigeo": "180203",
+"_id": 1539
+},
+"ICHUÑA": {
+"_ubigeo": "180204",
+"_id": 1540
+},
+"LA CAPILLA": {
+"_ubigeo": "180205",
+"_id": 1541
+},
+"LLOQUE": {
+"_ubigeo": "180206",
+"_id": 1542
+},
+"MATALAQUE": {
+"_ubigeo": "180207",
+"_id": 1543
+},
+"PUQUINA": {
+"_ubigeo": "180208",
+"_id": 1544
+},
+"QUINISTAQUILLAS": {
+"_ubigeo": "180209",
+"_id": 1545
+},
+"UBINAS": {
+"_ubigeo": "180210",
+"_id": 1546
+},
+"YUNGA": {
+"_ubigeo": "180211",
+"_id": 1547
+}
+}
+},
+"ILO": {
+"_ubigeo": "1803",
+"_id": 151,
+"distritos": {
+"ILO": {
+"_ubigeo": "180301",
+"_id": 1548
+},
+"EL ALGARROBAL": {
+"_ubigeo": "180302",
+"_id": 1549
+},
+"PACOCHA": {
+"_ubigeo": "180303",
+"_id": 1550
+}
+}
+}
+}
+},
+"PASCO": {
+"_ubigeo": "19",
+"_id": 19,
+"provincias": {
+"PASCO": {
+"_ubigeo": "1901",
+"_id": 152,
+"distritos": {
+"CHAUPIMARCA": {
+"_ubigeo": "190101",
+"_id": 1551
+},
+"HUACHON": {
+"_ubigeo": "190102",
+"_id": 1552
+},
+"HUARIACA": {
+"_ubigeo": "190103",
+"_id": 1553
+},
+"HUAYLLAY": {
+"_ubigeo": "190104",
+"_id": 1554
+},
+"NINACACA": {
+"_ubigeo": "190105",
+"_id": 1555
+},
+"PALLANCHACRA": {
+"_ubigeo": "190106",
+"_id": 1556
+},
+"PAUCARTAMBO": {
+"_ubigeo": "190107",
+"_id": 1557
+},
+"SAN FRANCISCO DE ASIS DE YARUSYACAN": {
+"_ubigeo": "190108",
+"_id": 1558
+},
+"SIMON BOLIVAR": {
+"_ubigeo": "190109",
+"_id": 1559
+},
+"TICLACAYAN": {
+"_ubigeo": "190110",
+"_id": 1560
+},
+"TINYAHUARCO": {
+"_ubigeo": "190111",
+"_id": 1561
+},
+"VICCO": {
+"_ubigeo": "190112",
+"_id": 1562
+},
+"YANACANCHA": {
+"_ubigeo": "190113",
+"_id": 1563
+}
+}
+},
+"DANIEL ALCIDES CARRION": {
+"_ubigeo": "1902",
+"_id": 153,
+"distritos": {
+"YANAHUANCA": {
+"_ubigeo": "190201",
+"_id": 1564
+},
+"CHACAYAN": {
+"_ubigeo": "190202",
+"_id": 1565
+},
+"GOYLLARISQUIZGA": {
+"_ubigeo": "190203",
+"_id": 1566
+},
+"PAUCAR": {
+"_ubigeo": "190204",
+"_id": 1567
+},
+"SAN PEDRO DE PILLAO": {
+"_ubigeo": "190205",
+"_id": 1568
+},
+"SANTA ANA DE TUSI": {
+"_ubigeo": "190206",
+"_id": 1569
+},
+"TAPUC": {
+"_ubigeo": "190207",
+"_id": 1570
+},
+"VILCABAMBA": {
+"_ubigeo": "190208",
+"_id": 1571
+}
+}
+},
+"OXAPAMPA": {
+"_ubigeo": "1903",
+"_id": 154,
+"distritos": {
+"OXAPAMPA": {
+"_ubigeo": "190301",
+"_id": 1572
+},
+"CHONTABAMBA": {
+"_ubigeo": "190302",
+"_id": 1573
+},
+"HUANCABAMBA": {
+"_ubigeo": "190303",
+"_id": 1574
+},
+"PALCAZU": {
+"_ubigeo": "190304",
+"_id": 1575
+},
+"POZUZO": {
+"_ubigeo": "190305",
+"_id": 1576
+},
+"PUERTO BERMUDEZ": {
+"_ubigeo": "190306",
+"_id": 1577
+},
+"VILLA RICA": {
+"_ubigeo": "190307",
+"_id": 1578
+},
+"CONSTITUCION": {
+"_ubigeo": "190308",
+"_id": 1579
+}
+}
+}
+}
+},
+"PIURA": {
+"_ubigeo": "20",
+"_id": 20,
+"provincias": {
+"PIURA": {
+"_ubigeo": "2001",
+"_id": 155,
+"distritos": {
+"PIURA": {
+"_ubigeo": "200101",
+"_id": 1580
+},
+"CASTILLA": {
+"_ubigeo": "200104",
+"_id": 1581
+},
+"CATACAOS": {
+"_ubigeo": "200105",
+"_id": 1582
+},
+"CURA MORI": {
+"_ubigeo": "200107",
+"_id": 1583
+},
+"EL TALLAN": {
+"_ubigeo": "200108",
+"_id": 1584
+},
+"LA ARENA": {
+"_ubigeo": "200109",
+"_id": 1585
+},
+"LA UNION": {
+"_ubigeo": "200110",
+"_id": 1586
+},
+"LAS LOMAS": {
+"_ubigeo": "200111",
+"_id": 1587
+},
+"TAMBO GRANDE": {
+"_ubigeo": "200114",
+"_id": 1588
+},
+"VEINTISEIS DE OCTUBRE": {
+"_ubigeo": "200115",
+"_id": 1589
+}
+}
+},
+"AYABACA": {
+"_ubigeo": "2002",
+"_id": 156,
+"distritos": {
+"AYABACA": {
+"_ubigeo": "200201",
+"_id": 1590
+},
+"FRIAS": {
+"_ubigeo": "200202",
+"_id": 1591
+},
+"JILILI": {
+"_ubigeo": "200203",
+"_id": 1592
+},
+"LAGUNAS": {
+"_ubigeo": "200204",
+"_id": 1593
+},
+"MONTERO": {
+"_ubigeo": "200205",
+"_id": 1594
+},
+"PACAIPAMPA": {
+"_ubigeo": "200206",
+"_id": 1595
+},
+"PAIMAS": {
+"_ubigeo": "200207",
+"_id": 1596
+},
+"SAPILLICA": {
+"_ubigeo": "200208",
+"_id": 1597
+},
+"SICCHEZ": {
+"_ubigeo": "200209",
+"_id": 1598
+},
+"SUYO": {
+"_ubigeo": "200210",
+"_id": 1599
+}
+}
+},
+"HUANCABAMBA": {
+"_ubigeo": "2003",
+"_id": 157,
+"distritos": {
+"HUANCABAMBA": {
+"_ubigeo": "200301",
+"_id": 1600
+},
+"CANCHAQUE": {
+"_ubigeo": "200302",
+"_id": 1601
+},
+"EL CARMEN DE LA FRONTERA": {
+"_ubigeo": "200303",
+"_id": 1602
+},
+"HUARMACA": {
+"_ubigeo": "200304",
+"_id": 1603
+},
+"LALAQUIZ": {
+"_ubigeo": "200305",
+"_id": 1604
+},
+"SAN MIGUEL DE EL FAIQUE": {
+"_ubigeo": "200306",
+"_id": 1605
+},
+"SONDOR": {
+"_ubigeo": "200307",
+"_id": 1606
+},
+"SONDORILLO": {
+"_ubigeo": "200308",
+"_id": 1607
+}
+}
+},
+"MORROPON": {
+"_ubigeo": "2004",
+"_id": 158,
+"distritos": {
+"CHULUCANAS": {
+"_ubigeo": "200401",
+"_id": 1608
+},
+"BUENOS AIRES": {
+"_ubigeo": "200402",
+"_id": 1609
+},
+"CHALACO": {
+"_ubigeo": "200403",
+"_id": 1610
+},
+"LA MATANZA": {
+"_ubigeo": "200404",
+"_id": 1611
+},
+"MORROPON": {
+"_ubigeo": "200405",
+"_id": 1612
+},
+"SALITRAL": {
+"_ubigeo": "200406",
+"_id": 1613
+},
+"SAN JUAN DE BIGOTE": {
+"_ubigeo": "200407",
+"_id": 1614
+},
+"SANTA CATALINA DE MOSSA": {
+"_ubigeo": "200408",
+"_id": 1615
+},
+"SANTO DOMINGO": {
+"_ubigeo": "200409",
+"_id": 1616
+},
+"YAMANGO": {
+"_ubigeo": "200410",
+"_id": 1617
+}
+}
+},
+"PAITA": {
+"_ubigeo": "2005",
+"_id": 159,
+"distritos": {
+"PAITA": {
+"_ubigeo": "200501",
+"_id": 1618
+},
+"AMOTAPE": {
+"_ubigeo": "200502",
+"_id": 1619
+},
+"ARENAL": {
+"_ubigeo": "200503",
+"_id": 1620
+},
+"COLAN": {
+"_ubigeo": "200504",
+"_id": 1621
+},
+"LA HUACA": {
+"_ubigeo": "200505",
+"_id": 1622
+},
+"TAMARINDO": {
+"_ubigeo": "200506",
+"_id": 1623
+},
+"VICHAYAL": {
+"_ubigeo": "200507",
+"_id": 1624
+}
+}
+},
+"SULLANA": {
+"_ubigeo": "2006",
+"_id": 160,
+"distritos": {
+"SULLANA": {
+"_ubigeo": "200601",
+"_id": 1625
+},
+"BELLAVISTA": {
+"_ubigeo": "200602",
+"_id": 1626
+},
+"IGNACIO ESCUDERO": {
+"_ubigeo": "200603",
+"_id": 1627
+},
+"LANCONES": {
+"_ubigeo": "200604",
+"_id": 1628
+},
+"MARCAVELICA": {
+"_ubigeo": "200605",
+"_id": 1629
+},
+"MIGUEL CHECA": {
+"_ubigeo": "200606",
+"_id": 1630
+},
+"QUERECOTILLO": {
+"_ubigeo": "200607",
+"_id": 1631
+},
+"SALITRAL": {
+"_ubigeo": "200608",
+"_id": 1632
+}
+}
+},
+"TALARA": {
+"_ubigeo": "2007",
+"_id": 161,
+"distritos": {
+"PARIÑAS": {
+"_ubigeo": "200701",
+"_id": 1633
+},
+"EL ALTO": {
+"_ubigeo": "200702",
+"_id": 1634
+},
+"LA BREA": {
+"_ubigeo": "200703",
+"_id": 1635
+},
+"LOBITOS": {
+"_ubigeo": "200704",
+"_id": 1636
+},
+"LOS ORGANOS": {
+"_ubigeo": "200705",
+"_id": 1637
+},
+"MANCORA": {
+"_ubigeo": "200706",
+"_id": 1638
+}
+}
+},
+"SECHURA": {
+"_ubigeo": "2008",
+"_id": 162,
+"distritos": {
+"SECHURA": {
+"_ubigeo": "200801",
+"_id": 1639
+},
+"BELLAVISTA DE LA UNION": {
+"_ubigeo": "200802",
+"_id": 1640
+},
+"BERNAL": {
+"_ubigeo": "200803",
+"_id": 1641
+},
+"CRISTO NOS VALGA": {
+"_ubigeo": "200804",
+"_id": 1642
+},
+"VICE": {
+"_ubigeo": "200805",
+"_id": 1643
+},
+"RINCONADA LLICUAR": {
+"_ubigeo": "200806",
+"_id": 1644
+}
+}
+}
+}
+},
+"PUNO": {
+"_ubigeo": "21",
+"_id": 21,
+"provincias": {
+"PUNO": {
+"_ubigeo": "2101",
+"_id": 163,
+"distritos": {
+"PUNO": {
+"_ubigeo": "210101",
+"_id": 1645
+},
+"ACORA": {
+"_ubigeo": "210102",
+"_id": 1646
+},
+"AMANTANI": {
+"_ubigeo": "210103",
+"_id": 1647
+},
+"ATUNCOLLA": {
+"_ubigeo": "210104",
+"_id": 1648
+},
+"CAPACHICA": {
+"_ubigeo": "210105",
+"_id": 1649
+},
+"CHUCUITO": {
+"_ubigeo": "210106",
+"_id": 1650
+},
+"COATA": {
+"_ubigeo": "210107",
+"_id": 1651
+},
+"HUATA": {
+"_ubigeo": "210108",
+"_id": 1652
+},
+"MAÑAZO": {
+"_ubigeo": "210109",
+"_id": 1653
+},
+"PAUCARCOLLA": {
+"_ubigeo": "210110",
+"_id": 1654
+},
+"PICHACANI": {
+"_ubigeo": "210111",
+"_id": 1655
+},
+"PLATERIA": {
+"_ubigeo": "210112",
+"_id": 1656
+},
+"SAN ANTONIO": {
+"_ubigeo": "210113",
+"_id": 1657
+},
+"TIQUILLACA": {
+"_ubigeo": "210114",
+"_id": 1658
+},
+"VILQUE": {
+"_ubigeo": "210115",
+"_id": 1659
+}
+}
+},
+"AZANGARO": {
+"_ubigeo": "2102",
+"_id": 164,
+"distritos": {
+"AZANGARO": {
+"_ubigeo": "210201",
+"_id": 1660
+},
+"ACHAYA": {
+"_ubigeo": "210202",
+"_id": 1661
+},
+"ARAPA": {
+"_ubigeo": "210203",
+"_id": 1662
+},
+"ASILLO": {
+"_ubigeo": "210204",
+"_id": 1663
+},
+"CAMINACA": {
+"_ubigeo": "210205",
+"_id": 1664
+},
+"CHUPA": {
+"_ubigeo": "210206",
+"_id": 1665
+},
+"JOSE DOMINGO CHOQUEHUANCA": {
+"_ubigeo": "210207",
+"_id": 1666
+},
+"MUÑANI": {
+"_ubigeo": "210208",
+"_id": 1667
+},
+"POTONI": {
+"_ubigeo": "210209",
+"_id": 1668
+},
+"SAMAN": {
+"_ubigeo": "210210",
+"_id": 1669
+},
+"SAN ANTON": {
+"_ubigeo": "210211",
+"_id": 1670
+},
+"SAN JOSE": {
+"_ubigeo": "210212",
+"_id": 1671
+},
+"SAN JUAN DE SALINAS": {
+"_ubigeo": "210213",
+"_id": 1672
+},
+"SANTIAGO DE PUPUJA": {
+"_ubigeo": "210214",
+"_id": 1673
+},
+"TIRAPATA": {
+"_ubigeo": "210215",
+"_id": 1674
+}
+}
+},
+"CARABAYA": {
+"_ubigeo": "2103",
+"_id": 165,
+"distritos": {
+"MACUSANI": {
+"_ubigeo": "210301",
+"_id": 1675
+},
+"AJOYANI": {
+"_ubigeo": "210302",
+"_id": 1676
+},
+"AYAPATA": {
+"_ubigeo": "210303",
+"_id": 1677
+},
+"COASA": {
+"_ubigeo": "210304",
+"_id": 1678
+},
+"CORANI": {
+"_ubigeo": "210305",
+"_id": 1679
+},
+"CRUCERO": {
+"_ubigeo": "210306",
+"_id": 1680
+},
+"ITUATA": {
+"_ubigeo": "210307",
+"_id": 1681
+},
+"OLLACHEA": {
+"_ubigeo": "210308",
+"_id": 1682
+},
+"SAN GABAN": {
+"_ubigeo": "210309",
+"_id": 1683
+},
+"USICAYOS": {
+"_ubigeo": "210310",
+"_id": 1684
+}
+}
+},
+"CHUCUITO": {
+"_ubigeo": "2104",
+"_id": 166,
+"distritos": {
+"JULI": {
+"_ubigeo": "210401",
+"_id": 1685
+},
+"DESAGUADERO": {
+"_ubigeo": "210402",
+"_id": 1686
+},
+"HUACULLANI": {
+"_ubigeo": "210403",
+"_id": 1687
+},
+"KELLUYO": {
+"_ubigeo": "210404",
+"_id": 1688
+},
+"PISACOMA": {
+"_ubigeo": "210405",
+"_id": 1689
+},
+"POMATA": {
+"_ubigeo": "210406",
+"_id": 1690
+},
+"ZEPITA": {
+"_ubigeo": "210407",
+"_id": 1691
+}
+}
+},
+"EL COLLAO": {
+"_ubigeo": "2105",
+"_id": 167,
+"distritos": {
+"ILAVE": {
+"_ubigeo": "210501",
+"_id": 1692
+},
+"CAPAZO": {
+"_ubigeo": "210502",
+"_id": 1693
+},
+"PILCUYO": {
+"_ubigeo": "210503",
+"_id": 1694
+},
+"SANTA ROSA": {
+"_ubigeo": "210504",
+"_id": 1695
+},
+"CONDURIRI": {
+"_ubigeo": "210505",
+"_id": 1696
+}
+}
+},
+"HUANCANE": {
+"_ubigeo": "2106",
+"_id": 168,
+"distritos": {
+"HUANCANE": {
+"_ubigeo": "210601",
+"_id": 1697
+},
+"COJATA": {
+"_ubigeo": "210602",
+"_id": 1698
+},
+"HUATASANI": {
+"_ubigeo": "210603",
+"_id": 1699
+},
+"INCHUPALLA": {
+"_ubigeo": "210604",
+"_id": 1700
+},
+"PUSI": {
+"_ubigeo": "210605",
+"_id": 1701
+},
+"ROSASPATA": {
+"_ubigeo": "210606",
+"_id": 1702
+},
+"TARACO": {
+"_ubigeo": "210607",
+"_id": 1703
+},
+"VILQUE CHICO": {
+"_ubigeo": "210608",
+"_id": 1704
+}
+}
+},
+"LAMPA": {
+"_ubigeo": "2107",
+"_id": 169,
+"distritos": {
+"LAMPA": {
+"_ubigeo": "210701",
+"_id": 1705
+},
+"CABANILLA": {
+"_ubigeo": "210702",
+"_id": 1706
+},
+"CALAPUJA": {
+"_ubigeo": "210703",
+"_id": 1707
+},
+"NICASIO": {
+"_ubigeo": "210704",
+"_id": 1708
+},
+"OCUVIRI": {
+"_ubigeo": "210705",
+"_id": 1709
+},
+"PALCA": {
+"_ubigeo": "210706",
+"_id": 1710
+},
+"PARATIA": {
+"_ubigeo": "210707",
+"_id": 1711
+},
+"PUCARA": {
+"_ubigeo": "210708",
+"_id": 1712
+},
+"SANTA LUCIA": {
+"_ubigeo": "210709",
+"_id": 1713
+},
+"VILAVILA": {
+"_ubigeo": "210710",
+"_id": 1714
+}
+}
+},
+"MELGAR": {
+"_ubigeo": "2108",
+"_id": 170,
+"distritos": {
+"AYAVIRI": {
+"_ubigeo": "210801",
+"_id": 1715
+},
+"ANTAUTA": {
+"_ubigeo": "210802",
+"_id": 1716
+},
+"CUPI": {
+"_ubigeo": "210803",
+"_id": 1717
+},
+"LLALLI": {
+"_ubigeo": "210804",
+"_id": 1718
+},
+"MACARI": {
+"_ubigeo": "210805",
+"_id": 1719
+},
+"NUÑOA": {
+"_ubigeo": "210806",
+"_id": 1720
+},
+"ORURILLO": {
+"_ubigeo": "210807",
+"_id": 1721
+},
+"SANTA ROSA": {
+"_ubigeo": "210808",
+"_id": 1722
+},
+"UMACHIRI": {
+"_ubigeo": "210809",
+"_id": 1723
+}
+}
+},
+"MOHO": {
+"_ubigeo": "2109",
+"_id": 171,
+"distritos": {
+"MOHO": {
+"_ubigeo": "210901",
+"_id": 1724
+},
+"CONIMA": {
+"_ubigeo": "210902",
+"_id": 1725
+},
+"HUAYRAPATA": {
+"_ubigeo": "210903",
+"_id": 1726
+},
+"TILALI": {
+"_ubigeo": "210904",
+"_id": 1727
+}
+}
+},
+"SAN ANTONIO DE PUTINA": {
+"_ubigeo": "2110",
+"_id": 172,
+"distritos": {
+"PUTINA": {
+"_ubigeo": "211001",
+"_id": 1728
+},
+"ANANEA": {
+"_ubigeo": "211002",
+"_id": 1729
+},
+"PEDRO VILCA APAZA": {
+"_ubigeo": "211003",
+"_id": 1730
+},
+"QUILCAPUNCU": {
+"_ubigeo": "211004",
+"_id": 1731
+},
+"SINA": {
+"_ubigeo": "211005",
+"_id": 1732
+}
+}
+},
+"SAN ROMAN": {
+"_ubigeo": "2111",
+"_id": 173,
+"distritos": {
+"JULIACA": {
+"_ubigeo": "211101",
+"_id": 1733
+},
+"CABANA": {
+"_ubigeo": "211102",
+"_id": 1734
+},
+"CABANILLAS": {
+"_ubigeo": "211103",
+"_id": 1735
+},
+"CARACOTO": {
+"_ubigeo": "211104",
+"_id": 1736
+},
+"SAN MIGUEL": {
+"_ubigeo": "211105",
+"_id": 1737
+}
+}
+},
+"SANDIA": {
+"_ubigeo": "2112",
+"_id": 174,
+"distritos": {
+"SANDIA": {
+"_ubigeo": "211201",
+"_id": 1738
+},
+"CUYOCUYO": {
+"_ubigeo": "211202",
+"_id": 1739
+},
+"LIMBANI": {
+"_ubigeo": "211203",
+"_id": 1740
+},
+"PATAMBUCO": {
+"_ubigeo": "211204",
+"_id": 1741
+},
+"PHARA": {
+"_ubigeo": "211205",
+"_id": 1742
+},
+"QUIACA": {
+"_ubigeo": "211206",
+"_id": 1743
+},
+"SAN JUAN DEL ORO": {
+"_ubigeo": "211207",
+"_id": 1744
+},
+"YANAHUAYA": {
+"_ubigeo": "211208",
+"_id": 1745
+},
+"ALTO INAMBARI": {
+"_ubigeo": "211209",
+"_id": 1746
+},
+"SAN PEDRO DE PUTINA PUNCO": {
+"_ubigeo": "211210",
+"_id": 1747
+}
+}
+},
+"YUNGUYO": {
+"_ubigeo": "2113",
+"_id": 175,
+"distritos": {
+"YUNGUYO": {
+"_ubigeo": "211301",
+"_id": 1748
+},
+"ANAPIA": {
+"_ubigeo": "211302",
+"_id": 1749
+},
+"COPANI": {
+"_ubigeo": "211303",
+"_id": 1750
+},
+"CUTURAPI": {
+"_ubigeo": "211304",
+"_id": 1751
+},
+"OLLARAYA": {
+"_ubigeo": "211305",
+"_id": 1752
+},
+"TINICACHI": {
+"_ubigeo": "211306",
+"_id": 1753
+},
+"UNICACHI": {
+"_ubigeo": "211307",
+"_id": 1754
+}
+}
+}
+}
+},
+"SAN MARTIN": {
+"_ubigeo": "22",
+"_id": 22,
+"provincias": {
+"MOYOBAMBA": {
+"_ubigeo": "2201",
+"_id": 176,
+"distritos": {
+"MOYOBAMBA": {
+"_ubigeo": "220101",
+"_id": 1755
+},
+"CALZADA": {
+"_ubigeo": "220102",
+"_id": 1756
+},
+"HABANA": {
+"_ubigeo": "220103",
+"_id": 1757
+},
+"JEPELACIO": {
+"_ubigeo": "220104",
+"_id": 1758
+},
+"SORITOR": {
+"_ubigeo": "220105",
+"_id": 1759
+},
+"YANTALO": {
+"_ubigeo": "220106",
+"_id": 1760
+}
+}
+},
+"BELLAVISTA": {
+"_ubigeo": "2202",
+"_id": 177,
+"distritos": {
+"BELLAVISTA": {
+"_ubigeo": "220201",
+"_id": 1761
+},
+"ALTO BIAVO": {
+"_ubigeo": "220202",
+"_id": 1762
+},
+"BAJO BIAVO": {
+"_ubigeo": "220203",
+"_id": 1763
+},
+"HUALLAGA": {
+"_ubigeo": "220204",
+"_id": 1764
+},
+"SAN PABLO": {
+"_ubigeo": "220205",
+"_id": 1765
+},
+"SAN RAFAEL": {
+"_ubigeo": "220206",
+"_id": 1766
+}
+}
+},
+"EL DORADO": {
+"_ubigeo": "2203",
+"_id": 178,
+"distritos": {
+"SAN JOSE DE SISA": {
+"_ubigeo": "220301",
+"_id": 1767
+},
+"AGUA BLANCA": {
+"_ubigeo": "220302",
+"_id": 1768
+},
+"SAN MARTIN": {
+"_ubigeo": "220303",
+"_id": 1769
+},
+"SANTA ROSA": {
+"_ubigeo": "220304",
+"_id": 1770
+},
+"SHATOJA": {
+"_ubigeo": "220305",
+"_id": 1771
+}
+}
+},
+"HUALLAGA": {
+"_ubigeo": "2204",
+"_id": 179,
+"distritos": {
+"SAPOSOA": {
+"_ubigeo": "220401",
+"_id": 1772
+},
+"ALTO SAPOSOA": {
+"_ubigeo": "220402",
+"_id": 1773
+},
+"EL ESLABON": {
+"_ubigeo": "220403",
+"_id": 1774
+},
+"PISCOYACU": {
+"_ubigeo": "220404",
+"_id": 1775
+},
+"SACANCHE": {
+"_ubigeo": "220405",
+"_id": 1776
+},
+"TINGO DE SAPOSOA": {
+"_ubigeo": "220406",
+"_id": 1777
+}
+}
+},
+"LAMAS": {
+"_ubigeo": "2205",
+"_id": 180,
+"distritos": {
+"LAMAS": {
+"_ubigeo": "220501",
+"_id": 1778
+},
+"ALONSO DE ALVARADO": {
+"_ubigeo": "220502",
+"_id": 1779
+},
+"BARRANQUITA": {
+"_ubigeo": "220503",
+"_id": 1780
+},
+"CAYNARACHI": {
+"_ubigeo": "220504",
+"_id": 1781
+},
+"CUÑUMBUQUI": {
+"_ubigeo": "220505",
+"_id": 1782
+},
+"PINTO RECODO": {
+"_ubigeo": "220506",
+"_id": 1783
+},
+"RUMISAPA": {
+"_ubigeo": "220507",
+"_id": 1784
+},
+"SAN ROQUE DE CUMBAZA": {
+"_ubigeo": "220508",
+"_id": 1785
+},
+"SHANAO": {
+"_ubigeo": "220509",
+"_id": 1786
+},
+"TABALOSOS": {
+"_ubigeo": "220510",
+"_id": 1787
+},
+"ZAPATERO": {
+"_ubigeo": "220511",
+"_id": 1788
+}
+}
+},
+"MARISCAL CACERES": {
+"_ubigeo": "2206",
+"_id": 181,
+"distritos": {
+"JUANJUI": {
+"_ubigeo": "220601",
+"_id": 1789
+},
+"CAMPANILLA": {
+"_ubigeo": "220602",
+"_id": 1790
+},
+"HUICUNGO": {
+"_ubigeo": "220603",
+"_id": 1791
+},
+"PACHIZA": {
+"_ubigeo": "220604",
+"_id": 1792
+},
+"PAJARILLO": {
+"_ubigeo": "220605",
+"_id": 1793
+}
+}
+},
+"PICOTA": {
+"_ubigeo": "2207",
+"_id": 182,
+"distritos": {
+"PICOTA": {
+"_ubigeo": "220701",
+"_id": 1794
+},
+"BUENOS AIRES": {
+"_ubigeo": "220702",
+"_id": 1795
+},
+"CASPISAPA": {
+"_ubigeo": "220703",
+"_id": 1796
+},
+"PILLUANA": {
+"_ubigeo": "220704",
+"_id": 1797
+},
+"PUCACACA": {
+"_ubigeo": "220705",
+"_id": 1798
+},
+"SAN CRISTOBAL": {
+"_ubigeo": "220706",
+"_id": 1799
+},
+"SAN HILARION": {
+"_ubigeo": "220707",
+"_id": 1800
+},
+"SHAMBOYACU": {
+"_ubigeo": "220708",
+"_id": 1801
+},
+"TINGO DE PONASA": {
+"_ubigeo": "220709",
+"_id": 1802
+},
+"TRES UNIDOS": {
+"_ubigeo": "220710",
+"_id": 1803
+}
+}
+},
+"RIOJA": {
+"_ubigeo": "2208",
+"_id": 183,
+"distritos": {
+"RIOJA": {
+"_ubigeo": "220801",
+"_id": 1804
+},
+"AWAJUN": {
+"_ubigeo": "220802",
+"_id": 1805
+},
+"ELIAS SOPLIN VARGAS": {
+"_ubigeo": "220803",
+"_id": 1806
+},
+"NUEVA CAJAMARCA": {
+"_ubigeo": "220804",
+"_id": 1807
+},
+"PARDO MIGUEL": {
+"_ubigeo": "220805",
+"_id": 1808
+},
+"POSIC": {
+"_ubigeo": "220806",
+"_id": 1809
+},
+"SAN FERNANDO": {
+"_ubigeo": "220807",
+"_id": 1810
+},
+"YORONGOS": {
+"_ubigeo": "220808",
+"_id": 1811
+},
+"YURACYACU": {
+"_ubigeo": "220809",
+"_id": 1812
+}
+}
+},
+"SAN MARTIN": {
+"_ubigeo": "2209",
+"_id": 184,
+"distritos": {
+"TARAPOTO": {
+"_ubigeo": "220901",
+"_id": 1813
+},
+"ALBERTO LEVEAU": {
+"_ubigeo": "220902",
+"_id": 1814
+},
+"CACATACHI": {
+"_ubigeo": "220903",
+"_id": 1815
+},
+"CHAZUTA": {
+"_ubigeo": "220904",
+"_id": 1816
+},
+"CHIPURANA": {
+"_ubigeo": "220905",
+"_id": 1817
+},
+"EL PORVENIR": {
+"_ubigeo": "220906",
+"_id": 1818
+},
+"HUIMBAYOC": {
+"_ubigeo": "220907",
+"_id": 1819
+},
+"JUAN GUERRA": {
+"_ubigeo": "220908",
+"_id": 1820
+},
+"LA BANDA DE SHILCAYO": {
+"_ubigeo": "220909",
+"_id": 1821
+},
+"MORALES": {
+"_ubigeo": "220910",
+"_id": 1822
+},
+"PAPAPLAYA": {
+"_ubigeo": "220911",
+"_id": 1823
+},
+"SAN ANTONIO": {
+"_ubigeo": "220912",
+"_id": 1824
+},
+"SAUCE": {
+"_ubigeo": "220913",
+"_id": 1825
+},
+"SHAPAJA": {
+"_ubigeo": "220914",
+"_id": 1826
+}
+}
+},
+"TOCACHE": {
+"_ubigeo": "2210",
+"_id": 185,
+"distritos": {
+"TOCACHE": {
+"_ubigeo": "221001",
+"_id": 1827
+},
+"NUEVO PROGRESO": {
+"_ubigeo": "221002",
+"_id": 1828
+},
+"POLVORA": {
+"_ubigeo": "221003",
+"_id": 1829
+},
+"SHUNTE": {
+"_ubigeo": "221004",
+"_id": 1830
+},
+"UCHIZA": {
+"_ubigeo": "221005",
+"_id": 1831
+},
+"SANTA LUCIA": {
+"_ubigeo": "221006",
+"_id": 1832
+}
+}
+}
+}
+},
+"TACNA": {
+"_ubigeo": "23",
+"_id": 23,
+"provincias": {
+"TACNA": {
+"_ubigeo": "2301",
+"_id": 186,
+"distritos": {
+"TACNA": {
+"_ubigeo": "230101",
+"_id": 1833
+},
+"ALTO DE LA ALIANZA": {
+"_ubigeo": "230102",
+"_id": 1834
+},
+"CALANA": {
+"_ubigeo": "230103",
+"_id": 1835
+},
+"CIUDAD NUEVA": {
+"_ubigeo": "230104",
+"_id": 1836
+},
+"INCLAN": {
+"_ubigeo": "230105",
+"_id": 1837
+},
+"PACHIA": {
+"_ubigeo": "230106",
+"_id": 1838
+},
+"PALCA": {
+"_ubigeo": "230107",
+"_id": 1839
+},
+"POCOLLAY": {
+"_ubigeo": "230108",
+"_id": 1840
+},
+"SAMA": {
+"_ubigeo": "230109",
+"_id": 1841
+},
+"CORONEL GREGORIO ALBARRACIN LANCHIPA": {
+"_ubigeo": "230110",
+"_id": 1842
+},
+"LA YARADA LOS PALOS": {
+"_ubigeo": "230111",
+"_id": 1843
+}
+}
+},
+"CANDARAVE": {
+"_ubigeo": "2302",
+"_id": 187,
+"distritos": {
+"CANDARAVE": {
+"_ubigeo": "230201",
+"_id": 1844
+},
+"CAIRANI": {
+"_ubigeo": "230202",
+"_id": 1845
+},
+"CAMILACA": {
+"_ubigeo": "230203",
+"_id": 1846
+},
+"CURIBAYA": {
+"_ubigeo": "230204",
+"_id": 1847
+},
+"HUANUARA": {
+"_ubigeo": "230205",
+"_id": 1848
+},
+"QUILAHUANI": {
+"_ubigeo": "230206",
+"_id": 1849
+}
+}
+},
+"JORGE BASADRE": {
+"_ubigeo": "2303",
+"_id": 188,
+"distritos": {
+"LOCUMBA": {
+"_ubigeo": "230301",
+"_id": 1850
+},
+"ILABAYA": {
+"_ubigeo": "230302",
+"_id": 1851
+},
+"ITE": {
+"_ubigeo": "230303",
+"_id": 1852
+}
+}
+},
+"TARATA": {
+"_ubigeo": "2304",
+"_id": 189,
+"distritos": {
+"TARATA": {
+"_ubigeo": "230401",
+"_id": 1853
+},
+"HEROES ALBARRACIN CHUCATAMANI": {
+"_ubigeo": "230402",
+"_id": 1854
+},
+"ESTIQUE": {
+"_ubigeo": "230403",
+"_id": 1855
+},
+"ESTIQUE-PAMPA": {
+"_ubigeo": "230404",
+"_id": 1856
+},
+"SITAJARA": {
+"_ubigeo": "230405",
+"_id": 1857
+},
+"SUSAPAYA": {
+"_ubigeo": "230406",
+"_id": 1858
+},
+"TARUCACHI": {
+"_ubigeo": "230407",
+"_id": 1859
+},
+"TICACO": {
+"_ubigeo": "230408",
+"_id": 1860
+}
+}
+}
+}
+},
+"TUMBES": {
+"_ubigeo": "24",
+"_id": 24,
+"provincias": {
+"TUMBES": {
+"_ubigeo": "2401",
+"_id": 190,
+"distritos": {
+"TUMBES": {
+"_ubigeo": "240101",
+"_id": 1861
+},
+"CORRALES": {
+"_ubigeo": "240102",
+"_id": 1862
+},
+"LA CRUZ": {
+"_ubigeo": "240103",
+"_id": 1863
+},
+"PAMPAS DE HOSPITAL": {
+"_ubigeo": "240104",
+"_id": 1864
+},
+"SAN JACINTO": {
+"_ubigeo": "240105",
+"_id": 1865
+},
+"SAN JUAN DE LA VIRGEN": {
+"_ubigeo": "240106",
+"_id": 1866
+}
+}
+},
+"CONTRALMIRANTE VILLAR": {
+"_ubigeo": "2402",
+"_id": 191,
+"distritos": {
+"ZORRITOS": {
+"_ubigeo": "240201",
+"_id": 1867
+},
+"CASITAS": {
+"_ubigeo": "240202",
+"_id": 1868
+},
+"CANOAS DE PUNTA SAL": {
+"_ubigeo": "240203",
+"_id": 1869
+}
+}
+},
+"ZARUMILLA": {
+"_ubigeo": "2403",
+"_id": 192,
+"distritos": {
+"ZARUMILLA": {
+"_ubigeo": "240301",
+"_id": 1870
+},
+"AGUAS VERDES": {
+"_ubigeo": "240302",
+"_id": 1871
+},
+"MATAPALO": {
+"_ubigeo": "240303",
+"_id": 1872
+},
+"PAPAYAL": {
+"_ubigeo": "240304",
+"_id": 1873
+}
+}
+}
+}
+},
+"UCAYALI": {
+"_ubigeo": "25",
+"_id": 25,
+"provincias": {
+"CORONEL PORTILLO": {
+"_ubigeo": "2501",
+"_id": 193,
+"distritos": {
+"CALLERIA": {
+"_ubigeo": "250101",
+"_id": 1874
+},
+"CAMPOVERDE": {
+"_ubigeo": "250102",
+"_id": 1875
+},
+"IPARIA": {
+"_ubigeo": "250103",
+"_id": 1876
+},
+"MASISEA": {
+"_ubigeo": "250104",
+"_id": 1877
+},
+"YARINACOCHA": {
+"_ubigeo": "250105",
+"_id": 1878
+},
+"NUEVA REQUENA": {
+"_ubigeo": "250106",
+"_id": 1879
+},
+"MANANTAY": {
+"_ubigeo": "250107",
+"_id": 1880
+}
+}
+},
+"ATALAYA": {
+"_ubigeo": "2502",
+"_id": 194,
+"distritos": {
+"RAYMONDI": {
+"_ubigeo": "250201",
+"_id": 1881
+},
+"SEPAHUA": {
+"_ubigeo": "250202",
+"_id": 1882
+},
+"TAHUANIA": {
+"_ubigeo": "250203",
+"_id": 1883
+},
+"YURUA": {
+"_ubigeo": "250204",
+"_id": 1884
+}
+}
+},
+"PADRE ABAD": {
+"_ubigeo": "2503",
+"_id": 195,
+"distritos": {
+"PADRE ABAD": {
+"_ubigeo": "250301",
+"_id": 1885
+},
+"IRAZOLA": {
+"_ubigeo": "250302",
+"_id": 1886
+},
+"CURIMANA": {
+"_ubigeo": "250303",
+"_id": 1887
+},
+"NESHUYA": {
+"_ubigeo": "250304",
+"_id": 1888
+},
+"ALEXANDER VON HUMBOLDT": {
+"_ubigeo": "250305",
+"_id": 1889
+},
+"HUIPOCA": {
+"_ubigeo": "250306",
+"_id": 1890
+},
+"BOQUERON": {
+"_ubigeo": "250307",
+"_id": 1891
+}
+}
+},
+"PURUS": {
+"_ubigeo": "2504",
+"_id": 196,
+"distritos": {
+"PURUS": {
+"_ubigeo": "250401",
+"_id": 1892
+}
+}
+}
+}
+}
+}

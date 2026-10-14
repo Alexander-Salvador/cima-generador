@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIMA — Técnica móvil | Generador</title>
+<link rel="icon" href="data:,">
+<!-- D-30: preload de JSON críticos. CCPP baja prioridad porque es lazy -->
+<link rel="preload" href="data/ubigeo_consolidated.json" as="fetch" crossorigin="anonymous" fetchpriority="high">
+<link rel="preload" href="data/ccpp_by_distrito.json" as="fetch" crossorigin="anonymous" fetchpriority="low">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     DESIGN TOKENS GLOBALES (D-14) — sistema escalable premium 2026
+     Espaciado, radius, shadows, fonts, transitions consistentes
+     ══════════════════════════════════════════════════════════════════════ */
+  :root {
+    /* Colors */
+    --bg: #0d0d10;
+    --bg-deep: #050507;
+    --surface: #17171a;
+    --surface-2: #1f1f24;
+    --surface-3: #26262c;
+    --border: #2a2a31;
+    --border-strong: #3a3a44;
+    --text: #f2f0ed;
+    --text-dim: #9ca3af;
+    --text-faint: #6b7280;
+    --accent: #dc2626;
+    --accent-2: #ea580c;
+    --green: #22c55e;
+    --green-light: #16a34a;
+    --danger: #ef4444;
+    --soft-gray: #3a3a44;
+    --on-accent: #ffffff;
+
+    /* Spacing scale (4px base) */
+    --space-1: 4px;
+    --space-2: 6px;
+    --space-3: 8px;
+    --space-4: 12px;
+    --space-5: 16px;
+    --space-6: 20px;
+    --space-7: 24px;
+    --space-8: 32px;
+
+    /* Radius scale */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+    --radius-2xl: 18px;
+    --radius-pill: 999px;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.15);
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.2);
+    --shadow-modal: 0 24px 64px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.35);
+    --shadow-overlay: 0 6px 20px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.25);
+    --shadow-success: 0 4px 12px rgba(34,197,94,0.4);
+
+    /* Font scale (modern 2026) - D-19 ultra-compact para popup */
+    --font-xxs: 7.5px;
+    --font-xs: 8.5px;
+    --font-sm: 10px;
+    --font-base: 11px;
+    --font-md: 11.5px;
+    --font-lg: 12px;
+    --font-xl: 13px;
+    --font-2xl: 18px;
+
+    /* Transitions */
+    --transition-fast: 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Line heights */
+    --lh-tight: 1.2;
+    --lh-base: 1.45;
+    --lh-relaxed: 1.55;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #fafaf9;
+      --bg-deep: #e7e5e4;
+      --surface: #ffffff;
+      --surface-2: #f5f5f4;
+      --surface-3: #efeeed;
+      --border: #e7e5e4;
+      --border-strong: #d6d3d1;
+      --text: #17171a;
+      --text-dim: #57534e;
+      --text-faint: #78716c;
+      --soft-gray: #d6d3d1;
+      --shadow-modal: 0 24px 64px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.10);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter var", "Inter", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     MODO POPUP — Comprometido para uso desktop (D-8)
+     - En pantallas grandes: el popup se ve como un modal centrado con
+       sombra elevada y fondo oscuro detrás (look "elevated popup").
+     - En pantallas chicas: layout full-bleed (mobile fallback).
+     - Botón X cerrar: top-right, accesible, solo visible en desktop popup.
+     ══════════════════════════════════════════════════════════════════════ */
+  body { padding: 0; }
+  .popup-stage {
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .popup-frame {
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+    background: var(--bg);
+    border-radius: var(--radius-xl);
+  }
+  .popup-close {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1;
+    font-weight: 400;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transition: transform 0.15s, background 0.15s, border-color 0.15s;
+    z-index: 100;
+  }
+  .popup-close:hover {
+    background: var(--surface-2);
+    border-color: var(--accent);
+    transform: scale(1.06);
+  }
+  .popup-close:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent),
+                0 4px 12px rgba(0,0,0,0.25);
+  }
+  .popup-close svg { width: 16px; height: 16px; }
+  .app {
+    /* D-22: max-width 100% — el cap real lo da .popup-frame por breakpoint.
+       Antes cap a 520px causaba dead space en 4K (frame 600px). */
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--space-2);
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     HEADER OPTIMIZADO (D-25)
+     - Border-bottom sutil, sin padding inferior
+     - Margin-bottom 4px (compacto)
+     - Sin logo ni status — solo texto
+     ══════════════════════════════════════════════════════════════════════ */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-bottom: 4px;
+    padding: 0 0 4px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    overflow: hidden;
+  }
+  .brand-text-block {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+  .brand-text {
+    font-weight: 800;
+    font-size: var(--font-lg);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text);
+  }
+  .brand-sep {
+    color: var(--text-faint);
+    font-weight: 400;
+    font-size: var(--font-sm);
+  }
+  .brand-sub {
+    display: inline;
+    font-size: var(--font-sm);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+/* ══════════════════════════════════════════════════════════════════════
+     SECTIONS OPTIMIZADAS (D-25)
+     - Padding reducido 8px (de 12px) → menos espacio muerto
+     - Sin shadow — solo hairline + bg surface
+     - Margin-bottom 6px (de 12px)
+     - Border-radius 10px (más consistente)
+     ══════════════════════════════════════════════════════════════════════ */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 8px 10px;
+    margin-bottom: var(--space-2);
+    /* D-25 fix: overflow:visible para que el dropdown AC no se corte */
+  }
+  .section h3 {
+    margin: 0 0 4px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    font-weight: 800;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-strong);
+    line-height: 1.2;
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     FIELDS OPTIMIZADOS (D-25)
+     - gap label-input: 2px (compacto)
+     - margin-bottom: 4px (de 8px)
+     - field-row gap: 4px (de 8px)
+     - look minimal APPLE 2026
+     ══════════════════════════════════════════════════════════════════════ */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 4px;
+    min-width: 0;
+    position: relative;
+  }
+  .field-row {
+    display: grid;
+    gap: 6px;
+    margin-bottom: var(--space-2);  /* D-26: separación del row siguiente */
+  }
+  .field-row .field {
+    margin-bottom: 0;
+  }
+  .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  /* ══════════════════════════════════════════════════════════════════════
+     AUTOCOMPLETE CUSTOM (D-12) — reemplaza datalist nativo
+     - Dropdown diseñado (no nativo del browser)
+     - Filtrado en vivo según input
+     - Navegación con teclado: ↓↑ navegar, Enter/Tab aceptar, Esc cerrar
+     - Click en item acepta
+     - Resalta el match dentro del texto (<mark>)
+     ══════════════════════════════════════════════════════════════════════ */
+  .ac-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .ac-field .field-hint {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    margin-top: 1px;
+  }
+  .ac-dropdown {
+    /* D-25 fix: max-height reducido para caber en popup, scrollbar visible */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    margin-top: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.45),
+      0 2px 6px rgba(0,0,0,0.25);
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+  .ac-dropdown[hidden] { display: none; }
+  .ac-item {
+    /* D-25: items más compactos para caber más en viewport */
+    padding: 4px 8px;
+    font-size: 10.5px;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.2;
+    transition: background 0.06s;
+    user-select: none;
+    font-weight: 500;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover,
+  .ac-item.active {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 600;
+  }
+  .ac-item.active mark,
+  .ac-item:hover mark {
+    background: var(--accent-2);
+    color: white;
+    font-weight: 800;
+  }
+  .ac-item mark {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+  .ac-empty {
+    padding: 8px;
+    font-size: 10.5px;
+    color: var(--text-dim);
+    text-align: center;
+    font-style: italic;
+  }
+  .ac-meta {
+    font-size: 8.5px;
+    color: var(--text-dim);
+    padding: 3px 8px;
+    background: var(--bg-deep);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    position: sticky;
+    bottom: 0;
+  }
+  /* Scrollbar custom para dropdowns — más visible */
+  .ac-dropdown::-webkit-scrollbar { width: 8px; }
+  .ac-dropdown::-webkit-scrollbar-track { background: var(--bg-deep); }
+  .ac-dropdown::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+  }
+  .ac-dropdown::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  .field label {
+    /* D-25: label compacto — más bold para distinguirse */
+    font-size: 7.5px;
+    color: var(--text);
+    font-weight: 700;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .field input, .field textarea {
+    /* D-25: input slim APPLE — padding 5×8, font 11px, line-height 1.2 */
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 8px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-base);
+    font-weight: 500;
+    line-height: 1.2;
+    font-family: inherit;
+    outline: none;
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base),
+      background var(--transition-base);
+    width: 100%;
+    min-width: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .field input:hover:not(:focus), .field textarea:hover:not(:focus) {
+    border-color: var(--text-faint);
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+    background: var(--bg);
+  }
+  .field input.filled, .field textarea.filled {
+    border-color: var(--green);
+    background: color-mix(in srgb, var(--green) 8%, var(--surface-2));
+    font-weight: 600;
+  }
+  .field input[aria-invalid="true"], .field textarea[aria-invalid="true"] {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 25%, transparent);
+  }
+  .field input::placeholder, .field textarea::placeholder {
+    /* D-25: placeholder optimizado — más pequeño, más tenue */
+    color: var(--text-faint);
+    opacity: 0.5;
+    font-weight: 400;
+    font-size: 10px;
+    font-style: italic;
+  }
+  .field-hint {
+    display: none;
+  }
+  .field-hint.active {
+    display: block;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 32px;
+    max-height: 200px;
+  }
+  /* Live region para screen readers */
+  .sr-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     BOTONES (D-22) — base + variantes .btn.selected y .btn-ok
+     - Diferenciación clara: primary (rojo filled), selected (chip),
+       ok (verde después de copiar)
+     ══════════════════════════════════════════════════════════════════════ */
+  .btn {
+    /* D-25: botón ultra compacto — 4×8 padding, font 10px */
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    cursor: pointer;
+    /* D-30: transición explícita (no 'all') — mejor performance */
+    transition:
+      border-color var(--transition-base),
+      background var(--transition-base),
+      box-shadow var(--transition-base);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+  }
+  .btn:active {
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+  }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    font-weight: 600;
+  }
+  .btn-ok {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+    font-weight: 700;
+  }
+  fieldset {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 10px;
+    margin: 0 0 6px;
+  }
+  fieldset legend {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    padding: 0 4px;
+    font-weight: 600;
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     OUTPUT BOX (D-12) — más leíble
+     - Font sans-serif (no monospace — más legible para prosa)
+     - Line-height 1.6
+     - Border accent sutil para diferenciar del fondo
+     - Word-spacing y letter-spacing optimizados
+     ══════════════════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════════════
+     GRIDS D-16
+     - Cada grid es un .grid-block con su section
+     - Grid Address: campos completos + output + acciones
+     - Grid Tipificación: "EN PROCESO" placeholder (sin agregar)
+     ══════════════════════════════════════════════════════════════════════ */
+  .grid-block {
+    margin-bottom: 4px;
+  }
+  /* "En proceso" — placeholder central del grid Tipificación (D-22) */
+  .tipif-process {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-3);
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .tipif-process-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+  .tipif-process-badge svg {
+    width: 11px;
+    height: 11px;
+    stroke: var(--text-dim);
+  }
+  .tipif-process-text {
+    margin: 0;
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
+  }
+  /* CTA de tipificación (D-22) — botón deshabilitado honesto */
+  .tipif-process-cta {
+    margin-top: var(--space-2);
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tipif-block {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius-md);
+    padding: 10px;
+  }
+  .tipif-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tipif-num {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent-2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .btn-remove {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    /* D-30: transición explícita */
+    transition:
+      border-color var(--transition-base),
+      color var(--transition-base);
+  }
+  .btn-remove:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-remove:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .alert {
+    background: var(--accent);
+    color: white;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    margin-bottom: 6px;
+    display: none;
+  }
+  .alert.show {
+    display: block;
+  }
+  .hidden {
+    display: none !important;
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     OUTPUT CLICKABLE + ICONO × LIMPIAR (D-13)
+     - El output es un input que se copia al hacer click
+     - El icono × al costado limpia el contenido
+     - "COPIADO" aparece como overlay dentro del input
+     - Cambia a verde después de copiar
+     ══════════════════════════════════════════════════════════════════════ */
+  .output-row {
+    display: flex;
+    gap: 4px;
+    align-items: stretch;
+    margin-top: var(--space-2);
+  }
+  .output-wrap {
+    /* D-26: overflow:hidden + max-height para evitar que el box crezca */
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    max-height: 72px;
+  }
+  .output-box {
+    /* D-28: output estilizado — color distintivo, height fijo 34px,
+       texto centrado cuando placeholder, izquierda cuando hay datos.
+       Container NUNCA crece verticalmente. */
+    width: 100%;
+    height: 34px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+    transition:
+      border-color var(--transition-base),
+      background var(--transition-base),
+      box-shadow var(--transition-base);
+    text-transform: none;
+    flex-shrink: 0;
+    flex-grow: 0;
+    box-sizing: border-box;
+    /* Centrado cuando placeholder; izquierda cuando hay datos */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  /* D-28: cuando hay datos, alinear a la izquierda */
+  .output-box:not(.placeholder) {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .output-box.placeholder {
+    color: var(--text-faint);
+    font-style: normal;
+    font-weight: 400;
+    display: grid;
+    place-items: center;
+  }
+  /* D-29: output resultado — VACÍO = gris neutral (sin rojo).
+     CON DATOS = verde suave (similar a input.filled).
+     Estilizado: gradiente sutil + border-color dinámico. */
+  .output-box.output-result {
+    background: var(--bg-deep);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .output-box.output-result.placeholder {
+    background: var(--bg-deep);
+    border-color: var(--border);
+    border-style: dashed;
+    color: var(--text-faint);
+  }
+  /* Con datos: pintar de verde suave */
+  .output-box.output-result:not(.placeholder) {
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--green) 14%, var(--bg-deep)) 0%,
+      color-mix(in srgb, var(--green) 6%, var(--bg-deep)) 100%);
+    border-color: var(--green);
+    color: var(--text);
+  }
+  .output-box.output-result:hover:not(.placeholder) {
+    border-color: var(--green-light, var(--green));
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--green) 30%, transparent);
+  }
+  .output-box.output-result.empty-shake {
+    background: color-mix(in srgb, var(--danger) 8%, var(--bg-deep));
+    border-color: var(--danger);
+    border-style: solid;
+  }
+  .output-box:hover:not(.placeholder) {
+    border-color: var(--text-faint);
+  }
+  .output-box.copied {
+    border-color: var(--green) !important;
+    background: color-mix(in srgb, var(--green) 10%, var(--bg-deep)) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent);
+  }
+  .output-box.copied::after {
+    content: "✓ Copiado";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--green);
+    color: var(--on-accent);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    pointer-events: none;
+    animation: copiedFade 2s ease forwards;
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--green) 35%, transparent);
+  }
+  @keyframes copiedFade {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    25%  { transform: translate(-50%, -50%) scale(1); }
+    85%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  }
+  /* D-25: feedback inline cuando output está vacío */
+  .output-box.empty-shake {
+    border-color: var(--danger) !important;
+    color: var(--danger);
+    animation: emptyShake 0.4s ease;
+    font-style: italic;
+    /* Centrar el texto en el medio del output-box */
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-weight: 600;
+  }
+  @keyframes emptyShake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-3px); }
+    40%      { transform: translateX(3px); }
+    60%      { transform: translateX(-2px); }
+    80%      { transform: translateX(2px); }
+  }
+  .btn-icon {
+    /* D-25: btn-icon compacto — 32px, hairline */
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 32px;
+    min-width: 32px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    /* D-30: transición explícita */
+    transition:
+      border-color var(--transition-base),
+      color var(--transition-base),
+      background var(--transition-base);
+    padding: 0;
+  }
+  .btn-icon:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  }
+  .btn-icon:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .btn-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+  .btn-icon-clear:hover:not(:disabled) {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  }
+  /* D-25: botón de limpiar deshabilitado cuando no hay datos */
+  .btn-icon:disabled,
+  .btn-icon[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     FOOTER CON CRÉDITOS (D-17)
+     - Centrado, delicado, bien alineado
+     - Línea 1: nombre del proyecto (CIMA · técnica móvil)
+     - Línea 2: créditos "tuneado por Alexander Salvador" + corazón
+     - Línea 3: copyright / versión
+     ══════════════════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════════════
+     FOOTER MINIMAL (D-19) — super compacto, copy sutil
+     - 1 línea con créditos bien centrados
+     - Sin border-top pesado, sin padding excesivo
+     - Tipografía small, color --text-faint
+     ══════════════════════════════════════════════════════════════════════ */
+  footer {
+    margin-top: var(--space-2);
+    padding-top: var(--space-1);
+    text-align: center;
+    font-size: 8px;
+    color: var(--text-faint);
+    line-height: 1.3;
+    overflow: hidden;
+  }
+  .footer-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+  .footer-credit {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .footer-credit strong {
+    color: var(--text-dim);
+    font-weight: 600;
+    margin: 0 2px;
+  }
+  .footer-credit .heart {
+    color: var(--danger);
+font-size: 10px;
+    display: inline-block;
+    animation: heartPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes heartPulse {
+    0%, 100% { transform: scale(1); }
+    10%, 30% { transform: scale(1.15); }
+    20%      { transform: scale(0.95); }
+  }
+  /* D-30: respetar prefers-reduced-motion (50+ usuarios, accesibilidad) */
+  @media (prefers-reduced-motion: reduce) {
+    .heart, .status-dot, .btn,
+    .btn-icon, .output-box,
+    .field input, .field textarea,
+    .ac-item, .tipif-process-badge {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+  /* ══════════════════════════════════════════════════════════════════════
+     RESPONSIVE END-TO-END — Popup VERTICAL (D-10)
+     Breakpoints (mobile-first):
+       - <480px   : mobile pequeño (full-bleed, 1 col)
+       - 481-720px: mobile/tablet (1 col, padding medio)
+       - 721-1023px: desktop popup VERTICAL (max-w 520px, look modal)
+       - 1024-1279px: desktop medio (max-w 540px)
+       - 1280-1919px: desktop grande (max-w 560px)
+       - ≥1920px  : 4K (max-w 600px, padding generoso)
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     RESPONSIVE D-14 — grid horizontal premium
+     - ≥320px: row-3 = 3 col, row-2 = 2 col (SIEMPRE horizontal)
+     - <320px: 1 col (solo mobile muy pequeño)
+     - Token-based spacing + radius consistente
+     ══════════════════════════════════════════════════════════════════════ */
+  @media (max-width: 319px) {
+    .row-3, .row-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     MOBILE FULL-BLEED (≤480px) — D-22: estructura movida del CSS global
+     - Estas reglas estaban flotando en estilo global con override por
+       media query. Ahora son explícitamente mobile-only.
+     ══════════════════════════════════════════════════════════════════════ */
+  @media (max-width: 480px) {
+    header { flex-direction: row; align-items: center; gap: 0; }
+    .section { padding: var(--space-3) var(--space-4); }
+    .popup-stage { padding: 0; background: var(--bg); }
+    .popup-frame { border-radius: 0; max-width: 100%; }
+    .popup-close { display: none !important; }
+    .field-row { gap: var(--space-2); }
+    .field { gap: var(--space-1); margin-bottom: var(--space-2); }
+  }
+
+  /* Mobile / tablet (481-720px) */
+  @media (min-width: 481px) {
+    .section { padding: 12px; }
+    .popup-stage { padding: 12px; background: var(--bg-deep); }
+    .popup-frame { border-radius: 12px; max-width: 520px; }
+  }
+
+  /* Desktop popup VERTICAL pequeño (721-1023px) — LOOK POPUP COMPROMETIDO */
+  @media (min-width: 721px) {
+    html, body { font-size: 14px; }
+    /* row-3/row-2 ya son 3 col / 2 col desde CSS base (D-11) */
+    header { flex-direction: row; align-items: center; gap: 0; }
+    .section { padding: 10px; margin-bottom: 6px; }
+    .popup-stage {
+      padding: 24px 20px;
+      align-items: center;
+      background: var(--bg-deep);
+    }
+    .popup-frame {
+      max-width: 520px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-modal);
+      border-radius: var(--radius-xl);
+      padding: 12px 16px;
+    }
+    .popup-close { display: flex; }
+  }
+
+  /* Desktop popup VERTICAL medio (1024-1279px) */
+  @media (min-width: 1024px) {
+    html, body { font-size: 14px; }
+    .popup-stage {
+      padding: 40px 32px;
+      background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg) 100%);
+    }
+    .popup-frame { max-width: 540px; padding: 14px 18px; }
+  }
+
+  /* Desktop popup VERTICAL grande (1280-1919px) */
+  @media (min-width: 1280px) {
+    html, body { font-size: 14px; }
+    .popup-stage { padding: 56px 48px; }
+    .popup-frame { max-width: 560px; padding: 16px 20px; }
+  }
+
+  /* Desktop extra grande / 4K (≥1920px) */
+  @media (min-width: 1920px) {
+    .popup-stage { padding: 80px 64px; }
+    .popup-frame { max-width: 600px; padding: 20px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="popup-stage">
+<div class="popup-frame">
+<button id="popupClose" class="popup-close" type="button" aria-label="Cerrar popup" title="Cerrar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+    <path d="M6 6 L18 18 M18 6 L6 18"/>
+  </svg>
+</button>
+<div class="app">
+  <div id="srStatus" class="sr-live" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="srAlert" class="sr-live" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <header role="banner">
+    <div class="brand">
+      <div class="brand-text-block">
+        <span class="brand-text">CIMA</span>
+        <span class="brand-sep" aria-hidden="true">·</span>
+        <span class="brand-sub">técnica móvil</span>
+      </div>
+    </div>
+  </header>
+
+  <div id="alertBox" class="alert"></div>
+
+  <!-- ═══════════ GRID 1: ADDRESS ═══════════ -->
+  <div class="grid-block" id="gridAddress">
+    <div class="section">
+      <h3>Búsqueda Address</h3>
+
+      <div class="field-row row-3" role="group" aria-label="Ubicación geográfica">
+        <div class="field ac-field">
+          <label for="departamento">Departamento</label>
+          <div class="ac-wrap">
+            <input id="departamento" type="text" placeholder="Lima" autocomplete="off" spellcheck="false"
+                   data-ac="departamento" aria-autocomplete="list" aria-expanded="false">
+            <div class="ac-dropdown" id="ac-departamento" role="listbox" hidden></div>
+          </div>
+        </div>
+        <div class="field ac-field">
+          <label for="provincia">Provincia</label>
+          <div class="ac-wrap">
+            <input id="provincia" type="text" placeholder="Lima" autocomplete="off" spellcheck="false"
+                   data-ac="provincia" aria-autocomplete="list" aria-expanded="false">
+            <div class="ac-dropdown" id="ac-provincia" role="listbox" hidden></div>
+          </div>
+        </div>
+        <div class="field ac-field">
+          <label for="distrito">Distrito</label>
+          <div class="ac-wrap">
+            <input id="distrito" type="text" placeholder="Miraflores" autocomplete="off" spellcheck="false"
+                   data-ac="distrito" aria-autocomplete="list" aria-expanded="false">
+            <div class="ac-dropdown" id="ac-distrito" role="listbox" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="direccion">Dirección</label>
+        <input id="direccion" type="text" placeholder="Calle, Número, zona" autocomplete="off">
+      </div>
+
+      <div class="field-row row-2">
+        <div class="field">
+          <label for="referencia">Referencia</label>
+          <input id="referencia" type="text" placeholder="Mercado, paradero" autocomplete="off">
+        </div>
+        <div class="field ac-field">
+          <label for="ccpp">CCPP / Caserío</label>
+          <div class="ac-wrap">
+            <input id="ccpp" type="text" placeholder="(tras elegir distrito)" autocomplete="off" spellcheck="false"
+                   data-ac="ccpp" aria-autocomplete="list" aria-expanded="false">
+            <div class="ac-dropdown" id="ac-ccpp" role="listbox" hidden></div>
+          </div>
+          <!-- D-26: hint-ccpp eliminado — el input se pinta verde (.filled) cuando hay datos, sin texto fuera -->
+        </div>
+      </div>
+
+      <div class="output-row">
+        <div class="output-wrap">
+          <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')">—</div>
+        </div>
+        <button class="btn-icon btn-icon-clear" onclick="clearAddress()" type="button" aria-label="Limpiar campos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ GRID 2: TIPIFICACIÓN (D-22: CTA honesto, sin promesa falsa) ═══════════ -->
+  <div class="grid-block" id="gridTipif">
+    <div class="section">
+      <h3>Tipificación</h3>
+      <div class="tipif-process">
+        <div class="tipif-process-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <span>Próximamente</span>
+        </div>
+        <p class="tipif-process-text">Tipificación dinámica disponible en próxima iteración</p>
+        <span class="tipif-process-cta" aria-disabled="true" title="Disponible en D-23">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+               style="width:10px;height:10px">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>D-23 · bloqueado</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="footer-line footer-credit">
+      <span>por</span>
+      <strong>Alexander Salvador</strong>
+      <span class="heart">♥</span>
+      <span>·</span>
+      <span>v1.0</span>
+    </span>
+  </footer>
+</div>
+</div><!-- /.popup-frame -->
+</div><!-- /.popup-stage -->
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════════════════════════════
+// ESTADO Y DATOS
+// D-30: use strict + constantes centralizadas (TIMINGS) para 50+ usuarios
+// ══════════════════════════════════════════════════════════════════════
+
+// D-30: timeouts centralizados para mantenimiento
+const TIMINGS = {
+  ALERT_HIDE: 3000,
+  COPIED_RESET: 2000,
+  EMPTY_SHAKE: 1500,
+  AC_BLUR_DELAY: 150
+};
+
+const PROBLEMAS = {
+  internet: [
+    { label: 'No accede a internet',  plantilla: 'Cliente reporta no accede a Internet en [RED]' },
+    { label: 'Lentitud',              plantilla: 'Cliente reporta lentitud en el servicio de Internet en [RED]' },
+    { label: 'Desconexiones a internet', plantilla: 'Cliente reporta desconexiones de Internet en [RED]' },
+    { label: 'Problemas con aplicativos', plantilla: 'Cliente reporta problemas con aplicativos al conectarse a Internet en [RED]' },
+    { label: 'Otro',                  plantilla: 'Cliente reporta otro inconveniente de internet en [RED]' }
+  ],
+  senal: [
+    { label: 'Sin señal - nula',  plantilla: 'Cliente reporta sin señal/nula en [RED]' },
+    { label: 'Señal baja',        plantilla: 'Cliente reporta señal baja en [RED]' },
+    { label: 'Intermitencia',     plantilla: 'Cliente reporta intermitencia en [RED]' },
+    { label: 'Otro',              plantilla: 'Cliente reporta otro inconveniente de señal en [RED]' }
+  ]
+};
+
+const ADDRESS_INPUTS = ['direccion', 'referencia', 'departamento', 'provincia', 'distrito', 'ccpp'];
+
+// ══════════════════════════════════════════════════════════════════════
+// HELPERS (DOM, clipboard, alerts, SR announcements)
+// ══════════════════════════════════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+
+function val(id) {
+  var el = $(id);
+  return el ? (el.value || '').trim() : '';
+}
+
+function upper(id) {
+  var el = $(id);
+  if (!el) return '';
+  el.value = (el.value || '').toUpperCase();
+  return el.value.trim();
+}
+
+function validarNumero(input) {
+  input.value = input.value.replace(/[^0-9]/g, '').slice(0, 9);
+}
+
+function alertMsg(msg) {
+  var box = $('alertBox');
+  if (box) {
+    box.textContent = msg;
+    box.classList.add('show');
+  }
+  var sr = $('srAlert');
+  if (sr) sr.textContent = msg;
+  setTimeout(function () {
+    if (box) box.classList.remove('show');
+  }, TIMINGS.ALERT_HIDE);
+}
+
+function announce(msg) {
+  var sr = $('srStatus');
+  if (sr) sr.textContent = msg;
+}
+
+// D-25: feedback visual DENTRO del output-box cuando está vacío.
+// Muestra "INGRESA DATOS" centrado + shake animation; no usa alert externo.
+function showInlineEmpty(el) {
+  var prev = el.textContent;
+  el.textContent = 'INGRESA DATOS';
+  el.classList.remove('placeholder');
+  el.classList.add('empty-shake');
+  announce('Resultado vacío: ingresa los datos primero');
+  setTimeout(function () {
+    el.classList.remove('empty-shake');
+    el.classList.add('placeholder');
+    el.textContent = prev;
+  }, TIMINGS.EMPTY_SHAKE);
+}
+
+function copyText(text, okLabel, btn) {
+  function showOk() {
+    if (btn && btn.tagName === 'BUTTON') {
+      var orig = btn.dataset.origLabel || btn.textContent;
+      btn.dataset.origLabel = orig;
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('btn-ok');
+      setTimeout(function () {
+        btn.textContent = orig;
+        btn.classList.remove('btn-ok');
+      }, TIMINGS.COPIED_RESET);
+    }
+    announce(okLabel + ' copiado al portapapeles');
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).then(showOk, function () {
+      fallbackCopy(text);
+      showOk();
+    });
+  }
+  fallbackCopy(text);
+  showOk();
+  return Promise.resolve();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// COPY OUTPUT (D-13) — click en output-box copia automáticamente
+// Muestra overlay "✓ COPIADO" verde dentro del input
+// Cambia border-left a verde por 2s
+// ══════════════════════════════════════════════════════════════════════
+function copyOutput(elementId) {
+  var el = $(elementId);
+  if (!el) return;
+  if (el.classList.contains('placeholder')) {
+    // D-25 fix: feedback DENTRO del output-box (no alert externo)
+    showInlineEmpty(el);
+    return;
+  }
+  // D-27: copiar el texto COMPLETO desde dataset.full, no el truncado
+  var txt = el.dataset.full || el.textContent;
+  if (!txt) return;
+  function showOk() {
+    el.classList.add('copied');
+    announce('Resultado copiado al portapapeles');
+    setTimeout(function () {
+      el.classList.remove('copied');
+    }, TIMINGS.COPIED_RESET);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(showOk, function () {
+      fallbackCopy(txt);
+      showOk();
+    });
+  } else {
+    fallbackCopy(txt);
+    showOk();
+  }
+}
+
+// Helper para tipif: encuentra el output-box del bloque y lo copia
+function copyTipifOutput(id) {
+  var block = document.querySelector('.tipif-block[data-id="' + id + '"]');
+  if (!block) return;
+  var out = block.querySelector('.output-box');
+  if (!out) return;
+  var t = tipifs.find(function (t) { return t.id === id; });
+  if (!t) return;
+  // Validar antes de copiar
+  if (!t.numero || !t.consulta || !t.respuesta || !t.idc) {
+    alertMsg('⚠️ Faltan datos de esta tipificación (Número, Consulta, Respuesta o ID).');
+    return;
+  }
+  if (t.descarte && !t.red) {
+    alertMsg('⚠️ Selecciona la RED (3G, 4G 究竟 5G).');
+    return;
+  }
+  // Simular el copy del output-box
+  var txt = out.textContent;
+  out.classList.add('copied');
+  announce('Tipificación #' + (tipifs.indexOf(t) + 1) + ' copiada');
+  setTimeout(function () {
+    out.classList.remove('copied');
+  }, TIMINGS.COPIED_RESET);
+  // D-30 fix: NO silenciar éxito — llamar fallback también en éxito de navigator.clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () {
+      // éxito — UI ya muestra "copied"
+    }, function () {
+      // fallback en fallo
+      try { fallbackCopy(txt); } catch (e) { /* clipboard denied */ }
+    });
+    return;
+  }
+  // Sin clipboard API → fallback directo
+  try { fallbackCopy(txt); } catch (e) { /* execCommand falló */ }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// UBIGEO PERÚ — cascada departamento → provincia → distrito
+// Datos desde RitchieRD/ubigeos-peru-data (25 deptos, 196 prov, 800 dist).
+// Shape: { departamento: { provincia: [distritos] } }
+// Fallback: si el fetch falla, los inputs siguen siendo typeable a mano.
+// ══════════════════════════════════════════════════════════════════════
+var UBIGEO = null;
+// D-25/30: sin UBIGEO_FALLBACK. Si UBIGEO no carga, inputs quedan
+// en modo texto libre sin opciones en el dropdown.
+
+// ══════════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE CUSTOM (D-12) — reemplaza datalist nativo
+// - Filtrado en vivo según input.value (case-insensitive, empieza con)
+// - Dropdown diseñado con items resaltados (<mark>)
+// - Teclado: ↓↑ navegar, Enter/Tab aceptar, Esc cerrar
+// - Click selecciona, mousedown evita blur premature
+// - Al seleccionar, marca input.filled y propaga onChange
+// ══════════════════════════════════════════════════════════════════════
+var AC_STATE = {
+  active: null,     // inputId actualmente con dropdown abierto
+  items: [],        // opciones filtradas
+  selectedIdx: -1,  // índice highlighted con teclado
+};
+
+function acGetDropdown(key) { return $('ac-' + key); }
+
+function acOptionsFor(key) {
+  // Devuelve array de strings según el key y el estado actual del formulario.
+  // Si UBIGEO no cargó, retorna [] → modo texto libre (sin dropdown).
+  if (key === 'departamento') {
+    if (UBIGEO) return Object.keys(UBIGEO).sort();
+    return [];
+  }
+  if (key === 'provincia') {
+    var dep = upper('departamento');
+    if (UBIGEO && UBIGEO[dep] && UBIGEO[dep].provincias) {
+      return Object.keys(UBIGEO[dep].provincias).sort();
+    }
+    return [];
+  }
+  if (key === 'distrito') {
+    var dep2 = upper('departamento');
+    var prov = upper('provincia');
+    if (UBIGEO && UBIGEO[dep2] && UBIGEO[dep2].provincias && UBIGEO[dep2].provincias[prov]) {
+      return Object.keys(UBIGEO[dep2].provincias[prov].distritos).sort();
+    }
+    return [];
+  }
+  if (key === 'ccpp') {
+    var dist = upper('distrito');
+    var dep3 = upper('departamento');
+    var prov3 = upper('provincia');
+    var ubigeo = findDistritoUbigeo(dep3, prov3, dist);
+    if (ubigeo && CCPP_DATA && CCPP_DATA[ubigeo]) {
+      return CCPP_DATA[ubigeo];
+    }
+    return [];
+  }
+  return [];
+}
+
+function acFilter(options, query) {
+  if (!query) return options.slice(0, 200);
+  var q = query.toLowerCase();
+  // Priorizar matches que EMPIEZAN con q, luego los que contienen q
+  var starts = [];
+  var contains = [];
+  options.forEach(function (opt) {
+    var lo = opt.toLowerCase();
+    if (lo.indexOf(q) === 0) starts.push(opt);
+    else if (lo.indexOf(q) > 0) contains.push(opt);
+  });
+  // Sin límite estricto: si query es específico, mostrar todo el match.
+  // Si query es vacío, mostrar primeros 200.
+  if (!query) return options.slice(0, 200);
+  return starts.concat(contains);
+}
+
+function acHighlight(text, query) {
+  if (!query) return acEscape(text);
+  var q = query.toLowerCase();
+  var lo = text.toLowerCase();
+  var idx = lo.indexOf(q);
+  if (idx < 0) return acEscape(text);
+  var before = text.slice(0, idx);
+  var match  = text.slice(idx, idx + query.length);
+  var after  = text.slice(idx + query.length);
+  return acEscape(before) + '<mark>' + acEscape(match) + '</mark>' + acEscape(after);
+}
+
+function acEscape(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function acRender(key) {
+  var input  = $(key);
+  var drop   = acGetDropdown(key);
+  if (!input || !drop) return;
+  // D-25 fix: cerrar todos los demás dropdowns ANTES de abrir este.
+  // Evita que múltiples dropdowns queden abiertos al cambiar de input.
+  acCloseAll();
+  var query = input.value.trim();
+  var allOptions = acOptionsFor(key);
+  AC_STATE.items = acFilter(allOptions, query);
+  AC_STATE.selectedIdx = -1;
+  if (AC_STATE.items.length === 0) {
+    // D-25 fix: si NO hay datos disponibles para este campo (ej: CCPP
+    // sin distrito seleccionado), NO abrir dropdown y NO mostrar
+    // "Sin coincidencias". Solo mostrar mensaje cuando el usuario
+    // buscó y no encontró matches sobre datos reales.
+    if (allOptions.length === 0) {
+      drop.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    drop.innerHTML = '<div class="ac-empty">Sin coincidencias</div>';
+    drop.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    return;
+  }
+  var html = AC_STATE.items.map(function (item, i) {
+    return '<div class="ac-item" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + acHighlight(item, query) + '</div>';
+  }).join('');
+  // D-26 fix + D-30: meta footer solo si hay suficientes items. Usar total cacheado.
+  var total = allOptions.length;
+  if (total > 5 && total > AC_STATE.items.length && AC_STATE.items.length >= 2) {
+    html += '<div class="ac-meta">' + AC_STATE.items.length + ' de ' + total + '</div>';
+  }
+  drop.innerHTML = html;
+  drop.hidden = false;
+  input.setAttribute('aria-expanded', 'true');
+  AC_STATE.active = key;
+}
+
+function acClose() {
+  if (AC_STATE.active) {
+    var drop = acGetDropdown(AC_STATE.active);
+    if (drop) drop.hidden = true;
+    var input = $(AC_STATE.active);
+    if (input) input.setAttribute('aria-expanded', 'false');
+    AC_STATE.active = null;
+  }
+  AC_STATE.items = [];
+  AC_STATE.selectedIdx = -1;
+}
+
+// D-25 fix: cerrar TODOS los dropdowns antes de abrir uno nuevo.
+// Evita que múltiples dropdowns queden abiertos al cambiar de input.
+function acCloseAll() {
+  var drops = document.querySelectorAll('.ac-dropdown');
+  for (var i = 0; i < drops.length; i++) {
+    drops[i].hidden = true;
+  }
+  var inputs = document.querySelectorAll('[data-ac]');
+  for (var j = 0; j < inputs.length; j++) {
+    inputs[j].setAttribute('aria-expanded', 'false');
+  }
+  AC_STATE.active = null;
+  AC_STATE.items = [];
+  AC_STATE.selectedIdx = -1;
+}
+
+function acHighlightItem(idx) {
+  var drop = acGetDropdown(AC_STATE.active);
+  if (!drop) return;
+  Array.from(drop.querySelectorAll('.ac-item')).forEach(function (el, i) {
+    el.classList.toggle('active', i === idx);
+  });
+  AC_STATE.selectedIdx = idx;
+  // Scroll into view
+  var active = drop.querySelector('.ac-item.active');
+  if (active) {
+    var rect = active.getBoundingClientRect();
+    var dropRect = drop.getBoundingClientRect();
+    if (rect.bottom > dropRect.bottom) active.scrollIntoView({ block: 'end' });
+    else if (rect.top < dropRect.top) active.scrollIntoView({ block: 'start' });
+  }
+}
+
+function acSelect(item) {
+  var input = $(AC_STATE.active);
+  if (!input) return;
+  input.value = item;
+  input.classList.add('filled');
+  acClose();
+  // D-27 fix: cuando se setea el valor programáticamente desde el AC,
+  // el evento 'input' NO se dispara. Llamar updateOutput() manualmente
+  // para que el resultado se actualice en vivo al elegir del dropdown.
+  updateOutput();
+  // Disparar onChange según key (cascada AC)
+  var key = AC_STATE.active || input.id;
+  if (key === 'departamento') onDepChange();
+  else if (key === 'provincia') onProvChange();
+  else if (key === 'distrito') onDistChange();
+  else if (key === 'ccpp') onCcppInput();
+  // Move focus al siguiente input lógico
+  acFocusNext(key);
+}
+
+function acFocusNext(key) {
+  var order = ['departamento', 'provincia', 'distrito', 'direccion', 'referencia', 'ccpp'];
+  var i = order.indexOf(key);
+  if (i < 0 || i >= order.length - 1) return;
+  var next = $(order[i + 1]);
+  if (next) next.focus();
+}
+
+// Event delegation para dropdowns (mousedown evita blur premature)
+function acClickHandler(e) {
+  var item = e.target.closest('.ac-item');
+  if (!item) return;
+  e.preventDefault();
+  acSelect(item.dataset.val);
+}
+
+document.addEventListener('mousedown', function (e) {
+  // Si click es FUERA del input AC o dropdown → cerrar
+  var drop = e.target.closest('.ac-dropdown');
+  var wrap = e.target.closest('.ac-wrap');
+  if (!drop && !wrap) acClose();
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// UBIGEO PERÚ — carga
+// ══════════════════════════════════════════════════════════════════════
+// D-30: token para evitar race conditions con fetchasync esperando
+var ubigeoLoadToken = 0;
+
+function loadUbigeo() {
+  var myToken = ++ubigeoLoadToken;
+  fetch('data/ubigeo_consolidated.json')
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      if (myToken !== ubigeoLoadToken) return; // fetch stale, ignorar
+      UBIGEO = data;
+      // Si el input departamento ya tiene valor, refrescar dropdown
+      var dep = $('departamento');
+      if (dep && dep.value.trim()) acRender('departamento');
+    })
+    .catch(function (err) {
+      if (myToken !== ubigeoLoadToken) return;
+      UBIGEO = null;
+      alertMsg('⚠️ No se pudo cargar ubigeo.json — modo texto libre');
+    });
+}
+
+function onDepChange() {
+  var dep = upper('departamento');
+  // Reset provincia + distrito si cambió el departamento
+  $('provincia').value = '';
+  $('distrito').value = '';
+  $('ccpp').value = '';
+  updateOutput();
+}
+
+function onProvChange() {
+  var dep  = upper('departamento');
+  var prov = upper('provincia');
+  // Reset distrito si cambió la provincia
+  $('distrito').value = '';
+  $('ccpp').value = '';
+  updateOutput();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CCPP — lazy load (D-30): 625KB se carga solo cuando se necesita,
+// no eager al cargar el popup (ahorra bandwidth con 50+ usuarios).
+// Trigger: primer focus del input distrito o ccpp.
+// ══════════════════════════════════════════════════════════════════════
+var CCPP_DATA = null;
+var CCPP_LOADING = false;
+var ccppLoadToken = 0;
+
+function loadCCPP() {
+  if (CCPP_LOADING) return;
+  if (CCPP_DATA) return; // ya cargado
+  CCPP_LOADING = true;
+  var myToken = ++ccppLoadToken;
+  fetch('data/ccpp_by_distrito.json')
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      if (myToken !== ccppLoadToken) return;
+      CCPP_DATA = data.ccpp_by_distrito || {};
+      // D-30 fix: re-renderizar dropdown CCPP si está abierto
+      if (AC_STATE.active === 'ccpp') acRender('ccpp');
+      var dist = upper('distrito');
+      if (dist) updateCcppHint(dist);
+    })
+    .catch(function (err) {
+      if (myToken !== ccppLoadToken) return;
+      CCPP_DATA = {};
+      alertMsg('⚠️ No se pudo cargar la base de centros poblados');
+    })
+    .finally(function () {
+      CCPP_LOADING = false;
+    });
+}
+
+function findDistritoUbigeo(dep, prov, dist) {
+  if (!UBIGEO || !UBIGEO[dep] || !UBIGEO[dep].provincias) return null;
+  var p = UBIGEO[dep].provincias[prov];
+  if (!p || !p.distritos) return null;
+  var d = p.distritos[dist];
+  return d ? d._ubigeo : null;
+}
+
+function updateCcppHint(distritoNombre) {
+  // D-26: eliminado el hint visible. Solo actualiza el placeholder
+  // para contexto al usuario cuando el campo está vacío.
+  var dep  = upper('departamento');
+  var prov = upper('provincia');
+  var ubigeo = findDistritoUbigeo(dep, prov, distritoNombre);
+  var ccpps = (ubigeo && CCPP_DATA && CCPP_DATA[ubigeo]) ? CCPP_DATA[ubigeo] : [];
+  var input = $('ccpp');
+  if (!input) return;
+  if (input.value.trim()) return;  // No pisar valor ya ingresado
+  if (ccpps.length > 0) {
+    input.placeholder = '(' + ccpps.length + ' caseríos para ' + distritoNombre + ')';
+  } else {
+    input.placeholder = '(sin caseríos para ' + distritoNombre + ')';
+  }
+}
+
+function onDistChange() {
+  var dist = upper('distrito');
+  if (CCPP_DATA) {
+    updateCcppHint(dist);
+  } else if (!CCPP_LOADING) {
+    // D-30: lazy load CCPP solo cuando hay distrito seleccionado
+    loadCCPP();
+  }
+  syncDirHint();
+  updateOutput();
+}
+
+function onCcppInput() {
+  syncDirHint();
+  updateOutput();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE EVENTS (D-12) — wiring de los 4 inputs AC
+// D-30: guard contra re-init (cada input se marca con data-ac-init)
+// ══════════════════════════════════════════════════════════════════════
+var AC_KEYS = ['departamento', 'provincia', 'distrito', 'ccpp'];
+
+function setupAutocomplete() {
+  AC_KEYS.forEach(function (key) {
+    var input = $(key);
+    var drop  = acGetDropdown(key);
+    if (!input || !drop) return;
+    // D-30 fix: si ya está inicializado, saltar
+    if (input.dataset.acInit === '1') return;
+    input.dataset.acInit = '1';
+    // Click en dropdown → selecciona
+    drop.addEventListener('mousedown', function (e) {
+      var item = e.target.closest('.ac-item');
+      if (!item) return;
+      e.preventDefault();
+      acSelect(item.dataset.val);
+    });
+
+    // Focus → abrir dropdown
+    // D-30: lazy load CCPP en primer focus del input distrito/ccpp
+    input.addEventListener('focus', function () {
+      if ((key === 'distrito' || key === 'ccpp') && !CCPP_DATA && !CCPP_LOADING) {
+        loadCCPP();
+      }
+      acRender(key);
+    });
+    // Input → re-render
+    input.addEventListener('input', function () {
+      // Marca filled visualmente
+      if (input.value.trim()) input.classList.add('filled');
+      else input.classList.remove('filled');
+      // Re-render dropdown
+      acRender(key);
+      // Propaga onChange según key
+      if (key === 'departamento') onDepChange();
+      else if (key === 'provincia') onProvChange();
+      else if (key === 'distrito') onDistChange();
+      else if (key === 'ccpp') onCcppInput();
+    });
+
+    // Teclado: ↓↑ navegar, Enter/Tab aceptar, Esc cerrar
+    input.addEventListener('keydown', function (e) {
+      var isOpen = AC_STATE.active === key && !acGetDropdown(key).hidden;
+      if (e.key === 'ArrowDown') {
+        if (!isOpen) { acRender(key); return; }
+        e.preventDefault();
+        var next = (AC_STATE.selectedIdx + 1) % AC_STATE.items.length;
+        acHighlightItem(next);
+      } else if (e.key === 'ArrowUp') {
+        if (!isOpen) return;
+        e.preventDefault();
+        var prev = AC_STATE.selectedIdx <= 0 ? AC_STATE.items.length - 1 : AC_STATE.selectedIdx - 1;
+        acHighlightItem(prev);
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        if (!isOpen) return;
+        // Si hay item highlighted → selecciona y previene default (no Tab-out)
+        if (AC_STATE.selectedIdx >= 0) {
+          e.preventDefault();
+          acSelect(AC_STATE.items[AC_STATE.selectedIdx]);
+        } else if (AC_STATE.items.length > 0) {
+          // Sin highlight → acepta el primer item
+          e.preventDefault();
+          acSelect(AC_STATE.items[0]);
+        } else {
+          // No hay items → deja fluir Tab/Enter
+          acClose();
+        }
+      } else if (e.key === 'Escape') {
+        if (isOpen) {
+          e.preventDefault();
+          acClose();
+        } else if (input.value) {
+          input.value = '';
+          input.classList.remove('filled');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    });
+
+    // Blur → cerrar (con delay para permitir click en dropdown)
+    input.addEventListener('blur', function () {
+      setTimeout(function () {
+        if (AC_STATE.active === key) acClose();
+      }, 150);
+    });
+  });
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// TIPIFICACIONES DINÁMICAS (D-10)
+// - Grid 2 vacío inicialmente. El usuario agrega tipificaciones con "+ Agregar".
+// - Cada tipificación es un objeto {id, descarte, red, problema, numero, consulta, respuesta, idc}.
+// - Output: numero // consulta // respuesta // $$_id_&&
+// ════════════════════════════════════════════════════════════════════
+var tipifs = [];
+var tipifCounter = 0;
+
+function addTipif() {
+  tipifCounter++;
+  var id = 't' + tipifCounter;
+  tipifs.push({
+    id: id,
+    descarte: '', red: '', problema: '',
+    numero: '', consulta: '', respuesta: '', idc: ''
+  });
+  renderTipifs();
+}
+
+function removeTipif(id) {
+  tipifs = tipifs.filter(function (t) { return t.id !== id; });
+  renderTipifs();
+}
+
+function setTipif(id, key, val) {
+  var t = tipifs.find(function (t) { return t.id === id; });
+  if (!t) return;
+  t[key] = val;
+  if (key === 'descarte') {
+    t.red = '';
+    t.problema = '';
+  }
+  // Auto-fill consulta desde problema + red
+  if (key === 'problema' && t.descarte) {
+    var lista = PROBLEMAS[t.descarte] || [];
+    var pobj = lista.find(function (p) { return p.label === val; });
+    if (pobj) {
+      var red = t.red || '(FALTA RED)';
+      t.consulta = pobj.plantilla.replace('[RED]', red);
+    }
+  }
+  if (key === 'red' && t.problema && t.descarte) {
+    var lista2 = PROBLEMAS[t.descarte] || [];
+    var pobj2 = lista2.find(function (p) { return p.label === t.problema; });
+    if (pobj2) {
+      t.consulta = pobj2.plantilla.replace('[RED]', val);
+    }
+  }
+  renderTipifs();
+}
+
+function buildTipifOutput(t) {
+  if (!t.numero && !t.consulta && !t.respuesta && !t.idc) {
+    return 'Resultado aparecerá aquí...';
+  }
+  return t.numero + ' // ' + t.consulta + ' // ' + t.respuesta + ' // $$_' + t.idc + '_&&';
+}
+
+function escAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderTipifs() {
+  var list = $('tipifList');
+  var empty = $('tipifEmpty');
+  if (!list || !empty) return;
+  if (tipifs.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  // D-30: wrap en try-catch para evitar que errores en render rompan el popup
+  try {
+  list.innerHTML = tipifs.map(function (t, idx) {
+    var out = buildTipifOutput(t);
+    var isPlaceholder = !t.numero && !t.consulta && !t.respuesta && !t.idc;
+    var problemas = PROBLEMAS[t.descarte] || [];
+    var num = idx + 1;
+    var dIntSel = t.descarte === 'internet' ? ' selected' : '';
+    var dSenSel = t.descarte === 'senal'    ? ' selected' : '';
+    var r3 = t.red === '3G' ? ' selected' : '';
+    var r4 = t.red === '4G' ? ' selected' : '';
+    var r5 = t.red === '5G' ? ' selected' : '';
+
+    var descarteRow = '<div class="button-group">' +
+      '<button class="btn' + dIntSel + '" data-tipif-act="descarte-internet" data-id="' + t.id + '">Internet</button>' +
+      '<button class="btn' + dSenSel + '" data-tipif-act="descarte-senal" data-id="' + t.id + '">Señal</button>' +
+      '</div>';
+
+    var redRow = t.descarte ? '<div class="button-group">' +
+      '<button class="btn' + r3 + '" data-tipif-act="red-3G" data-id="' + t.id + '">3G</button>' +
+      '<button class="btn' + r4 + '" data-tipif-act="red-4G" data-id="' + t.id + '">4G</button>' +
+      '<button class="btn' + r5 + '" data-tipif-act="red-5G" data-id="' + t.id + '">5G</button>' +
+      '</div>' : '';
+
+    var probRow = '';
+    if (t.descarte && problemas.length) {
+      probRow = '<div class="button-group">';
+      problemas.forEach(function (p) {
+        var sel = t.problema === p.label ? ' selected' : '';
+        probRow += '<button class="btn' + sel + '" data-tipif-act="problema" data-id="' + t.id + '" data-val="' + escAttr(p.label) + '">' + escAttr(p.label) + '</button>';
+      });
+      probRow += '</div>';
+    }
+
+    return '' +
+      '<div class="tipif-block" data-id="' + t.id + '">' +
+        '<div class="tipif-head">' +
+          '<span class="tipif-num">#' + num + '</span>' +
+          '<button class="btn-remove" data-tipif-act="remove" data-id="' + t.id + '" title="Eliminar tipificación" aria-label="Eliminar">×</button>' +
+        '</div>' +
+        descarteRow + redRow + probRow +
+        '<div class="field-row row-2">' +
+          '<div class="field"><label>Número</label>' +
+            '<input maxlength="9" inputmode="numeric" value="' + escAttr(t.numero) + '" data-tipif-act="numero" data-id="' + t.id + '">' +
+          '</div>' +
+          '<div class="field"><label>ID</label>' +
+            '<input value="' + escAttr(t.idc) + '" data-tipif-act="idc" data-id="' + t.id + '">' +
+          '</div>' +
+        '</div>' +
+        '<div class="field"><label>Consulta</label>' +
+          '<textarea rows="1" data-tipif-act="consulta" data-id="' + t.id + '">' + escAttr(t.consulta) + '</textarea>' +
+        '</div>' +
+        '<div class="field"><label>Respuesta</label>' +
+          '<textarea rows="1" data-tipif-act="respuesta" data-id="' + t.id + '">' + escAttr(t.respuesta) + '</textarea>' +
+        '</div>' +
+        '<div class="output-label">Resultado (click para copiar)</div>' +
+        '<div class="output-row">' +
+          '<div class="output-wrap">' +
+            '<div class="output-box' + (isPlaceholder ? ' placeholder' : '') + '" data-tipif-act="copy" data-id="' + t.id + '" onclick="copyTipifOutput(\'' + t.id + '\')">' + escAttr(out) + '</div>' +
+          '</div>' +
+          '<button class="btn-icon btn-icon-clear" data-tipif-act="remove" data-id="' + t.id + '" aria-label="Eliminar tipificación" title="Eliminar">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+              '<path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>' +
+            '</svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+  }).join('');
+  } catch (e) {
+    // D-30: error boundary — no romper el popup si render falla
+    console.error('[cima] renderTipifs error:', e);
+    try { list.innerHTML = ''; } catch (_e) {}
+  }
+}
+
+// Event delegation para los botones/inputs dentro de tipifList
+function tipifListHandler(e) {
+  var el = e.target.closest('[data-tipif-act]');
+  if (!el) return;
+  var act = el.dataset.tipifAct;
+  var id  = el.dataset.id;
+  var val = el.dataset.val;
+  if (act === 'remove') return removeTipif(id);
+  if (act === 'copy')   return copyTipifOutput(id);
+  if (act === 'descarte-internet') return setTipif(id, 'descarte', 'internet');
+  if (act === 'descarte-senal')    return setTipif(id, 'descarte', 'senal');
+  if (act === 'red-3G')  return setTipif(id, 'red', '3G');
+  if (act === 'red-4G')  return setTipif(id, 'red', '4G');
+  if (act === 'red-5G')  return setTipif(id, 'red', '5G');
+  if (act === 'problema')  return setTipif(id, 'problema', val);
+  if (act === 'numero')    return setTipif(id, 'numero',   el.value);
+  if (act === 'idc')       return setTipif(id, 'idc',      el.value);
+  if (act === 'consulta')  return setTipif(id, 'consulta', el.value);
+  if (act === 'respuesta') return setTipif(id, 'respuesta',el.value);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// OUTPUT ADDRESS — formato geocoding (Google Maps / Nominatim)
+// Orden: [street] [ccpp], distrito, [provincia si != dep], departamento, Peru
+// - LUG@R: descartado (rompía geocoder)
+// - Referencia: OMITIDA (rompe match)
+// - CCPP: MANTENIDA (rural localities)
+// - Provincia: dedup si == departamento
+// - Todo en title case (excepto "Peru")
+// ══════════════════════════════════════════════════════════════════════
+function toTitleCase(str) {
+  if (!str) return '';
+  // Solo poner mayúscula en letras precedidas por separador (no por otra letra)
+  return str.toLowerCase().replace(/(^|[^a-zA-ZÀ-ÿ])([a-zA-ZÀ-ÿ])/g, function (m, pre, ch) {
+    return pre + ch.toUpperCase();
+  });
+}
+
+function buildAddressForMaps() {
+  var dir  = upper('direccion');
+  var ccpp = upper('ccpp');
+  var dist = upper('distrito');
+  var prov = upper('provincia');
+  var dep  = upper('departamento');
+  var streetParts = [dir, ccpp].filter(function (x) { return x; });
+  var geoParts = [];
+  if (dist) geoParts.push(dist);
+  if (prov && prov !== dep) geoParts.push(prov);
+  if (dep)  geoParts.push(dep);
+  var allParts = streetParts.concat(geoParts);
+  if (allParts.length === 0) return '';
+  var formatted = allParts.map(function (p) { return toTitleCase(p); });
+  formatted.push('Peru');
+  return formatted.join(', ');
+}
+
+function updateAddress() {
+  var out = buildAddressForMaps();
+  var box = $('outAddress');
+  if (!box) return;
+  if (out) {
+    // D-27: guardar texto completo y truncar visualmente a 1 línea.
+    // El texto completo sigue accesible para copiar.
+    box.dataset.full = out;
+    box.textContent = truncateForBox(out, 80);
+    box.classList.remove('placeholder');
+  } else {
+    box.textContent = 'Llena los campos';
+    box.classList.add('placeholder');
+    delete box.dataset.full;
+  }
+}
+
+// D-27: truncar texto a longitud máxima con ellipsis.
+// El texto completo se guarda en dataset.full para clipboard.
+function truncateForBox(text, maxLen) {
+  if (!text || text.length <= maxLen) return text;
+  // Cortar en el último espacio antes del límite para no cortar palabras
+  var cut = text.substring(0, maxLen);
+  var lastSpace = cut.lastIndexOf(' ');
+  if (lastSpace > maxLen * 0.7) {
+    cut = cut.substring(0, lastSpace);
+  }
+  return cut.trim() + '…';
+}
+
+function clearAddress() {
+  ADDRESS_INPUTS.forEach(function (id) {
+    var el = $(id);
+    if (el) el.value = '';
+  });
+  updateAddress();
+  updateClearButtonState();  // D-25: deshabilitar botón tras limpiar
+}
+
+// D-25: el botón limpiar se habilita/deshabilita según si hay datos
+function updateClearButtonState() {
+  var hasData = ADDRESS_INPUTS.some(function (id) {
+    var el = $(id);
+    return el && el.value.trim().length > 0;
+  });
+  var clearBtn = document.querySelector('.btn-icon-clear');
+  if (clearBtn) {
+    clearBtn.disabled = !hasData;
+  }
+}
+
+// INIT
+function updateOutput() {
+  updateAddress();
+  updateClearButtonState();  // D-25: re-evaluar al cambiar cualquier input
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  ADDRESS_INPUTS.forEach(function (id) {
+    var el = $(id);
+    if (el) el.addEventListener('input', updateOutput);
+  });
+  updateClearButtonState();  // D-25: estado inicial (todos vacíos)
+  setupAutocomplete();  // D-12: keyboard + ARIA + dropdown custom
+  loadUbigeo();          // eager (110KB, pequeño)
+  // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
+  renderTipifs();        // Inicializa grid 2 (vacío)
+  initPopupMode();      // D-8: responsive desktop + botón X cerrar
+  // Event delegation para tipifList (cubre add/copy/remove/etc)
+  var tipifList = $('tipifList');
+  if (tipifList) tipifList.addEventListener('click', tipifListHandler);
+  if (tipifList) tipifList.addEventListener('input', tipifListHandler);
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// MODO POPUP (D-8)
+// - Si el popup se abrió desde otra ventana (Google Sites click en botón),
+//   mostramos el botón X. Si no, lo ocultamos (uso "standalone" desde URL directa).
+// - El CSS ya controla visibilidad por breakpoint; esta función solo
+//   agrega/remueve el atributo data-popup para que el botón aparezca.
+// - Escape desde cualquier input también cierra el popup si hay opener.
+// ══════════════════════════════════════════════════════════════════════
+function initPopupMode() {
+  var closeBtn = $('popupClose');
+  if (!closeBtn) return;
+  var isPopup = !!(window.opener || window.parent !== window);
+  if (isPopup) {
+    document.body.setAttribute('data-popup', 'true');
+    closeBtn.addEventListener('click', function () {
+      window.close();
+    });
+    // Atajo: Escape cierra el popup si no hay focus en un input con valor
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var active = document.activeElement;
+      var isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+      // Si está en un input, dejamos que su handler local limpie el campo
+      if (isInput && active.value) return;
+      window.close();
+    });
+  }
+}
+</script>
+</body>
+</html>
