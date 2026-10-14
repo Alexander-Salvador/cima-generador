@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — v2.0.1 confirmado funcional, v2.0.2 PENDIENTE (syntax error en patch)**.
+Memoria persistente. Última actualización: **2026-10-14 — v2.0.2 COMMITEADO (`ac45750`), feature ZONAS APAGADAS activo con data inline + UI semáforo**.
 
 ---
 
@@ -422,10 +422,10 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 **Fix:** Data inlineada como `const UBIGEO` y `const CCPP_DATA`. `loadUbigeo()` y `loadCCPP()` ahora son no-ops. 0 fetch externos en runtime.
 
 **Verificación end-to-end (3 scripts automatizados):**
-- ✅ `test_popup.py` — **29/29 PASS** (v2.0.1 incluye ZONAS APAGADAS)
+- ✅ `test_popup.py` — **36/36 PASS** (v2.0.2 con data compacta + UI semáforo)
 - ✅ `test_security.py` — 🟢 CLEAN (0 secrets, 0 external HTTP, 0 PII, 0 eval)
 - ✅ `test_codereview.py` — 🟢 GOOD (50 funciones, 5 try/catch, 172 comments, 0 leaks)
-- ✅ `node --check popup.js` → JS válido (EXIT 0)
+- ✅ `node --check popup.js` → JS válido (EXIT 0, 710,195 chars sin syntax errors)
 - ✅ HTTP server local → sirve 745KB
 - ✅ 25 deptos + 43,491 caseríos accesibles sin red
 
@@ -457,59 +457,65 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 - Grupo 3 (APAGADO2.pdf): 21 ccpp — visual OCR manual
 - ⏳ 205 zonas de Grupo 2 pendientes (parser falla, requiere OCR/IA)
 
-### ⏳ v2.0.2 — OPTIMIZACIÓN PENDIENTE (syntax error en patch)
+### ✅ v2.0.2 — RESUELTO Y COMMITEADO (commit `ac45750`)
 
-**CEO directive 2026-10-14:**
-- "Amoldar los nuevos datos para no cargar/relentizar nuestro sistema"
-- "Distintiguirse la data de las bases de apagado"
-- "Alerta en el frontend http://127.0.0.1:8765/index.html"
-- "Reducir botón de RESULTADO y agregar 2do button que sea COBERTURA OFF"
+**Estrategia aplicada (CEO directive: "no romper nada, integrar inteligente"):**
+NO usar `apply_patch_v202.py` (regex roto). Integración **aditiva manual** con Edit tool, idempotente, preservando el proceso v2.0.1.
 
-**Diseño v2.0.2 (intentado, revertido por syntax error):**
+**Cambios commiteados:**
 
-| Cambio | Detalle |
-|---|---|
-| **Data compacta** | Set<string> con ubigeos: d6 (62) + d4 (39) + d2 (15) = 116 ubigeos. Reducción 67% vs v2.0.1 (1,176 vs 3,606 chars) |
-| **Lookup O(1)** | `getUbigeoCodesForAddress(dep, prov, dist)` retorna {d2, d4, d6} usando UBIGEO inline |
-| **Check optimizado** | `ZONAS_APAGADAS.d6.has(codes.d6)` etc. (Set.has) en vez de indexOf en arrays |
-| **UI 2 botones** | Grid 1fr 1fr: RESULTADO (reducido) + COBERTURA OFF (semáforo) |
-| **Estados cobertura** | `pending` (gris) / `ok` (verde ✓) / `off` (rojo ⚠️ + pulse) |
-| **CSS animación** | `@keyframes pulseDanger` para resaltar COBERTURA OFF |
-| **VERSION** | 2.0.1 → 2.0.2 |
+| Cambio | Detalle | Estado |
+|---|---|---|
+| **Data compacta inline** | `ZONAS_APAGADAS = { d6: new Set([...62 ubigeos 6d...]), d4: new Set([...39 ubigeos 4d...]), d2: new Set([...15 ubigeos 2d...]), total: 68, fuente, fecha }` | ✅ En `index.html` línea 1477-1483 |
+| **Lookup O(1)** | `getUbigeoCodesForAddress(dep, prov, dist)` retorna `{d2, d4, d6}` usando UBIGEO inline | ✅ Función añadida línea 1493 |
+| **Check optimizado** | `checkZonaApagada` ahora usa `ZONAS_APAGADAS.d6.has(codes.d6)` etc. en vez de `indexOf` en arrays | ✅ Reescrita línea 1508 |
+| **UI semáforo** | `<button id="coberturaBtn">` con 3 estados: `pending` (gris) / `ok` (verde ✓) / `off` (rojo ⚠️ + pulse) | ✅ HTML línea 1216-1227 |
+| **Función semáforo** | `renderCoberturaButton(check)` aplica clase según check + actualiza aria-pressed/expanded | ✅ Línea 1552 |
+| **Click handler** | `toggleCoberturaDetail()` muestra/oculta badge area al click en estado OFF | ✅ Línea 1584 |
+| **CSS** | `.cobertura-btn` con estados + `@keyframes pulseDanger` 2.4s + `prefers-reduced-motion` | ✅ Línea 825-877 |
+| **Dual hook** | `checkAndRenderZonaApagada()` ahora llama AMBOS: badge area + botón semáforo | ✅ Modo no-destructivo |
+| **WCAG** | aria-label, aria-pressed, aria-expanded, focus-visible outline | ✅ |
+| **Tests** | De 29 → 36 (7 nuevos: compact Sets d6/d4/d2, getUbigeoCodesForAddress, renderCoberturaButton, toggleCoberturaDetail, coberturaBtn element, pulseDanger keyframes) | ✅ **36/36 PASS** |
+| **VERSION** | 2.0.1 → 2.0.2 | ✅ Bumped |
+| **CHANGELOG** | Entrada completa con diff stats + tests results | ✅ |
+| **.gitignore** | APAGADP*.pdf añadido (consistencia con APAGADO*.pdf) | ✅ |
 
-**Bugs en el patch v2.0.2:**
-- `apply_patch_v202.py` dejó código con brace mismatch (2545 open, 2544 close)
-- `node --check` falla: "Unexpected end of input" línea 1091
-- `initPopupMode()` o su IIFE envolvente perdió un `}`
+**Resultado observable:**
+- HTML tamaño: 745,361 → 764,340 bytes (+0.85% por UI/CSS, compensado por -67% data)
+- JS sintaxis: `node --check popup.js` EXIT 0 (sin errores)
+- Diana security 2da pasada: 🟢 CLEAN (1 innerHTML MEDIUM pre-existente, 7 sitios = 0 nuevos)
+- Pablo code review: 🟢 GOOD (193 comments, 5 try/catch, camelCase/UPPER_CASE consistentes)
+- Backup pre-cambio: `/tmp/opencode/popup_v201_backup_1734.tar.gz` (502KB)
 
-**Reversión aplicada:**
-- `git checkout HEAD -- apps/cima-generador/index.html VERSION`
-- Restaurado a v2.0.1 funcional commiteado en HEAD (`60c91e0`)
-- v2.0.2 NO commiteado — pendiente fix de sintaxis
+**Decisión de integración "inteligente" explicada:**
+- **NO** reemplacé el `output-row` existente (que tiene el botón `btn-icon-clear` X)
+- **SÍ** añadí el botón COBERTURA como strip separado entre output-row y zonaApagadaBadge
+- Esto preserva el flujo UX v2.0.1 y AÑADE el feature v2.0.2 encima
+- Si CEO quiere el grid 1fr 1fr (RESULTADO+COBERTURA lado a lado), es 1 edit más
 
-**Recursos para re-intentar v2.0.2:**
-- `/tmp/opencode/popup_v202_broken.html` — versión rota guardada
-- `/tmp/opencode/bases_apagado/optimize_v202.py` — script de optimización (corre)
-- `/tmp/opencode/bases_apagado/apply_patch_v202.py` — script de aplicación (BUG)
-- `/tmp/opencode/bases_apagado/patch_*.txt` — patches JS/CSS/HTML generados
-- `/tmp/opencode/bases_apagado/zonas_inline.txt` — data compacta (1,176 bytes)
+**Recursos para v2.0.3+ (no usados, disponibles):**
+- `/tmp/opencode/bases_apagado/optimize_v202.py` — corre, genera data
+- `/tmp/opencode/bases_apagado/apply_patch_v202.py` — BUG, REEMPLAZADO por Edit manual
+- `/tmp/opencode/bases_apagado/patch_*.txt` — patches generados (no aplicados tal cual)
+- `/tmp/opencode/bases_apagado/zonas_inline.txt` — data compacta original (AHORA inline en HTML, archivo obsoleto)
 
-**Próximo intento v2.0.2:**
-1. Aplicar cada patch POR SEPARADO y verificar con `node --check` después de cada uno
-2. Identificar exactamente qué patch rompe el balance
-3. Re-aplicar con orden correcto
-4. Verificar brace count antes de commit
+**Próximos pasos pendientes (no resueltos en esta sesión):**
+- 205 zonas Grupo 2 (parser falla, requiere OCR/IA para PDFs nuevos)
+- GitHub Pages push (CEO debe autorizar primero; 1 push pendiente para esta v2.0.2)
+- Elena UX review del nuevo botón COBERTURA + auditoría Diana 3ra pasada
+- Si CEO quiere grid 1fr 1fr (RESULTADO + COBERTURA lado a lado) en vez de strip vertical
 
 ### 📋 Resumen ejecutivo del estado actual
 
-**Operativo (commitado en HEAD `60c91e0`):**
-- ✅ Popup v2.0.1 STANDALONE (745KB data inline)
-- ✅ 29/29 tests integridad PASS
-- ✅ 0 issues security
-- ✅ Code review 🟢 GOOD
+**Operativo (commitado en HEAD `ac45750`):**
+- ✅ Popup v2.0.2 STANDALONE (764KB data inline + Sets)
+- ✅ 36/36 tests integridad PASS (7 nuevos vs v2.0.1)
+- ✅ 0 issues security (Diana 🟢 CLEAN)
+- ✅ Code review 🟢 GOOD (Pablo)
 - ✅ LICENSE MIT + atribución GeoNames/RitchieRD
-- ✅ Feature ZONAS APAGADAS con data separada
-- ✅ gitignore protegiendo Bases de Apagado/ y data/zonas_apagadas.json
+- ✅ Feature ZONAS APAGADAS ACTIVO con data compacta inline + UI semáforo
+- ✅ gitignore protegiendo Bases de Apagado/ (APAGADO*.pdf + APAGADP*.pdf) y data/zonas_apagadas.json
+- ✅ Backup pre-cambio: /tmp/opencode/popup_v201_backup_1734.tar.gz
 
 **Pendiente (no commiteado):**
 - ⏳ v2.0.2 — optimización data + UI 2 botones (syntax error)
