@@ -1,6 +1,100 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-06 — FEEDBACK reparado + 2 rows nuevas (Rosalía + Pablo)**.
+Memoria persistente. Última actualización: **2026-10-06 — cima-generador importado a CIMA standalone**.
+
+### Política de push (CRÍTICO)
+
+⚠️ **NO PUSH REMOTO — trabajamos únicamente en local.**
+
+- Branch: `develop`
+- HEAD local: ver `git log --oneline -1`
+- Push bloqueado por gobernanza (regla del CEO)
+- Cada sesión de trabajo termina con commit local + SAFE_STOP report
+- NO ejecutar `git push` ni `gh pr create` salvo CEO explícito
+
+---
+
+## 📦 cima-generador — Mini-proyecto importado 2026-10-14
+
+**Status:** Importado al repo CIMA standalone, AKRYNT intacto.
+**Scope:** Generador de plantillas Address + Tipificación (popup standalone Google Sites)
+**Owner:** Alexander Salvador
+
+### Stack
+
+| Aspecto | Implementación |
+|---------|----------------|
+| **Frontend** | Vanilla JS · sin frameworks |
+| **Backend** | No (100% client-side) |
+| **CSS** | Sistema propio con CSS variables (--bg, --space-*, --radius-*) |
+| **CDN/libs** | Ninguno (0 dependencias externas) |
+| **Persistencia** | No (variables globales volátiles) |
+| **APIs externas** | 0 — solo fetch a JSONs locales |
+
+### Datos incluidos
+
+| Archivo | Peso | Contenido | Licencia |
+|---------|------|-----------|----------|
+| `index.html` | 76KB | 2064 LOC (CSS+HTML+JS monolítico) | Sin definir |
+| `data/ubigeo_consolidated.json` | 108KB | 25 deptos, 196 prov, 1892 dist (Perú) | ODbL (RitchieRD) |
+| `data/ccpp_by_distrito.json` | 612KB | 43,491 caseríos (GeoNames) | CC BY 4.0 |
+
+### Funcionalidad observable
+
+- Form "Búsqueda Address" (4 inputs AC: depto/prov/dist/ccpp + 1 texto libre: dirección)
+- 4 autocompletes en cascada con reset
+- Output en formato Google Maps / Nominatim (geocoding string)
+- Copy-to-clipboard
+- Theme dark/light via `prefers-color-scheme`
+- WCAG a11y: ARIA roles, srStatus, srAlert, focus-visible
+- Lazy-load de CCPP (612KB) para optimizar first-paint
+
+### Issues identificados (auditoría multi-agente 2026-10-14)
+
+| Sev | Issue | Estado |
+|-----|-------|--------|
+| CRITICAL | #1 Tipif textareas focus loss en re-render | Pendiente fix |
+| HIGH | #2 DoS paste sin maxlength | Pendiente fix |
+| HIGH | #3 Memory sin cap (tipifs ilimitadas) | Pendiente fix |
+| HIGH | #4 JSON sin SRI / acEscape incompleto | Pendiente fix |
+| MEDIUM | #5 acEscape sin `"` escape | Pendiente fix |
+| MEDIUM | #6 Sin CSP meta tag | Pendiente fix |
+| MEDIUM | #7 CCPP silent fail | Pendiente fix |
+| MEDIUM | #8 Race typing vs fetch | Pendiente fix |
+| LOW | #9 referencia data loss | Pendiente fix |
+| LOW | #10 window.close sin sandbox | Pendiente fix |
+
+### Documentación generada
+
+- `apps/cima-generador/CHANGELOG.md` — release notes
+- `apps/cima-generador/VERSION` — v1.0.0
+- `apps/cima-generador/docs/AUDIT.md` — análisis adversarial completo
+- `apps/cima-generador/docs/SOURCES.md` — atribución de datos (GeoNames, RitchieRD)
+- `apps/cima-generador/docs/INTEGRATION.md` — cómo embeber en Google Sites
+
+### Análisis multi-agente ejecutado
+
+| Agente | Output |
+|--------|--------|
+| Helena (deep_explorer) | ✅ Context pack completo (stack, datos, dependencias, limitations) |
+| Akiko (adversarial) | ✅ Top 10 vulnerabilidades con evidencia y mitigación |
+| Nadia (documentation) | ✅ Auditoría documental 4/10 + plan CHANGELOG |
+| Diana (security) | ⚠️ Interrumpida (max steps) — pendiente segunda pasada |
+| Pablo (code review) | ⚠️ Bloqueado por external_directory — pendiente |
+
+### Política de remediación
+
+CEO decide si aplicar fixes. Plan priorizado:
+1. **#1 (CRITICAL)** — fix inmediato si se va a usar
+2. **#4 + #6** — cadena XSS, alta prioridad
+3. **#2 + #3** — hardening básico
+4. Resto — mejora continua
+
+**Veredicto:** Funcional 8/10, Documental 4/10 → 8/10 con la docs generada.
+
+---
+
+## 🔧 FEEDBACK — Reparación 2026-10-06 (post ATAQUE v3)
 
 ### Política de push (CRÍTICO)
 
