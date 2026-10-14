@@ -819,6 +819,79 @@
     85%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
   }
+  /* v2.0.2: Botón COBERTURA (Movistar) — semáforo pending/ok/off */
+  .cobertura-btn {
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: all 0.18s ease-out;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: var(--space-2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    width: 100%;
+    user-select: none;
+  }
+  .cobertura-btn .icon {
+    font-size: 14px;
+    line-height: 1;
+    display: inline-block;
+  }
+  .cobertura-btn.pending {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-faint);
+    cursor: default;
+  }
+  .cobertura-btn.ok {
+    background: color-mix(in srgb, var(--green) 14%, var(--surface));
+    border-color: var(--green);
+    color: var(--green);
+    cursor: default;
+  }
+  .cobertura-btn.off {
+    background: color-mix(in srgb, var(--danger) 22%, var(--surface));
+    border-color: var(--danger);
+    color: var(--danger);
+    cursor: pointer;
+    animation: pulseDanger 2.4s ease-in-out infinite;
+  }
+  .cobertura-btn.off:hover,
+  .cobertura-btn.off:focus-visible {
+    background: color-mix(in srgb, var(--danger) 32%, var(--surface));
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
+  }
+  .cobertura-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .cobertura-btn[disabled] {
+    opacity: 0.85;
+  }
+  @keyframes pulseDanger {
+    0%, 100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 60%, transparent);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 0%, transparent);
+      transform: scale(1.015);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cobertura-btn.off { animation: none; }
+  }
   /* D-25: feedback inline cuando output está vacío */
   .output-box.empty-shake {
     border-color: var(--danger) !important;
@@ -1138,8 +1211,17 @@ font-size: 10px;
           </svg>
         </button>
       </div>
-    </div>
-    <div id="zonaApagadaBadge" class="zona-apagada-badge"></div>
+</div>
+      <!-- v2.0.2: Botón semáforo COBERTURA (Movistar) -->
+      <button id="coberturaBtn" class="cobertura-btn pending" type="button" disabled
+              aria-label="Verificar cobertura Movistar"
+              aria-pressed="false"
+              title="Selecciona ubicación para verificar cobertura"
+              onclick="toggleCoberturaDetail()">
+        <span id="coberturaIcon" class="icon" aria-hidden="true">—</span>
+        <span id="coberturaLabel">COBERTURA</span>
+      </button>
+      <div id="zonaApagadaBadge" class="zona-apagada-badge"></div>
   </div>
 
   <!-- ═══════════ GRID 2: TIPIFICACIÓN (D-22: CTA honesto, sin promesa falsa) ═══════════ -->
@@ -1388,42 +1470,55 @@ const CCPP_LOADED = true;
 // ══════════════════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════════════════
-// ZONAS APAGADAS MOVISTAR (v2.0.1) — data inline + check function
+// ZONAS APAGADAS MOVISTAR (v2.0.2) — data compacta + Sets O(1) lookup
 // ══════════════════════════════════════════════════════════════════════
-// ZONAS_APAGADAS se inyecta desde data/zonas_apagadas.json (gitignored)
-// Para activar feature, CEO debe regenerar data e inyectar const.
-// Shape esperado: { by_ubigeo: [], by_dist: [], by_prov: [], by_depto: [], total: N, fuente: '', fecha: '' }
-const ZONAS_APAGADAS = { by_ubigeo: [], by_dist: [], by_prov: [], by_depto: [], total: 0, fuente: '', fecha: '' };
+// Schema: { d6: Set<6d-ubigeo>, d4: Set<4d-ubigeo>, d2: Set<2d-ubigeo>, total, fuente, fecha }
+// Lookup jerárquico: d6 (distrito) → d4 (provincia) → d2 (departamento).
+// Source: data/zonas_apagadas.json (68 zones, 62 d6 + 39 d4 + 15 d2).
+const ZONAS_APAGADAS = {
+  d6: new Set(["010513","010602","010608","010611","010705","021206","021509","030201","030218","030415","030504","030608","040504","040603","050406","050507","050603","050703","051012","060606","060801","060808","060812","060901","060907","080401","080403","080407","080602","080904","080905","080906","080909","081009","081201","081208","081210","090301","090706","090718","100903","120302","120602","120606","120607","140202","140307","140308","150606","150901","160101","160107","160108","160305","160503","160505","160507","160508","160509","200304","230107","230405"]),
+  d4: new Set(["0105","0106","0107","0212","0215","0302","0304","0305","0306","0405","0406","0504","0505","0506","0507","0510","0606","0608","0609","0804","0806","0809","0810","0812","0903","0907","1009","1203","1206","1402","1403","1506","1509","1601","1603","1605","2003","2301","2304"]),
+  d2: new Set(["01","02","03","04","05","06","08","09","10","12","14","15","16","20","23"]),
+  total: 68,
+  fuente: "Bases de Apagado Movistar (3 PDFs Grupo 1, 2, 3)",
+  fecha: "2026-10-14"
+};
 
 
 // ══════════════════════════════════════════════════════════════════════
-// ZONAS APAGADAS MOVISTAR (v2.0.1) — detecta si la búsqueda es zona de retiro
+// ZONAS APAGADAS MOVISTAR (v2.0.2) — detecta si la búsqueda es zona de retiro
+// Lookup O(1) jerárquico: d6 (distrito) → d4 (provincia) → d2 (departamento)
+// Helper: extrae códigos ubigeo del UBIGEO inline usando nombres capitalizados
 // ══════════════════════════════════════════════════════════════════════
-function checkZonaApagada(depto, prov, dist, ccpp) {
+function getUbigeoCodesForAddress(depto, prov, dist) {
+  if (typeof UBIGEO === 'undefined' || !UBIGEO || !depto) return null;
+  var d = UBIGEO[depto];
+  if (!d) return null;
+  var d2 = d._ubigeo || '';
+  if (!prov) return { d2: d2, d4: '', d6: '' };
+  var p = d.provincias && d.provincias[prov];
+  if (!p) return { d2: d2, d4: '', d6: '' };
+  var d4 = p._ubigeo || '';
+  if (!dist) return { d2: d2, d4: d4, d6: '' };
+  var di = p.distritos && p.distritos[dist];
+  if (!di) return { d2: d2, d4: d4, d6: '' };
+  return { d2: d2, d4: d4, d6: di._ubigeo || '' };
+}
+
+function checkZonaApagada(depto, prov, dist) {
   if (typeof ZONAS_APAGADAS === 'undefined') return null;
   if (!depto) return null;
-  var d = depto.toUpperCase();
-  var p = (prov || '').toUpperCase();
-  var di = (dist || '').toUpperCase();
-  var c = (ccpp || '').toUpperCase();
-
-  // Most specific first: ubigeo 6d
-  if (c && di && p) {
-    // Build ubigeo from PERÚ scheme (we need deptos order)
-    // For simplicity, check dist level + ccpp name match
+  var codes = getUbigeoCodesForAddress(depto, prov, dist);
+  if (!codes) return null;
+  // Specificity order: distrito (6d) > provincia (4d) > departamento (2d)
+  if (codes.d6 && ZONAS_APAGADAS.d6.has(codes.d6)) {
+    return { nivel: 'distrito', code: codes.d6, mensaje: 'Cobertura retirada en este distrito' };
   }
-
-  // Check distrito level
-  if (di && p && ZONAS_APAGADAS.by_dist.indexOf(d + '|' + p + '|' + di) !== -1) {
-    return { nivel: 'distrito', mensaje: 'Distrito completo en zona de apagado Movistar' };
+  if (codes.d4 && ZONAS_APAGADAS.d4.has(codes.d4)) {
+    return { nivel: 'provincia', code: codes.d4, mensaje: 'Cobertura retirada en toda la provincia' };
   }
-  // Check provincia level
-  if (p && ZONAS_APAGADAS.by_prov.indexOf(d + '|' + p) !== -1) {
-    return { nivel: 'provincia', mensaje: 'Provincia completa en zona de apagado Movistar' };
-  }
-  // Check depto level
-  if (ZONAS_APAGADAS.by_depto.indexOf(d) !== -1) {
-    return { nivel: 'departamento', mensaje: 'Departamento completo en zona de apagado Movistar' };
+  if (codes.d2 && ZONAS_APAGADAS.d2.has(codes.d2)) {
+    return { nivel: 'departamento', code: codes.d2, mensaje: 'Cobertura retirada en todo el departamento' };
   }
   return null;
 }
@@ -1450,22 +1545,76 @@ function escapeHtml(s) {
 }
 
 
+// ══════════════════════════════════════════════════════════════════════
+// COBERTURA BUTTON (v2.0.2) — semáforo pending/ok/off con pulse animation
+// Toggle para mostrar/ocultar detalle. Estado inicial: pending.
+// ══════════════════════════════════════════════════════════════════════
+function renderCoberturaButton(check) {
+  var btn = $('coberturaBtn');
+  if (!btn) return;
+  btn.classList.remove('ok', 'off', 'pending');
+  var labelEl = $('coberturaLabel');
+  var iconEl = $('coberturaIcon');
+  var hasDepto = $('departamento') && $('departamento').value.trim();
+  if (check) {
+    btn.classList.add('off');
+    btn.disabled = false;
+    btn.setAttribute('aria-pressed', 'true');
+    btn.title = check.mensaje + ' (ubigeo ' + check.code + '). Click para detalles.';
+    if (iconEl) iconEl.textContent = '⚠️';
+    if (labelEl) labelEl.textContent = 'COBERTURA OFF';
+  } else if (hasDepto) {
+    btn.classList.add('ok');
+    btn.disabled = true;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.title = 'Zona con cobertura Movistar activa';
+    if (iconEl) iconEl.textContent = '✓';
+    if (labelEl) labelEl.textContent = 'COBERTURA OK';
+  } else {
+    btn.classList.add('pending');
+    btn.disabled = true;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.title = 'Selecciona ubicación para verificar cobertura';
+    if (iconEl) iconEl.textContent = '—';
+    if (labelEl) labelEl.textContent = 'COBERTURA';
+  }
+}
+
+// Toggle: cuando el botón está en OFF (zona detectada), click muestra/oculta badge detalle
+function toggleCoberturaDetail() {
+  var btn = $('coberturaBtn');
+  if (!btn || btn.classList.contains('pending') || btn.classList.contains('ok')) return;
+  var badgeArea = $('zonaApagadaBadge');
+  if (!badgeArea) return;
+  if (badgeArea.classList.contains('show')) {
+    badgeArea.classList.remove('show');
+    btn.setAttribute('aria-expanded', 'false');
+  } else {
+    badgeArea.classList.add('show');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+}
+
 // ZONAS APAGADAS: check on every address change
+// (v2.0.2) Ahora dual: badge zone-apagada + botón semáforo COBERTURA
 function checkAndRenderZonaApagada() {
   var dep = upper('departamento');
   var prov = upper('provincia');
   var dist = upper('distrito');
   var ccpp = upper('ccpp');
-  var check = checkZonaApagada(dep, prov, dist, ccpp);
+  var check = checkZonaApagada(dep, prov, dist);
   var badgeArea = $('zonaApagadaBadge');
-  if (!badgeArea) return;
-  if (check) {
-    badgeArea.innerHTML = renderZonaApagadaBadge(check);
-    badgeArea.classList.add('show');
-  } else {
-    badgeArea.innerHTML = '';
-    badgeArea.classList.remove('show');
+  if (badgeArea) {
+    if (check) {
+      badgeArea.innerHTML = renderZonaApagadaBadge(check);
+      badgeArea.classList.add('show');
+    } else {
+      badgeArea.innerHTML = '';
+      badgeArea.classList.remove('show');
+    }
   }
+  // (v2.0.2) Botón semáforo COBERTURA — independiente del badge
+  renderCoberturaButton(check);
 }
 
 // DATA VALIDATION (v2.0.0) — surface errors at startup (FIX #7)

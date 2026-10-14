@@ -198,7 +198,14 @@ def test(html_path):
         'UBIGEO const': 'const UBIGEO = {' in html,
         'CCPP_DATA const': 'const CCPP_DATA = {' in html,
         'ZONAS_APAGADAS const': 'const ZONAS_APAGADAS = {' in html,
-        'ZONAS_APAGADAS data separated': 'gitignored' in html or 'ZONAS_APAGADAS se inyecta' in html,
+        'ZONAS_APAGADAS compact Set d6': 'd6: new Set([' in html,
+        'ZONAS_APAGADAS compact Set d4': 'd4: new Set([' in html,
+        'ZONAS_APAGADAS compact Set d2': 'd2: new Set([' in html,
+        'getUbigeoCodesForAddress function': 'function getUbigeoCodesForAddress' in html,
+        'renderCoberturaButton function': 'function renderCoberturaButton' in html,
+        'toggleCoberturaDetail function': 'function toggleCoberturaDetail' in html,
+        'coberturaBtn element': 'id="coberturaBtn"' in html,
+        'pulseDanger keyframes': '@keyframes pulseDanger' in html,
         'checkZonaApagada function': 'function checkZonaApagada' in html,
     }
     for name, present in checks.items():

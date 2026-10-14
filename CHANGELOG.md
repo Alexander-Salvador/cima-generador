@@ -1,5 +1,33 @@
 # Changelog — cima-generador
 
+## [2.0.2] - 2026-10-14 — ZONAS APAGADAS active (data inline + UI semáforo)
+
+### Changed
+- **Data schema migrated** from `by_ubigeo[]/by_dist[]/by_prov[]/by_depto[]` (3,606 chars) → `d6/d4/d2: Set<ubigeo>` (1,176 chars) — **67% size reduction** with O(1) lookup
+- `checkZonaApagada()` signature simplified: `(depto, prov, dist)` — uses Sets internally
+- `checkAndRenderZonaApagada()` now dual-renders: badge + semáforo button
+
+### Added
+- `getUbigeoCodesForAddress(depto, prov, dist)` — extracts 2d/4d/6d ubigeo from inline UBIGEO tree
+- `renderCoberturaButton(check)` — semáforo pending(gris) → ok(verde) → off(rojo+pulse)
+- `toggleCoberturaDetail()` — click handler que muestra/oculta badge con detalle
+- HTML: `<button id="coberturaBtn">` debajo de output-row, encima del badge area
+- CSS `.cobertura-btn` con estados pending/ok/off + `@keyframes pulseDanger` (sólo en estado off)
+- `prefers-reduced-motion: reduce` desactiva pulse animation automáticamente
+- WCAG: aria-label, aria-pressed, aria-expanded, focus-visible outline
+
+### Data
+- 68 zonas totales (62 distritos d6 + 39 provincias d4 + 15 departamentos d2, con solapamiento por jerarquía)
+- 3 PDFs fuente: APAGADO (Grupo 1, 3 pages), APAGADO2 (Grupo 2, 1 page), APAGADP1 (Grupo 3, 1 page)
+- Inline en HTML — popup sigue 100% standalone (file://, sin CORS, sin fetch)
+
+### Tests
+- De 29 → **36 tests** (+7): compact Sets d6/d4/d2, getUbigeoCodesForAddress, renderCoberturaButton, toggleCoberturaDetail, coberturaBtn element, pulseDanger keyframes
+- 36/36 PASS · 0 FAIL · 0 WARN
+- `node --check popup.js` → EXIT 0 (sin syntax errors)
+- Diana security 2da pasada: 🟢 CLEAN (innerHTML = pre-existing patterns)
+- Pablo code review: 🟢 GOOD (193 inline comments, 5 try/catch, camelCase/UPPER_CASE consistentes)
+
 ## [2.0.1] - 2026-10-14 — ZONAS APAGADAS feature ready
 
 ### Added
