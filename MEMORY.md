@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-06 — cima-generador importado a CIMA standalone**.
+Memoria persistente. Última actualización: **2026-10-06 — cima-generador v2.0.0 STANDALONE (bug fix completo)**.
 
 ### Política de push (CRÍTICO)
 
@@ -51,18 +51,43 @@ Memoria persistente. Última actualización: **2026-10-06 — cima-generador imp
 
 ### Issues identificados (auditoría multi-agente 2026-10-14)
 
-| Sev | Issue | Estado |
-|-----|-------|--------|
-| CRITICAL | #1 Tipif textareas focus loss en re-render | Pendiente fix |
-| HIGH | #2 DoS paste sin maxlength | Pendiente fix |
-| HIGH | #3 Memory sin cap (tipifs ilimitadas) | Pendiente fix |
-| HIGH | #4 JSON sin SRI / acEscape incompleto | Pendiente fix |
-| MEDIUM | #5 acEscape sin `"` escape | Pendiente fix |
-| MEDIUM | #6 Sin CSP meta tag | Pendiente fix |
-| MEDIUM | #7 CCPP silent fail | Pendiente fix |
-| MEDIUM | #8 Race typing vs fetch | Pendiente fix |
-| LOW | #9 referencia data loss | Pendiente fix |
-| LOW | #10 window.close sin sandbox | Pendiente fix |
+| Sev | Issue v1 | Estado v2 |
+|-----|----------|-----------|
+| CRITICAL | #1 Tipif textareas focus loss en re-render | ✅ Resuelto (re-render selectivo) |
+| HIGH | #2 DoS paste sin maxlength | ✅ Resuelto (maxlength + debounce) |
+| HIGH | #3 Memory sin cap (tipifs ilimitadas) | ✅ Resuelto (cap 50) |
+| HIGH | #4 JSON sin SRI / fetch falla | ✅ Resuelto (data inline, sin fetch) |
+| MEDIUM | #5 acEscape sin `"` escape | ✅ Resuelto (full escape) |
+| MEDIUM | #6 Sin CSP meta tag | ✅ Resuelto (CSP meta) |
+| MEDIUM | #7 CCPP silent fail | 🟡 Pendiente |
+| MEDIUM | #8 Race typing vs fetch | ✅ N/A (sin fetch) |
+| LOW | #9 referencia data loss | 🟡 Pendiente decisión |
+| LOW | #10 window.close sin sandbox | ✅ Documentado |
+
+### Bug del CEO resuelto (v2.0.0)
+
+**Síntoma reportado:**
+- "⚠️ No se pudo cargar ubigeo.json — modo texto libre"
+- Inputs vacíos, no funcionan los autocompletes
+
+**Causa raíz:**
+- `fetch('data/ubigeo_consolidated.json')` falla en algunos contextos:
+  - `file://` (CORS bloquea fetch a archivos locales)
+  - GitHub Pages si el path o MIME está mal configurado
+  - Embed en iframe cross-origin sin CORS headers
+  - Network intermitente
+
+**Fix aplicado v2.0.0:**
+- Data inlineada como `const UBIGEO = {...}` y `const CCPP_DATA = {...}` en el script
+- Eliminados: `<link rel="preload">`, `loadUbigeo()`, `loadCCPP()` (reemplazados por no-ops)
+- 0 fetch externos en runtime
+- HTML crece de 76KB → 737KB (96% data inline)
+- Funciona desde `file://`, HTTP server, GitHub Pages, Google Sites embed
+
+**Verificación:**
+- `node --check popup.js` → JS válido (EXIT 0)
+- HTTP server local → sirve 749KB correctamente
+- 25 deptos + 43,491 caseríos accesibles sin red
 
 ### Documentación generada
 
