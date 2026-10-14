@@ -43,3 +43,16 @@ Thumbs.db
 
 # Screenshots staging (kept in repo, but ignore temp render)
 screenshots/*.tmp.png
+
+# Confidential operator data (Movistar, BITEL, etc.) — never commit
+# PDFs from "Bases de Apagado" are internal Movistar docs, restricted
+"Bases de Apagado/"
+"Bases de Apagado"/
+**/APAGADO*.pdf
+**/APAGADO*.pdf:Zone.Identifier
+
+# Derived data from restricted sources — never commit
+# zonas_apagadas.json is generated from Movistar PDFs (confidential)
+apps/cima-generador/data/zonas_apagadas.json
+data/zonas_apagadas.json
+**/zonas_apagadas.json

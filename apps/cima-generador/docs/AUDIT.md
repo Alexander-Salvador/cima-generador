@@ -1,9 +1,9 @@
 # Auditoría de Seguridad — cima-generador
 
-**Fecha:** 2026-10-14
+**Fecha:** 2026-10-14 (v2.0.0 + v2.0.1)
 **Auditor:** Akiko (adversarial_intelligence) + Diana (security) — OVAV
-**Versión auditada:** v2.0.0 (post-fix)
-**Stack:** Vanilla HTML/JS · single-file 2081 LOC · 737KB (96% data inline)
+**Versión auditada:** v2.0.1 (post-fix)
+**Stack:** Vanilla HTML/JS · single-file 2110+ LOC · 745KB
 
 ---
 

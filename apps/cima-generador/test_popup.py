@@ -197,6 +197,9 @@ def test(html_path):
         'FIX #6 CSP meta': 'Content-Security-Policy' in html,
         'UBIGEO const': 'const UBIGEO = {' in html,
         'CCPP_DATA const': 'const CCPP_DATA = {' in html,
+        'ZONAS_APAGADAS const': 'const ZONAS_APAGADAS = {' in html,
+        'ZONAS_APAGADAS data separated': 'gitignored' in html or 'ZONAS_APAGADAS se inyecta' in html,
+        'checkZonaApagada function': 'function checkZonaApagada' in html,
     }
     for name, present in checks.items():
         if present:

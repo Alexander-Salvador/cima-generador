@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — cima-generador v2.0.0 FINAL (LICENSE + tests + FIX #7 #9)**.
+Memoria persistente. Última actualización: **2026-10-14 — cima-generador v2.0.1 (feature ZONAS APAGADAS + data separada por seguridad)**.
 
 ---
 
@@ -366,7 +366,8 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 | Ver | Tamaño | Bug del CEO (ubigeo) | Estado |
 |---|---|---|---|
 | v1.0.0 | 76KB | ❌ PRESENTE (usa fetch) | Remoto (GitHub Pages) |
-| **v2.0.0** | **740KB** | ✅ **Resuelto** | **Local — FINAL** |
+| v2.0.0 | 740KB | ✅ Resuelto | Local |
+| **v2.0.1** | **745KB** | ✅ Resuelto | **Local — ZONAS APAGADAS feature** |
 
 ### Datos inline (v2.0.0)
 
@@ -421,12 +422,40 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 **Fix:** Data inlineada como `const UBIGEO` y `const CCPP_DATA`. `loadUbigeo()` y `loadCCPP()` ahora son no-ops. 0 fetch externos en runtime.
 
 **Verificación end-to-end (3 scripts automatizados):**
-- ✅ `test_popup.py` — 26/26 PASS (integridad UBIGEO 25 deptos, CCPP 43,491 caseríos)
+- ✅ `test_popup.py` — **29/29 PASS** (v2.0.1 incluye ZONAS APAGADAS)
 - ✅ `test_security.py` — 🟢 CLEAN (0 secrets, 0 external HTTP, 0 PII, 0 eval)
 - ✅ `test_codereview.py` — 🟢 GOOD (50 funciones, 5 try/catch, 172 comments, 0 leaks)
 - ✅ `node --check popup.js` → JS válido (EXIT 0)
-- ✅ HTTP server local → sirve 740KB
+- ✅ HTTP server local → sirve 745KB
 - ✅ 25 deptos + 43,491 caseríos accesibles sin red
+
+### ZONAS APAGADAS feature (v2.0.1)
+
+**Contexto CEO:** 3 PDFs "Apagado de Estaciones Base – Centros Poblados" Grupo 1, 2, 3 (Movistar) — centros poblados donde Movistar retira cobertura.
+
+**🚨 ALERTA LEGAL:** Los PDFs son documentos internos Movistar:
+- Nota al pie: "Prohibida su reproducción y circulación"
+- Destinatarios: "asesores y fuerza de ventas de los socios estratégicos con los que la marca Movistar mantiene contratos de comercialización vigentes"
+- **NO se commitean al repo CIMA** (están en .gitignore)
+
+**Feature diseñado en popup v2.0.1:**
+- `checkZonaApagada(depto, prov, dist, ccpp)` — retorna `{nivel, mensaje}` o null
+- Niveles: departamento / provincia / distrito
+- UI: badge amber "⚠️ ZONA DE APAGADO — MOVISTAR RETIRA COBERTURA"
+- **Data separada del HTML**: `data/zonas_apagadas.json` en .gitignore
+- **Defensive**: si la const no está, retorna null sin error
+
+**Estado actual del feature:**
+- ✅ Código del feature en HTML (genérico, sin data)
+- ✅ Tests pasan (29/29)
+- ⏳ Data: 68 zonas validadas, extraídas de PDFs Movistar en /tmp/opencode
+- ⏳ CEO debe decidir si inyecta data al popup o usa mecanismo externo
+
+**Zonas validadas (68 de ~273 totales):**
+- Grupo 1 (APAGADP1.pdf): 16 ccpp — visual OCR manual
+- Grupo 2 (APAGADO.pdf): 31 ccpp — parser parcial
+- Grupo 3 (APAGADO2.pdf): 21 ccpp — visual OCR manual
+- ⏳ 205 zonas de Grupo 2 pendientes (parser falla, requiere OCR/IA)
 
 ### Diferencia local vs GitHub Pages
 

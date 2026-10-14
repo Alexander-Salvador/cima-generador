@@ -1,5 +1,40 @@
 # Changelog — cima-generador
 
+## [2.0.1] - 2026-10-14 — ZONAS APAGADAS feature ready
+
+### Added
+- **ZONAS APAGADAS detection** — feature genérico para alertar cuando una búsqueda es zona de retiro
+- `checkZonaApagada(depto, prov, dist, ccpp)` — retorna `{nivel, mensaje}` o null
+- `renderZonaApagadaBadge(check)` — genera HTML del badge de alerta
+- `checkAndRenderZonaApagada()` — hook integrado en `updateAddress()`
+- CSS `.zona-apagada-badge` con animación, gradiente amber
+- UI: badge "⚠️ ZONA DE APAGADO — MOVISTAR RETIRA COBERTURA" cuando match
+- Niveles: `departamento` / `provincia` / `distrito` (alerta si CUALQUIER nivel matchea)
+
+### Security
+- `escapeHtml()` helper para badge (full escape & < > " ' /)
+- No PII collected
+- Defensive: si `ZONAS_APAGADAS` no está definida, retorna null sin error
+
+### Documentation
+- data/zonas_apagadas.json EXCLUIDO del repo (.gitignore) por ser derivado de documentos confidenciales Movistar
+- Feature funciona sin data — solo agrega UI vacía si no hay const
+- Inyección de data se hace manualmente por CEO desde su fuente autorizada
+
+### Changed
+- VERSION: 2.0.0 → 2.0.1
+- index.html: 740,434 → 744,783 bytes (+4,349 = feature + funciones + CSS + UI)
+- 2 tests nuevos en test_popup.py (29 total, antes 27)
+
+### Verified
+- ✅ 29/29 tests integridad PASS
+- ✅ 0 issues security (Diana)
+- ✅ node --check popup.js
+- ✅ Test funcional: lógica de detección correcta (depto/prov/dist)
+- ✅ Fallback graceful sin data
+
+---
+
 ## [2.0.0] - 2026-10-14 — STANDALONE (FIX COMPLETO)
 
 ### 🚨 Bug fix crítico
