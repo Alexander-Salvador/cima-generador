@@ -50,6 +50,8 @@ screenshots/*.tmp.png
 "Bases de Apagado"/
 **/APAGADO*.pdf
 **/APAGADO*.pdf:Zone.Identifier
+**/APAGADP*.pdf
+**/APAGADP*.pdf:Zone.Identifier
 
 # Derived data from restricted sources — never commit
 # zonas_apagadas.json is generated from Movistar PDFs (confidential)
