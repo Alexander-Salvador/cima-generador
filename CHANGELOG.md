@@ -1,5 +1,31 @@
 # Changelog — cima-generador
 
+## [2.0.4] - 2026-10-14 — ZONAS APAGADAS política proporcional (anti-falso positivo)
+
+### Changed
+- **Jerarquía honesta** (anti-falso positivo):
+  - **d6**: 192 distritos con ≥1 CCPP apagado (granular) — **mantiene**
+  - **d4**: 106 → **1** (solo LORETO prov, donde ≥60% de distritos están apagados)
+  - **d2**: 23 → **1** (solo LORETO depto, donde ≥40% de distritos están apagados)
+- **Comportamiento UX**: El supervisor ahora debe tipear hasta **distrito** (o LORETO específico) para alertar OFF. Tipear solo "JUNIN" ya no alerta — solo cuando llega a un distrito con CCPP confirmado.
+- **Inline size**: 2,802 → **1,957 bytes** (−30%, al achicar d4/d2)
+
+### Why this change
+- v2.0.3 marcó LIMA, JUNIN, AREQUIPA como "departamento OFF" — **falso positivo**: solo Lima Provincias y distritos específicos de JUNIN tienen apagado, NO el depto completo.
+- Política proporcional: solo subir de d6→d4→d2 cuando el dataset respalda la generalización.
+- LORETO pasa los cutoffs: 22/55 distritos = 40% (d2), Loreto-prov 3/5 = 60% (d4). Justifica alerta amplia.
+
+### Tests
+- 50/50 PASS
+- Validación E2E con 12 escenarios reales de supervisor:
+  - LIMA + LIMA + MIRAFLORES → 🟢 OK (correcto, Lima Metropolitana no apagada)
+  - LIMA + HUARAL + IHUARI → 🔴 distrito OFF (correcto, Lima Provincias)
+  - LORETO depto solo → 🔴 departamento (único caso)
+  - TUMBES + TUMBES + TUMBES → 🟢 OK (Tumbes no afectada)
+  - CUSCO + LA CONVENCION + MARANURA → 🔴 distrito (vía OCR visual Grupo 3)
+  - AYACUCHO + VICTOR FAJARDO + VILCANCHOS → 🔴 distrito (vía OCR visual Grupo 3)
+- `node --check` → EXIT 0
+
 ## [2.0.3] - 2026-10-14 — ZONAS APAGADAS full dataset (239 zonas, OCR end-to-end)
 
 ### Changed
