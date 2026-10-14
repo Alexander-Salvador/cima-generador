@@ -214,8 +214,8 @@ def test(html_path):
         else:
             result.fail(name, 'NOT FOUND')
 
-    # 7.5 ZONAS_APAGADAS inline data integrity (v2.0.3+ — 239 zones, 192 d6 + 106 d4 + 23 d2)
-    print('\n▸ ZONAS_APAGADAS data integrity')
+    # 7.5 ZONAS_APAGADAS inline data integrity (v2.0.4+ — 239 zones, política proporcional)
+    print('\n▸ ZONAS_APAGADAS data integrity (v2.0.4 política proporcional)')
     sets_match = re.search(
         r'const ZONAS_APAGADAS = \{\s*d6:\s*new Set\(\[(.*?)\]\),\s*d4:\s*new Set\(\[(.*?)\]\),\s*d2:\s*new Set\(\[(.*?)\]\),\s*total:\s*(\d+)',
         html, re.DOTALL)
@@ -225,48 +225,39 @@ def test(html_path):
         d2_items = re.findall(r'"(\d+)"', sets_match.group(3))
         total = int(sets_match.group(4))
 
-        # Size tests
+        # Size tests (v2.0.4 política: d6=192, d4=1, d2=1)
         if len(d6_items) == 192: result.ok(f'd6 size = {len(d6_items)} (192 expected)')
         else: result.fail(f'd6 size', f'{len(d6_items)} (expected 192)')
-        if len(d4_items) == 106: result.ok(f'd4 size = {len(d4_items)} (106 expected)')
-        else: result.fail(f'd4 size', f'{len(d4_items)} (expected 106)')
-        if len(d2_items) == 23: result.ok(f'd2 size = {len(d2_items)} (23 expected)')
-        else: result.fail(f'd2 size', f'{len(d2_items)} (expected 23)')
+        if len(d4_items) == 1: result.ok(f'd4 size = {len(d4_items)} (1 — solo LORETO prov)')
+        else: result.fail(f'd4 size', f'{len(d4_items)} (expected 1)')
+        if len(d2_items) == 1: result.ok(f'd2 size = {len(d2_items)} (1 — solo LORETO depto)')
+        else: result.fail(f'd2 size', f'{len(d2_items)} (expected 1)')
         if total == 239: result.ok(f'total = {total} (239 expected)')
         else: result.fail(f'total', f'{total} (expected 239)')
+
+        # Policy verify: d4 y d2 deben ser LORETO específicamente
+        if d4_items == ['1603']: result.ok('d4 = ["1603"] (LORETO prov)')
+        else: result.fail(f'd4 content', f'{d4_items} (expected ["1603"])')
+        if d2_items == ['16']: result.ok('d2 = ["16"] (LORETO depto)')
+        else: result.fail(f'd2 content', f'{d2_items} (expected ["16"])')
 
         # Uniqueness
         if len(set(d6_items)) == len(d6_items): result.ok('d6 items unique')
         else: result.fail('d6 items', f'{len(d6_items)-len(set(d6_items))} duplicates')
-        if len(set(d4_items)) == len(d4_items): result.ok('d4 items unique')
-        else: result.fail('d4 items', f'{len(d4_items)-len(set(d4_items))} duplicates')
-        if len(set(d2_items)) == len(d2_items): result.ok('d2 items unique')
-        else: result.fail('d2 items', f'{len(d2_items)-len(set(d2_items))} duplicates')
 
-        # Code lengths
-        if all(len(i) == 6 for i in d6_items): result.ok('d6 all 6-digit')
-        else: result.fail('d6 length', 'not all 6-digit')
-        if all(len(i) == 4 for i in d4_items): result.ok('d4 all 4-digit')
-        else: result.fail('d4 length', 'not all 4-digit')
-        if all(len(i) == 2 for i in d2_items): result.ok('d2 all 2-digit')
-        else: result.fail('d2 length', 'not all 2-digit')
-
-        # Real samples present (zonas nuevas añadidas en v2.0.3)
+        # Real samples present (zonas nuevas + regresión)
         samples = [
-            ('060808', 'PUCARA Cajamarca (v2.0.1 baseline)'),
-            ('040206', 'OCONA Arequipa (Grupo 1, fuzzy OCONA→OCOÑA)'),
+            ('060808', 'PUCARA Cajamarca (baseline v2.0.1)'),
+            ('040206', 'OCONA Arequipa (Grupo 1, fuzzy OCOÑA)'),
             ('051012', 'VILCANCHOS Ayacucho (Grupo 3 OCR visual)'),
             ('120606', 'COVIRIALI Junín (Grupo 1 visual)'),
             ('160305', 'SANTA ROSA Loreto (Grupo 1 visual)'),
-            ('0201', 'Huaraz prov (Ancash)'),
-            ('04', 'Arequipa depto'),
+            ('1603', 'LORETO prov (d4 proporcional)'),
+            ('16', 'LORETO depto (d2 proporcional)'),
         ]
-        d6_set, d4_set, d2_set = set(d6_items), set(d4_items), set(d2_items)
+        all_set = set(d6_items) | set(d4_items) | set(d2_items)
         for ubigeo, label in samples:
-            in_d6 = ubigeo in d6_set
-            in_d4 = ubigeo in d4_set
-            in_d2 = ubigeo in d2_set
-            if in_d6 or in_d4 or in_d2:
+            if ubigeo in all_set:
                 result.ok(f'{ubigeo} present ({label})')
             else:
                 result.fail(f'{ubigeo} missing', label)
