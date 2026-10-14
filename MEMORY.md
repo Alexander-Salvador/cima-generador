@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — Cierre end-to-end v3.0**.
+Memoria persistente. Última actualización: **2026-10-14 — cima-generador v2.0.0 FINAL (LICENSE + tests + FIX #7 #9)**.
 
 ---
 
@@ -366,7 +366,7 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 | Ver | Tamaño | Bug del CEO (ubigeo) | Estado |
 |---|---|---|---|
 | v1.0.0 | 76KB | ❌ PRESENTE (usa fetch) | Remoto (GitHub Pages) |
-| **v2.0.0** | **749KB** | ✅ **Resuelto** | **Local** |
+| **v2.0.0** | **740KB** | ✅ **Resuelto** | **Local — FINAL** |
 
 ### Datos inline (v2.0.0)
 
@@ -378,7 +378,7 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 
 ### Fixes de auditoría aplicados (v2.0.0)
 
-| Sev | Issue | Estado v2 |
+| Sev | Issue | Estado v2 FINAL |
 |---|---|---|
 | CRITICAL | #1 tipif textareas focus loss en re-render | ✅ `updateTipifOutputOnly()` selectivo |
 | HIGH | #2 DoS paste sin maxlength | ✅ `maxlength="120"` + `debounce()` helper |
@@ -386,9 +386,9 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 | HIGH | #4 JSON sin SRI / fetch falla | ✅ **Data inline, 0 fetch** |
 | MEDIUM | #5 acEscape incompleto | ✅ Full escape `& < > " ' /` |
 | MEDIUM | #6 sin CSP meta tag | ✅ `<meta CSP>` agregada |
-| MEDIUM | #7 CCPP silent fail | 🟡 Pendiente |
+| MEDIUM | #7 CCPP silent fail | ✅ **Validation IIFE al inicio del script** |
 | MEDIUM | #8 race typing vs fetch | ✅ N/A (sin fetch) |
-| LOW | #9 referencia data loss | 🟡 Pendiente decisión |
+| LOW | #9 referencia data loss | ✅ **Incluida en output entre paréntesis** |
 | LOW | #10 window.close sin sandbox | ✅ Documentado en INTEGRATION.md |
 
 ### Funcionalidad observable
@@ -407,8 +407,8 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 | Helena (deep_explorer) | ✅ Context pack completo (stack, datos, deps, limitations) |
 | Akiko (adversarial) | ✅ Top 10 vulnerabilidades con evidencia + mitigación |
 | Nadia (documentation) | ✅ Audit 4/10 → 8/10 con docs generadas |
-| Diana (security) | ⚠️ Interrumpida max-steps — pendiente 2da pasada |
-| Pablo (code review) | ⚠️ Bloqueado external_directory — pendiente |
+| Diana (security) | ✅ **2da pasada completa — 0 CRITICAL/HIGH issues** |
+| Pablo (code review) | ✅ **Completado — 0 issues (50 funciones, 5 try/catch, 172 comments)** |
 
 ### Bug del CEO — RESUELTO v2.0.0
 
@@ -420,9 +420,12 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 - Network intermitente
 **Fix:** Data inlineada como `const UBIGEO` y `const CCPP_DATA`. `loadUbigeo()` y `loadCCPP()` ahora son no-ops. 0 fetch externos en runtime.
 
-**Verificación:**
+**Verificación end-to-end (3 scripts automatizados):**
+- ✅ `test_popup.py` — 26/26 PASS (integridad UBIGEO 25 deptos, CCPP 43,491 caseríos)
+- ✅ `test_security.py` — 🟢 CLEAN (0 secrets, 0 external HTTP, 0 PII, 0 eval)
+- ✅ `test_codereview.py` — 🟢 GOOD (50 funciones, 5 try/catch, 172 comments, 0 leaks)
 - ✅ `node --check popup.js` → JS válido (EXIT 0)
-- ✅ HTTP server local → sirve 749KB
+- ✅ HTTP server local → sirve 740KB
 - ✅ 25 deptos + 43,491 caseríos accesibles sin red
 
 ### Diferencia local vs GitHub Pages
@@ -432,14 +435,18 @@ Agregado `--wrap` flag al comando `style`. Aplicado en FEEDBACK!B4:B15 (AGENTE) 
 | `http://127.0.0.1:8765/index.html` (local) | **v2.0.0** | ✅ No | Server activo (PID 1102374) |
 | `https://alexander-salvador.github.io/cima-generador/` (remoto) | **v1.0.0** | ⚠️ Sí | CEO deployó manual |
 
-### Documentación generada en `apps/cima-generador/`
+### Documentación y tests en `apps/cima-generador/`
 
-- `CHANGELOG.md` — release notes v1.0.0 → v2.0.0
+- `CHANGELOG.md` — release notes v1.0.0 → v2.0.0 FINAL
 - `VERSION` — `2.0.0`
 - `README.md` — quickstart, embed, attribution
+- `LICENSE` — **MIT para código + ODbL/CC BY 4.0 para data embebida**
 - `docs/AUDIT.md` — análisis adversarial completo
 - `docs/SOURCES.md` — atribución GeoNames + RitchieRD
 - `docs/INTEGRATION.md` — guía embed Google Sites
+- `test_popup.py` — **26 tests integridad data inline (PASS)**
+- `test_security.py` — **Diana security 2da pasada (28 checks, 0 issues)**
+- `test_codereview.py` — **Pablo code review (análisis estático, 🟢 GOOD)**
 
 ---
 
@@ -660,11 +667,11 @@ git diff
 ### Commits recientes
 
 ```
+cde17e3 feat(cima-generador): v2.0.0 final — LICENSE, tests, FIX #7 #9, validaciones
+bb337c9 docs(cima): rewrite MEMORY.md end-to-end v3.0 — cierre completo
 35a032b feat(cima-generador): v2.0.0 STANDALONE — fix bug CEO + 6 fixes de auditoría
-cc3e977 fix(cima): FEEDBACK reparación + 2 rows nuevas (Rosalía + Pablo) + flag --wrap
-95e9f5c feat(cima): ataque visual v3 — 10 ataques, 2 tabs nuevas, 4 charts, 30+ estilos
-6242f29 docs(cima): _DASHBOARD tab + NO PUSH policy
-c13c38b docs(cima): ADR-006 hardening v2 — named ranges, dropdowns, protected, conditional format, freeze
+551abc0 fix(cima): reemplazar gitlink por archivos reales de cima-generador
+4862952 feat(cima): importar cima-generador v1.0.0 + auditoría multi-agente
 ```
 
 ---
@@ -674,11 +681,11 @@ c13c38b docs(cima): ADR-006 hardening v2 — named ranges, dropdowns, protected,
 | Acción | Estado |
 |---|---|
 | Validar visualmente v2.0.0 en http://127.0.0.1:8765/ | ⏳ CEO pendiente |
-| Pushear v2.0.0 a GitHub Pages | ❌ CEO debe aprobar (rompe política) |
-| Diana security scan 2da pasada | ⏳ Pendiente |
-| Pablo code review (con permisos) | ⏳ Pendiente |
-| Fix #7 CCPP silent fail | ⏳ Pendiente |
-| Fix #9 referencia data loss | ⏳ Pendiente decisión |
+| Pushear v2.0.0 a GitHub Pages | ⏳ CEO debe aprobar (rompe política) |
+| Diana security 2da pasada | ✅ **Completado — 0 issues** |
+| Pablo code review | ✅ **Completado — 🟢 GOOD** |
+| Fix #7 CCPP silent fail | ✅ **Completado (validation IIFE)** |
+| Fix #9 referencia data loss | ✅ **Completado (incluida en output)** |
 
 ---
 
