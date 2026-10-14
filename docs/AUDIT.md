@@ -2,21 +2,8 @@
 
 **Fecha:** 2026-10-14
 **Auditor:** Akiko (adversarial_intelligence) + Diana (security) — OVAV
-**Stack:** Vanilla HTML/JS · single-file 2064 LOC · 2 JSON (ubigeo 108KB + ccpp 612KB)
-**Versión auditada:** v1.0.0
-
----
-
-## Resumen ejecutivo
-
-| Severidad | Cantidad | Issues |
-|-----------|----------|--------|
-| CRITICAL | 1 | Tipif textareas inutilizables |
-| HIGH | 3 | DoS paste · memory sin cap · JSON sin SRI |
-| MEDIUM | 4 | acEscape incompleto · sin CSP · CCPP silent fail · race condition |
-| LOW | 2 | referencia data loss · window.close sin sandbox |
-
-**Veredicto:** Popup con defensas decentes contra XSS en output principal (`textContent` en `outAddress`, `escAttr` en tipifs). El **#1 es bloqueante funcional** (grid tipificación inutilizable). #4 + #6 combinados abren cadena XSS creíble si deploy no es HTTPS-only.
+**Versión auditada:** v2.0.0 (post-fix)
+**Stack:** Vanilla HTML/JS · single-file 2081 LOC · 737KB (96% data inline)
 
 ---
 

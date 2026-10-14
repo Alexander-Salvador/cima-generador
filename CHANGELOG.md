@@ -1,6 +1,77 @@
 # Changelog — cima-generador
 
-## [1.0.0] - 2026-10-14
+## [2.0.0] - 2026-10-14 — STANDALONE (FIX COMPLETO)
+
+### 🚨 Bug fix crítico
+- **Búsqueda Address no carga datos en algunos contextos**
+  - Causa: `fetch('data/*.json')` falla en CORS o file://
+  - Fix: data inlineada como `const UBIGEO` y `const CCPP_DATA` en el script
+  - Resultado: popup 100% standalone — funciona desde `file://`, sin HTTP server, sin CORS
+
+### Fixed
+- **#1 CRITICAL** — tipif textareas focus loss: re-render selectivo en `setTipif`
+  - Solo se actualiza el output-box (textContent), no se destruye el textarea
+  - Cursor y focus preservados al tipear
+- **#2 HIGH** — DoS paste: `maxlength="120"` en 6 inputs + helper `debounce()`
+- **#3 HIGH** — memory sin cap: cap tipifs a 50 con `alertMsg()`
+- **#4 HIGH** — JSON sin SRI: data inline (elimina fetch completamente)
+- **#5 MEDIUM** — acEscape incompleto: full escape `& < > " ' /`
+- **#6 MEDIUM** — sin CSP: agregada `<meta CSP>` en `<head>`
+
+### Changed
+- HTML ahora 737KB (vs 76KB v1.0.0) — 96% del tamaño es data inline
+- Sin dependencia de carpeta `data/` para runtime
+- Standalone: funciona desde `file://`, `python -m http.server`, GitHub Pages, Google Sites
+- `loadUbigeo()` y `loadCCPP()` ahora son no-ops (compatibilidad)
+
+### Security
+- CSP: `default-src 'self' data:; script-src 'self' 'unsafe-inline'; ...`
+- Sin inline event handlers nuevos (mantiene los existentes por compatibilidad)
+- GeoNames CC BY 4.0 atribución visible
+- RitchieRD ODbL atribución visible
+
+### Verificado
+- ✅ `node --check popup.js` — JS válido
+- ✅ HTTP 200 sirviendo 749KB vía `python3 -m http.server`
+- ✅ UBIGEO inline tiene 25 deptos
+- ✅ CCPP_DATA inline tiene 43,491 caseríos
+
+---
+
+## [1.0.0] - 2026-10-13
+
+### Added
+- D-22 → D-30 polish + 7 bugfixes frontend
+- Hardening para 50+ usuarios concurrentes
+- `<link rel="preload">` strategy: ubigeo eager + ccpp lazy
+
+### Data
+- `data/ubigeo_consolidated.json` — 25 deptos, 196 prov, 1892 dist (`82d0706`)
+- `data/ccpp_by_distrito.json` — 43,491 caseríos GeoNames CC BY 4.0 (`88edb16`)
+
+### Features
+- Popup v1.0: header minimal + footer creditos + autocomplete custom premium (`0d96ac6`)
+- CCPP by distrito from GeoNames (`da892e3`)
+- Ubigeo consolidado con `_ubigeo` + `_id` (`ea28abb`)
+- Popup completo WCAG a11y + ubigeo + CCPP + Maps format (`136fd52`)
+
+### Fixed
+- Address conditional joining: omitir partes vacías en output (`d40104a`)
+
+## [0.1.0] - 2026-10-13
+
+### Added
+- Popup generador CIMA v0.1 (`7067ec0`)
+- Initial commit (`6d16318`)
+
+---
+
+## Notas
+
+v2.0.0 es la primera versión **production-ready** del popup. v1.0.0 quedó
+como referencia histórica. La data en `data/` se mantiene como backup
+para regenerar la versión inline si se actualizan los catálogos.
+
 
 ### Added
 - D-22 → D-30 polish + 7 bugfixes frontend
