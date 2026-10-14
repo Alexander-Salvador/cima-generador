@@ -889,6 +889,29 @@ font-size: 10px;
     display: inline-block;
     animation: heartPulse 2.5s ease-in-out infinite;
   }
+  .footer-attribution {
+    margin-top: 4px;
+    font-size: 7.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+  .footer-attribution .footer-link {
+    color: var(--text-dim);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+    transition: color var(--transition-base);
+  }
+  .footer-attribution .footer-link:hover {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+  .footer-attribution .footer-link:focus-visible {
+    outline: none;
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
   @keyframes heartPulse {
     0%, 100% { transform: scale(1); }
     10%, 30% { transform: scale(1.15); }
@@ -1114,8 +1137,15 @@ font-size: 10px;
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
       <span>·</span>
-      <span>v1.0</span>
+      <span>v2.0 standalone</span>
     </span>
+    <div class="footer-attribution">
+      <span>Datos © </span>
+      <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" class="footer-link">GeoNames CC BY 4.0</a>
+      <span> · </span>
+      <span>Ubigeo © </span>
+      <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener" class="footer-link">RitchieRD ODbL</a>
+    </div>
   </footer>
 </div>
 </div><!-- /.popup-frame -->
@@ -1317,6 +1347,52 @@ const CCPP_DATA = {"160109":["Bellavista","Buena Vista","Bufeo","Campuya","Chicl
 const UBIGEO_LOADED = true;
 const CCPP_LOADED = true;
 
+
+// ══════════════════════════════════════════════════════════════════════
+// DATA VALIDATION (v2.0.0) — surface errors at startup (FIX #7)
+// ══════════════════════════════════════════════════════════════════════
+(function validateInlineData() {
+  var errors = [];
+
+  // UBIGEO check
+  if (typeof UBIGEO !== 'object' || UBIGEO === null || Array.isArray(UBIGEO)) {
+    errors.push('UBIGEO no es un objeto válido');
+  } else {
+    var nDeptos = Object.keys(UBIGEO).length;
+    if (nDeptos !== 25) {
+      errors.push('UBIGEO tiene ' + nDeptos + ' departamentos (esperaba 25)');
+    }
+  }
+
+  // CCPP_DATA check
+  if (typeof CCPP_DATA !== 'object' || CCPP_DATA === null || Array.isArray(CCPP_DATA)) {
+    errors.push('CCPP_DATA no es un objeto válido');
+  } else {
+    var nDistritos = Object.keys(CCPP_DATA).length;
+    var nCaserios = 0;
+    for (var k in CCPP_DATA) {
+      if (Array.isArray(CCPP_DATA[k])) nCaserios += CCPP_DATA[k].length;
+    }
+    if (nCaserios < 1000) {
+      errors.push('CCPP_DATA tiene ' + nCaserios + ' caseríos (esperaba >40,000)');
+    }
+  }
+
+  if (errors.length > 0) {
+    var msg = '⚠️ Error de integridad en datos: ' + errors.join('; ');
+    console.error('[cima] Data integrity:', errors);
+    // Mostrar al usuario cuando DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { alertMsg(msg); });
+    } else {
+      alertMsg(msg);
+    }
+  } else {
+    console.log('[cima] Data inline OK: 25 deptos, ' + Object.keys(CCPP_DATA).length + ' distritos, ' + (function () {
+      var c = 0; for (var k in CCPP_DATA) { if (Array.isArray(CCPP_DATA[k])) c += CCPP_DATA[k].length; } return c;
+    })() + ' caseríos');
+  }
+})();
 
 // ══════════════════════════════════════════════════════════════════════
 // D-30+: Debounce helper (FIX #2 HIGH — DoS paste prevention)
@@ -1959,11 +2035,14 @@ function toTitleCase(str) {
 
 function buildAddressForMaps() {
   var dir  = upper('direccion');
+  var ref  = upper('referencia');
   var ccpp = upper('ccpp');
   var dist = upper('distrito');
   var prov = upper('provincia');
   var dep  = upper('departamento');
-  var streetParts = [dir, ccpp].filter(function (x) { return x; });
+  // FIX #9 (v2.0.0): incluir referencia entre direccion y ccpp (entre corchetes)
+  // Formato: "[referencia]" para diferenciar visualmente de la dirección
+  var streetParts = [dir, ref ? '(' + ref + ')' : '', ccpp].filter(function (x) { return x; });
   var geoParts = [];
   if (dist) geoParts.push(dist);
   if (prov && prov !== dep) geoParts.push(prov);

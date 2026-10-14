@@ -1,0 +1,46 @@
+MIT License
+
+Copyright (c) 2026 Alexander Salvador
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+DATA ATTRIBUTION (separate licenses for embedded data files)
+
+This software embeds geographic reference data from third-party sources.
+The Software code itself is MIT-licensed as above, but the embedded data
+retains its original license:
+
+1. **ubigeo_consolidated.json** (Peru: 25 departments, 196 provinces, 1,892 districts)
+   - Source: RitchieRD/ubigeos-peru-data
+   - License: Open Database License (ODbL)
+   - URL: https://github.com/RitchieRD/ubigeos-peru-data
+   - Attribution: Required. See https://opendatacommons.org/licenses/odbl/
+
+2. **ccpp_by_distrito.json** (Peru: 43,491 centros poblados across 1,851 districts)
+   - Source: GeoNames (geonames.org)
+   - License: Creative Commons Attribution 4.0 (CC BY 4.0)
+   - URL: http://download.geonames.org/export/dump/PE.zip
+   - Modification: Grouped by distrito (6-digit ubigeo)
+   - Attribution: Required. See https://creativecommons.org/licenses/by/4.0/
+
+The MIT license above applies to the Software code only. Users of this
+software who redistribute the embedded data must comply with the original
+licenses (ODbL and CC BY 4.0) and provide proper attribution.
