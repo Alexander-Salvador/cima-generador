@@ -1260,91 +1260,32 @@
     color: var(--on-accent);
   }
 
-  /* ── Preview card premium ──────────────────────────────────────────── */
+  /* ── Preview card v3.3.6 — MINIMAL (solo 2 skill rows) ─────────────── */
+  /* CEO directive: "retiramos todo solo debe mantenerse
+     TX OPER TO OPER -> ETIQUETA | TX DIRECTA -> ETIQUETA".
+     Sin header (cat/ID/close), sin title, sin description, sin validation,
+     sin copy button. El contenedor es minimal — solo el grid de skills. */
   .etiqueta-preview {
-    margin-top: var(--space-3);
-    padding: 10px 12px;
-    background: var(--glass-2-bg);
-    -webkit-backdrop-filter: var(--blur-md);
-    backdrop-filter: var(--blur-md);
-    border: 1px solid var(--glass-border-strong);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--ring-hairline), var(--shadow-tier-2);
-    position: relative;
+    margin-top: var(--space-2);
+    padding: 8px 10px;
+    background: var(--glass-1-bg);
+    -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--ring-hairline);
     animation: etiquetaPreviewIn var(--motion-base) var(--motion-spring);
   }
   @keyframes etiquetaPreviewIn {
-    from { opacity: 0; transform: translateY(4px) scale(0.985); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .etiqueta-preview::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(180deg, var(--glass-highlight) 0%, transparent 30%);
-    opacity: 0.7;
-  }
-  .etiqueta-preview > * { position: relative; z-index: 1; }
-  .etiqueta-preview-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-  .etiqueta-preview-cat { /* themed via block-level data-cat */
-    font-size: 8.5px;
-    padding: 3px 8px;
-  }
-  .etiqueta-preview-id {
-    font-size: 8.5px;
-    color: var(--text-faint);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    letter-spacing: 0.04em;
-  }
-  .etiqueta-preview-close {
-    width: 22px;
-    height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    color: var(--text-faint);
-    cursor: pointer;
-    padding: 0;
-    transition: all var(--motion-fast) var(--motion-ease);
-  }
-  .etiqueta-preview-close svg { width: 10px; height: 10px; }
-  .etiqueta-preview-close:hover {
-    background: var(--glass-2-bg);
-    color: var(--text);
-    border-color: var(--glass-border-strong);
-  }
-  .etiqueta-preview-title {
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--text);
-    margin: 6px 0 4px;
-    line-height: 1.3;
-    letter-spacing: -0.005em;
-  }
-  .etiqueta-preview-desc {
-    font-size: 10.5px;
-    color: var(--text-dim);
-    line-height: 1.45;
-    margin-bottom: 8px;
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── Skills: grid de 2 mini-cards ──────────────────────────────────── */
+  /* Skills: grid 1fr 1fr (las 2 cards) */
   .etiqueta-preview-skills {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 5px;
-    margin: 6px 0 8px;
   }
   .etiqueta-skill-card {
     padding: 5px 7px;
@@ -1363,7 +1304,7 @@
   .etiqueta-skill-row {
     font-size: 9px;
     color: var(--text);
-    line-height: 1.35;
+    line-height: 1.3;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-weight: 700;
     word-break: break-all;        /* FIX v3.0.3: skill codes largos no overflow horizontal */
@@ -1376,48 +1317,6 @@
     font-weight: 700;
     font-size: 7.5px;
     letter-spacing: 0.06em;
-  }
-
-  /* ── Validation card (warning-themed) ──────────────────────────────── */
-  .etiqueta-validation-text {
-    color: var(--text);
-    line-height: 1.4;
-  }
-  .etiqueta-preview-validation {
-    margin: 0 0 10px;
-    padding: 7px 9px;
-    background: var(--warning-amber-soft);
-    border-radius: var(--radius-md);
-    border-left: 3px solid var(--warning-amber-500);
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .etiqueta-validation-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 8.5px;
-    font-weight: 800;
-    color: var(--warning-amber-500);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .etiqueta-validation-label::before {
-    content: "";
-    width: 11px;
-    height: 11px;
-    background: var(--warning-amber-500);
-    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9'  x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>") no-repeat center / contain;
-            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9'  x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>") no-repeat center / contain;
-  }
-  .etiqueta-validation-text {
-    font-size: 9.5px;
-  }
-
-  .copy-etiqueta-btn {
-    width: 100%;
-    margin-top: 4px;
   }
 
   /* ── Category chips: 3-col horizontal (segmented control) ─────────────── */
@@ -2323,26 +2222,13 @@ font-size: 10px;
           </button>
         </div>
 
-        <!-- Preview de etiqueta seleccionada — premium card -->
+        <!-- Preview de etiqueta seleccionada — v3.3.6 MINIMAL
+             CEO directive: "retiramos todo solo debe mantenerse
+             TX OPER TO OPER -> ETIQUETA | TX DIRECTA -> ETIQUETA".
+             Sin header (cat badge/ID/close), sin title, sin description,
+             sin copy button. Solo los 2 skill codes que el supervisor necesita. -->
         <div class="etiqueta-preview" id="etiquetaPreview" hidden>
-          <div class="etiqueta-preview-header">
-            <span class="etiqueta-preview-cat" id="etiquetaPreviewCat"></span>
-            <span class="etiqueta-preview-id" id="etiquetaPreviewId"></span>
-            <button type="button" class="etiqueta-preview-close" aria-label="Cerrar preview" onclick="closeEtiquetaPreview()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-          <div class="etiqueta-preview-title" id="etiquetaPreviewTitle"></div>
-          <div class="etiqueta-preview-desc" id="etiquetaPreviewDesc"></div>
           <div class="etiqueta-preview-skills" id="etiquetaPreviewSkills"></div>
-          <div class="etiqueta-preview-validation" id="etiquetaPreviewValidation"></div>
-          <button type="button" class="copy-etiqueta-btn" onclick="copyEtiqueta()" aria-label="Copiar etiqueta completa">
-            <span class="quick-btn-icon" aria-hidden="true">📋</span>
-            <span class="quick-btn-label">COPIAR ETIQUETA COMPLETA</span>
-          </button>
         </div>
       </div>
     </div>
@@ -2804,38 +2690,42 @@ function renderEtiquetasDropdownPosition() {
   drop.style.zIndex = '99999';
 }
 
-// Click en una etiqueta del dropdown → mostrar preview + seleccionar
+// Click en una etiqueta del dropdown → seleccionar + persistir título en search input
+// v3.3.6 CEO directive: "al seleccion la opcion del dropdown debe quedarse
+// en el searchinput". La selección (title/solicitud) persiste en el input
+// y solo se generan los 2 skill rows abajo (TX OPER TO OPER + TX DIRECTA).
 function selectEtiqueta(id) {
   var e = ETIQUETAS_DATA.find(function (x) { return x.id === id; });
   if (!e) return;
   TX_STATE.selectedId = e.id;
+  // v3.3.6: persistir el título de la etiqueta en el search input
+  var input = $('etiquetaSearch');
+  if (input) {
+    input.value = e.solicitud;
+    updateEtiquetaClearVisibility();  // mostrar clear button (X)
+  }
   showEtiquetaPreview(e);
   // Cerrar dropdown + cleanup v3.0.3
   hideEtiquetaDropdown();
 }
 
+// v3.3.6 PREVIEW MINIMAL: solo 2 rows (TX OPER TO OPER + TX DIRECTA).
+// CEO directive: "retiramos todo solo debe mantenerse TX OPER TO OPER ->
+// ETIQUETA | TX DIRECTA -> ETIQUETA". Sin header, sin title, sin description,
+// sin validation, sin copy button. Lo único que el supervisor necesita es
+// los códigos de skill para tipear en el sistema de Telefónica.
 function showEtiquetaPreview(e) {
   var preview = $('etiquetaPreview');
   if (!preview) return;
-  $('etiquetaPreviewCat').textContent = e.cat;
-  $('etiquetaPreviewCat').className = 'etiqueta-preview-cat cat-' + e.cat.toLowerCase();
-  $('etiquetaPreviewId').textContent = '#' + String(e.id).padStart(2, '0') + ' · ' + e.area;
-  $('etiquetaPreviewTitle').textContent = e.solicitud;
-  $('etiquetaPreviewDesc').textContent = e.detalle;
-  // v3.1: skills como 2 mini-cards (grid 1fr 1fr) en lugar de rows lineales
   $('etiquetaPreviewSkills').innerHTML =
     '<div class="etiqueta-skill-card">' +
-      '<span class="etiqueta-skill-label">TX 2 PASOS</span>' +
+      '<span class="etiqueta-skill-label">TX OPER TO OPER</span>' +
       '<span class="etiqueta-skill-row">' + escapeHtml(e.skill_tx2) + '</span>' +
     '</div>' +
     '<div class="etiqueta-skill-card">' +
       '<span class="etiqueta-skill-label">TX DIRECTA</span>' +
       '<span class="etiqueta-skill-row">' + escapeHtml(e.skill_txdirecto) + '</span>' +
     '</div>';
-  // v3.1: validación — el ícono ⚠️ ahora es CSS mask (warning-amber-500 themed)
-  $('etiquetaPreviewValidation').innerHTML =
-    '<div class="etiqueta-validation-label">VALIDAR ANTES DE TX</div>' +
-    '<div class="etiqueta-validation-text">' + escapeHtml(e.validacion).replace(/\n/g, '<br>') + '</div>';
   preview.hidden = false;
   // Scroll suave hasta el preview
   preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2846,13 +2736,17 @@ function hideEtiquetaPreview() {
   if (preview) preview.hidden = true;
 }
 
-// v3.1: botón X del preview → limpia selección + cierra preview
+// v3.3.6: limpia selección + cierra preview + limpia search input
+// (el clear button X del search input ya hace esto via clearEtiquetaSearch,
+// pero closeEtiquetaPreview también limpia por si se llama desde otro contexto)
 function closeEtiquetaPreview() {
   TX_STATE.selectedId = null;
   hideEtiquetaPreview();
-  // Re-renderiza el dropdown para refrescar el indicador is-selected
   var input = $('etiquetaSearch');
-  if (input) renderEtiquetasDropdown(input.value);
+  if (input) {
+    input.value = '';
+    updateEtiquetaClearVisibility();
+  }
   announce('Selección de etiqueta limpiada');
 }
 
@@ -2873,31 +2767,9 @@ function updateEtiquetaClearVisibility() {
   wrap.classList.toggle('has-value', input.value.length > 0);
 }
 
-// Click en "COPIAR ETIQUETA COMPLETA" → copia full al portapapeles
-function copyEtiqueta() {
-  if (!TX_STATE.selectedId) return;
-  var e = ETIQUETAS_DATA.find(function (x) { return x.id === TX_STATE.selectedId; });
-  if (!e) return;
-  var lines = [
-    '═══ ETIQUETA DE TRANSFERENCIA ═══',
-    'Categoría: ' + e.cat,
-    'Área: ' + e.area,
-    '',
-    '🔸 SOLICITUD: ' + e.solicitud,
-    '📋 DETALLE: ' + e.detalle,
-    '',
-    '🔁 TX 2 PASOS (oper-to-oper): ' + e.skill_tx2,
-    '➡️ TX DIRECTA: ' + e.skill_txdirecto,
-    '',
-    '⚠️ VALIDACIÓN OBLIGATORIA:',
-    e.validacion,
-    '',
-    '— Generado desde CIMA popup v3.0 TIPIFICACIÓN TX —'
-  ];
-  var txt = lines.join('\n');
-  var btn = document.querySelector('.copy-etiqueta-btn');
-  copyText(txt, 'Etiqueta #' + e.id, btn);
-}
+// v3.3.6: copyEtiqueta() REMOVIDA — CEO directive "retiramos todo".
+// El preview no tiene copy button. El supervisor lee los skill codes
+// directamente del preview o del search input (selección persiste).
 
 // Setup inicial del bloque Etiquetas (wire input handlers)
 function setupEtiquetas() {
