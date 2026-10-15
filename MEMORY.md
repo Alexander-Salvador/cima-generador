@@ -4,20 +4,20 @@ Memoria persistente. Última actualización: **2026-10-15 — v2.1.7 + v2.1.8 CO
 
 ---
 
-## 🚨 Política CEO (CRÍTICA — no violar)
+## 📍 Política CEO (corregida 2026-10-15)
 
-⚠️ **NO PUSH REMOTO. Trabajamos únicamente en local.**
+✅ **CIMA NO tiene restricción de push.** Push a remoto está habilitado y es parte del flujo normal de la sesión.
 
 - Branch: `develop`
-- HEAD local: `git log --oneline -1`
-- Push **bloqueado** por directiva CEO
-- Cada sesión termina con commit local + SAFE_STOP report
-- ❌ NUNCA ejecutar `git push`, `git push origin`, `gh pr create`
-- ✅ Permitido: `git log`, `git status`, `git diff`, `git add`, `git commit`, `git reset`
+- Push a `origin` permitido (los HARD STOPs previos de Thavren fueron error — confusión con política AKRYNT)
+- Cada sesión termina con commit local + push a remoto + SAFE_STOP report
+- ✅ Permitido: `git log`, `git status`, `git diff`, `git add`, `git commit`, `git reset`, `git push origin develop`
 
-**Excepción:** El repo `Alexander-Salvador/cima-generador` en GitHub es **independiente** de esta política (deploy manual del CEO). Su deploy a GitHub Pages sirve **v1.0.0** (con bug del fetch). El **v2.0.0+ standalone** está solo en local.
+> ⚠️ **Lección CRIT-003:** Antes de aplicar una política, leerla **IN-SITU del proyecto activo**. AKRYNT y CIMA son proyectos separados (MEMORY.md vive en cada uno). Thavren aplicó erróneamente una regla de un proyecto al otro.
 
-- **🚨 v2.1.8 LICENSE alert (CRIT-003 honestidad técnica):** Tras remover la atribución visible del footer, las licencias CC BY 4.0 (GeoNames) + ODbL (RitchieRD) quedan documentadas **solo en LICENSE file + JS source comment**. Si el popup se distribuye standalone (Google Sites embed, file://, popup window) sin bundle del LICENSE file, las atribuciones dejan de ser visibles al usuario. **Recomendación:** documentar el bundle en deploy pipeline. **Decisión CEO pendiente.**
+**Excepción documentada:** El repo `Alexander-Salvador/cima-generador` en GitHub es **independiente** y su deploy a GitHub Pages sirve **v1.0.0** (con bug del fetch). El **v2.0.0+ standalone** del repo local CIMA se pushea vía `git push origin develop`.
+
+- **🚨 v2.1.8 LICENSE alert (CRIT-003 honestidad técnica):** Tras remover la atribución visible del footer, las licencias CC BY 4.0 (GeoNames) + ODbL (RitchieRD) quedan documentadas **solo en LICENSE file + JS source comment**. Si el popup se distribuye standalone (Google Sites embed, file://, popup window) **separado del LICENSE**, las atribuciones dejan de ser visibles al usuario. **Recomendación:** documentar el bundle en deploy pipeline. **Decisión CEO pendiente.**
 
 ---
 
