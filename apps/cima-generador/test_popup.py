@@ -1406,6 +1406,46 @@ def test(html_path):
     if 'id: 19' in html and 'id: 21' in html and "'TECNICO MOVIL" in html:
         result.ok('TIPIF v3.4.2 TECNICO MOVIL (LINE 2): en POSTPAGO (id 19) + MTOTAL (id 21)')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.4.3 — Comparativa exhaustiva Excel vs CIMA (3 SKUs nuevos)
+    # Análisis del XLSX identificó skill codes que NO estaban en CIMA:
+    #   - SK_CV_DOWNSELL_MOVIL_TX (MIGRACIÓN DOWN MOVIL)
+    #   - SK_CV_TRASLADO_BAJA_FIJA_TX (TRASLADO/ MUDANZA)
+    #   - SK_CV_RETENCIONES_MOVIL_TX reutilizado para BAJA FINAL POSTPAGO
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.4.3 — Comparativa Excel: 3 SKUs nuevos')
+
+    # Conteos después de v3.4.3 (POSTPAGO +2, STANDALONE +1)
+    n_postpago  = html.count("cat: 'POSTPAGO'")
+    n_mtotal    = html.count("cat: 'MTOTAL'")
+    n_standalone= html.count("cat: 'STANDALONE'")
+    print(f'  Counts: POSTPAGO={n_postpago} MTOTAL={n_mtotal} STANDALONE={n_standalone}')
+    if n_postpago >= 11 and n_mtotal >= 8 and n_standalone >= 7:
+        result.ok(f'TIPIF v3.4.3 ETIQUETAS_DATA: POSTPAGO={n_postpago} MTOTAL={n_mtotal} STANDALONE={n_standalone} (totales 26)')
+    else:
+        result.fail('conteos v3.4.3', f'POSTPAGO={n_postpago}, MTOTAL={n_mtotal}, STANDALONE={n_standalone} — esperados >=11/8/7')
+
+    # SK_CV_DOWNSELL_MOVIL_TX presente (MIGRACION DOWN MOVIL)
+    if 'SK_CV_DOWNSELL_MOVIL_TX' in html:
+        result.ok('TIPIF v3.4.3 SK_CV_DOWNSELL_MOVIL_TX: presente (MIGRACION DOWN MOVIL)')
+
+    # SK_CV_TRASLADO_BAJA_FIJA_TX presente (TRASLADO/ MUDANZA)
+    if 'SK_CV_TRASLADO_BAJA_FIJA_TX' in html:
+        result.ok('TIPIF v3.4.3 SK_CV_TRASLADO_BAJA_FIJA_TX: presente (TRASLADO/MUDANZA)')
+
+    # Solicitudes nuevas
+    if "'MIGRACION DOWN (MOVIL)'" in html:
+        result.ok('TIPIF v3.4.3 solicitud MIGRACION DOWN (MOVIL) presente')
+    if "'BAJA FINAL POSTPAGO'" in html:
+        result.ok('TIPIF v3.4.3 solicitud BAJA FINAL POSTPAGO presente')
+    if "'TRASLADO / MUDANZA'" in html:
+        result.ok('TIPIF v3.4.3 solicitud TRASLADO / MUDANZA presente')
+
+    # Ids nuevos (24, 25, 26)
+    for nid in [24, 25, 26]:
+        if f'id: {nid}' in html:
+            result.ok(f'TIPIF v3.4.3 record id {nid} presente')
+
     # Floating "Copiado" placeholder CSS — tooltip arriba del card
     if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*Copiado', html, re.DOTALL):
         result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::before: "Copiado" text')

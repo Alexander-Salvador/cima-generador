@@ -2451,12 +2451,45 @@ const ETIQUETAS_DATA = [
     validacion: 'TITULAR. Validar identidad y factibilidad.' },
 
   // ── STANDALONE additions (CEO: VENTAS ALTA FIJA) ──
-  { id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'VENTAS - ALTA NUEVA FIJA',
+{ id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE',
+    solicitud: 'VENTAS - ALTA NUEVA FIJA',
     detalle: 'Cliente quiere alta nueva del servicio fijo Stand Alone (Mono/Duo/Trio).',
     skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR. Validar identidad y factibilidad.' }
-];
+    validacion: 'TITULAR. Validar identidad y factibilidad.' },
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // v3.4.3: Records adicionales por comparativa exhaustiva Excel vs CIMA.
+  // Análisis del XLSX identificó 3 SKUs únicos faltantes que CEO no había
+  // mencionado pero que existen en el Excel:
+  //   - SK_CV_DOWNSELL_MOVIL_TX (MIGRACIÓN DOWN MOVIL) → POSTPAGO
+  //   - SK_CV_TRASLADO_BAJA_FIJA_TX (TRASLADO/ MUDANZA) → STANDALONE
+  //   - SK_CV_RETENCIONES_MOVIL_TX (BAJA FINAL POSTPAGO) → POSTPAGO
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // v3.4.3: MIGRACIÓN DOWN (MOVIL) → POST/PRE
+  // Excel: "MIGRACIÓN DOWN ( MOVIL)" / "SK_CV_DOWNSELL_MOVIL_TX" — distinto
+  // de PLAN MENOR (que usa SK_CV_COMERCIAL_TX). Es down-sell específico.
+  { id: 24, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'MIGRACION DOWN (MOVIL)',
+    detalle: 'Cliente solicita migrar a un plan de menor tarifa móvil (down-sell).',
+    skill_tx2: 'SK_CV_DOWNSELL_MOVIL_TX', skill_txdirecto: 'DP_CV_DOWNSELL_MOVIL_TX',
+    validacion: 'TITULAR. Confirmar nuevo plan y factibilidad.' },
+
+  // v3.4.3: BAJA FINAL POSTPAGO → POST/PRE
+  // Excel: "BAJA FINAL POSTPAGO" (id 84 aprox). Diferente de "BAJA DE TOTAL o
+  // MIGRACION A PREPAGO" (id 3) — esta es la baja final del servicio.
+  { id: 25, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'BAJA FINAL POSTPAGO',
+    detalle: 'Cliente solicita la baja final del servicio móvil (postpago).',
+    skill_tx2: 'SK_CV_RETENCIONES_MOVIL_TX', skill_txdirecto: 'DP_CV_RETENCIONES_MOVIL_TX',
+    validacion: 'TITULAR. Validar identidad y confirmar baja.' },
+
+  // v3.4.3: TRASLADO/ MUDANZA → STANDALONE
+  // Excel: "TRASLADO/ MUDANZA" / "SK_CV_TRASLADO_BAJA_FIJA_TX" — skill code
+  // exclusivo del Excel (no estaba en CIMA).
+  { id: 26, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'TRASLADO / MUDANZA',
+    detalle: 'Cliente solicita traslado o mudanza del servicio fijo Stand Alone.',
+    skill_tx2: 'SK_CV_TRASLADO_BAJA_FIJA_TX', skill_txdirecto: 'DP_CV_TRASLADO_BAJA_FIJA_TX',
+    validacion: 'TITULAR. Confirmar nueva dirección y factibilidad técnica.' }
+];
 // Estado del cliente (cat siempre activa — sin opción TODAS)
 const TX_STATE = {
   query: '',
