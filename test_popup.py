@@ -306,37 +306,211 @@ def test(html_path):
     else:
         result.fail('coberturaBtn element', 'no encontrado en HTML')
 
-    # CSS .cobertura-btn default = display:none (hidden by default)
+    # v2.1.4 REVERSIÓN: coberturaBtn SIEMPRE visible (display:inline-flex por default).
+    # El estado cambia solo el color (idle/warn/off), no la visibilidad.
+    # Pero ahora es icon-only 36×36 simétrico con btn-icon-clear (REVERTIDO del v2.1.3).
     css_btn_match = re.search(
         r'\.cobertura-btn\s*\{([^}]+)\}',
         html
     )
     if css_btn_match:
         css_body = css_btn_match.group(1)
-        if 'display: none' in css_body or 'display:none' in css_body:
-            result.ok('.cobertura-btn display:none (hidden by default)')
+        if 'display: inline-flex' in css_body or 'display:inline-flex' in css_body:
+            result.ok('.cobertura-btn display:inline-flex (always visible, v2.1.4 preserved)')
         else:
-            result.fail('.cobertura-btn display', 'no es none por default')
+            result.fail('.cobertura-btn display', 'no es inline-flex por default (v2.1.4)')
     else:
         result.fail('.cobertura-btn CSS', 'no encontrado')
 
-    # CSS .cobertura-btn.off = display:inline-flex (visible solo con alerta)
+    # v2.1.4: .cobertura-btn.width = 36px (icon-only circular pill).
+    if css_btn_match:
+        css_body = css_btn_match.group(1)
+        if re.search(r'width:\s*36px', css_body):
+            result.ok('.cobertura-btn width 36px (icon-only, v2.1.4)')
+        else:
+            result.fail('.cobertura-btn width', 'se esperaba 36px fijo en v2.1.4')
+    if css_btn_match:
+        css_body = css_btn_match.group(1)
+        if 'border-radius: var(--radius-pill)' in css_body or 'border-radius:var(--radius-pill)' in css_body:
+            result.ok('.cobertura-btn border-radius pill (circular icon-only, v2.1.4)')
+        else:
+            result.fail('.cobertura-btn border-radius', 'pill esperado en v2.1.4')
+
+    # v2.1.4: .cobertura-btn.off ya no controla display (siempre visible);
+    # validamos la animation pulseDanger (alerta roja iOS-style) en su lugar.
     css_off_match = re.search(
         r'\.cobertura-btn\.off\s*\{([^}]+)\}',
         html
     )
     if css_off_match:
         css_off_body = css_off_match.group(1)
-        if 'display: inline-flex' in css_off_body or 'display:inline-flex' in css_off_body:
-            result.ok('.cobertura-btn.off display:inline-flex (visible con alerta)')
+        if 'animation:' in css_off_body and 'pulseDanger' in css_off_body:
+            result.ok('.cobertura-btn.off pulseDanger animation (v2.1.4 preserved)')
         else:
-            result.fail('.cobertura-btn.off display', 'no es inline-flex')
-
-    # Botón solo icono, sin texto "COBERTURA"
-    if 'coberturaLabel' in html:
-        result.fail('coberturaLabel text', 'ya no debe existir (icon-only)')
+            result.fail('.cobertura-btn.off animation', 'pulseDanger esperado')
     else:
-        result.ok('coberturaLabel eliminado (icon-only)')
+        result.fail('.cobertura-btn.off CSS', 'no encontrado')
+
+    # v2.1.4 REVERSIÓN: coberturaBtn-label "ZONAS DE APAGADO" REMOVIDO del DOM visual.
+    # Validamos: (a) NO existe <span class="cobertura-btn-label">ZONAS DE APAGADO</span>
+    #            (b) aria-label sí está presente (accesibilidad WCAG).
+    if re.search(r'<span\s+class=["\']cobertura-btn-label["\']>ZONAS DE APAGADO</span>', html):
+        result.fail('cobertura-btn-label DOM', 'label "ZONAS DE APAGADO" debe estar revertido en v2.1.4')
+    else:
+        result.ok('cobertura-btn-label DOM revertido (v2.1.4 icon-only)')
+    if 'aria-label="Estado de zonas de apagado Movistar"' in html:
+        result.ok('coberturaBtn aria-label WCAG presente (v2.1.4)')
+    else:
+        result.fail('coberturaBtn aria-label', 'esperado para accesibilidad en v2.1.4')
+    if 'cobertura-btn--idle' in html:
+        result.ok('cobertura-btn--idle modifier (v2.1.4 default state preserved)')
+    else:
+        result.fail('cobertura-btn--idle', 'modifier idle esperado')
+    if 'cobertura-btn-icon' in html:
+        result.ok('cobertura-btn-icon SVG class (v2.1.4 preserved)')
+    else:
+        result.fail('cobertura-btn-icon', 'SVG class esperado')
+    # ID coberturaIcon (era el span emoji) eliminado; no debe existir (v2.1.3 → v2.1.4)
+    if 'id="coberturaIcon"' in html:
+        result.fail('coberturaIcon id', 'ya no debe existir (SVG inline)')
+    else:
+        result.ok('coberturaIcon id eliminado (SVG inline, v2.1.4)')
+
+    # v2.1.4 REVERSIÓN: btn-icon-label "BORRAR" REMOVIDO del DOM visual.
+    if re.search(r'<span\s+class=["\']btn-icon-label["\']>BORRAR</span>', html):
+        result.fail('btn-icon-label DOM', 'label "BORRAR" debe estar revertido en v2.1.4')
+    else:
+        result.ok('btn-icon-label DOM revertido (v2.1.4 icon-only)')
+    if 'aria-label="Borrar todos los campos del formulario"' in html:
+        result.ok('btn-icon-clear aria-label WCAG presente (v2.1.4)')
+    else:
+        result.fail('btn-icon-clear aria-label', 'esperado para accesibilidad en v2.1.4')
+
+    # v2.1.4 NEW: .btn-icon-clear = icon-only 36×36 (simétrico con cobertura-btn).
+    css_clear_match = re.search(
+        r'\.btn-icon-clear\s*\{([^}]+)\}',
+        html
+    )
+    if css_clear_match:
+        css_clear_body = css_clear_match.group(1)
+        if re.search(r'width:\s*36px', css_clear_body):
+            result.ok('.btn-icon-clear width 36px (icon-only, v2.1.4)')
+        else:
+            result.fail('.btn-icon-clear width', 'se esperaba 36px fijo en v2.1.4')
+        if 'border-radius: var(--radius-pill)' in css_clear_body or 'border-radius:var(--radius-pill)' in css_clear_body:
+            result.ok('.btn-icon-clear border-radius pill (v2.1.4)')
+        else:
+            result.fail('.btn-icon-clear border-radius', 'pill esperado en v2.1.4')
+
+    # v2.1.4 NEW: title="Borrar" presente en btn-icon-clear.
+    if re.search(r'<button[^>]*class=["\'][^"\']*btn-icon-clear[^"\']*["\'][^>]*title="Borrar"', html) or \
+       re.search(r'<button[^>]*title="Borrar"[^>]*class=["\'][^"\']*btn-icon-clear[^"\']*["\']', html):
+        result.ok('title="Borrar" presente en btn-icon-clear (v2.1.4)')
+    else:
+        result.fail('title="Borrar"', 'esperado en btn-icon-clear v2.1.4')
+
+    # v2.1.4 NEW: title del coberturaBtn presente.
+    if 'title="Sin alertas — cobertura OK"' in html:
+        result.ok('title="Sin alertas — cobertura OK" presente en coberturaBtn (v2.1.4)')
+    else:
+        result.fail('coberturaBtn title', 'esperado en v2.1.4')
+
+    # v2.1.3 CRIT-009: showInlineEmpty NO manipula textContent (micro-shake silencioso).
+    # PRESERVADO en v2.1.4.
+    if "el.textContent = 'INGRESA DATOS'" in html:
+        result.fail('showInlineEmpty textContent', 'ya no debe setear "INGRESA DATOS" (v2.1.4)')
+    else:
+        result.ok('showInlineEmpty sin cambiar textContent (v2.1.4 preserved)')
+
+    # v2.1.7 NEW: .output-box ahora usa altura FIJA 36px (CEO directriz:
+    # "no debe cambiar su altura si no entra la información se debe compactar
+    # de manera inteligente, abreviándose").
+    # CSS safety net: white-space:nowrap + overflow:hidden + text-overflow:ellipsis.
+    # JS compactAddress() aplica abreviaciones ANTES de textContent.
+    css_output_box = re.search(r'\.output-box\s*\{([^}]+)\}', html)
+    if css_output_box:
+        ob_body = css_output_box.group(1)
+        if re.search(r'height:\s*36px', ob_body):
+            result.ok('.output-box height: 36px (FIJA, v2.1.7 CEO directriz)')
+        else:
+            result.fail('.output-box height', 'se esperaba 36px fijo en v2.1.7')
+        if re.search(r'max-height:\s*36px', ob_body):
+            result.ok('.output-box max-height: 36px (NO crece jamás, v2.1.7)')
+        else:
+            result.fail('.output-box max-height', 'se esperaba max-height: 36px en v2.1.7')
+        if 'white-space: nowrap' in ob_body or 'white-space:nowrap' in ob_body:
+            result.ok('.output-box white-space: nowrap (1 línea, v2.1.7)')
+        else:
+            result.fail('.output-box white-space', 'nowrap esperado en v2.1.7')
+        if 'text-overflow: ellipsis' in ob_body or 'text-overflow:ellipsis' in ob_body:
+            result.ok('.output-box text-overflow: ellipsis (safety net, v2.1.7)')
+        else:
+            result.fail('.output-box text-overflow', 'ellipsis esperado en v2.1.7')
+        if 'overflow: hidden' in ob_body or 'overflow:hidden' in ob_body:
+            result.ok('.output-box overflow: hidden (corta overflow, v2.1.7)')
+        else:
+            result.fail('.output-box overflow', 'hidden esperado en v2.1.7')
+    else:
+        result.fail('.output-box CSS', 'regla no encontrada')
+
+    # v2.1.7 NEW: compactAddress() helper presente (JS — progressive abbreviation).
+    if 'function compactAddress' in html:
+        result.ok('compactAddress helper presente (v2.1.7)')
+    else:
+        result.fail('compactAddress', 'función helper ausente')
+    if re.search(r'compact\s*=\s*compactAddress\(out,\s*maxChars\)', html):
+        result.ok('updateAddress usa compactAddress(out, maxChars) (v2.1.7)')
+    elif "compact = compactAddress(out, 64)" in html or 'compact = compactAddress(out, 64)' in html:
+        result.ok('updateAddress usa compactAddress(out, 64) (v2.1.7)')
+    else:
+        result.fail('updateAddress compactAddress', 'invocación ausente')
+    if "box.title = out" in html:
+        result.ok('updateAddress setea title con full address (hover, v2.1.7 WCAG)')
+    else:
+        result.fail('updateAddress title attr', 'title con full address esperado en v2.1.7')
+
+    # v2.1.7 NEW: .output-wrap sigue SIN max-height (la altura es del output-box).
+    css_output_wrap = re.search(r'\.output-wrap\s*\{([^}]+)\}', html)
+    if css_output_wrap:
+        ow_body = css_output_wrap.group(1)
+        if 'max-height' in ow_body:
+            mh = re.search(r'max-height:\s*(\d+)px', ow_body)
+            if mh and int(mh.group(1)) > 0:
+                result.fail('.output-wrap max-height', f'restringido a {mh.group(1)}px — v2.1.7 espera libre')
+            else:
+                result.ok('.output-wrap max-height no restrictivo (v2.1.7)')
+        else:
+            result.ok('.output-wrap sin max-height (v2.1.7)')
+
+    # v2.1.4 NEW: .btn-icon-clear svg width 14px height 14px (icono compacto).
+    css_clear_svg = re.search(r'\.btn-icon-clear\s+svg\s*\{([^}]+)\}', html)
+    if css_clear_svg:
+        cs_body = css_clear_svg.group(1)
+        if re.search(r'width:\s*14px', cs_body) and re.search(r'height:\s*14px', cs_body):
+            result.ok('.btn-icon-clear svg width 14px / height 14px (compact icon, v2.1.4)')
+        else:
+            result.fail('.btn-icon-clear svg size', 'se esperaba 14×14 en v2.1.4')
+
+    # v2.1.4 NEW: JS updateAddress ya no llama a truncateForBox (texto completo visible).
+    if "truncateForBox(out, 80)" in html:
+        result.fail('updateAddress truncateForBox', 'ya no debe truncar a 80 chars en v2.1.4')
+    else:
+        result.ok('updateAddress sin truncateForBox (texto completo, v2.1.4)')
+
+    # v2.1.3 CRIT-009 preservado: output-box centrado SIEMPRE (Issue 4 — eliminar distinción placeholder vs datos)
+    # Validamos que la regla .output-box:not(.placeholder) está centrada.
+    css_not_placeholder = re.search(
+        r'\.output-box:not\(\.placeholder\)\s*\{([^}]+)\}',
+        html
+    )
+    if css_not_placeholder:
+        np_body = css_not_placeholder.group(1)
+        if 'justify-content: center' in np_body or 'justify-content:center' in np_body:
+            result.ok('.output-box:not(.placeholder) centrado (v2.1.4 preserved)')
+        else:
+            result.fail('.output-box:not(.placeholder)', 'debe ser justify-content:center')
+    else:
+        result.fail('.output-box:not(.placeholder)', 'regla no encontrada')
 
     # 8. CSS / HTML quality
     print('\n▸ HTML quality')
@@ -346,6 +520,197 @@ def test(html_path):
         result.ok('wrapStrategy in styles')
     if 'data-tipif-id' in html:
         result.warn('data-tipif-id', 'leftover from v1 (we use data-id on .tipif-block)')
+
+    # 8.1 v2.1.5 CRIT-009 — dropdown stacking fix
+    print('\n▸ v2.1.5 CRIT-009 — dropdown stacking fix')
+    # CSS: isolation:isolate en .section > * y en .ac-wrap
+    sec1_section_match = re.search(r'\.section\s*>\s*\*\s*\{([^}]+)\}', html)
+    if sec1_section_match and re.search(r'isolation:\s*isolate', sec1_section_match.group(1)):
+        result.ok('.section > * tiene isolation:isolate (v2.1.5 stacking fix)')
+    else:
+        result.fail('.section > * isolation', 'falta isolation:isolate')
+    ac_wrap_match = re.search(r'\.ac-wrap\s*\{([^}]+)\}', html)
+    if ac_wrap_match and re.search(r'isolation:\s*isolate', ac_wrap_match.group(1)):
+        result.ok('.ac-wrap tiene isolation:isolate (v2.1.5 stacking fix)')
+    else:
+        result.fail('.ac-wrap isolation', 'falta isolation:isolate')
+    # CSS: regla de elevación cuando dropdown abierto
+    if re.search(r"\.field\.is-open[^{]*\{[^}]*z-index:\s*1000", html, re.DOTALL):
+        result.ok('.field.is-open eleva z-index a 1000 (v2.1.5)')
+    else:
+        result.fail('.field.is-open CSS', 'regla con z-index:1000 ausente')
+    if re.search(r"\.field:has\(\.ac-dropdown:not\(\[hidden\]\)\)", html):
+        result.ok(':has() fallback CSS presente (Chrome 105+/Safari 15.4+)')
+    else:
+        result.fail(':has() fallback', 'selector CSS ausente')
+    # CSS: keyframe glassDropdownIn SIN transform (evita stacking context extra en Safari)
+    kf_match = re.search(r'@keyframes\s+glassDropdownIn\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}', html, re.DOTALL)
+    if kf_match:
+        kf_body = kf_match.group(1)
+        if 'transform:' in kf_body:
+            result.fail('glassDropdownIn keyframe', 'aún contiene transform: (v2.1.5 stacking risk)')
+        else:
+            result.ok('glassDropdownIn sin transform (v2.1.5)')
+    else:
+        result.fail('glassDropdownIn keyframe', 'no encontrado')
+    # CSS: ac-dropdown SIN transform-origin (ya no necesario sin transform)
+    ac_dropdown_match = re.search(r'\.ac-dropdown\s*\{([^}]+)\}', html)
+    if ac_dropdown_match:
+        ad_body = ac_dropdown_match.group(1)
+        if 'transform-origin' in ad_body:
+            result.fail('.ac-dropdown transform-origin', 'debe estar removido en v2.1.5')
+        else:
+            result.ok('.ac-dropdown sin transform-origin (v2.1.5)')
+    # JS: acRender agrega .is-open al field del dropdown activo
+    if "openField.classList.add('is-open')" in html:
+        result.ok('acRender agrega .is-open al field (v2.1.5)')
+    else:
+        result.fail('acRender is-open add', 'classList.add ausente')
+    # JS: acClose quita .is-open del field
+    if "closeField.classList.remove('is-open')" in html:
+        result.ok('acClose quita .is-open del field (v2.1.5)')
+    else:
+        result.fail('acClose is-open remove', 'classList.remove ausente')
+    # JS: acCloseAll limpia TODOS los .is-open (idempotencia)
+    if re.search(r"querySelectorAll\(['\"]\.field\.is-open['\"]\)", html):
+        result.ok('acCloseAll limpia todos los .is-open (idempotente, v2.1.5)')
+    else:
+        result.fail('acCloseAll is-open cleanup', 'querySelectorAll ausente')
+    # Sanity: sigue existiendo la cascada AC y no se rompió la firma de acRender
+    if "if (!input || !drop) return;" in html and "AC_STATE.active = key;" in html:
+        result.ok('firma acRender preservada (cascada AC intacta)')
+    else:
+        result.fail('acRender signature', 'cascada AC podría estar rota')
+
+    # 8.2 v2.1.6 CRIT-009 PORTAL pattern — escape estructural del stacking context jerárquico
+    # (section → field → ac-wrap → input con backdrop-filter = 4 niveles anidados).
+    # Solución: mover el dropdown a document.body y usar position:fixed con coords via JS.
+    print('\n▸ v2.1.6 PORTAL pattern (CRIT-009 estructural)')
+    # CSS: .ac-dropdown usa position:fixed (no absolute) para portal
+    ac_dropdown_css = re.search(r'\.ac-dropdown\s*\{([^}]+)\}', html)
+    if ac_dropdown_css:
+        ad_body = ac_dropdown_css.group(1)
+        if re.search(r'position:\s*fixed', ad_body):
+            result.ok('.ac-dropdown position:fixed (v2.1.6 portal)')
+        else:
+            result.fail('.ac-dropdown position', 'se esperaba position:fixed en v2.1.6')
+        if re.search(r'z-index:\s*99999', ad_body):
+            result.ok('.ac-dropdown z-index:99999 (v2.1.6 super-high)')
+        else:
+            result.fail('.ac-dropdown z-index', 'se esperaba z-index:99999 en v2.1.6')
+        # Sanity: NO debe tener top:calc ni left:0/right:0 absolutos (los pone JS via coords)
+        if 'top: calc(100%' in ad_body or 'left: 0;' in ad_body or 'right: 0;' in ad_body:
+            result.fail('.ac-dropdown absolute offsets', 'top/left/right absolutos deben estar removidos (v2.1.6)')
+        else:
+            result.ok('.ac-dropdown sin offsets absolutos (coords via JS, v2.1.6)')
+    else:
+        result.fail('.ac-dropdown CSS', 'no encontrado')
+    # JS: función acUpdatePosition presente (helper de repositioning)
+    if 'function acUpdatePosition' in html:
+        result.ok('acUpdatePosition helper definido (v2.1.6 portal reposition)')
+    else:
+        result.fail('acUpdatePosition', 'función helper ausente')
+    # JS: portal move a document.body en acRender
+    if 'document.body.appendChild(drop)' in html or 'document.body.appendChild(d)' in html:
+        result.ok('portal move: document.body.appendChild presente (v2.1.6)')
+    else:
+        result.fail('portal move', 'document.body.appendChild ausente en acRender')
+    # JS: portal restore via _originalParent.insertBefore
+    if '_originalParent.insertBefore' in html and '_originalNextSibling' in html:
+        result.ok('portal restore: _originalParent.insertBefore presente (v2.1.6)')
+    else:
+        result.fail('portal restore', '_originalParent/insertBefore ausente')
+    # JS: _originalParent placeholder (state guard)
+    if 'drop._originalParent = drop.parentNode' in html or '_originalParent = drop.parentNode' in html:
+        result.ok('_originalParent guardado antes de portal move (v2.1.6)')
+    else:
+        result.fail('_originalParent guard', 'placeholder no se setea en acRender')
+    # JS: inline styles cleanup en acClose/acCloseAll (position/top/left/width/zIndex = "")
+    if "drop.style.position = ''" in html or "d.style.position = ''" in html:
+        result.ok('inline style cleanup en close (v2.1.6 portal restore)')
+    else:
+        result.fail('inline style cleanup', 'position/top/left/width no se limpian')
+    # JS: scroll handler global registrado (window.addEventListener con capture)
+    if re.search(r"window\.addEventListener\(['\"]scroll['\"]", html):
+        result.ok('scroll handler global registrado (v2.1.6 portal reposition)')
+    else:
+        result.fail('scroll handler', 'window.addEventListener scroll ausente')
+    # JS: resize handler global registrado
+    if re.search(r"window\.addEventListener\(['\"]resize['\"]", html):
+        result.ok('resize handler global registrado (v2.1.6 portal reposition)')
+    else:
+        result.fail('resize handler', 'window.addEventListener resize ausente')
+    # JS: click-outside handler (mousedown delegation con .ac-dropdown exclusion)
+    if re.search(r"document\.addEventListener\(['\"]mousedown['\"]", html) and \
+       re.search(r"\.closest\(['\"]\.ac-dropdown['\"]\)", html):
+        result.ok('click-outside handler (mousedown con .ac-dropdown exclusion, v2.1.6)')
+    else:
+        result.fail('click-outside', 'mousedown delegation ausente')
+    # JS: idempotencia guard para handlers (registrados una sola vez)
+    if '_cimaPortalHandlersInit' in html:
+        result.ok('idempotencia: _cimaPortalHandlersInit guard (v2.1.6)')
+    else:
+        result.fail('idempotencia guard', '_cimaPortalHandlersInit ausente — handlers duplicados risk')
+    # JS: manejo defensivo de getBoundingClientRect failure
+    if 'getBoundingClientRect' in html and 'console.warn' in html:
+        result.ok('defensive: getBoundingClientRect con try/catch (v2.1.6)')
+    else:
+        result.fail('defensive getBoundingClientRect', 'try/catch ausente')
+
+    # 8.3 v2.1.7 BOUNDS-AWARE — dropdown respeta límites del .grid-block contenedor
+    # El dropdown NO debe invadir el card Tipificación cuando se abre en DEPARTAMENTO.
+    # Solución: acFitToGrid() calcula espacio disponible y aplica max-height dinámico.
+    print('\n▸ v2.1.7 BOUNDS-AWARE — dropdown respeta grid contenedor + flip')
+    # CSS: .ac-dropdown.is-flipped modifier presente
+    if re.search(r'\.ac-dropdown\.is-flipped\s*\{', html):
+        result.ok('.ac-dropdown.is-flipped modifier CSS presente (v2.1.7)')
+    else:
+        result.fail('.ac-dropdown is-flipped', 'modifier CSS ausente')
+    # CSS: keyframe glassDropdownInFlip con transform
+    if re.search(r'@keyframes\s+glassDropdownInFlip', html):
+        result.ok('@keyframes glassDropdownInFlip presente (v2.1.7)')
+    else:
+        result.fail('glassDropdownInFlip keyframe', 'ausente')
+    # CSS: transform-origin: bottom center en flipped
+    if re.search(r'\.ac-dropdown\.is-flipped\s*\{[^}]*transform-origin:\s*bottom\s+center', html, re.DOTALL):
+        result.ok('.ac-dropdown.is-flipped transform-origin: bottom center (v2.1.7)')
+    else:
+        result.fail('.ac-dropdown is-flipped transform-origin', 'esperado bottom center')
+    # JS: acFitToGrid helper presente
+    if 'function acFitToGrid' in html:
+        result.ok('acFitToGrid helper definido (v2.1.7 bounds-aware)')
+    else:
+        result.fail('acFitToGrid', 'función helper ausente')
+    # JS: acFitToGrid llamado desde acUpdatePosition
+    if re.search(r'acUpdatePosition[\s\S]{0,200}acFitToGrid', html) or 'acFitToGrid(drop, input, rect)' in html:
+        result.ok('acFitToGrid invocado desde acUpdatePosition/acRender (v2.1.7)')
+    else:
+        result.fail('acFitToGrid invocation', 'invocación ausente')
+    # JS: usa .grid-block closest para bounds
+    if "input.closest('.grid-block')" in html:
+        result.ok('acFitToGrid usa .grid-block closest para bounds (v2.1.7)')
+    else:
+        result.fail('acFitToGrid grid-block', 'closest(.grid-block) ausente')
+    # JS: lógica de flip (available < threshold)
+    if re.search(r'available\s*<\s*FLIP_THRESHOLD', html):
+        result.ok('acFitToGrid flip-arriba: available < FLIP_THRESHOLD (v2.1.7)')
+    else:
+        result.fail('acFitToGrid flip logic', 'condición de flip ausente')
+    # JS: classList.add/remove 'is-flipped' para flip
+    if "drop.classList.add('is-flipped')" in html and "drop.classList.remove('is-flipped')" in html:
+        result.ok('acFitToGrid toggle is-flipped class (v2.1.7)')
+    else:
+        result.fail('acFitToGrid is-flipped toggle', 'classList add/remove ausente')
+    # JS: max-height aplicado dinámicamente (style.maxHeight)
+    if re.search(r'drop\.style\.maxHeight\s*=\s*flipCap', html) or re.search(r'drop\.style\.maxHeight\s*=\s*cap\s*\+\s*["\']px["\']', html):
+        result.ok('acFitToGrid aplica max-height dinámico (v2.1.7)')
+    else:
+        result.fail('acFitToGrid maxHeight', 'style.maxHeight dinámico ausente')
+    # CSS: max-height cap original (220px) preservado como límite
+    if re.search(r'\.ac-dropdown\s*\{[^}]*max-height:\s*220px', html, re.DOTALL):
+        result.ok('.ac-dropdown max-height: 220px cap superior (v2.1.7)')
+    else:
+        result.fail('.ac-dropdown max-height cap', 'se esperaba 220px como límite en v2.1.7')
 
     # 9. Footer
     print('\n▸ Footer & credits')

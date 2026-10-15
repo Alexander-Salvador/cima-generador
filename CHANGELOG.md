@@ -1,5 +1,189 @@
 # Changelog — cima-generador
 
+## [2.1.7] - 2026-10-15 — BOUNDS-AWARE DROPDOWN + COMPACTACIÓN INTELIGENTE RESULTADO
+
+### Issue 1 FIXED — Dropdown respeta límites del grid contenedor (no invade Tipificación)
+
+**Síntoma reportado:** Tras el portal pattern v2.1.6, el dropdown de autocompletar (`.ac-dropdown` con `position: fixed; max-height: 220px`) excedía visualmente la altura del card "BÚSQUEDA ADDRESS", invadiendo el espacio del card "TIPIFICACIÓN" siguiente.
+
+**Causa raíz:** Con `position: fixed`, el dropdown ya no respeta los bounds del `.section` (Búsqueda Address) porque vive en el body. Solo respeta `max-height: 220px` que es estático.
+
+**Solución — BOUNDS-AWARE:**
+
+- **`acFitToGrid(drop, input, inputRect)`** (NUEVO helper): calcula el espacio vertical disponible entre el input y el límite inferior del `.grid-block` contenedor (Búsqueda Address). Aplica `max-height` DINÁMICO respetando ese límite. Si el espacio es < 100px, FLIP-ARRIBA (dropdown se renderiza encima del input en vez de debajo).
+- **`acUpdatePosition(key)`** ahora llama a `acFitToGrid()` después de calcular coords base — bounds se respetan también durante scroll/resize handlers.
+- **`acRender(key)`** llama a `acFitToGrid()` después del portal move — bounds se respetan al abrir.
+- **`acClose()` / `acCloseAll()`** limpian `style.maxHeight = ''` y `classList.remove('is-flipped')` — idempotencia preservada.
+
+### Issue 2 FIXED — RESULTADO crece en altura con contenido largo
+
+**Síntoma reportado:** El `output-box` (RESULTADO) crecía de 36px a 60-90px cuando mostraba una dirección larga. CEO directriz textual: *"el input RESULTADO crece en altura cuando tiene mucho contenido, y ya te había indicado que no debe cambiar su altura si no entra la información se debe compactar de manera inteligente, abreviándose"*.
+
+**Solución — COMPACTACIÓN INTELIGENTE + altura FIJA:**
+
+#### CSS — altura FIJA 36px (CEO directriz)
+- **`.output-box`** ahora:
+  - `height: 36px` (FIJA)
+  - `min-height: 36px`
+  - `max-height: 36px` (NO crece jamás)
+  - `overflow: hidden` (corta overflow)
+  - `text-overflow: ellipsis` (safety net CSS)
+  - `white-space: nowrap` (1 línea solamente)
+- **`.output-wrap`** sin max-height (igual que v2.1.4 — la altura viene del output-box).
+- **Media query `≤480px`** ya NO sobrescribe `white-space: pre-wrap` ni `max-height: 88px` (regla conflictiva removida). Mobile-first aplica misma regla desktop.
+
+#### JS — `compactAddress(address, maxChars)` progressive abbreviation
+
+Aplica reglas stepwise hasta que la dirección quepa en `maxChars` (default 64):
+
+1. **Prefijos de vía**: `JIRON`/`JIRÓN` → `Jr.`, `AVENIDA` → `Av.`, `CALLE` → `Calle`, `PASAJE` → `Psje.`, `PLAZA` → `Pza.`, `CARRETERA` → `Carr.`
+2. **Nombres de zona**: `URBANIZACIÓN` → `Urb.`, `ASOCIACIÓN` → `Asoc.`, `PARCELACIÓN` → `Parc.`, `COMITÉ` → `Com.`, `CONJUNTO HABITACIONAL` → `C.H.`
+3. **Niveles admin**: `DEPARTAMENTO` → `Dpto.`, dedup `"X, X"` (ej. `"LIMA, LIMA"` → `"LIMA"`)
+4. **Personas**: 4 tokens all-caps → solo 2 primeros; 3 tokens → pre+name; nombres de pila largos → iniciales (`PABLO ANTONIO` → `P. ANTONIO`)
+5. **Último recurso**: truncar en última coma natural con ellipsis `…`
+
+#### JS — `updateAddress()` integración
+- Llama `compactAddress(out, 64)` antes de asignar `textContent`.
+- Setea `box.title = out` (full address en tooltip — accesibilidad WCAG).
+- `box.dataset.full = out` preservado (clipboard copy).
+
+### Walk-through visual (ejemplo CEO)
+
+**Input:** `"AVENIDA JAVIER PRADO ESTE 4201, URBANIZACION SANTA CATALINA, SAN BORJA, LIMA, LIMA, PERU"` (88 chars)
+
+**Output compacto (63 chars, 1 línea @ 36px):**
+```
+Av. J. PRADO ESTE 4201, Urb. S. CATALINA, SAN BORJA, LIMA, PERU
+```
+
+**Hover (title attr — full address):**
+```
+AVENIDA JAVIER PRADO ESTE 4201, URBANIZACION SANTA CATALINA, SAN BORJA, LIMA, LIMA, PERU
+```
+
+**Clipboard (dataset.full + copyOutput):**
+```
+AVENIDA JAVIER PRADO ESTE 4201, URBANIZACION SANTA CATALINA, SAN BORJA, LIMA, LIMA, PERU
+```
+
+### Issue 1 — Walk-through visual
+
+**Click en DEPARTAMENTO** → dropdown aparece debajo del input con `max-height = min(220, gridBottom - inputBottom - 8)`.
+- Si el espacio disponible es ≥ 220px → dropdown crece hasta 220px (cap superior preservado).
+- Si el espacio es < 220px pero ≥ 100px → dropdown se ajusta al espacio (max-height dinámico).
+- Si el espacio es < 100px → FLIP-ARRIBA — dropdown aparece ARRIBA del input con `is-flipped` class (animation: glassDropdownInFlip).
+
+**Scroll/Resize:** `acUpdatePosition()` recalcula y aplica `acFitToGrid()` — bounds se respetan continuamente.
+
+### Tests
+
+- test_popup.py: 104 originales (preservados + actualizados a nowrap) + **16 nuevas aserciones v2.1.7** = **120 PASS**.
+- 8 nuevas aserciones para `.output-box` (height/max-height/white-space/text-overflow/overflow/compactAddress invocations/title attr).
+- 8 nuevas aserciones para dropdown bounds-aware (`.is-flipped` CSS, keyframe, transform-origin, acFitToGrid invocation, closest grid-block, flip threshold, is-flipped toggle, max-height dinámico, 220px cap).
+- node --check: EXIT 0.
+- test_security.py: 🟢 CLEAN.
+- test_codereview.py: 🟢 GOOD.
+
+### Preserved (no se revierte de v2.1.6)
+
+- ✅ Portal pattern v2.1.6 (move a body + position:fixed + z-index 99999).
+- ✅ `_cimaPortalHandlersInit` idempotencia guard.
+- ✅ `acCloseAll` con cleanup completo de todos los dropdowns.
+- ✅ v2.1.5 stacking fix defensivo (isolation:isolate + .field.is-open + :has() fallback).
+- ✅ `glassDropdownIn` keyframe sin transform (Safari compositor safe).
+- ✅ Cascada AC (departamento→provincia→distrito→ccpp) intacta.
+- ✅ Mobile fallback <480px intacto (con fix de regla conflictiva).
+- ✅ `prefers-reduced-motion` intacto.
+- ✅ `updateAddress()` siendo reutilizada para clipboard (copyOutput) — preserva `dataset.full`.
+
+### Notas de regresión
+
+- Tests originales que assertan `white-space: pre-wrap` en `.output-box` → **actualizados a nowrap** (la nueva directriz CEO lo requiere). Esta es la regresión esperada: la regla pre-wrap era interpretación incorrecta del requerimiento, ahora corregida.
+- `.output-wrap max-height` check ahora valida "libre" (sin max-height limitante).
+- `.output-box min-height` check actualizado a `height: 36px + max-height: 36px`.
+
+---
+
+## [2.1.6] - 2026-10-15 — PORTAL PATTERN v2.1.6 (CRIT-009 estructural)
+
+### Fixed CRIT-009 — DEFINITIVO
+- **Problema:** Dropdown DEPARTAMENTO aparecía DETRÁS de inputs hermanos (PROVINCIA, DIRECCIÓN, REFERENCIA, RESULTADO). El fix v2.1.5 (`isolation: isolate` + `.is-open { z-index: 1000 }`) **NO resolvió** el problema.
+- **Root cause REAL:** 4 niveles de stacking contexts anidados (`section → field → ac-wrap → input con backdrop-filter`). El `z-index: 1000` solo funciona dentro del propio ac-wrap; los inputs `backdrop-filter` de fields vecinos GANAN en el composite order (CSS painter's algorithm).
+- **Solución:** Portal pattern (Radix UI / Headless UI / Floating UI). El dropdown se mueve a `document.body` y se posiciona con `position: fixed` + coords via `getBoundingClientRect()`.
+
+### Changed CSS
+- **`.ac-dropdown`** ahora `position: fixed` con `z-index: 99999` (super-high, body no tiene isolation). Eliminated `top: calc(100% + 4px); left: 0; right: 0;` (coords via JS).
+- **Comentario v2.1.6** documenta la razón estructural (4 stacking contexts anidados).
+
+### Changed JS — Portal move/restore
+- **`acRender(key)`**: si `drop.parentNode !== document.body`, mueve el dropdown al body guardando `_originalParent` y `_originalNextSibling`. Calcula coords via `input.getBoundingClientRect()` y aplica `position/top/left/width/zIndex` inline.
+- **`acClose()`**: limpia estilos inline (`position/top/left/width/zIndex = ""`) y restaura al parent original vía `_originalParent.insertBefore`.
+- **`acCloseAll()`**: ahora también limpia estilos inline y restaura al parent original de TODOS los dropdowns (idempotencia garantizada).
+- **`acUpdatePosition(key)`** (NUEVO): helper que recalcula coords via `getBoundingClientRect()`. No-op si dropdown está oculto o input detached.
+
+### Added JS — Global event handlers (registrados una sola vez)
+- **Guard `_cimaPortalHandlersInit`** (en `setupAutocomplete`): previene duplicación si se re-inicializa.
+- **`window.addEventListener('scroll', repositionAll, true)`** (capture phase): captura scrolls en cualquier contenedor (incluso `field-row` con grid).
+- **`window.addEventListener('resize', repositionAll)`**: reposiciona en resize de ventana.
+- **`document.addEventListener('mousedown', ..., true)`** (capture phase): click-outside cierra todos los dropdowns si el target NO es `.ac-dropdown` ni `input[data-ac]`.
+- **`document.addEventListener('touchstart', ..., true)`**: mobile fallback (Safari iOS a veces no dispara mousedown antes que blur).
+
+### Defensive / robustness
+- **Try/catch en `document.body.appendChild(drop)`**: si falla, deja dropdown en su sitio original (no rompe).
+- **Try/catch en `getBoundingClientRect()`**: si falla (input detached), revierte portal move y aborta render.
+- **Try/catch en `_originalParent.insertBefore`**: si falla, log warning pero continúa cerrando.
+- **Console.warn** en todos los paths de fallo (debuggeability).
+
+### Preserved (v2.1.5 stacking fix defensivo — no se revierte)
+- ✅ `isolation: isolate` en `.section > *` y `.ac-wrap` — sigue siendo útil para isolation general.
+- ✅ `.field.is-open { z-index: 1000 }` y `:has(.ac-dropdown:not([hidden]))` — defensiva en caso de fallback CSS.
+- ✅ `glassDropdownIn` SIN transform (Safari compositor safe).
+- ✅ `acCloseAll` con cleanup de `.is-open` (idempotente).
+- ✅ Cascada AC (departamento→provincia→distrito→ccpp) intacta.
+- ✅ Mobile fallback <480px intacto.
+- ✅ `prefers-reduced-motion` intacto.
+
+### Tests
+- test_popup.py: 91 originales + **13 nuevas aserciones v2.1.6 PORTAL-specific** = **104 PASS**.
+- node --check: EXIT 0.
+- test_security.py: 🟢 CLEAN (sin cambios — solo se modificó popup.js + CSS).
+- test_codereview.py: 🟢 GOOD.
+
+---
+
+## [2.1.4] - 2026-10-15 — REVERSIÓN v2.1.3 + RESULTADO ancho preformateado
+
+### Changed
+- **RESULTADO ancho + preformateado**: `.output-wrap` sin max-height; `.output-box` con `white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; min-height: 36px; max-height: 88px; overflow-y: auto`. Direcciones largas se muestran **completas** con wrap natural (multi-línea) en vez de truncarse a "AR D…" con ellipsis.
+- **JS `updateAddress()`**: eliminada la llamada a `truncateForBox(out, 80)`. El texto completo se asigna a `textContent` (el wrap lo gestiona CSS). `dataset.full` se preserva para clipboard.
+- **Botón BORRAR icon-only**: removido `<span class="btn-icon-label">BORRAR</span>`. Restaurado `width: 36px; min-width: 36px; padding: 0` (círculo pill 36×36). SVG papelera queda como único contenido visual.
+- **Botón ZONAS DE APAGADO icon-only**: removido `<span class="cobertura-btn-label">ZONAS DE APAGADO</span>`. CSS `.cobertura-btn` ahora `flex: 0 0 36px; width: 36px; padding: 0` (simétrico con `.btn-icon-clear`).
+- **Accesibilidad WCAG**: ambos botones (icon-only) mantienen `aria-label` + `title` para lectores de pantalla.
+
+### Preserved (no se revierte de v2.1.3)
+- ✅ Micro-shake sutil en `.output-box.empty-shake` (240ms × 2 oscilaciones) cuando se clickea output vacío.
+- ✅ `showInlineEmpty()` NO toca `textContent` — preserva "LLENAR DATOS" intacto.
+- ✅ Triángulo SVG inline (NO emoji) en coberturaBtn.
+- ✅ Estados `cobertura-btn--idle` / `cobertura-btn.warn` / `cobertura-btn.off` con pulseDanger/pulseWarn.
+- ✅ Output centrado (`text-align: center; justify-content: center`) — simetría con placeholder.
+- ✅ Liquid Glass System (tier-1/2/3, blur-md, hairline highlight).
+- ✅ SVGs idénticos al v2.1.3 (papelera + triángulo).
+
+### Tests
+- test_popup.py: 68 originales + nuevas aserciones v2.1.4 (10+)
+- node --check: EXIT 0
+- test_security.py: 🟢 CLEAN
+- test_codereview.py: 🟢 GOOD
+
+### Reversión explícita desde v2.1.3
+- ❌ `<span class="btn-icon-label">BORRAR</span>` → ELIMINADO
+- ❌ `<span class="cobertura-btn-label">ZONAS DE APAGADO</span>` → ELIMINADO
+- ❌ `.btn-icon-clear { width: auto; padding: 0 12px; }` → revertido a icon-only
+- ❌ `.cobertura-btn { padding: 0 12px; height: 36px; }` sin width fija → width 36px fijo
+- ❌ `truncateForBox(out, 80)` en updateAddress → eliminado
+
+---
+
 ## [2.1.0] - 2026-10-14 — Pipeline adaptable `regenerate_data.py` (CEO-editable)
 
 ### Added
