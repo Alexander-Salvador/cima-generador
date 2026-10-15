@@ -2268,7 +2268,11 @@ font-size: 10px;
              TX OPER TO OPER -> ETIQUETA | TX DIRECTA -> ETIQUETA".
              Sin header (cat badge/ID/close), sin title, sin description,
              sin copy button. Solo los 2 skill codes que el supervisor necesita. -->
-        <div class="etiqueta-preview" id="etiquetaPreview" hidden>
+        <!-- v3.3.9: preview SIEMPRE visible — CEO directive "siempre deben estar ahi".
+             Las 2 opciones (TX OPER TO OPER + TX DIRECTA) viven en el DOM
+             desde el inicio. Empty state inicial: solo labels, sin codes.
+             Cuando user selecciona del dropdown → codes se rellenan. -->
+        <div class="etiqueta-preview" id="etiquetaPreview">
           <div class="etiqueta-preview-skills" id="etiquetaPreviewSkills"></div>
         </div>
       </div>
@@ -2603,12 +2607,14 @@ function filterEtiquetasByCat(cat) {
     var n = ETIQUETAS_DATA.filter(function (x) { return x.cat === cat; }).length;
     countEl.textContent = n;
   }
-  // Si la etiqueta seleccionada ya no aplica a la nueva categoría → ocultar preview
+  // v3.3.9: si la etiqueta seleccionada no aplica a la nueva categoría →
+  // limpiar selección + re-renderizar preview (los 2 cards SIEMPRE visibles,
+  // solo cambian sus codes — empty si la selección se invalidó).
   if (TX_STATE.selectedId) {
     var e = ETIQUETAS_DATA.find(function (x) { return x.id === TX_STATE.selectedId; });
     if (!e || e.cat !== cat) {
       TX_STATE.selectedId = null;
-      hideEtiquetaPreview();
+      showEtiquetaPreview(null);  // empty state (solo labels, sin codes)
     }
   }
   // v3.3.3 FIX: NO llamar renderEtiquetasDropdown aquí. Era el bug.
@@ -2751,25 +2757,28 @@ function selectEtiqueta(id) {
   hideEtiquetaDropdown();
 }
 
-// v3.3.7 PREVIEW: 2 skill cards clickables (copy-to-clipboard).
-// CEO directive: "Al darles click se debe copiar unicamente la etiqueta
-// limpia". Cada card renderiza label (siempre) + code (solo si existe).
-// Si skill_tx2 está vacío → solo aparece el label, sin row de código.
+// v3.3.9 PREVIEW SIEMPRE VISIBLE: 2 skill cards (TX OPER TO OPER + TX DIRECTA)
+// viven en el DOM desde el inicio. Render condicional:
+//   - e válido → cards con codes llenos (skill_tx2, skill_txdirecto)
+//   - e null   → cards vacíos (solo labels, sin codes) — empty state
+// CEO directive: "siempre deben estar ahi" + "se rellena con la busqueda correcta".
 function showEtiquetaPreview(e) {
   var preview = $('etiquetaPreview');
   if (!preview) return;
-  // Render condicional: solo el código si existe, sino solo el label
-  function skillCardHtml(label, code, copyAttr) {
+  // Render condicional: si e es null, codes vacíos; sino usa los codes del item
+  var tx2Code = e ? e.skill_tx2 : '';
+  var txDirCode = e ? e.skill_txdirecto : '';
+  function skillCardHtml(label, code) {
     var codeHtml = code ? '<span class="etiqueta-skill-row">' + escapeHtml(code) + '</span>' : '';
-    return '<button type="button" class="etiqueta-skill-card" data-copy="' + escapeHtml(code || '') + '" data-label="' + escapeHtml(label) + '" aria-label="Copiar ' + escapeHtml(label) + '">' +
+    return '<button type="button" class="etiqueta-skill-card" data-copy="' + escapeHtml(code) + '" data-label="' + escapeHtml(label) + '" aria-label="Copiar ' + escapeHtml(label) + '"' + (code ? '' : ' data-empty="true"') + '>' +
       '<span class="etiqueta-skill-label">' + escapeHtml(label) + '</span>' +
       codeHtml +
     '</button>';
   }
   $('etiquetaPreviewSkills').innerHTML =
-    skillCardHtml('TX OPER TO OPER', e.skill_tx2, 'tx2') +
-    skillCardHtml('TX DIRECTA', e.skill_txdirecto, 'txdirecto');
-  // Wire click handlers (event delegation on container)
+    skillCardHtml('TX OPER TO OPER', tx2Code) +
+    skillCardHtml('TX DIRECTA', txDirCode);
+  // Wire click handlers (event delegation on container) — solo 1 vez
   var skillsContainer = $('etiquetaPreviewSkills');
   if (skillsContainer && !skillsContainer._wired) {
     skillsContainer.addEventListener('click', function (ev) {
@@ -2778,11 +2787,9 @@ function showEtiquetaPreview(e) {
       var code = card.dataset.copy;
       var label = card.dataset.label || 'Etiqueta';
       if (!code) {
-        // v3.3.7: empty data fallback — sin codigo, solo label
         announce(label + ' sin código disponible');
         return;
       }
-      // v3.3.7: copiar etiqueta limpia + feedback transient (is-copied class)
       function showOk() {
         card.classList.add('is-copied');
         setTimeout(function () {
@@ -2802,9 +2809,10 @@ function showEtiquetaPreview(e) {
     });
     skillsContainer._wired = true;
   }
-  preview.hidden = false;
-  // Scroll suave hasta el preview
-  preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // v3.3.9: NO scrollear si ya estamos en empty state inicial (UX más calm)
+  if (e) {
+    preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 function hideEtiquetaPreview() {
@@ -2859,6 +2867,11 @@ function setupEtiquetas() {
   }
   // v3.3.8: renderizar dropdown en init — siempre visible si hay cat activa
   renderEtiquetasDropdown('');
+  // v3.3.9: renderizar preview en init — 2 cards vacíos (solo labels) visibles
+  // desde el inicio. CEO directive: "siempre deben estar ahi, solo que sin
+  // datos hasta que se use el searchinput". Cuando user selecciona → codes
+  // se rellenan via showEtiquetaPreview(e).
+  showEtiquetaPreview(null);
   // Click/focus en el input → re-renderiza dropdown (filtros actuales)
   input.addEventListener('focus', function () {
     renderEtiquetasDropdown(this.value);
