@@ -1,0 +1,270 @@
+{
+  "version": "2.0.9",
+  "fecha_creacion": "2026-10-14",
+  "descripcion": "CCPPs extraídos via OCR visual del modelo (PDFs escaneados sin texto).\nEditar y agregar/quitar entradas según nuevas bases. Para regenerar HTML: `python3 scripts/regenerate_data.py`",
+  "origenes": {
+    "APAGADP1.pdf": "Grupo 1 — 16 zonas OCR visual",
+    "APAGADO2.pdf": "Grupo 3 — 21 zonas OCR visual"
+  },
+  "zonas": [
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "APURIMAC",
+      "prov": "ANDAHUAYLAS",
+      "dist": "ANDAHUAYLAS",
+      "ccpp": "SOCNACANCHA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "APURIMAC",
+      "prov": "ANDAHUAYLAS",
+      "dist": "TURPO",
+      "ccpp": "BELEN ANTA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "APURIMAC",
+      "prov": "AYMARAES",
+      "dist": "TINTAY",
+      "ccpp": "TINTAY"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "APURIMAC",
+      "prov": "CHINCHEROS",
+      "dist": "RANRACANCHA",
+      "ccpp": "OCCCEPATA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "APURIMAC",
+      "prov": "COTABAMBAS",
+      "dist": "HAQUIRA",
+      "ccpp": "PATAN"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "AYACUCHO",
+      "prov": "HUANTA",
+      "dist": "SANTILLANA",
+      "ccpp": "SAN JOSE DE SECCE"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "AYACUCHO",
+      "prov": "LA MAR",
+      "dist": "SANTA ROSA",
+      "ccpp": "SIMARIBA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "AYACUCHO",
+      "prov": "LUCANAS",
+      "dist": "CABANA",
+      "ccpp": "CABANA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "AYACUCHO",
+      "prov": "PARINACOCHAS",
+      "dist": "CORONEL CASTAÑEDA",
+      "ccpp": "PALLANCATA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "AYACUCHO",
+      "prov": "VICTOR FAJARDO",
+      "dist": "VILCANCHOS",
+      "ccpp": "ESPITE"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "CALCA",
+      "dist": "CALCA",
+      "ccpp": "ACCHA PAMPA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "CALCA",
+      "dist": "TARAY",
+      "ccpp": "HUANCALLE"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "CANCHIS",
+      "dist": "CHECACUPE",
+      "ccpp": "CHUQUICAHUANA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "LA CONVENCION",
+      "dist": "MARANURA",
+      "ccpp": "SANTA MARIA LA NUEVA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "LA CONVENCION",
+      "dist": "QUELLOUNO",
+      "ccpp": "CHANCAMAYO"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "QUISPICANCHI",
+      "dist": "OCONGATE",
+      "ccpp": "OCONGATE"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "CUSCO",
+      "prov": "QUISPICANCHI",
+      "dist": "URCOS",
+      "ccpp": "URCOS"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "HUANCAVELICA",
+      "prov": "ANGARAES",
+      "dist": "LIRCAY",
+      "ccpp": "TACCSANA"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "HUANCAVELICA",
+      "prov": "TAYACAJA",
+      "dist": "DANIEL HERNANDEZ",
+      "ccpp": "RUNDO"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "HUANCAVELICA",
+      "prov": "TAYACAJA",
+      "dist": "TINTAY PUNCU",
+      "ccpp": "TINTAY"
+    },
+    {
+      "origen": "APAGADO2.pdf",
+      "depto": "HUANUCO",
+      "prov": "PUERTO INCA",
+      "dist": "HONORIA",
+      "ccpp": "HONORIA"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "CAJAMARCA",
+      "prov": "JAEN",
+      "dist": "HUABAL",
+      "ccpp": "EL HUACO"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "CAJAMARCA",
+      "prov": "JAEN",
+      "dist": "JAEN",
+      "ccpp": "EL NOGAL"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "CAJAMARCA",
+      "prov": "JAEN",
+      "dist": "SANTA ROSA",
+      "ccpp": "PUERTO HUALLAPE"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "CAJAMARCA",
+      "prov": "SAN IGNACIO",
+      "dist": "SAN IGNACIO",
+      "ccpp": "LA MORA GRANDE"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "CAJAMARCA",
+      "prov": "SAN IGNACIO",
+      "dist": "TABACONAS",
+      "ccpp": "MANCHARA"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "CUSCO",
+      "prov": "CALCA",
+      "dist": "LAMAY",
+      "ccpp": "CHUMPE-POQUES"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "JUNIN",
+      "prov": "CHANCHAMAYO",
+      "dist": "PERENE",
+      "ccpp": "SANTA ROSA DE RIO AMARILLO"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "JUNIN",
+      "prov": "SATIPO",
+      "dist": "COVIRIALI",
+      "ccpp": "RIO BLANCO"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "JUNIN",
+      "prov": "SATIPO",
+      "dist": "PANGOA",
+      "ccpp": "ALTO ANAPATI"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "JUNIN",
+      "prov": "SATIPO",
+      "dist": "PANGOA",
+      "ccpp": "CIUDAD DE DIOS"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "JUNIN",
+      "prov": "SATIPO",
+      "dist": "RIO NEGRO",
+      "ccpp": "SAN JUAN DE HUAHUARI"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "LAMBAYEQUE",
+      "prov": "FERREÑAFE",
+      "dist": "CAÑARIS",
+      "ccpp": "CHIÑAMA"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "LIMA",
+      "prov": "HUARAL",
+      "dist": "IHUARI",
+      "ccpp": "ÑAUPAY"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "LIMA",
+      "prov": "HUARAL",
+      "dist": "IHUARI",
+      "ccpp": "YUNGUY"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "LIMA",
+      "prov": "OYON",
+      "dist": "OYON",
+      "ccpp": "VIROC"
+    },
+    {
+      "origen": "APAGADP1.pdf",
+      "depto": "PIURA",
+      "prov": "HUANCABAMBA",
+      "dist": "HUARMACA",
+      "ccpp": "CONGOÑA"
+    }
+  ]
+}
