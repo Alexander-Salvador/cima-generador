@@ -1,5 +1,109 @@
 # Changelog — cima-generador
 
+## [3.4.4] - 2026-10-15 — AUDITORÍA EXCEL + DP FIXES + SEARCH IMPROVEMENT
+
+CEO directive 2026-10-15:
+1. "No debes inventar etiquetas elimina todo lo que no este en el excel
+   solo amtenemos el criterio real de la empresa"
+2. "Si ves duplicados valida el nombre para separarlos a pesar de ser
+   la misma etiqueta"
+3. "Mejores la busqueda del agente ARREGLANDO minimamente los nombres"
+4. "ACREDITACIONES y LINEA 2 no tienen TX DIRECTA <- corrige y verifica
+   cuales mas no tienen"
+
+### Fixed — DP codes vacíos (sin inventar)
+
+Análisis del Excel para cada `SK_CV_..._TX` verifica si existe `DP_CV_..._TX` counterpart.
+
+**SK codes SIN DP counterpart en Excel (set tx_directo = ''):**
+
+| SK code | TX DIRECTA existe? | Records afectados |
+|---|---|---|
+| `SK_CV_ACREDITACIONES_TX` | ❌ NO | id 18 (POSTPAGO) |
+| `SK_CV_TECNICO_MOVIL_TX` | ❌ NO | (legacy, no usado) |
+| `SK_CV_TECNICO_MOVIL_TX_KONECTA` | ❌ NO | id 19 (POSTPAGO), id 21 (LINE 2) |
+
+**SK codes CON DP counterpart (mantener tx_directo):** todos los demás (COMERCIAL_TX, RETENCIONES_*, DOWNSELL_*, DTH_TX, PRIORITY_TX, BLINDAJE_*, ROAMING_TX, CXR_CORTE_X_ROBO_TX, TRASLADO_BAJA_FIJA_TX).
+
+```js
+// v3.4.4: SK_CV_ACREDITACIONES_TX sin DP → tx_directo vacío
+{ id: 18, ..., skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: '' },
+
+// v3.4.4: SK_CV_TECNICO_MOVIL_TX_KONECTA sin DP (LINE 2 + TECNICO MOVIL) → vacío
+{ id: 19, ..., skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: '' },
+{ id: 21, ..., skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: '' },
+```
+
+### Fixed — VENTAS simplificado (sin inventar)
+
+Excel no tiene "VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO" como label específico. Solo tiene "VENTAS" como categoría con sub-items enumerados.
+
+**Cambiado:**
+- id 20: solicitud "VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO" → "VENTAS" (genérico)
+- id 22: solicitud "VENTAS - ALTA NUEVA MT" → "VENTAS"
+- id 23: solicitud "VENTAS - ALTA NUEVA FIJA" → "VENTAS"
+
+Los `detalle` mantienen la información específica del Excel sobre cada sub-item.
+
+### Improved — Búsqueda con accent normalization
+
+**Antes:** "MIGRACION" no matcheaba "MIGRACIÓN" (acento) — agentes no encontraban etiquetas con acentos si tipeaban sin tildes.
+
+**Ahora:** Función `normalizeSearch()` con NFD decomposition + remove combining marks:
+
+```js
+function normalizeSearch(str) {
+  return (str || '').toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')  // remueve combining marks
+    .toLowerCase()
+    .trim();
+}
+```
+
+Búsqueda incluye ahora 6 campos:
+- solicitud, detalle, area (existed)
+- skill_tx2 (existed)
+- **skill_txdirecto** (NUEVO — busca también en TX DIRECTA)
+- **id exacto** (NUEVO — String(e.id) === q)
+
+Agentes pueden buscar "migracion", "4" (id), "SK_CV_PRIORITY_TX", etc. y matcheará.
+
+### Validado — Duplicados PLAN MENOR
+
+3 records con "PLAN MENOR" en solicitud pero DIFERENTES skill codes (no son duplicados):
+
+| id | Solicitud | Cat | Skill code |
+|---|---|---|---|
+| 2 | PLAN MENOR | POSTPAGO | `SK_CV_COMERCIAL_TX` |
+| 8 | PLAN MENOR MT | MTOTAL | `SK_CV_DOWNSELL_FIJA_TX` |
+| 14 | PLAN MENOR STAND ALONE | STANDALONE | `SK_CV_DOWNSELL_FIJA_TX` |
+
+id 8 (MT) y id 14 (STANDALONE) comparten skill `SK_CV_DOWNSELL_FIJA_TX` pero diferente categoría → CEO directive: "valida el nombre para separarlos". Ya están separados por solicitud + categoría. **No son duplicados.**
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — DP fixes (3 records) + VENTAS simplificado (3 records) + normalizeSearch helper + filterEtiquetas con accent + id search (~30 líneas modificadas/agregadas)
+- `apps/cima-generador/VERSION` — `3.4.3` → `3.4.4` (patch — data hygiene)
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +8 tests v3.4.4 (308/308 PASS)
+
+### Tests
+
+- **308/308 PASS** (era 300/300; +8 nuevos v3.4.4)
+- +3 DP fixes (ids 18, 19, 21 tienen `skill_txdirecto: ''`)
+- +1 VENTAS simplificado (3 records con solicitud="VENTAS")
+- +3 search improvements (normalizeSearch + skill_txdirecto + id)
+- +1 duplicados PLAN MENOR validados (3 records DIFERENTES)
+
+### Lecciones nuevas
+
+- **L-047:** Auditoría de datos = comparar cada record contra la fuente Excel. Skill codes que parecen "tener DP" pero no existen en el Excel son inventados → CEO directive: no inventar. Para cada `SK_CV_*_TX` verificar si `DP_CV_*_TX` existe en el Excel antes de asignar tx_directo.
+- **L-048:** Accent normalization es crítica para UX de búsqueda en español. NFD + remove combining marks (`\u0300-\u036f`) convierte "MIGRACIÓN" → "migracion" → match con query "migracion". Sin esto, agentes que tipean rápido (sin acentos) no encuentran etiquetas.
+- **L-049:** "Duplicados" aparentes (mismo skill_tx2 en diferentes categorías) NO son duplicados si tienen DIFERENTE solicitud + DIFERENTE área. Cada categoría tiene su propio contexto. Validar antes de fusionar.
+
+---
+
 ## [3.4.3] - 2026-10-15 — COMPARATIVA EXCEL: 3 SKUs NUEVOS
 
 CEO directive 2026-10-15: "necesito que hagas una comparativa end to end,
