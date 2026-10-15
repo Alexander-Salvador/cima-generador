@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — v2.0.4 COMMITEADO (`6217d31`), ZONAS APAGADAS full end-to-end con política proporcional anti-falso positivo**.
+Memoria persistente. Última actualización: **2026-10-14 — v2.0.7 COMMITEADO (`4bb7e5a`), audit exhaustivo de los 3 PDFs + 3 distritos recuperados + visual refactor + badge opt-in**.
 
 ---
 
@@ -507,21 +507,23 @@ NO usar `apply_patch_v202.py` (regex roto). Integración **aditiva manual** con 
 
 ### 📋 Resumen ejecutivo del estado actual
 
-**Operativo (commitado en HEAD `6217d31` — v2.0.4):**
-- ✅ Popup v2.0.4 STANDALONE (752KB data inline + Sets proporcionales)
-- ✅ 50/50 tests integridad PASS (E2E data integrity + escenarios reales)
+**Operativo (commitado en HEAD `4bb7e5a` — v2.0.7):**
+- ✅ Popup v2.0.7 STANDALONE (752KB data inline + 195 d6 ubigeos)
+- ✅ 61/61 tests integridad PASS
 - ✅ 0 issues security (Diana 🟢 CLEAN)
-- ✅ Code review 🟢 GOOD (Pablo)
+- ✅ Code review 🟢 GOOD (Pablo, 200 comments)
 - ✅ LICENSE MIT + atribución GeoNames/RitchieRD
-- ✅ Feature ZONAS APAGADAS ACTIVO con data proporcional (192 d6 + 1 d4 + 1 d2)
+- ✅ Feature ZONAS APAGADAS con búsqueda específica (Set d6 O(1)) + UI minimal + badge opt-in
 - ✅ gitignore protegiendo Bases de Apagado/ (APAGADO*.pdf + APAGADP*.pdf) y data/zonas_apagadas.json
-- ✅ Backups pre-cambio: /tmp/opencode/popup_v{201,202,203}_backup_*.tar.gz
+- ✅ Backups pre-cambio: /tmp/opencode/popup_v{201,202,203,204,205,206}_backup_*.tar.gz
 - ✅ Pipeline end-to-end verificado:
-  - pdfplumber → 204 zonas Grupo 1 raw (3 pages)
-  - OCR visual multimodal → 16 zonas Grupo 1 (subset visual NUEVO) + 21 Grupo 3
-  - Fuzzy match NFKC → 12 typos corregidos (OCA×OCOÑA, MUÑANI×MUNANI, CASTAÑEDA×CASTANEDA, etc.)
-  - 2 PDF errors descartados con razón documentada (CAJAMARCA/CAJABAMBA/CAJAMARCA, LORETO/MRC/SANTA ROSA DE LORETO)
-  - Política proporcional: d6=192 (todo) / d4=1 (LORETO ≥60%) / d2=1 (LORETO ≥40%)
+  - pdfplumber → 204 zonas Grupo 2 raw (3 pages) — audit visual exhaustivo en v2.0.7
+  - OCR visual multimodal → 16 Grupo 1 (subset visual) + 21 Grupo 3
+  - Fuzzy match NFKC → 12+ typos corregidos
+  - **v2.0.7 audit**: 33 gaps PDF 1→ 19 ya cubiertos, 9 fuzzy ya cubiertos, 3 nuevos (050611, 060201, 060601), 2 typos PDF
+  - Política proporcional: d6=195 (todo) / d4=1 (LORETO ≥60%) / d2=1 (LORETO ≥40%)
+- ✅ **Visual refactor v2.0.5**: botón coberturaBtn compacto (36×34px), al lado del X, solo ⚠️
+- ✅ **Badge opt-in v2.0.6**: sin auto-show, solo al click en ⚠️
 
 **Pendiente (no commiteado):**
 - ⏳ v2.0.2 — optimización data + UI 2 botones (syntax error)
