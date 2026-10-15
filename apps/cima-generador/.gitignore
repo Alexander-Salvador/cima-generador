@@ -1,2 +1,7 @@
 tmp_opencode/
 .regenerate_state.json
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
