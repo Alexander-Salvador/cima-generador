@@ -1,5 +1,33 @@
 # Changelog — cima-generador
 
+## [2.0.5] - 2026-10-14 — Visual refactor: coberturaBtn compacto al lado del X
+
+### Changed
+- **Botón COBERTURA rediseñado** a icono compacto (36×34px) al lado del botón X clear, dentro del output-row
+- **Hidden por default** (`display: none`) — aparece SOLO cuando hay alerta (`display: inline-flex` con clase `.off`)
+- **Sin texto** "COBERTURA OFF / COBERTURA OK / COBERTURA" — solo el triángulo ⚠️ dentro del icono de 16px
+- Pulse keyframes mantienen efecto visual de atención
+
+### Removed
+- Strip ancho que ocupaba toda la fila (ruido visual)
+- Label "COBERTURA" en HTML
+- Wrapper externo del botón
+- Lógica `pending` / `ok` separada — solo hay 2 estados: `hidden` o `off`
+
+### Layout del output-row ahora
+```
+[ output-box (flex:1) ] [ 🗑️ X (34px) ] [ ⚠️ (36px, solo si off) ]
+```
+
+### Tests
+- 50 → **54 tests PASS** (+4 nuevos en sección "Visual layout v2.0.5"):
+  - coberturaBtn dentro del output-row (después de X clear)
+  - .cobertura-btn display:none por default (hidden)
+  - .cobertura-btn.off display:inline-flex (visible con alerta)
+  - coberturaLabel eliminado (icon-only)
+- `node --check` → EXIT 0
+- Diana security 🟢 CLEAN · Pablo code review 🟢 GOOD
+
 ## [2.0.4] - 2026-10-14 — ZONAS APAGADAS política proporcional (anti-falso positivo)
 
 ### Changed

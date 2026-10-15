@@ -264,6 +264,63 @@ def test(html_path):
     else:
         result.fail('ZONAS_APAGADAS pattern', 'no match')
 
+    # 7.6 v2.0.5 Visual layout: coberturaBtn dentro del output-row, compacto
+    print('\n▸ Visual layout v2.0.5 (coberturaBtn compact inside output-row)')
+    # Buscar orden: <div class="output-row"> ... id="coberturaBtn" ... en orden
+    btn_pos = html.find('id="coberturaBtn"')
+    output_rows = [m.start() for m in re.finditer(r'<div class="output-row">', html)]
+    output_ends = [m.end() for m in re.finditer(r'<div class="output-row">[^<]*<div[^>]*>.*?</div>\s*<button[^>]*btn-icon-clear.*?</button>\s*<button[^>]*coberturaBtn.*?</button>\s*</div>', html, re.DOTALL)]
+    if btn_pos > 0:
+        # Verificar que entre el <div class="output-row"> más cercano antes y el </div> después está el coberturaBtn
+        last_row_start = max(p for p in output_rows if p < btn_pos) if output_rows else -1
+        if last_row_start >= 0:
+            # Check that next </div> after coberturaBtn closes the output-row
+            after_btn = html.find('</div>', btn_pos)
+            if after_btn > 0:
+                segment = html[last_row_start:after_btn + 6]
+                if 'btn-icon-clear' in segment and 'coberturaBtn' in segment:
+                    result.ok('coberturaBtn dentro del output-row (después de X clear)')
+                else:
+                    result.fail('coberturaBtn location', 'no comparte output-row con btn-icon-clear')
+            else:
+                result.fail('output-row end', '</div> no encontrado')
+        else:
+            result.fail('output-row antes', 'no encontrado antes del coberturaBtn')
+    else:
+        result.fail('coberturaBtn element', 'no encontrado en HTML')
+
+    # CSS .cobertura-btn default = display:none (hidden by default)
+    css_btn_match = re.search(
+        r'\.cobertura-btn\s*\{([^}]+)\}',
+        html
+    )
+    if css_btn_match:
+        css_body = css_btn_match.group(1)
+        if 'display: none' in css_body or 'display:none' in css_body:
+            result.ok('.cobertura-btn display:none (hidden by default)')
+        else:
+            result.fail('.cobertura-btn display', 'no es none por default')
+    else:
+        result.fail('.cobertura-btn CSS', 'no encontrado')
+
+    # CSS .cobertura-btn.off = display:inline-flex (visible solo con alerta)
+    css_off_match = re.search(
+        r'\.cobertura-btn\.off\s*\{([^}]+)\}',
+        html
+    )
+    if css_off_match:
+        css_off_body = css_off_match.group(1)
+        if 'display: inline-flex' in css_off_body or 'display:inline-flex' in css_off_body:
+            result.ok('.cobertura-btn.off display:inline-flex (visible con alerta)')
+        else:
+            result.fail('.cobertura-btn.off display', 'no es inline-flex')
+
+    # Botón solo icono, sin texto "COBERTURA"
+    if 'coberturaLabel' in html:
+        result.fail('coberturaLabel text', 'ya no debe existir (icon-only)')
+    else:
+        result.ok('coberturaLabel eliminado (icon-only)')
+
     # 8. CSS / HTML quality
     print('\n▸ HTML quality')
     if 'function debounce' in html:

@@ -819,51 +819,27 @@
     85%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
   }
-  /* v2.0.2: Botón COBERTURA (Movistar) — semáforo pending/ok/off */
+  /* v2.0.5: Botón COBERTURA compacto — solo icono ⚠️, al lado del X clear */
   .cobertura-btn {
-    background: var(--surface-2);
-    border: 1.5px solid var(--border);
-    color: var(--text);
-    padding: var(--space-2) var(--space-4);
+    display: none;  /* Hidden by default — aparece SOLO cuando hay alerta */
+    background: color-mix(in srgb, var(--danger) 22%, var(--surface));
+    border: 1.5px solid var(--danger);
+    color: var(--danger);
     border-radius: var(--radius-md);
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1.2;
+    font-size: 16px;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.18s ease-out;
-    text-align: center;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    margin-top: var(--space-2);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    width: 100%;
+    width: 36px;
+    height: 34px;
+    flex-shrink: 0;
+    padding: 0;
     user-select: none;
   }
-  .cobertura-btn .icon {
-    font-size: 14px;
-    line-height: 1;
-    display: inline-block;
-  }
-  .cobertura-btn.pending {
-    background: var(--surface);
-    border-color: var(--border);
-    color: var(--text-faint);
-    cursor: default;
-  }
-  .cobertura-btn.ok {
-    background: color-mix(in srgb, var(--green) 14%, var(--surface));
-    border-color: var(--green);
-    color: var(--green);
-    cursor: default;
-  }
   .cobertura-btn.off {
-    background: color-mix(in srgb, var(--danger) 22%, var(--surface));
-    border-color: var(--danger);
-    color: var(--danger);
-    cursor: pointer;
+    display: inline-flex;
     animation: pulseDanger 2.4s ease-in-out infinite;
   }
   .cobertura-btn.off:hover,
@@ -873,11 +849,8 @@
     outline-offset: 2px;
   }
   .cobertura-btn:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--danger);
     outline-offset: 2px;
-  }
-  .cobertura-btn[disabled] {
-    opacity: 0.85;
   }
   @keyframes pulseDanger {
     0%, 100% {
@@ -886,7 +859,7 @@
     }
     50% {
       box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 0%, transparent);
-      transform: scale(1.015);
+      transform: scale(1.025);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -1210,17 +1183,16 @@ font-size: 10px;
             <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
           </svg>
         </button>
+        <!-- v2.0.5: Botón cobertura compacto al costado del X (solo aparece cuando hay alerta) -->
+        <button id="coberturaBtn" class="cobertura-btn" type="button"
+                aria-label="Alerta de cobertura Movistar — click para detalles"
+                aria-pressed="false"
+                title=""
+                onclick="toggleCoberturaDetail()">
+          <span id="coberturaIcon" class="icon" aria-hidden="true">⚠️</span>
+        </button>
       </div>
 </div>
-      <!-- v2.0.2: Botón semáforo COBERTURA (Movistar) -->
-      <button id="coberturaBtn" class="cobertura-btn pending" type="button" disabled
-              aria-label="Verificar cobertura Movistar"
-              aria-pressed="false"
-              title="Selecciona ubicación para verificar cobertura"
-              onclick="toggleCoberturaDetail()">
-        <span id="coberturaIcon" class="icon" aria-hidden="true">—</span>
-        <span id="coberturaLabel">COBERTURA</span>
-      </button>
       <div id="zonaApagadaBadge" class="zona-apagada-badge"></div>
   </div>
 
@@ -1551,37 +1523,20 @@ function escapeHtml(s) {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// COBERTURA BUTTON (v2.0.2) — semáforo pending/ok/off con pulse animation
-// Toggle para mostrar/ocultar detalle. Estado inicial: pending.
+// COBERTURA BUTTON (v2.0.5) — compact icon-only, al lado del X clear
+// Aparece SOLO cuando hay alerta (clase .off). Hidden por default.
 // ══════════════════════════════════════════════════════════════════════
 function renderCoberturaButton(check) {
   var btn = $('coberturaBtn');
   if (!btn) return;
-  btn.classList.remove('ok', 'off', 'pending');
-  var labelEl = $('coberturaLabel');
-  var iconEl = $('coberturaIcon');
-  var hasDepto = $('departamento') && $('departamento').value.trim();
+  btn.classList.remove('off');
+  btn.setAttribute('aria-pressed', 'false');
   if (check) {
     btn.classList.add('off');
-    btn.disabled = false;
     btn.setAttribute('aria-pressed', 'true');
     btn.title = check.mensaje + ' (ubigeo ' + check.code + '). Click para detalles.';
-    if (iconEl) iconEl.textContent = '⚠️';
-    if (labelEl) labelEl.textContent = 'COBERTURA OFF';
-  } else if (hasDepto) {
-    btn.classList.add('ok');
-    btn.disabled = true;
-    btn.setAttribute('aria-pressed', 'false');
-    btn.title = 'Zona con cobertura Movistar activa';
-    if (iconEl) iconEl.textContent = '✓';
-    if (labelEl) labelEl.textContent = 'COBERTURA OK';
   } else {
-    btn.classList.add('pending');
-    btn.disabled = true;
-    btn.setAttribute('aria-pressed', 'false');
-    btn.title = 'Selecciona ubicación para verificar cobertura';
-    if (iconEl) iconEl.textContent = '—';
-    if (labelEl) labelEl.textContent = 'COBERTURA';
+    btn.title = '';
   }
 }
 
