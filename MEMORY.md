@@ -1,6 +1,8 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-15 — v3.0 TIPIFICACIÓN TX COMMITEADO LOCAL** (HEAD `501b4d4` en `develop`). 166/166 tests PASS. Working tree clean. **NO push** a remoto esta sesión. GitHub Pages sigue sirviendo v2.1.8 (HEAD `33aeda8` en `main`) hasta que CEO autorice subtree split + force-push.
+Memoria persistente. Última actualización: **2026-10-15 — v3.0 TIPIFICACIÓN TX COMMITEADO LOCAL** (HEAD `8fdc3b0` en `develop`, feature commit `501b4d4`). 166/166 tests PASS. Working tree clean. **NO push** a remoto esta sesión. GitHub Pages sigue sirviendo v2.1.8 (HEAD `33aeda8` en `main`) hasta que CEO autorice subtree split + force-push.
+
+> ⚠️ **Desalineación detectada 2026-10-15:** `apps/cima-generador/VERSION` sigue en `2.1.8` y `CHANGELOG.md` no tiene entrada para v3.0, pero el commit `501b4d4` y este MEMORY ya están etiquetados como v3.0 TIPIFICACIÓN TX. **Decisión CEO:** bumpear VERSION + agregar CHANGELOG entry, o mantener 2.1.8 como public release y tratar v3.0 como feature patch interno.
 
 ---
 
@@ -861,13 +863,13 @@ git diff
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `501b4d4` (v3.0 con TIPIFICACIÓN TX) | `apps/cima-generador/index.html` |
+| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (feature v3.0 TIPIFICACIÓN TX @ `501b4d4`) | `apps/cima-generador/index.html` |
 | **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
 | **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
 | **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
 | **Repo popup GitHub main** | `33aeda8` (v2.1.8) — **NO actualizado a v3.0 todavía** | `https://github.com/Alexander-Salvador/cima-generador` |
 | **Repo equivocado a limpiar** | `Alexander-Salvador/cima` (creado por error Thavren) | CEO manual con `gh repo delete` |
-| **Git HEAD local develop** | `501b4d4` | working tree clean, 0 sin commitear |
+| **Git HEAD local develop** | `8fdc3b0` (v3.10 MEMORY) → feature `501b4d4` (v3.0 TX) | working tree clean, 0 sin commitear |
 | **AKRYNT** | Intacto, política NO aplica | `/home/braka/Systems/projects/work/akrynt-agent/` |
 | **Recursos CIMA folder** | Local only (CEO referencia, en .gitignore) | `Recursos CIMA/Etiquetas de Transferencia.xlsx` |
 | **Recursos CIMA folder** | Local only (Movistar PDFs operadores, en .gitignore) | `Recursos CIMA/Bases y Zonas de Apagado/APAGADO*.pdf` |
@@ -1091,7 +1093,7 @@ Grid 2 del popup (TIPIFICACIÓN) dejó de ser placeholder "EN PROCESO" y se tran
 ```bash
 # Estado actual
 git log --oneline -3
-# Expected: 501b4d4 (v3.0) / b7fcf8e (MEMORY v3.9) / cdbcf5f (ruta) / 774616d (política)
+# Expected: 8fdc3b0 (MEMORY v3.10) / 501b4d4 (v3.0 TX) / b7fcf8e (MEMORY v3.9)
 
 # Server local (si no está corriendo)
 pgrep -af 'http.server 8765' || (
@@ -1112,7 +1114,7 @@ python3 /home/braka/Systems/projects/work/cima/apps/cima-generador/test_popup.py
 
 | Item | Valor |
 |---|---|
-| Local HEAD | `501b4d4` (v3.0 TIPIFICACIÓN TX) |
+| Local HEAD | `8fdc3b0` (v3.10 MEMORY) — feature v3.0 @ `501b4d4` |
 | Working tree | clean |
 | Tests | 166/166 PASS |
 | GitHub Pages LIVE | v2.1.8 (`33aeda8`) — **sin actualizar a v3.0 todavía** |
@@ -1153,6 +1155,6 @@ curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|AP
 
 ---
 
-*Fin de memoria v3.10 — Thavren · 2026-10-15 (round 2, sesión completa)*
+*Fin de memoria v3.10 — Thavren · 2026-10-15 (round 2, sesión completa, alineada a HEAD `8fdc3b0`)*
 
-*Cierre: v3.0 TIPIFICACIÓN TX commiteado localmente (`501b4d4`), 166/166 tests PASS, 4 bugs pre-commit caçados y corregidos. Estado LOCAL ahead of remoto (v3.0 local vs v2.1.8 LIVE en GitHub Pages). AKRYNT intacto. Server local activo. Compliance LICENSE preservada en LICENSE file + JS source comment. Sin push esta sesión (esperando autorización CEO). Próximo chat: arrancar verificando `git log --oneline -3` y tests pasan.*
+*Cierre: v3.0 TIPIFICACIÓN TX commiteado localmente (feature `501b4d4` + MEMORY v3.10 `8fdc3b0`), 166/166 tests PASS, 4 bugs pre-commit caçados y corregidos. Estado LOCAL ahead of remoto (v3.0 local vs v2.1.8 LIVE en GitHub Pages). AKRYNT intacto. Server local activo. Compliance LICENSE preservada en LICENSE file + JS source comment. Sin push esta sesión (esperando autorización CEO). ⚠️ VERSION/CHANGELOG pendientes de alinear a v3.0 (decisión CEO). Próximo chat: arrancar verificando `git log --oneline -3` y tests pasan.*
