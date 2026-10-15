@@ -1216,124 +1216,34 @@
   .etiquetas-block[data-cat="MTOTAL"]     .cat-chip.is-active::before { background: var(--cat-mtotal-500);     box-shadow: 0 0 6px var(--cat-mtotal-glow); }
   .etiquetas-block[data-cat="STANDALONE"] .cat-chip.is-active::before { background: var(--cat-standalone-500); box-shadow: 0 0 6px var(--cat-standalone-glow); }
 
-  /* ── Dropdown items (3 rows: header / detalle / meta) ───────────────── */
+  /* ── Dropdown items (v3.3.4 MINIMAL — solo title) ──────────────────── */
+  /* CEO directive 2026-10-15: "unicamente debe decir el title para que es
+     nada mas". El detalle + skill codes + area viven en el preview card
+     al seleccionar. El dropdown es solo navegación rápida por título. */
   .etiqueta-item {
     display: block !important;
     padding: 7px 10px !important;
     position: relative;
     transition: background var(--motion-fast) var(--motion-ease);
   }
-  .etiqueta-item::before {
-    /* Selected indicator: dot a la izquierda del item activo (solo si seleccionado) */
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 2px;
-    height: 0;
-    background: var(--cat-postpago-500);
-    border-radius: 0 2px 2px 0;
-    transform: translateY(-50%);
-    transition: height var(--motion-base) var(--motion-spring);
-    opacity: 0;
-  }
-  .etiqueta-item.is-selected::before {
-    height: 60%;
-    opacity: 1;
-  }
-  .etiquetas-block[data-cat="MTOTAL"]     .etiqueta-item.is-selected::before { background: var(--cat-mtotal-500); }
-  .etiquetas-block[data-cat="STANDALONE"] .etiqueta-item.is-selected::before { background: var(--cat-standalone-500); }
   .etiqueta-item:hover {
     background: color-mix(in srgb, var(--accent) 92%, transparent);
     color: var(--on-accent);
   }
-  .etiqueta-item:hover .etiqueta-item-row2,
-  .etiqueta-item:hover .etiqueta-item-row3 { color: var(--on-accent); opacity: 0.85; }
-  .etiqueta-item-row1 {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 2px;
-  }
-  .etiqueta-item-row1 strong {
+  .etiqueta-item-title {
+    display: block;
     font-size: 11px;
-    color: inherit;
+    color: var(--text);
     font-weight: 600;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .etiqueta-item-row2 {
-    font-size: 9.5px;
-    color: var(--text-dim);
     line-height: 1.3;
-    margin-bottom: 3px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .etiqueta-item-row3 {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-    font-size: 8px;
-    color: var(--text-faint);
-  }
-  .etiqueta-item-skill {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 8px;
-    padding: 1px 5px;
-    border-radius: var(--radius-sm);
-    background: var(--skill-chip-bg);
-    border: 1px solid var(--skill-chip-border);
-    color: var(--skill-chip-text);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
+    /* Truncate defensivo para titles muy largos */
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 180px;
-  }
-  .etiqueta-item-area {
-    font-size: 8px;
-    padding: 1px 5px;
-    border-radius: var(--radius-sm);
-    background: var(--glass-1-bg);
-    color: var(--text-faint);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 130px;
   }
-
-  /* ── Cat badge (categoría-themed tokens) ───────────────────────────── */
-  .etiqueta-item-cat {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 2px 6px;
-    border-radius: var(--radius-pill);
-    font-size: 7.5px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border: 1px solid currentColor;
-    flex-shrink: 0;
+  .etiqueta-item:hover .etiqueta-item-title {
+    color: var(--on-accent);
   }
-  .etiqueta-item-cat::before {
-    content: "";
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 4px currentColor;
-  }
-  .etiqueta-item-cat.cat-postpago  { background: var(--cat-postpago-soft);  color: var(--cat-postpago-400); }
-  .etiqueta-item-cat.cat-mtotal    { background: var(--cat-mtotal-soft);    color: var(--cat-mtotal-400); }
-  .etiqueta-item-cat.cat-standalone{ background: var(--cat-standalone-soft); color: var(--cat-standalone-400); }
 
   /* ── Preview card premium ──────────────────────────────────────────── */
   .etiqueta-preview {
@@ -1369,7 +1279,7 @@
     gap: 6px;
     margin-bottom: 6px;
   }
-  .etiqueta-preview-cat { /* reuses .etiqueta-item-cat shape — themed via data-cat */
+  .etiqueta-preview-cat { /* themed via block-level data-cat */
     font-size: 8.5px;
     padding: 3px 8px;
   }
@@ -2796,18 +2706,12 @@ function renderEtiquetasDropdown(query) {
   }
   var html = matches.slice(0, 12).map(function (e) {
     var safeSol = escapeHtml(e.solicitud);
-    var safeDet = escapeHtml(e.detalle);
-    var catBadge = '<span class="etiqueta-item-cat cat-' + e.cat.toLowerCase() + '">' + e.cat + '</span>';
-    var selectedCls = TX_STATE.selectedId === e.id ? ' is-selected' : '';
-    // v3.1 row 3: skill pill (mini code chip) + area pill (subtitle)
-    var metaRow = '<div class="etiqueta-item-row3">' +
-      '<span class="etiqueta-item-skill" title="' + escapeHtml(e.skill_tx2) + '">' + escapeHtml(e.skill_tx2) + '</span>' +
-      '<span class="etiqueta-item-area" title="' + escapeHtml(e.area) + '">' + escapeHtml(e.area) + '</span>' +
-    '</div>';
-    return '<div class="ac-item etiqueta-item' + selectedCls + '" data-id="' + e.id + '" onclick="selectEtiqueta(' + e.id + ')" role="option">' +
-      '<div class="etiqueta-item-row1">' + catBadge + '<strong>' + safeSol + '</strong></div>' +
-      '<div class="etiqueta-item-row2">' + safeDet + '</div>' +
-      metaRow +
+    // v3.3.4 DROPDOWN MINIMAL: solo el title (solicitud). Sin badge, sin
+    // detalle, sin meta pills. CEO directive: "unicamente debe decir el title
+    // para que es nada mas". El detail/meta viven en el preview card al
+    // seleccionar — el dropdown es solo navegación rápida.
+    return '<div class="ac-item etiqueta-item" data-id="' + e.id + '" onclick="selectEtiqueta(' + e.id + ')" role="option">' +
+      '<span class="etiqueta-item-title">' + safeSol + '</span>' +
     '</div>';
   }).join('');
   drop.innerHTML = html;

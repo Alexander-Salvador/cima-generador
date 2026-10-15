@@ -863,8 +863,8 @@ git diff
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.3.3` — CHIP CLICK SOLO SELECCIÓN) | `apps/cima-generador/index.html` |
-| **Tests popup local** | 255/255 PASS | `apps/cima-generador/test_popup.py` |
+| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.3.4` — DROPDOWN MINIMAL) | `apps/cima-generador/index.html` |
+| **Tests popup local** | 254/254 PASS | `apps/cima-generador/test_popup.py` |
 | **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
 | **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
 | **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
