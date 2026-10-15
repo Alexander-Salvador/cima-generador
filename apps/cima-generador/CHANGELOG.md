@@ -1,5 +1,73 @@
 # Changelog — cima-generador
 
+## [3.3.3] - 2026-10-15 — CHIP CLICK = SOLO SELECCIÓN (NO ABRE DROPDOWN)
+
+CEO directive 2026-10-15: "Al darle click a los button post/pree, MT, STANDALONE, se abre automaticamente el dropdown mal diseñado — incorrecto los botones son de seleccion, el dropdown solo se debe abrir mientras tengamos una seleccion y le demos click al searchinput".
+
+### Fixed — Chip click ya NO abre dropdown
+
+**Bug:** `filterEtiquetasByCat(cat)` después de actualizar estado + UI llamaba `renderEtiquetasDropdown(input.value)` que **re-abría el dropdown** después de que el document mousedown handler lo había cerrado.
+
+**Flujo del bug:**
+1. User click chip → mousedown fires
+2. document mousedown handler → chip está outside search/dropdown → `hideEtiquetaDropdown()`
+3. onclick fires → `filterEtiquetasByCat('MTOTAL')` → actualiza state + UI + **`renderEtiquetasDropdown()` re-abre**
+
+**Fix:** Removida la llamada a `renderEtiquetasDropdown` en `filterEtiquetasByCat`. Ahora chip click = SOLO selección (state + UI). El dropdown NO se re-abre.
+
+```js
+function filterEtiquetasByCat(cat) {
+  TX_STATE.cat = cat;
+  // ... UI updates ...
+  // v3.3.3 FIX: NO llamar renderEtiquetasDropdown aquí. Era el bug.
+  // Si el dropdown estaba abierto, ya se cerró por document mousedown handler.
+}
+```
+
+### Added — Guard defensivo en renderEtiquetasDropdown
+
+Si NO hay categoría seleccionada (`!TX_STATE.cat`), el dropdown NO abre. Triple defensive:
+
+```js
+function renderEtiquetasDropdown(query) {
+  if (!TX_STATE.cat) {
+    drop.hidden = true;
+    return;
+  }
+  // ... resto del render ...
+}
+```
+
+Esto previene que cualquier caller (futuro bug, script injection, etc.) pueda abrir el dropdown sin selección válida.
+
+### Flujo CEO explícito (after fix)
+
+1. ✅ Click chip (POST/PRE | MT | STANDALONE) → cambia active state, **NO dropdown**
+2. ✅ Click search input (con selección activa) → abre dropdown con items de la categoría
+3. ✅ Click en dropdown item → selecciona etiqueta + muestra preview + cierra dropdown
+4. ✅ Click en clear button (X del search) → limpia query, dropdown queda cerrado
+5. ✅ Click en close button (X del preview) → limpia selección, dropdown sigue cerrado
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — `filterEtiquetasByCat` removida llamada a render + comment explicativo (~10 líneas) + `renderEtiquetasDropdown` guard defensivo (~5 líneas)
+- `apps/cima-generador/VERSION` — `3.3.2` → `3.3.3`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +3 tests (252 → 255)
+
+### Tests
+
+- **255/255 PASS** (era 252/252; +3 nuevos v3.3.3)
+- +1 filterEtiquetasByCat NO llama renderEtiquetasDropdown (chip es selección pura)
+- +1 renderEtiquetasDropdown guard !TX_STATE.cat
+- +1 comment explicativo CEO directive presente
+
+### Lección nueva
+
+- **L-030:** Chips de selección deben actualizar state + UI solamente. Llamar funciones que abren dropdowns desde chip handlers crea bugs de cross-action (chip click reabre dropdown que acababa de cerrarse). Patrón: action handlers NO trigger otros UIs unless explícitamente requested.
+
+---
+
 ## [3.3.2] - 2026-10-15 — CHIPS 1 SOLA ROW HORIZONTAL + LABELS ABREVIADOS
 
 CEO directive 2026-10-15 (con screenshot): "los botones POSTPAGO MOVISTAR TOTAL Y STANDALONE deben estar en 1 solo row. puedes abreviarlo POST/PRE | MT | STANDALONE".

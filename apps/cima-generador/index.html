@@ -2721,7 +2721,12 @@ function copySpeech(type) {
   return false;
 }
 
-// Filtrar etiquetas por categoría (chip buttons) + abre el dropdown
+// Filtrar etiquetas por categoría (chip buttons) — SOLO selección, NO abre dropdown
+// v3.3.3 CEO directive 2026-10-15: "los botones son de seleccion, el dropdown
+// solo se debe abrir mientras tengamos una seleccion y le demos click al
+// searchinput". Antes (bug): re-renderizaba dropdown después de cambiar chip →
+// se abría automáticamente. Ahora: solo actualiza estado + UI. El dropdown
+// SOLO se abre via renderEtiquetasDropdown() llamado desde search input handlers.
 function filterEtiquetasByCat(cat) {
   TX_STATE.cat = cat;
   // UI: marcar chip activo + aria-pressed para screen readers
@@ -2748,9 +2753,11 @@ function filterEtiquetasByCat(cat) {
       hideEtiquetaPreview();
     }
   }
-  // Re-render dropdown con la categoría activa (input puede tener texto o no)
-  var input = $('etiquetaSearch');
-  if (input) renderEtiquetasDropdown(input.value);
+  // v3.3.3 FIX: NO llamar renderEtiquetasDropdown aquí. Era el bug.
+  // El dropdown solo se abre via search input handlers (focus/mousedown/input)
+  // cuando hay selección activa. Click en chip = solo selección.
+  // Si el dropdown estaba abierto, ya se cerró por document mousedown handler
+  // (chip es outside #etiquetaSearch + #ac-etiqueta + .action-buttons-row).
 }
 
 // Búsqueda inteligente: filtra por query + categoría (cat siempre activa)
@@ -2773,6 +2780,13 @@ function filterEtiquetas(query, cat) {
 function renderEtiquetasDropdown(query) {
   var drop = $('ac-etiqueta');
   if (!drop) return;
+  // v3.3.3 DEFENSIVO: si NO hay categoría seleccionada, dropdown NO abre.
+  // CEO directive 2026-10-15: "el dropdown solo se debe abrir mientras
+  // tengamos una seleccion y le demos click al searchinput".
+  if (!TX_STATE.cat) {
+    drop.hidden = true;
+    return;
+  }
   var matches = filterEtiquetas(query, TX_STATE.cat);
   if (!matches.length) {
     drop.innerHTML = '<div class="ac-empty">Sin resultados para «' + escapeHtml(query) + '»</div>';
