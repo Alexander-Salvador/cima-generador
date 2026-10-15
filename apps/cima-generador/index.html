@@ -1306,6 +1306,45 @@
     background: color-mix(in srgb, var(--green) 18%, var(--skill-chip-bg));
     border-color: var(--green);
   }
+  /* v3.3.8: floating "Copiado" placeholder ARRIBA del card al hacer click.
+     CEO directive: "al seleccionar la etiqueta debe salir un placeholder
+     encima de copiado". Tooltip-style con arrow pointing down al card. */
+  .etiqueta-skill-card.is-copied::before {
+    content: "✓ Copiado";
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: white;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--green) 40%, transparent);
+    animation: copiadoFloatIn var(--motion-base) var(--motion-spring);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .etiqueta-skill-card.is-copied::after {
+    /* Arrow del tooltip — apunta hacia abajo al card */
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--green);
+    z-index: 9;
+    pointer-events: none;
+  }
+  @keyframes copiadoFloatIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
   .etiqueta-skill-row {
     font-size: 9px;
     color: var(--text);
@@ -2599,32 +2638,33 @@ function filterEtiquetas(query, cat) {
 function renderEtiquetasDropdown(query) {
   var drop = $('ac-etiqueta');
   if (!drop) return;
-  // v3.3.3 DEFENSIVO: si NO hay categoría seleccionada, dropdown NO abre.
-  // CEO directive 2026-10-15: "el dropdown solo se debe abrir mientras
-  // tengamos una seleccion y le demos click al searchinput".
+  // v3.3.8 CEO directive: "las posiciones de las etiquetas deben mantenerse
+  // siempre activas, solo que sin datos hasta que se use el searchinput".
+  // El dropdown SIEMPRE está visible (mientras haya cat activa) — empty state
+  // si no hay matches, items si hay matches. Layout estable, no shift.
   if (!TX_STATE.cat) {
     drop.hidden = true;
     return;
   }
   var matches = filterEtiquetas(query, TX_STATE.cat);
   if (!matches.length) {
-    drop.innerHTML = '<div class="ac-empty">Sin resultados para «' + escapeHtml(query) + '»</div>';
+    // Empty state — visible pero sin items
+    var emptyMsg = query
+      ? 'Sin resultados para «' + escapeHtml(query) + '»'
+      : 'Escribe para buscar…';
+    drop.innerHTML = '<div class="ac-empty">' + emptyMsg + '</div>';
     drop.hidden = false;
     renderEtiquetasDropdownPosition();
     return;
   }
   var html = matches.slice(0, 12).map(function (e) {
     var safeSol = escapeHtml(e.solicitud);
-    // v3.3.4 DROPDOWN MINIMAL: solo el title (solicitud). Sin badge, sin
-    // detalle, sin meta pills. CEO directive: "unicamente debe decir el title
-    // para que es nada mas". El detail/meta viven en el preview card al
-    // seleccionar — el dropdown es solo navegación rápida.
     return '<div class="ac-item etiqueta-item" data-id="' + e.id + '" onclick="selectEtiqueta(' + e.id + ')" role="option">' +
       '<span class="etiqueta-item-title">' + safeSol + '</span>' +
     '</div>';
   }).join('');
   drop.innerHTML = html;
-  drop.hidden = false;
+  drop.hidden = false;  // v3.3.8: SIEMPRE visible
   renderEtiquetasDropdownPosition();
 }
 
@@ -2817,11 +2857,13 @@ function setupEtiquetas() {
     var n = ETIQUETAS_DATA.filter(function (x) { return x.cat === TX_STATE.cat; }).length;
     countEl.textContent = n;
   }
-  // Click/focus en el input → abre dropdown con etiquetas de la categoría activa
+  // v3.3.8: renderizar dropdown en init — siempre visible si hay cat activa
+  renderEtiquetasDropdown('');
+  // Click/focus en el input → re-renderiza dropdown (filtros actuales)
   input.addEventListener('focus', function () {
     renderEtiquetasDropdown(this.value);
   });
-  // mousedown (más robusto que click) → abre el dropdown si se clickeó el input
+  // mousedown (más robusto que click) → re-renderiza si se clickeó el input
   input.addEventListener('mousedown', function () {
     renderEtiquetasDropdown(this.value);
   });
@@ -2830,18 +2872,11 @@ function setupEtiquetas() {
     updateEtiquetaClearVisibility();
     renderEtiquetasDropdown(this.value);
   });
-  // Click-outside: cerrar dropdown + cleanup inline styles + restore parent
-  document.addEventListener('mousedown', function (e) {
-    var drop = $('ac-etiqueta');
-    if (!drop || drop.hidden) return;
-    if (e.target.closest('#etiquetaSearch')) return;
-    if (e.target.closest('#ac-etiqueta')) return;
-    // v3.3 DEFENSIVO: clicks dentro de .action-buttons-row NO deben tocar
-    // el dropdown de etiquetas. copySpeech ya fuerza cierre explícitamente,
-    // pero esto previene race conditions con mousedown bubbling.
-    if (e.target.closest('.action-buttons-row')) return;
-    hideEtiquetaDropdown();   // FIX v3.0.3: limpiar inline styles + restore parent
-  });
+  // v3.3.8 CEO directive: dropdown items SIEMPRE activos. Sin click-outside
+  // close — el layout debe ser estable (no shift al abrir/cerrar dropdown).
+  // El dropdown vive en portal pattern con position:fixed → no afecta el flow
+  // del .etiquetas-block. La visibilidad se controla SOLO por renderEtiquetasDropdown
+  // (que SIEMPRE pone drop.hidden = false cuando hay cat activa).
 }
 
 // FIX v3.0.3: cleanup completo del dropdown de etiquetas al cerrar
