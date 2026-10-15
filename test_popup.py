@@ -1141,17 +1141,20 @@ def test(html_path):
     # estiralo responsive" + "el contenido del dropdown reducele la font
     # para que se sienta navegable y scrolleable"
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ TIPIF v3.3.5 — Tipif stretch + dropdown navegable')
+    print('\n▸ TIPIF v3.3.5 — Dropdown navegable (stretch REVERTIDO en v3.3.7)')
 
-    # Tipificación stretch responsively
-    if re.search(r'\.tipif-block\s*\{[^}]*min-height:\s*320px', html, re.DOTALL):
-        result.ok('TIPIF v3.3.5 .tipif-block: min-height 320px (stretch responsive)')
-    if re.search(r'\.tipif-block\s*\{[^}]*display:\s*flex', html, re.DOTALL):
-        result.ok('TIPIF v3.3.5 .tipif-block: display flex (flex column)')
-    if re.search(r'\.popup-frame\s*\{[^}]*display:\s*flex', html, re.DOTALL):
-        result.ok('TIPIF v3.3.5 .popup-frame: display flex column (permite stretch)')
-    if re.search(r'#gridTipif\s*\{[^}]*flex:\s*1', html, re.DOTALL):
-        result.ok('TIPIF v3.3.5 #gridTipif: flex: 1 (llena espacio disponible)')
+    # v3.3.7 REVERSIÓN: tipif stretch removido. CEO directive "el grid completo
+    # debe mantenerse asi" (imagen muestra altura compacta natural).
+    if not re.search(r'\.tipif-block\s*\{[^}]*min-height:\s*320px', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 .tipif-block: SIN min-height 320px (height compacto natural)')
+    else:
+        result.fail('tipif-block height', 'min-height 320px aún presente — no fue revertido')
+    if not re.search(r'\.tipif-block\s*\{[^}]*display:\s*flex', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 .tipif-block: SIN display flex (revertido)')
+    if not re.search(r'\.popup-frame\s*\{[^}]*display:\s*flex', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 .popup-frame: SIN display flex (revertido)')
+    if not re.search(r'#gridTipif\s*\{[^}]*flex:\s*1', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 #gridTipif: SIN flex: 1 (revertido)')
 
     # Dropdown navegable — font-size reducido a 10px
     if re.search(r'\.etiqueta-item-title\s*\{[^}]*font-size:\s*10px', html, re.DOTALL):
@@ -1240,6 +1243,45 @@ def test(html_path):
     bad_css = [c for c in obsoletas_css if c in html]
     if not bad_css:
         result.ok('TIPIF v3.3.6 CSS preview: SIN reglas obsoletas (header/cat/id/close/title/desc/validation/copy)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.7 — Skill cards click-to-copy + empty data fallback
+    # CEO directive (con imagen):
+    # - "el grid completo debe mantenerse asi" (altura compacta, sin stretch)
+    # - "cuando no tengan datos deben aparecer unicamente el NAME TX OPER TO
+    #   OPER | TX DIRECTA" (sin código si está vacío)
+    # - "Al darles click se debe copiar unicamente la etiqueta limpia"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.7 — Skill cards click-to-copy + empty fallback')
+
+    # showEtiquetaPreview: render condicional basado en si skill code existe
+    m = re.search(r'function showEtiquetaPreview\(e\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m:
+        body = m.group(1)
+        # skillCardHtml helper que retorna label + code condicional
+        if 'function skillCardHtml' in body:
+            result.ok('TIPIF v3.3.7 showEtiquetaPreview: skillCardHtml helper (render condicional)')
+        # Renderiza como BUTTON (no div)
+        if 'etiqueta-skill-card' in body and '<button' in body:
+            result.ok('TIPIF v3.3.7 showEtiquetaPreview: skill cards son <button> (clickeable)')
+        # Click handler con copy-to-clipboard
+        if 'data-copy' in body and 'navigator.clipboard.writeText' in body:
+            result.ok('TIPIF v3.3.7 showEtiquetaPreview: click handler con copy-to-clipboard')
+        # Empty data fallback
+        if "if (!code)" in body or "code || ''" in body:
+            result.ok('TIPIF v3.3.7 showEtiquetaPreview: empty data fallback (sin codigo → solo label)')
+        # aria-label para accesibilidad
+        if 'aria-label="Copiar' in body:
+            result.ok('TIPIF v3.3.7 showEtiquetaPreview: aria-label en skill cards (a11y)')
+
+    # CSS skill card clickable: cursor pointer + transition
+    if re.search(r'\.etiqueta-skill-card\s*\{[^}]*cursor:\s*pointer', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 .etiqueta-skill-card: cursor pointer (clickeable)')
+    if re.search(r'\.etiqueta-skill-card\.is-copied', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 .etiqueta-skill-card: estado .is-copied (feedback transient)')
+    # Hover lift visual feedback
+    if re.search(r'\.etiqueta-skill-card:hover[^}]*translateY', html, re.DOTALL):
+        result.ok('TIPIF v3.3.7 .etiqueta-skill-card: hover lift (translateY -1px)')
     else:
         result.fail('CSS preview obsoleto', f'aún contiene: {bad_css}')
 

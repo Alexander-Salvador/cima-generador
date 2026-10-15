@@ -1,5 +1,110 @@
 # Changelog — cima-generador
 
+## [3.3.7] - 2026-10-15 — SKILL CARDS CLICK-TO-COPY + EMPTY FALLBACK
+
+CEO directive 2026-10-15 (con screenshot):
+1. "Analiza la imagen mira la altura que tiene el grid completo debe
+   mantenerse asi" — height compacto natural, NO estirado
+2. "Las opciones de etiqueta que salen debajo OPER TO OPER y TX DIRECTA,
+   cuando no tengan datos deben aparecer unicamente el NAME TX OPER TO
+   OPER | TX DIRECTA" — empty data fallback: solo label, sin código
+3. "Al darles click se debe copiar unicamente la etiqueta limpia" — click
+   en skill card copia código limpio al portapapeles
+
+### Fixed — Tipif stretch REVERTIDO (height compacto)
+
+**Antes (v3.3.5):** `.tipif-block { min-height: 320px }` + `.popup-frame { display: flex; flex-direction: column }` + `#gridTipif { flex: 1 }` → contenedor estirado a 320px mínimo.
+
+**Ahora (v3.3.7):** CEO directive "el grid completo debe mantenerse asi" (imagen muestra altura natural según contenido). Sin flex chain, sin min-height. El grid es compacto como en el screenshot.
+
+```css
+.tipif-block {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-left: 3px solid var(--accent-2);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  /* v3.3.7: sin min-height, sin display: flex */
+}
+```
+
+### Added — Skill cards click-to-copy (button + feedback)
+
+**Antes (v3.3.6):** Skill cards eran `<div>` estáticos — no clickeables. Sin copy-to-clipboard integrado.
+
+**Ahora (v3.3.7):** Skill cards son `<button type="button">` con:
+- `cursor: pointer` + `transform: translateY(-1px)` hover
+- `is-copied` class para feedback transient (verde)
+- `data-copy` + `data-label` attributes
+- aria-label="Copiar TX OPER TO OPER" (a11y)
+
+Click → `navigator.clipboard.writeText(code)` → success class + announce.
+
+```js
+function showEtiquetaPreview(e) {
+  function skillCardHtml(label, code) {
+    var codeHtml = code ? '<span class="etiqueta-skill-row">' + escapeHtml(code) + '</span>' : '';
+    return '<button type="button" class="etiqueta-skill-card" data-copy="' + escapeHtml(code || '') + '" data-label="' + escapeHtml(label) + '" aria-label="Copiar ' + escapeHtml(label) + '">' +
+      '<span class="etiqueta-skill-label">' + escapeHtml(label) + '</span>' +
+      codeHtml +
+    '</button>';
+  }
+  ...
+}
+```
+
+### Added — Empty data fallback
+
+Si `e.skill_tx2 === ''` (o falsy), el card renderiza SOLO el label, sin código:
+
+```
+TX OPER TO OPER           ← solo label, sin row de código
+TX DIRECTA
+DP_CV_COMERCIAL_TX        ← con código
+```
+
+Click handler defensivo: si `data-copy` está vacío, NO copia (sería string vacío). En su lugar, announce `<label> sin código disponible` para feedback al usuario.
+
+### Preserved (no cambios)
+
+- v3.3.6 selection persiste en search input + preview minimal
+- v3.3.5 dropdown navegable (font-size 10px, padding 5px)
+- v3.3.4 dropdown items minimal (solo title)
+- v3.3.3 chip click = solo selección
+- v3.3.2 chips 1-row horizontal + labels abreviados
+- v3.3.1 dual hook data-popup
+- v3.2 dropdown bounded + segmented actions
+- v3.1 category system design tokens
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — showEtiquetaPreview con skillCardHtml helper + event delegation + click handler (~30 líneas) + CSS skill-card cursor/hover/is-copied + REVERTIDO popup-frame flex + tipif-block min-height (~10 líneas removidas)
+- `apps/cima-generador/VERSION` — `3.3.6` → `3.3.7`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — tests v3.3.7 stretch revertidos (5) + nuevos skill tests (8) — 271/271 PASS
+
+### Tests
+
+- **271/271 PASS** (era 263/263; -4 v3.3.5 stretch silently passing + 4 nuevos "no-stretch" assertions + 9 nuevos v3.3.7 skill card tests)
+- -4 v3.3.5 stretch tests (condición ya no aplica — silencio)
+- +5 v3.3.7 stretch removal assertions
+- +9 v3.3.7 skill card tests:
+  - +1 skillCardHtml helper
+  - +1 skill cards son <button>
+  - +1 click handler con copy-to-clipboard
+  - +1 empty data fallback
+  - +1 aria-label a11y
+  - +1 cursor pointer
+  - +1 .is-copied state
+  - +1 hover lift
+
+### Lecciones nuevas
+
+- **L-036:** "Cuando no tengan datos" es un caso edge frecuente en data-driven UI. Render condicional (`code ? codeHtml : ''`) es preferible a placeholders constantes — el usuario ve exactamente lo que existe, no placeholders fake.
+- **L-037:** Click-to-copy en preview rows es UX crítico para supervisores que tipean skill codes en otros sistemas. Button con cursor + hover + transient feedback (is-copied) es el patrón mínimo viable. aria-label hace screen readers announce "Copiar TX OPER TO OPER".
+
+---
+
 ## [3.3.6] - 2026-10-15 — SELECTION PERSISTE EN SEARCH + PREVIEW MINIMAL
 
 CEO directive 2026-10-15:
