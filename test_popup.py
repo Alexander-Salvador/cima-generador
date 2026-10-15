@@ -1136,6 +1136,50 @@ def test(html_path):
     if 'v3.3.4' in html and 'unicamente debe decir el title' in html:
         result.ok('TIPIF v3.3.4 comment explicativo CEO directive presente')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.5 — Tipificación stretch responsive + dropdown navegable/scrolleable
+    # CEO directive: "estirar la altura del grid TIPIFICACION el contenedor
+    # estiralo responsive" + "el contenido del dropdown reducele la font
+    # para que se sienta navegable y scrolleable"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.5 — Tipif stretch + dropdown navegable')
+
+    # Tipificación stretch responsively
+    if re.search(r'\.tipif-block\s*\{[^}]*min-height:\s*320px', html, re.DOTALL):
+        result.ok('TIPIF v3.3.5 .tipif-block: min-height 320px (stretch responsive)')
+    if re.search(r'\.tipif-block\s*\{[^}]*display:\s*flex', html, re.DOTALL):
+        result.ok('TIPIF v3.3.5 .tipif-block: display flex (flex column)')
+    if re.search(r'\.popup-frame\s*\{[^}]*display:\s*flex', html, re.DOTALL):
+        result.ok('TIPIF v3.3.5 .popup-frame: display flex column (permite stretch)')
+    if re.search(r'#gridTipif\s*\{[^}]*flex:\s*1', html, re.DOTALL):
+        result.ok('TIPIF v3.3.5 #gridTipif: flex: 1 (llena espacio disponible)')
+
+    # Dropdown navegable — font-size reducido a 10px
+    if re.search(r'\.etiqueta-item-title\s*\{[^}]*font-size:\s*10px', html, re.DOTALL):
+        result.ok('TIPIF v3.3.5 .etiqueta-item-title: font-size 10px (navegable)')
+    # Dropdown padding reducido a 5px
+    if re.search(r'\.etiqueta-item\s*\{[^}]*padding:\s*5px\s+10px', html, re.DOTALL):
+        result.ok('TIPIF v3.3.5 .etiqueta-item: padding 5px 10px (compact)')
+
+    # Dropdown siempre hacia abajo (no flip)
+    m = re.search(r'function etiquetasFitToBlock\(drop, input\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m:
+        body = m.group(1)
+        # Debe calcular viewport residual
+        if 'window.innerHeight' in body:
+            result.ok('TIPIF v3.3.5 etiquetasFitToBlock: usa window.innerHeight como cap adicional')
+        # No debe haber lógica de flip arriba (no más "if (available < FLIP_THRESHOLD)")
+        if 'FLIP_THRESHOLD' not in body and 'flipCap' not in body and "classList.add('is-flipped')" not in body:
+            result.ok('TIPIF v3.3.5 etiquetasFitToBlock: SIN flip logic (siempre abajo)')
+        else:
+            result.fail('flip logic', 'aún hay lógica de flip arriba')
+        # Debe remover is-flipped explícitamente
+        if "classList.remove('is-flipped')" in body:
+            result.ok('TIPIF v3.3.5 etiquetasFitToBlock: remove is-flipped siempre')
+    # CSS .is-flipped puede seguir existiendo (defensa) pero JS no la usa
+    if 'is-flipped' in html:
+        result.ok('TIPIF v3.3.5 is-flipped CSS preservado (defensivo — JS ya no lo aplica)')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')

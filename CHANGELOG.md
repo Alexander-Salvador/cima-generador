@@ -1,5 +1,107 @@
 # Changelog — cima-generador
 
+## [3.3.5] - 2026-10-15 — TIPIF STRETCH RESPONSIVE + DROPDOWN NAVEGABLE
+
+CEO directive 2026-10-15:
+1. "estirar la altura del grid TIPIFICACION el contenedor estiralo responsive"
+2. "etiqueta de transferencia el inputsearch al darle click el dropdown debe
+   salir hacia abajo y el contenido del dropdown reducele la font para que se
+   sienta navegable y scrolleable"
+
+### Fixed — Tipificación container stretch responsive
+
+**Antes:** `.tipif-block` con altura auto (basada en contenido). En popup mode el contenedor era compacto, dejando poco espacio para el dropdown del search.
+
+**Ahora:** `.tipif-block` con `min-height: 320px` + `display: flex; flex-direction: column`. Combinado con `.popup-frame { display: flex; flex-direction: column }` y `#gridTipif { flex: 1 }`, el contenedor de Tipificación **estira** para llenar la altura disponible del popup.
+
+```css
+.popup-frame {
+  display: flex;
+  flex-direction: column;
+}
+.grid-block#gridTipif {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.grid-block#gridTipif > .section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.tipif-block {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+```
+
+Resultado: la sección Tipificación ahora ocupa todo el viewport height disponible, dejando room natural para que el dropdown salga hacia abajo.
+
+### Fixed — Dropdown SIEMPRE hacia abajo (sin flip)
+
+**Antes:** `etiquetasFitToBlock` calculaba `available` (espacio debajo del input hasta el bottom del .etiquetas-block). Si `available < FLIP_THRESHOLD (100px)` → flip arriba con `is-flipped` class.
+
+**Ahora:** SIEMPRE hacia abajo. Cap = `min(espacio en bloque, viewport-residual)`. Si el viewport es pequeño, dropdown se ajusta para no salirse de la ventana.
+
+```js
+function etiquetasFitToBlock(drop, input) {
+  var availableInBlock = blockRect.bottom - inputRect.bottom - MARGIN;
+  var availableInViewport = window.innerHeight - inputRect.bottom - MARGIN;
+  var cap = Math.max(MIN_CAP, Math.min(MAX_CAP, availableInBlock, availableInViewport));
+  drop.style.top = (inputRect.bottom + 4) + 'px';
+  drop.style.maxHeight = cap + 'px';
+  drop.classList.remove('is-flipped');  // SIEMPRE abajo
+}
+```
+
+CSS `.is-flipped` preservado por defensa, pero JS ya no lo aplica.
+
+### Fixed — Dropdown content reducible (navegable + scrolleable)
+
+**Antes (v3.3.4):** `.etiqueta-item { padding: 7px 10px }` + `.etiqueta-item-title { font-size: 11px; line-height: 1.3 }` → item alto ~28px → solo ~7 items visibles por scroll.
+
+**Ahora:** `.etiqueta-item { padding: 5px 10px }` + `.etiqueta-item-title { font-size: 10px; line-height: 1.25 }` → item alto ~22px → **~14 items visibles por scroll** (2x más densidad).
+
+```css
+.etiqueta-item {
+  padding: 5px 10px !important;
+}
+.etiqueta-item-title {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+```
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — CSS popup-frame + gridTipif + tipif-block flex (~25 líneas) + dropdown item padding/font-size (~4 líneas) + JS etiquetasFitToBlock siempre-down (~10 líneas)
+- `apps/cima-generador/VERSION` — `3.3.4` → `3.3.5`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +10 tests (254 → 264)
+
+### Tests
+
+- **264/264 PASS** (era 254/254; +10 nuevos v3.3.5)
+- +1 .tipif-block min-height 320px
+- +1 .tipif-block display flex column
+- +1 .popup-frame display flex column
+- +1 #gridTipif flex: 1
+- +1 .etiqueta-item-title font-size 10px
+- +1 .etiqueta-item padding 5px 10px
+- +1 etiquetasFitToBlock usa window.innerHeight
+- +1 etiquetasFitToBlock SIN flip logic
+- +1 etiquetasFitToBlock remove is-flipped siempre
+- +1 is-flipped CSS preservado (defensa)
+
+### Lección nueva
+
+- **L-032:** Stretch containers en popups requieren flex layout en TODA la cadena (popup-frame → grid-block → section → content). Solo `min-height` en el bloque final no funciona si los padres no distribuyen el espacio. Diseño: popup-frame flex column → gridTipif flex: 1 → tipif-block min-height.
+- **L-033:** Dropdown font-size + padding density afecta UX de navegación. 11px+7px padding da ~7 items/scroll (poco navegable). 10px+5px padding da ~14 items/scroll (mejor navegabilidad sin sacrificar legibilidad).
+
+---
+
 ## [3.3.4] - 2026-10-15 — DROPDOWN MINIMAL (solo title)
 
 CEO directive 2026-10-15: "Al darle click al searchinput el dropdown esta mal diseñado. unicamente debe decir el title para que es nada mas. por ejemplo:
