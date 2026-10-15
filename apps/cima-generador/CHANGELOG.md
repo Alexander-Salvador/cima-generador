@@ -1,5 +1,62 @@
 # Changelog — cima-generador
 
+## [2.1.0] - 2026-10-14 — Pipeline adaptable `regenerate_data.py` (CEO-editable)
+
+### Added
+- **`scripts/regenerate_data.py`**: Pipeline de 12 pasos para regenerar el HTML
+  desde los PDFs de `Bases de Apagado/`. Idempotente: correr 2 veces da mismo resultado.
+- **`data/zonas_apagadas_manual.json`**: CCPPs extraídos via OCR visual (37 zonas).
+  **Editable por CEO** — agregar/quitar entradas manualmente y correr el script.
+- **`data/manual_fixes.json`**: Correcciones manuales de typos del PDF.
+  Formato: `{new_dist?, new_ccpp?, new_depto?, new_prov?}`. None = descartar.
+- **Orden lógico del pipeline** (12 pasos documentados en el script):
+  1. INVARIANT CHECK (HTML válido)
+  2. CARGA PREVIA (cargar UBIGEO/CCPP_DATA del HTML)
+  3. CARGA MANUAL_FIXES + zonas manuales (JSON)
+  4. DETECCIÓN PDFs en `Bases de Apagado/`
+  5. CLASIFICACIÓN pdfplumber vs imagen
+  6. EXTRACCIÓN pdfplumber (forward-fill merged cells)
+  7. EXTRACCIÓN OCR visual (render PNG para visión del modelo)
+  8. NORMALIZACIÓN (NFC + single-space + uppercase)
+  9. FUZZY MATCH UBIGEO (NFKD + diff-lib cutoff 0.78)
+  10. SUMAR MANUAL_ZONES (con fuzzy dist match para typos)
+  11. CONSOLIDACIÓN schema v2.0.9 (ccpp_keys + districts_with_off)
+  12. INYECCIÓN inline en HTML
+
+### Idempotencia confirmada
+- Run 1: 239 CCPPs, 191 distritos ✓
+- Run 2: 239 CCPPs, 191 distritos ✓ (idéntico)
+- Run 3: 239 CCPPs, 191 distritos ✓
+
+### Cómo usar (cuando llegue nueva base)
+```bash
+# 1. Coloca los PDFs en Bases de Apagado/ (APAGADO.pdf, APAGADO2.pdf, APAGADP1.pdf)
+# 2. Edita data/zonas_apagadas_manual.json si hay nuevos CCPPs visuales
+# 3. Edita data/manual_fixes.json si hay typos conocidos
+# 4. Ejecuta:
+python3 apps/cima-generador/scripts/regenerate_data.py
+# 5. Verifica:
+python3 apps/cima-generador/test_popup.py
+# 6. Confirma y commitea:
+git add apps/cima-generador/
+git commit -m "feat(cima-generador): regenerar datos v2.x.x"
+```
+
+### Tests
+- **62/62 tests PASS** (de 62, sin cambios en suite)
+- Script regenera HTML determinísticamente
+- Diana 🟢 CLEAN · Pablo 🟢 GOOD · node check EXIT 0
+
+### Auditoría E2E (25/25 PASS, 0 fallos)
+- 4 campos exactos matchean
+- Múltiples espacios, lowercase, trim, tildes → normalize correcto
+- 3 campos → distrito preventivo
+- CCPP no matchea → silencio
+- Datos incompletos → silencio
+- Typos PDF preservados
+- Deptos no en base → silencio
+- Dropdown CCPP UNION (oficial + apagados)
+
 ## [2.0.9] - 2026-10-14 — Triángulo solo se colorea (sin click container) + unión CCPPs no oficiales
 
 ### Changed

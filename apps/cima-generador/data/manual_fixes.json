@@ -1,0 +1,14 @@
+{
+  "descripcion": "Correcciones manuales — aplicadas por el script antes de consolidar. None = descartar. Dict = {new_dist?, new_ccpp?, new_depto?, new_prov?}.",
+  "fixes": {
+    "_doc_format": "new_dist=reasingar distrito, new_ccpp=corregir typo CCPP, new_depto/new_prov=raro",
+    "PIURA|AYABACA|AYABACA|CURILCAS": {"new_ccpp": "CURRILCAS"},
+    "PIURA|AYABACA|AYABACA|PAPELILLO": {"new_ccpp": "PAPELLILLO"},
+    "PIURA|AYABACA|PACAIPAMPA|PALLANCATA": {"new_dist": "AYABACA"},
+    "PIURA|AYABACA|PACAIPAMPA|CURRILCAS": {"new_dist": "AYABACA"},
+    "PIURA|AYABACA|PACAIPAMPA|PAPELILLO": {"new_dist": "AYABACA", "new_ccpp": "PAPELLILLO"},
+    "PIURA|AYABACA|PACAIPAMPA|TOJAS": {"new_dist": "AYABACA"},
+    "PIURA|AYABACA|PACAIPAMPA|TULMAN DE MATALACAS": {"new_dist": "AYABACA"},
+    "PIURA|AYABACA|PACAIPAMPA|CURILCAS": {"new_dist": "AYABACA", "new_ccpp": "CURRILCAS"}
+  }
+}

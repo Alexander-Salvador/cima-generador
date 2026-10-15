@@ -44,6 +44,10 @@ Thumbs.db
 # Screenshots staging (kept in repo, but ignore temp render)
 screenshots/*.tmp.png
 
+# cima-generador: pipeline internals
+apps/cima-generador/tmp_opencode/
+apps/cima-generador/.regenerate_state.json
+
 # Confidential operator data (Movistar, BITEL, etc.) — never commit
 # PDFs from "Bases de Apagado" are internal Movistar docs, restricted
 "Bases de Apagado/"
