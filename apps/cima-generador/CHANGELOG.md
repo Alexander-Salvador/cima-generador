@@ -1,5 +1,113 @@
 # Changelog — cima-generador
 
+## [3.3.6] - 2026-10-15 — SELECTION PERSISTE EN SEARCH + PREVIEW MINIMAL
+
+CEO directive 2026-10-15:
+1. "al seleccion la opcion del dropdown debe quedarse en el searchinput"
+2. "cuando se selecciona una opcion del dropwdown se genera un contenido
+   debajo, vamos a editar el contenido que se genera, retiramos todo solo
+   debe mantenerse TX OPER TO OPER -> ETIQUETA | TX DIRECTA -> ETIQUETA"
+
+### Fixed — Selection persiste en search input
+
+**Antes:** Click en dropdown item → `selectEtiqueta(id)` actualizaba `TX_STATE.selectedId` + mostraba preview. El search input quedaba con su valor previo (lo que el usuario había tipeado para filtrar).
+
+**Ahora:** Click en dropdown item → input.value = e.solicitud (la etiqueta seleccionada se queda en el input). El usuario ve claramente qué eligió.
+
+```js
+function selectEtiqueta(id) {
+  var e = ETIQUETAS_DATA.find(function (x) { return x.id === id; });
+  if (!e) return;
+  TX_STATE.selectedId = e.id;
+  var input = $('etiquetaSearch');
+  if (input) {
+    input.value = e.solicitud;       // v3.3.6: persistir selección en input
+    updateEtiquetaClearVisibility();  // mostrar clear button (X)
+  }
+  showEtiquetaPreview(e);
+  hideEtiquetaDropdown();
+}
+```
+
+**Bonus:** `closeEtiquetaPreview()` también limpia el search input + update clear button visibility.
+
+### Fixed — Preview MINIMAL (solo 2 skill rows)
+
+**Antes (v3.1):** Preview card con header (cat badge + ID + close button) + title + description + 2 skill cards + validation card + copy button. Demasiada información que el supervisor no usa.
+
+**Ahora (v3.3.6):** Preview es solo 2 mini-cards:
+- TX OPER TO OPER → `skill_tx2` value
+- TX DIRECTA → `skill_txdirecto` value
+
+```js
+function showEtiquetaPreview(e) {
+  $('etiquetaPreviewSkills').innerHTML =
+    '<div class="etiqueta-skill-card">' +
+      '<span class="etiqueta-skill-label">TX OPER TO OPER</span>' +
+      '<span class="etiqueta-skill-row">' + escapeHtml(e.skill_tx2) + '</span>' +
+    '</div>' +
+    '<div class="etiqueta-skill-card">' +
+      '<span class="etiqueta-skill-label">TX DIRECTA</span>' +
+      '<span class="etiqueta-skill-row">' + escapeHtml(e.skill_txdirecto) + '</span>' +
+    '</div>';
+  preview.hidden = false;
+}
+```
+
+**Nota:** El label cambió de "TX 2 PASOS" a "TX OPER TO OPER" (CEO directive).
+
+### Removed — Elementos obsoletos del preview
+
+| Removido | Razón |
+|---|---|
+| `.etiqueta-preview-header` | CEO: "retiramos todo" |
+| `.etiqueta-preview-cat` (cat badge en preview) | redundante con chip |
+| `.etiqueta-preview-id` (#01 · AREA) | info no usada |
+| `.etiqueta-preview-close` (X button) | closeEtiquetaPreview aún existe como helper pero sin UI |
+| `.etiqueta-preview-title` (solicitud) | redundante con input.value |
+| `.etiqueta-preview-desc` (detalle) | info no usada |
+| `.etiqueta-preview-validation` (warning card) | info no usada |
+| `.etiqueta-validation-label` (warning label) | warning card removido |
+| `.copy-etiqueta-btn` (copy button) | CEO: "retiramos todo" |
+| `copyEtiqueta()` JS function | sin botón que la llame |
+
+### Preserved (no cambios)
+
+- v3.3.5 tipif stretch + dropdown navegable
+- v3.3.4 dropdown items minimal (solo title)
+- v3.3.3 chip click = solo selección
+- v3.3.2 chips 1-row horizontal + labels abreviados
+- v3.3.1 dual hook data-popup + flex-wrap nowrap
+- v3.2 dropdown bounded + segmented actions
+- v3.1 category system design tokens (cat-postpago/mtotal/standalone-*)
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — HTML preview simplificado (15 líneas → 3) + showEtiquetaPreview minimal + selectEtiqueta input.value + closeEtiquetaPreview limpia input + copyEtiqueta JS function removida + CSS preview reducido (~100 líneas → ~40 líneas)
+- `apps/cima-generador/VERSION` — `3.3.5` → `3.3.6`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — tests obsoletos removidos + nuevos v3.3.6 (263/263 PASS)
+
+### Tests
+
+- **263/263 PASS** (era 264/264; -4 obsoletos removidos, +5 nuevos v3.3.6)
+- -1 .copy-etiqueta-btn CSS (removido)
+- -1 .etiqueta-validation-label CSS (removido)
+- -1 .etiqueta-preview-close HTML (removido)
+- -1 .etiqueta-preview-close CSS (removido)
+- +1 selectEtiqueta: input.value = e.solicitud
+- +1 showEtiquetaPreview: labels CEO (TX OPER TO OPER + TX DIRECTA)
+- +1 showEtiquetaPreview: SIN elementos obsoletos
+- +1 HTML preview: estructura minimal
+- +1 CSS preview: SIN reglas obsoletas
+
+### Lección nueva
+
+- **L-034:** Selection persistence en search inputs es UX fundamental para confirmation visual. Después de seleccionar de un dropdown, el search input DEBE mostrar el valor seleccionado — sino el usuario no tiene feedback de qué eligió.
+- **L-035:** Preview cards deben mostrar SOLO la información que el usuario va a USAR. Cat badge, ID, descripción larga, validación, copy button — todos son UI noise si el supervisor solo necesita los skill codes para tipear en otro sistema. Less is more.
+
+---
+
 ## [3.3.5] - 2026-10-15 — TIPIF STRETCH RESPONSIVE + DROPDOWN NAVEGABLE
 
 CEO directive 2026-10-15:

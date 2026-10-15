@@ -789,8 +789,8 @@ def test(html_path):
             result.ok(f'TIPIF v3.0 JS handler: {fn}')
         else:
             result.fail(f'TIPIF v3.0 JS handler', f'{fn} ausente')
-    # CSS nuevo
-    for sel in ['.action-btn-label', '.action-btn-icon', '.action-btn-feedback', '.etiqueta-categories', '.copy-etiqueta-btn', '.etiqueta-validation-label']:
+    # CSS nuevo (v3.3.6 removió: .copy-etiqueta-btn, .etiqueta-validation-label)
+    for sel in ['.action-btn-label', '.action-btn-icon', '.action-btn-feedback', '.etiqueta-categories']:
         if sel in html:
             result.ok(f'TIPIF v3.0 CSS regla: {sel}')
         else:
@@ -863,17 +863,16 @@ def test(html_path):
             result.fail(f'chip {cat}', 'aria-pressed o icon ausente')
 
     # v3.3.4 REVERSIÓN: dropdown items minimal — SOLO title. Sin row3/skill/area.
-    # Tests obsoletos v3.1 (etiqueta-item-row3/skill/area/is-selected) se omiten.
+    # v3.3.6 REVERSIÓN: preview minimal — SOLO 2 skill cards (sin header/desc/validation/copy).
+    # Tests obsoletos v3.1 (close button, validation label) se omiten.
 
-    # Preview card redesign — close button + skill cards
-    for k in ['class="etiqueta-preview-close"', 'class="etiqueta-skill-card"',
-              'onclick="closeEtiquetaPreview()"']:
-        if k in html:
-            result.ok(f'ETIQUETAS v3.1 preview: {k}')
-        else:
-            result.fail(f'ETIQUETAS v3.1 preview', f'{k} ausente')
+    # Preview card redesigned — solo skill cards (sin close button)
+    if 'class="etiqueta-skill-card"' in html:
+        result.ok('ETIQUETAS v3.1 preview: skill card class presente')
+    else:
+        result.fail('ETIQUETAS v3.1 preview', 'skill card class ausente')
 
-    # JS handlers nuevos v3.1
+    # JS handlers nuevos v3.1 (closeEtiquetaPreview preserva pero ya no se invoca desde HTML)
     for fn in ['clearEtiquetaSearch(', 'closeEtiquetaPreview(',
                'updateEtiquetaClearVisibility(', 'renderEtiquetasDropdownPosition(']:
         if fn in html:
@@ -881,9 +880,9 @@ def test(html_path):
         else:
             result.fail(f'ETIQUETAS v3.1 JS handler', f'{fn} ausente')
 
-    # CSS reglas nuevas v3.1 (drop v3.3.4 obsoletas: item-row3/skill/area)
+    # CSS reglas nuevas v3.1 (v3.3.6 removió: .etiqueta-preview-close, validation)
     for sel in ['.cat-chip-icon', '.etiquetas-search-icon', '.etiquetas-search-clear',
-                '.etiqueta-skill-card', '.etiqueta-preview-close', '.etiquetas-title-icon',
+                '.etiqueta-skill-card', '.etiquetas-title-icon',
                 '.etiquetas-title-count']:
         if sel in html:
             result.ok(f'ETIQUETAS v3.1 CSS regla: {sel}')
@@ -1179,6 +1178,70 @@ def test(html_path):
     # CSS .is-flipped puede seguir existiendo (defensa) pero JS no la usa
     if 'is-flipped' in html:
         result.ok('TIPIF v3.3.5 is-flipped CSS preservado (defensivo — JS ya no lo aplica)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.6 — Selection persiste en search input + preview MINIMAL
+    # CEO directive:
+    # - "al seleccion la opcion del dropdown debe quedarse en el searchinput"
+    # - "retiramos todo solo debe mantenerse TX OPER TO OPER -> ETIQUETA |
+    #   TX DIRECTA -> ETIQUETA"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.6 — Selection persiste + preview minimal')
+
+    # selectEtiqueta setea input.value al title (selección persiste en input)
+    m = re.search(r'function selectEtiqueta\(id\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m and "input.value = e.solicitud" in m.group(1):
+        result.ok('TIPIF v3.3.6 selectEtiqueta: input.value = e.solicitud (selección persiste)')
+    else:
+        result.fail('selectEtiqueta persist', 'no setea input.value = e.solicitud')
+
+    # showEtiquetaPreview minimal: solo 2 skill cards con labels TX OPER TO OPER + TX DIRECTA
+    m2 = re.search(r'function showEtiquetaPreview\(e\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m2:
+        body = m2.group(1)
+        # Debe contener los labels CEO
+        if 'TX OPER TO OPER' in body and 'TX DIRECTA' in body:
+            result.ok('TIPIF v3.3.6 showEtiquetaPreview: labels CEO (TX OPER TO OPER + TX DIRECTA)')
+        else:
+            result.fail('preview labels', 'TX OPER TO OPER o TX DIRECTA ausente')
+        # NO debe contener los labels obsoletos
+        obsoletos = ['etiquetaPreviewCat', 'etiquetaPreviewId', 'etiquetaPreviewTitle',
+                     'etiquetaPreviewDesc', 'etiquetaPreviewValidation',
+                     'VALIDAR ANTES DE TX', 'TX 2 PASOS']
+        bad = [c for c in obsoletos if c in body]
+        if not bad:
+            result.ok('TIPIF v3.3.6 showEtiquetaPreview: SIN elementos obsoletos (cat/ID/title/desc/validation)')
+        else:
+            result.fail('preview obsoleto', f'aún renderiza: {bad}')
+
+    # HTML preview structure: solo etiquetaPreviewSkills (sin header/title/desc/validation/buttons)
+    preview_html = re.search(r'<div class="etiqueta-preview"[^>]*>(.*?)</div>\s*</div>', html, re.DOTALL)
+    if preview_html:
+        inner = preview_html.group(1)
+        # Debe tener solo skills container
+        if 'etiquetaPreviewSkills' in inner and 'etiqueta-skill-card' not in inner.replace('etiquetaPreviewSkills', ''):
+            # Más simple check: no debe tener header/title/desc/validation/close/copy button
+            obsoletos_html = ['etiqueta-preview-header', 'etiqueta-preview-cat',
+                             'etiqueta-preview-id', 'etiqueta-preview-close',
+                             'etiqueta-preview-title', 'etiqueta-preview-desc',
+                             'etiqueta-preview-validation', 'copy-etiqueta-btn']
+            bad_html = [c for c in obsoletos_html if c in inner]
+            if not bad_html:
+                result.ok('TIPIF v3.3.6 HTML preview: estructura minimal (solo skills container)')
+            else:
+                result.fail('preview HTML obsoleto', f'aún contiene: {bad_html}')
+
+    # CSS preview: SIN reglas obsoletas
+    obsoletas_css = ['.etiqueta-preview-header', '.etiqueta-preview-cat',
+                     '.etiqueta-preview-id', '.etiqueta-preview-close',
+                     '.etiqueta-preview-title', '.etiqueta-preview-desc',
+                     '.etiqueta-preview-validation', '.etiqueta-validation-label',
+                     '.copy-etiqueta-btn']
+    bad_css = [c for c in obsoletas_css if c in html]
+    if not bad_css:
+        result.ok('TIPIF v3.3.6 CSS preview: SIN reglas obsoletas (header/cat/id/close/title/desc/validation/copy)')
+    else:
+        result.fail('CSS preview obsoleto', f'aún contiene: {bad_css}')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
