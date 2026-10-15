@@ -1277,8 +1277,12 @@
   }
   /* v3.3.7: skill cards son BUTTONS clickables — copian el codigo al clipboard.
      CEO directive: "Al darles click se debe copiar unicamente la etiqueta limpia".
-     Estilo minimal + cursor pointer + hover feedback. */
+     Estilo minimal + cursor pointer + hover feedback.
+     v3.4.1: position:relative requerido para que ::before/::after tooltip
+     se ancle al card (antes se movía con mouse porque estaba anchored al
+     .etiqueta-preview más cercano). */
   .etiqueta-skill-card {
+    position: relative;
     padding: 5px 7px;
     background: var(--skill-chip-bg);
     border: 1px solid var(--skill-chip-border);
@@ -2834,13 +2838,19 @@ function closeEtiquetaPreview() {
   announce('Selección de etiqueta limpiada');
 }
 
-// v3.1: clear button en search input → limpia query + reabre dropdown con todas las de la cat
+// v3.4.1: clear button en search input → limpia query + limpia selección +
+// resetea preview cards a empty state (CEO directive: "no hay conexion
+// inteligente" entre search input y preview al borrar).
 function clearEtiquetaSearch() {
   var input = $('etiquetaSearch');
   if (!input) return;
   input.value = '';
   updateEtiquetaClearVisibility();
   renderEtiquetasDropdown('');
+  // v3.4.1 FIX: limpiar selección + resetear preview cards a empty state
+  // (sin códigos) — sin esto, los codes anteriores persisten después de borrar.
+  TX_STATE.selectedId = null;
+  showEtiquetaPreview(null);
   input.focus();
 }
 
@@ -2883,9 +2893,15 @@ function setupEtiquetas() {
     renderEtiquetasDropdown(this.value);
   });
   // Input: filtrar dentro de la categoría activa + toggle clear button
+  // v3.4.1: si user borra el input completamente (Backspace, Ctrl+A+Del),
+  // también resetear preview cards a empty state (conexion inteligente search↔preview).
   input.addEventListener('input', function () {
     updateEtiquetaClearVisibility();
     renderEtiquetasDropdown(this.value);
+    if (this.value === '' && TX_STATE.selectedId !== null) {
+      TX_STATE.selectedId = null;
+      showEtiquetaPreview(null);
+    }
   });
   // v3.4.0: click-outside RE-AÑADIDO — cierra el dropdown cuando user click
   // fuera del search input. v3.3.8 había removido esto (siempre visible)

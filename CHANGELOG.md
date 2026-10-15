@@ -1,5 +1,108 @@
 # Changelog — cima-generador
 
+## [3.4.1] - 2026-10-15 — CLEAR SEARCH RESET PREVIEW + TOOLTIP POSITION
+
+CEO directive 2026-10-15:
+1. "Cuando borro la busqueda del searchinput, las etiquetas se quedan
+   con la informacion anterior no hay conexion inteligente"
+2. "Al darle click a la etiqueta sale el mensaje COPIAR pero fuera del
+   input y se mueve con el mouse, incorrecto arreglar ese bug"
+3. "Faltan etiquetas como acreditaciones, linea2, verifica end to end
+   el documento excel que te pase y verifica que falta si no sabes donde
+   meter algunas etiquetas me dices y te oriento. no debe estar fuera nada"
+
+### Fixed — Bug 1: clear search input resetea preview
+
+**Antes:** Click en X (clear button) → input.value = '' → dropdown re-renderiza con todas las items, pero `TX_STATE.selectedId` PERSISTE y los codes del preview (skill_tx2, skill_txdirecto) SIGUEN VISIBLES. No había "smart connection" entre search input y preview.
+
+**Ahora:** Click en X → input.value = '' + `TX_STATE.selectedId = null` + `showEtiquetaPreview(null)` → preview cards vuelven a empty state (solo labels).
+
+```js
+function clearEtiquetaSearch() {
+  var input = $('etiquetaSearch');
+  if (!input) return;
+  input.value = '';
+  updateEtiquetaClearVisibility();
+  renderEtiquetasDropdown('');
+  // v3.4.1: limpiar selección + resetear preview a empty state
+  TX_STATE.selectedId = null;
+  showEtiquetaPreview(null);
+  input.focus();
+}
+```
+
+**Bonus:** También el handler de `input` event detecta cuando el value queda vacío (Backspace, Ctrl+A+Del) y resetea el preview:
+
+```js
+input.addEventListener('input', function () {
+  ...
+  if (this.value === '' && TX_STATE.selectedId !== null) {
+    TX_STATE.selectedId = null;
+    showEtiquetaPreview(null);
+  }
+});
+```
+
+### Fixed — Bug 2: tooltip position (no se mueve con mouse)
+
+**Root cause:** El `.etiqueta-skill-card` no tenía `position: relative`. El `::before` (tooltip "✓ Copiado") y `::after` (arrow) tienen `position: absolute` con `bottom: calc(100% + 8px)`. Sin position:relative en el card, estos se anclan al primer ancestor con position non-static — que era `.etiqueta-preview` (el contenedor padre). El tooltip aparecía "fuera" del card y técnicamente no se movía con mouse pero aparecía en posición incorrecta.
+
+**Ahora:** `position: relative` en el card → tooltip anclado correctamente al card → siempre aparece centrado sobre el card clicked.
+
+```css
+.etiqueta-skill-card {
+  position: relative;  /* v3.4.1: ancla tooltip ::before/::after al card */
+  ...
+}
+```
+
+### Reporte — Bug 3: Categorías faltantes del Excel (CEO guidance needed)
+
+**Análisis end-to-end del XLSX** (`Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx`, 670 strings, ~17 sheets):
+
+**Categorías ACTUALES en popup (3):**
+- POSTPAGO (6 records)
+- MTOTAL (6 records)
+- STANDALONE (5 records)
+- **TOTAL: 17 etiquetas**
+
+**Categorías detectadas en Excel pero NO en popup:**
+- **ACREDITACIONES** ← CEO mentioned, MISSING. Skill codes: `SK_CV_ACREDITACIONES_TX`
+- **COMERCIAL (FIJA Y MOVIL) RECLAMOS** ← MISSING
+- **VENTAS** ← MISSING (AREA DE VENTAS mentioned in Excel)
+- **ROAMING** ← MISSING as separate category (only 1 item currently)
+- **RETENCIONES (FIJA Y MOVIL)** ← MISSING
+- **TÉCNICO MOVIL/FIJA** ← MISSING (some items spread across POSTPAGO/STANDALONE)
+- **LÍNEA 2** ← CEO mentioned, MISSING
+- **CORPORATIVO** (CASOS DE CORTE CORPORATIVO) ← MISSING
+
+**CEO guidance needed:** ¿Qué categorías agregar y qué orden de prioridad?
+- ¿ACREDITACIONES va en su propio chip o fusionado con otro?
+- ¿LÍNEA 2 es categoría separada o parte de POSTPAGO?
+- ¿COMERCIAL y RETENCIONES son variantes de POSTPAGO/MTOTAL?
+- ¿Cuál es la abreviación correcta para los labels (3-4 chars max)?
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — clearEtiquetaSearch reset preview (~5 líneas) + input event handler reset on empty (~5 líneas) + CSS .etiqueta-skill-card position:relative (~2 líneas)
+- `apps/cima-generador/VERSION` — `3.4.0` → `3.4.1` (patch — bug fixes)
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +3 tests v3.4.1 (286/286 PASS)
+
+### Tests
+
+- **286/286 PASS** (era 283/283; +3 nuevos v3.4.1)
+- +1 clearEtiquetaSearch: TX_STATE.selectedId = null + show(null) (reset preview)
+- +1 input handler: si value="" → show(null) (smart connection)
+- +1 .etiqueta-skill-card: position relative (tooltip anclado al card)
+
+### Lecciones nuevas
+
+- **L-042:** Smart connections — cuando un input UI controla otro componente (search input ↔ preview cards), cualquier cambio al input (incluso borrar) debe propagarse. Sin esta conexión, los datos stale persisten y el usuario ve "información anterior" que no debería estar ahí.
+- **L-043:** Tooltips/pseudo-elements absolutos REQUIEREN `position: relative` en su anchor. Si el anchor padre tiene position non-static, el tooltip se ancla al padre equivocado — y parece "moverse con mouse" o aparecer en posición incorrecta.
+
+---
+
 ## [3.4.0] - 2026-10-15 — DROPDOWN OPEN/CLOSE FLOW (REVERTIDO v3.3.8 always-visible)
 
 CEO directive 2026-10-15: "al actualizar la ruta se abre automaticamente el
