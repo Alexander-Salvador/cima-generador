@@ -253,21 +253,9 @@
     max-width: 760px;
     background: var(--bg);
     border-radius: var(--radius-xl);
-    /* v3.3.5: flex column permite que gridTipif (Tipificación) crezca para
-       llenar la altura disponible del popup y dejar room para dropdown. */
-    display: flex;
-    flex-direction: column;
-  }
-  /* v3.3.5: el grid de Tipificación estira responsively para llenar el popup */
-  .grid-block#gridTipif {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .grid-block#gridTipif > .section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    /* v3.3.7 REVERTIDO: CEO directive "el grid completo debe mantenerse asi"
+       (imagen muestra altura compacta, no estirada). v3.3.5 había agregado
+       flex column + min-height 320px → stretch. Ahora sin flex/min-height. */
   }
   .popup-close {
     position: absolute;
@@ -1281,12 +1269,15 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Skills: grid 1fr 1fr (las 2 cards) */
+  /* Skills: grid 1fr 1fr (las 2 cards) — v3.3.7 click-to-copy */
   .etiqueta-preview-skills {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 5px;
   }
+  /* v3.3.7: skill cards son BUTTONS clickables — copian el codigo al clipboard.
+     CEO directive: "Al darles click se debe copiar unicamente la etiqueta limpia".
+     Estilo minimal + cursor pointer + hover feedback. */
   .etiqueta-skill-card {
     padding: 5px 7px;
     background: var(--skill-chip-bg);
@@ -1295,11 +1286,25 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
     transition: all var(--motion-fast) var(--motion-ease);
   }
   .etiqueta-skill-card:hover {
     background: color-mix(in srgb, var(--accent-2) 14%, var(--glass-1-bg));
     border-color: color-mix(in srgb, var(--accent-2) 50%, transparent);
+    transform: translateY(-1px);
+  }
+  .etiqueta-skill-card:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-2);
+  }
+  /* v3.3.7: estado copied (transient feedback) */
+  .etiqueta-skill-card.is-copied {
+    background: color-mix(in srgb, var(--green) 18%, var(--skill-chip-bg));
+    border-color: var(--green);
   }
   .etiqueta-skill-row {
     font-size: 9px;
@@ -1353,12 +1358,9 @@
     border-left: 3px solid var(--accent-2);
     border-radius: var(--radius-md);
     padding: 10px;
-    /* v3.3.5: estirar el contenedor responsively — usa viewport units para
-       que el Tipificación crezca con la altura del popup y deje room para
-       el dropdown del search input que sale hacia abajo. */
-    min-height: 320px;
-    display: flex;
-    flex-direction: column;
+    /* v3.3.7 REVERTIDO: CEO directive "el grid completo debe mantenerse asi"
+       — altura compacta natural según contenido. v3.3.5 había agregado
+       min-height 320px + flex. Ahora sin esas propiedades. */
   }
   .tipif-head {
     display: flex;
@@ -2709,23 +2711,57 @@ function selectEtiqueta(id) {
   hideEtiquetaDropdown();
 }
 
-// v3.3.6 PREVIEW MINIMAL: solo 2 rows (TX OPER TO OPER + TX DIRECTA).
-// CEO directive: "retiramos todo solo debe mantenerse TX OPER TO OPER ->
-// ETIQUETA | TX DIRECTA -> ETIQUETA". Sin header, sin title, sin description,
-// sin validation, sin copy button. Lo único que el supervisor necesita es
-// los códigos de skill para tipear en el sistema de Telefónica.
+// v3.3.7 PREVIEW: 2 skill cards clickables (copy-to-clipboard).
+// CEO directive: "Al darles click se debe copiar unicamente la etiqueta
+// limpia". Cada card renderiza label (siempre) + code (solo si existe).
+// Si skill_tx2 está vacío → solo aparece el label, sin row de código.
 function showEtiquetaPreview(e) {
   var preview = $('etiquetaPreview');
   if (!preview) return;
+  // Render condicional: solo el código si existe, sino solo el label
+  function skillCardHtml(label, code, copyAttr) {
+    var codeHtml = code ? '<span class="etiqueta-skill-row">' + escapeHtml(code) + '</span>' : '';
+    return '<button type="button" class="etiqueta-skill-card" data-copy="' + escapeHtml(code || '') + '" data-label="' + escapeHtml(label) + '" aria-label="Copiar ' + escapeHtml(label) + '">' +
+      '<span class="etiqueta-skill-label">' + escapeHtml(label) + '</span>' +
+      codeHtml +
+    '</button>';
+  }
   $('etiquetaPreviewSkills').innerHTML =
-    '<div class="etiqueta-skill-card">' +
-      '<span class="etiqueta-skill-label">TX OPER TO OPER</span>' +
-      '<span class="etiqueta-skill-row">' + escapeHtml(e.skill_tx2) + '</span>' +
-    '</div>' +
-    '<div class="etiqueta-skill-card">' +
-      '<span class="etiqueta-skill-label">TX DIRECTA</span>' +
-      '<span class="etiqueta-skill-row">' + escapeHtml(e.skill_txdirecto) + '</span>' +
-    '</div>';
+    skillCardHtml('TX OPER TO OPER', e.skill_tx2, 'tx2') +
+    skillCardHtml('TX DIRECTA', e.skill_txdirecto, 'txdirecto');
+  // Wire click handlers (event delegation on container)
+  var skillsContainer = $('etiquetaPreviewSkills');
+  if (skillsContainer && !skillsContainer._wired) {
+    skillsContainer.addEventListener('click', function (ev) {
+      var card = ev.target.closest('.etiqueta-skill-card');
+      if (!card) return;
+      var code = card.dataset.copy;
+      var label = card.dataset.label || 'Etiqueta';
+      if (!code) {
+        // v3.3.7: empty data fallback — sin codigo, solo label
+        announce(label + ' sin código disponible');
+        return;
+      }
+      // v3.3.7: copiar etiqueta limpia + feedback transient (is-copied class)
+      function showOk() {
+        card.classList.add('is-copied');
+        setTimeout(function () {
+          card.classList.remove('is-copied');
+        }, TIMINGS.COPIED_RESET);
+        announce(label + ' copiado');
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(showOk, function () {
+          fallbackCopy(code);
+          showOk();
+        });
+      } else {
+        fallbackCopy(code);
+        showOk();
+      }
+    });
+    skillsContainer._wired = true;
+  }
   preview.hidden = false;
   // Scroll suave hasta el preview
   preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
