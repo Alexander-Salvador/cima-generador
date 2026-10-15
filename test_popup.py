@@ -862,13 +862,8 @@ def test(html_path):
         else:
             result.fail(f'chip {cat}', 'aria-pressed o icon ausente')
 
-    # Dropdown items con row 3 (skill + area pills) + is-selected indicator
-    for k in ['etiqueta-item-row3', 'etiqueta-item-skill', 'etiqueta-item-area',
-              'is-selected']:
-        if k in html:
-            result.ok(f'ETIQUETAS v3.1 dropdown item: {k}')
-        else:
-            result.fail(f'ETIQUETAS v3.1 dropdown', f'{k} ausente')
+    # v3.3.4 REVERSIÓN: dropdown items minimal — SOLO title. Sin row3/skill/area.
+    # Tests obsoletos v3.1 (etiqueta-item-row3/skill/area/is-selected) se omiten.
 
     # Preview card redesign — close button + skill cards
     for k in ['class="etiqueta-preview-close"', 'class="etiqueta-skill-card"',
@@ -886,15 +881,17 @@ def test(html_path):
         else:
             result.fail(f'ETIQUETAS v3.1 JS handler', f'{fn} ausente')
 
-    # CSS reglas nuevas v3.1
+    # CSS reglas nuevas v3.1 (drop v3.3.4 obsoletas: item-row3/skill/area)
     for sel in ['.cat-chip-icon', '.etiquetas-search-icon', '.etiquetas-search-clear',
-                '.etiqueta-skill-card', '.etiqueta-item-row3', '.etiqueta-item-skill',
-                '.etiqueta-item-area', '.etiqueta-preview-close', '.etiquetas-title-icon',
+                '.etiqueta-skill-card', '.etiqueta-preview-close', '.etiquetas-title-icon',
                 '.etiquetas-title-count']:
         if sel in html:
             result.ok(f'ETIQUETAS v3.1 CSS regla: {sel}')
         else:
             result.fail(f'ETIQUETAS v3.1 CSS', f'{sel} ausente')
+    # v3.3.4 nueva regla: .etiqueta-item-title (dropdown minimal)
+    if '.etiqueta-item-title' in html:
+        result.ok('ETIQUETAS v3.3.4 CSS regla: .etiqueta-item-title (dropdown minimal)')
 
     # Animation: etiquetaPreviewIn keyframes
     if '@keyframes etiquetaPreviewIn' in html:
@@ -1094,6 +1091,50 @@ def test(html_path):
     # El comment explicativo del fix debe estar presente
     if 'v3.3.3' in html and 'los botones son de seleccion' in html:
         result.ok('TIPIF v3.3.3 comment explicativo presente (CEO directive)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.4 — DROPDOWN MINIMAL: solo title (sin badge/detalle/meta)
+    # CEO directive: "unicamente debe decir el title para que es nada mas"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.4 — Dropdown minimal (solo title)')
+
+    # Render del item usa SOLO .etiqueta-item-title (no badge/detalle/meta)
+    m = re.search(r'function renderEtiquetasDropdown\(query\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m:
+        body = m.group(1)
+        # Debe contener etiqueta-item-title
+        if 'etiqueta-item-title' in body:
+            result.ok('TIPIF v3.3.4 renderEtiquetasDropdown: usa .etiqueta-item-title')
+        else:
+            result.fail('render minimal', '.etiqueta-item-title ausente en render')
+        # NO debe contener las clases obsoletas
+        obsoletas = ['etiqueta-item-row3', 'etiqueta-item-skill', 'etiqueta-item-area',
+                     'etiqueta-item-row1', 'etiqueta-item-row2', 'is-selected',
+                     'etiqueta-item-cat']
+        bad = [c for c in obsoletas if c in body]
+        if not bad:
+            result.ok('TIPIF v3.3.4 render minimal: SIN clases obsoletas (badge/detalle/meta)')
+        else:
+            result.fail('render obsoleto', f'aún renderiza: {bad}')
+
+    # CSS: NO debe contener las reglas obsoletas (drop minimal CSS)
+    obsoletas_css = ['.etiqueta-item-row3', '.etiqueta-item-skill', '.etiqueta-item-area',
+                     '.etiqueta-item.is-selected', '.etiqueta-item-cat']
+    bad_css = [c for c in obsoletas_css if c in html]
+    if not bad_css:
+        result.ok('TIPIF v3.3.4 CSS: SIN reglas obsoletas (row3/skill/area/is-selected/cat)')
+    else:
+        result.fail('CSS obsoleto', f'aún contiene: {bad_css}')
+
+    # CSS: debe contener .etiqueta-item-title
+    if '.etiqueta-item-title' in html:
+        result.ok('TIPIF v3.3.4 CSS: .etiqueta-item-title presente (title-only)')
+    else:
+        result.fail('.etiqueta-item-title CSS', 'ausente')
+
+    # comment explicativo CEO directive en el código
+    if 'v3.3.4' in html and 'unicamente debe decir el title' in html:
+        result.ok('TIPIF v3.3.4 comment explicativo CEO directive presente')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

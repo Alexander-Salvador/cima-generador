@@ -1,5 +1,91 @@
 # Changelog — cima-generador
 
+## [3.3.4] - 2026-10-15 — DROPDOWN MINIMAL (solo title)
+
+CEO directive 2026-10-15: "Al darle click al searchinput el dropdown esta mal diseñado. unicamente debe decir el title para que es nada mas. por ejemplo:
+
+PLAN MENOR
+BAJA TOTAL O MIGRACION A PREPAGO".
+
+### Fixed — Dropdown items minimal (title only)
+
+**Antes (v3.1):** Cada item del dropdown tenía 3 filas (cat badge + solicitud / detalle 2-line clamp / skill chip + area pill). Demasiada información para navegación rápida.
+
+**Ahora (v3.3.4):** Cada item es solo el title (solicitud). El detalle, skill codes, area, y validación viven en el preview card al seleccionar.
+
+```js
+return '<div class="ac-item etiqueta-item" data-id="' + e.id + '" onclick="selectEtiqueta(' + e.id + ')" role="option">' +
+  '<span class="etiqueta-item-title">' + safeSol + '</span>' +
+'</div>';
+```
+
+### Cleaned — CSS obsoleto removido
+
+Reglas CSS eliminadas (ya no se usan en dropdown):
+- `.etiqueta-item-row1` + `.etiqueta-item-row1 strong`
+- `.etiqueta-item-row2`
+- `.etiqueta-item-row3`
+- `.etiqueta-item-skill`
+- `.etiqueta-item-area`
+- `.etiqueta-item-cat` + `.etiqueta-item-cat::before` + `.cat-postpago/mtotal/standalone`
+- `.etiqueta-item.is-selected::before` + per-cat dot indicator
+- `.etiqueta-item::before` (selected dot)
+
+**Nueva regla minimal:**
+```css
+.etiqueta-item {
+  padding: 7px 10px;
+  transition: background var(--motion-fast);
+}
+.etiqueta-item:hover {
+  background: color-mix(in srgb, var(--accent) 92%, transparent);
+  color: var(--on-accent);
+}
+.etiqueta-item-title {
+  display: block;
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+```
+
+### Preserved
+
+- v3.3.3 chip click = solo selección
+- v3.3.2 chips 1-row horizontal + labels abreviados
+- v3.3.1 dual hook data-popup + flex-wrap nowrap + min-width 56px
+- v3.2 dropdown bounded + segmented actions
+- v3.1 preview card rediseñado (cat badge themed + skills mini-cards + close button + validation themed)
+- v3.1 category system design tokens (cat-postpago/mtotal/standalone-*)
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — `renderEtiquetasDropdown` simplificado (~15 líneas menos) + CSS dropdown items limpio (~85 líneas removidas, ~12 nuevas) + cleanup comment `.etiqueta-preview-cat`
+- `apps/cima-generador/VERSION` — `3.3.3` → `3.3.4`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — tests obsoletos removidos + nuevos v3.3.4 (254/254 PASS)
+
+### Tests
+
+- **254/254 PASS** (era 255/255; -6 obsoletos removidos, +5 nuevos v3.3.4)
+- -4 tests v3.1 obsoletos (etiqueta-item-row3/skill/area/is-selected en dropdown)
+- -3 tests v3.1 CSS obsoletos (.etiqueta-item-row3/skill/area)
+- +1 renderEtiquetasDropdown usa .etiqueta-item-title
+- +1 render SIN clases obsoletas
+- +1 CSS SIN reglas obsoletas
+- +1 CSS .etiqueta-item-title presente
+- +1 comment CEO directive presente
+
+### Lección nueva
+
+- **L-031:** Diseño maximalista (3 filas con badge + detalle + meta pills) es anti-pattern para dropdowns de navegación. El dropdown debe ser minimal — el detail vive en preview/expanded view. CEO directive "solo el title" es la regla de oro para dropdown items.
+
+---
+
 ## [3.3.3] - 2026-10-15 — CHIP CLICK = SOLO SELECCIÓN (NO ABRE DROPDOWN)
 
 CEO directive 2026-10-15: "Al darle click a los button post/pree, MT, STANDALONE, se abre automaticamente el dropdown mal diseñado — incorrecto los botones son de seleccion, el dropdown solo se debe abrir mientras tengamos una seleccion y le demos click al searchinput".
