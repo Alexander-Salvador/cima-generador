@@ -1,5 +1,50 @@
 # Changelog — cima-generador
 
+## [2.0.7] - 2026-10-14 — AUDIT EXHAUSTIVO: 3 distritos recuperados (PDF 1/3)
+
+### Fixed (audit completo sobre los 3 PDFs)
+CEO directive: "entra en bucle y verifica completo cada uno sin excepción". Auditoría visual exhaustiva de las 5 páginas de los 3 PDFs Movistar contra el dataset.
+
+**PDFs auditados:**
+- `APAGADO.pdf` (Grupo 2 oficial, 3 pages) — 206 zonas visuales
+- `APAGADO2.pdf` (Grupo 3, 1 page) — 21 zonas
+- `APAGADP1.pdf` (Grupo 1, 1 page) — 16 zonas
+
+**Cross-validation Grupo 2 (PDF 1) vs mi dataset:**
+- **33 gaps encontrados** entre las 206 visuales y mis 173 extraídas
+- Clasificados en 3 categorías:
+  - **19 districtos ya cubiertos por d6 Set** (mismo distrito, otro CCPP) — sin acción
+  - **9 districtos ya cubiertos vía fuzzy match** (tildes/typos) — sin acción
+  - **3 districtos NO cubiertos** — AGREGADOS al dataset
+  - **2 typos reales del PDF descartados** (districtos inexistentes en UBIGEO oficial)
+
+### Added
+- **3 nuevos ubigeos al d6 Set** (recuperados del PDF 1 Grupo 2):
+  - `050611` — AYACUCHO/LUCANAS/LUCANAS (UCHUYMARCA)
+  - `060601` — CAJAMARCA/CUTERVO/CUTERVO (CONDORHUASI)
+  - `060201` — CAJAMARCA/CAJABAMBA (typo PDF "CAJAMARCA" como dist, fuzzy lo recuperó como CAJABAMBA)
+- Total: **192 → 195 d6 ubigeos** (+3 distritos)
+- Total general: **239 → 242 zonas** (+3)
+
+### Justified skips (typos reales del PDF)
+- `('AYACUCHO', 'HUAMANGA', 'ANCO', 'SACHARACCAY')` — distrito "ANCO" no existe en HUAMANGA
+- `('LORETO', 'MARISCAL RAMON CASTILLA', 'SANTA ROSA DE LORETO', 'SANTA ROSA')` — distrito "SANTA ROSA DE LORETO" no existe en MRC (MRC solo tiene RAMON CASTILLA, PEBAS, YAVARI, SAN PABLO) — el CCPP "SANTA ROSA" puede existir pero district es incorrecto
+- Otros 6 typos ya estaban cubiertos por fuzzy (CAJAMARCA→CAJABAMBA, TOLED→TOLEDO, CHANCAYBAÑOS, OCONA→OCOÑA, MUNANI→MUÑANI, etc.)
+
+### Tests
+- 58 → **61 tests PASS** (+3 nuevos):
+  - 050611 UCHUYMARCA presente
+  - 060601 CONDORHUASI presente
+  - 060201 CAJABAMBA dist typo recuperado presente
+- `node --check popup.js` → EXIT 0
+- Diana 🟢 CLEAN · Pablo 🟢 GOOD
+
+### Naming observation
+Los archivos PDF tienen nombres invertidos vs su contenido:
+- `APAGADO.pdf` = Grupo **2** oficial (3 páginas, 206 zonas)
+- `APAGADP1.pdf` = Grupo **1** (1 página, 16 zonas)
+- `APAGADO2.pdf` = Grupo **3** (1 página, 21 zonas)
+
 ## [2.0.6] - 2026-10-14 — Badge opt-in (no auto-show, only on ⚠️ click)
 
 ### Fixed
