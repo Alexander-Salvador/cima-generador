@@ -1321,8 +1321,43 @@ def test(html_path):
         # NO debe renderizar dropdown en init (CEO directive)
         if "renderEtiquetasDropdown('')" not in body_setup:
             result.ok('TIPIF v3.4.0 setupEtiquetas: SIN render en init (dropdown NO se abre solo)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.4.1 — Clear search → reset preview + tooltip position relative
+    # CEO directive:
+    # 1. "Cuando borro la busqueda del searchinput, las etiquetas se quedan
+    #    con la informacion anterior no hay conexion inteligente" → al borrar
+    #    search, los codes del preview se limpian (sin selección activa)
+    # 2. "Al darle click a la etiqueta sale el mensaje COPIAR pero fuera del
+    #    input y se mueve con el mouse" → tooltip no debe moverse, debe estar
+    #    anclado al card (position:relative en card)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.4.1 — Clear search reset preview + tooltip position')
+
+    # clearEtiquetaSearch resetea preview a empty state
+    m_clear = re.search(r'function clearEtiquetaSearch\(.*?\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m_clear and 'TX_STATE.selectedId = null' in m_clear.group(1) and 'showEtiquetaPreview(null)' in m_clear.group(1):
+        result.ok('TIPIF v3.4.1 clearEtiquetaSearch: TX_STATE.selectedId = null + show(null) (reset preview)')
+    else:
+        result.fail('clearEtiquetaSearch reset', 'no resetea preview cards')
+
+    # Input event handler resetea preview cuando value === '' (CEO: borrar)
+    m_input = re.search(r'input\.addEventListener\(\s*[\'"]input[\'"]\s*,', html)
+    if m_input:
+        # Encontrar el body del input event handler
+        start = m_input.start()
+        # Buscar el cierre del handler (next })
+        body_start = html.find('{', start)
+        body_end = html.find('}\n  });', body_start)
+        body = html[body_start:body_end+1] if body_start > 0 and body_end > 0 else ''
+        if 'this.value === \'\'' in body and 'showEtiquetaPreview(null)' in body:
+            result.ok('TIPIF v3.4.1 input handler: si value="" → show(null) (smart connection)')
         else:
-            result.fail('init dropdown', 'aún renderiza dropdown en init — causa el bug')
+            result.fail('input reset', 'no resetea preview cuando value=""')
+
+    # CSS .etiqueta-skill-card tiene position: relative (ancla tooltip)
+    if re.search(r'\.etiqueta-skill-card\s*\{[^}]*position:\s*relative', html, re.DOTALL):
+        result.ok('TIPIF v3.4.1 .etiqueta-skill-card: position relative (tooltip anclado al card, no al preview)')
 
     # Floating "Copiado" placeholder CSS — tooltip arriba del card
     if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*Copiado', html, re.DOTALL):
