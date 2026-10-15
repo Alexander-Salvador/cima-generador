@@ -850,41 +850,52 @@
     gap: 6px;
   }
   /* ══════════════════════════════════════════════════════════════════════
-     TIPIFICACIÓN v3.0.3 — Compact action buttons (RESET/APN/CASO)
-     Iconos SVG con gradiente por acción, glass tier-2 surface,
-     compact 44px (Apple HIG touch), hover lift + glow per accent.
+     TIPIFICACIÓN v3.2 — Segmented action buttons (RESET/APN/CASO)
+     Single-row iOS segment-control aesthetic — 3 acciones unificadas
+     en UN contenedor glass con dividers internos (no 3 islands).
+     Cada botón: flex 1 1 0 (equal distribution), bg transparente,
+     divider 1px a la izquierda de cada sibling. Hover: bg accent-tint.
+     Press: scale 0.97. Icono: gradiente por acción (per-btn CSS vars).
      ══════════════════════════════════════════════════════════════════════ */
   .action-buttons-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
-    margin-bottom: var(--space-3);
-  }
-  .action-btn {
-    position: relative;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    min-height: 44px;
-    padding: 6px 8px;
+    align-items: stretch;
+    gap: 0;
     background: var(--glass-2-bg);
     -webkit-backdrop-filter: var(--blur-md);
     backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-pill);
+    padding: 3px;
+    box-shadow: var(--ring-hairline);
+    margin-bottom: var(--space-3);
+    position: relative;
+  }
+  .action-btn {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 34px;
+    padding: 0 6px;
+    background: transparent;
+    border: none;
+    border-radius: calc(var(--radius-pill) - 4px);
     color: var(--text);
     cursor: pointer;
     font-family: inherit;
     outline: none;
-    box-shadow: var(--ring-hairline);
     transition:
-      background var(--motion-base) var(--motion-ease),
-      border-color var(--motion-base) var(--motion-ease),
-      transform var(--motion-fast) var(--motion-spring-soft),
-      box-shadow var(--motion-base) var(--motion-spring-soft);
+      background var(--motion-fast) var(--motion-ease),
+      transform var(--motion-fast) var(--motion-spring-soft);
     overflow: hidden;
+  }
+  /* v3.2 segment dividers — 1px a la izquierda de cada botón que NO es el primero */
+  .action-btn + .action-btn {
+    border-left: 1px solid var(--glass-border);
   }
   /* Per-action accent colors (gradiente en el icono) */
   .action-btn[data-action="reset"] { --btn-accent: #3b82f6; --btn-grad: linear-gradient(135deg, #60a5fa, #2563eb); --btn-glow: rgba(59,130,246,0.32); }
@@ -892,18 +903,20 @@
   .action-btn[data-action="caso"]  { --btn-accent: #f59e0b; --btn-grad: linear-gradient(135deg, #fbbf24, #d97706); --btn-glow: rgba(245,158,11,0.32); }
 
   .action-btn::before {
-    /* Hairline highlight (glass iOS) */
+    /* Hairline highlight (glass iOS) — aparece en hover */
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 60%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent 60%);
     border-radius: inherit;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--motion-fast) var(--motion-ease);
   }
   .action-btn-icon {
     position: relative;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -917,40 +930,35 @@
     transition: transform var(--motion-fast) var(--motion-spring-soft);
   }
   .action-btn-icon svg {
-    width: 12px;
-    height: 12px;
+    width: 11px;
+    height: 11px;
     filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
   }
   .action-btn-label {
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--text);
+    white-space: nowrap;
   }
-  /* Hover: lift + accent glow */
+  /* Hover: bg accent-tint + hairline highlight visible */
   .action-btn:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--btn-accent) 55%, transparent);
-    box-shadow:
-      var(--ring-hairline),
-      0 4px 10px var(--btn-glow);
+    background: color-mix(in srgb, var(--btn-accent) 14%, transparent);
   }
+  .action-btn:hover::before { opacity: 1; }
   .action-btn:hover .action-btn-icon {
-    transform: scale(1.1);
+    transform: scale(1.08);
   }
   /* Press feedback iOS */
   .action-btn:active {
-    transform: translateY(0) scale(0.96);
+    transform: scale(0.97);
     transition-duration: var(--motion-fast);
   }
   .action-btn:focus-visible {
     outline: none;
-    border-color: var(--btn-accent);
-    box-shadow:
-      0 0 0 3px color-mix(in srgb, var(--btn-accent) 30%, transparent),
-      var(--ring-hairline);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--btn-accent) 50%, transparent);
   }
   /* Feedback "Copiado" — overlay absoluto que reemplaza contenido
      sin destruir el árbol DOM (fix bug del textContent swap). */
@@ -961,11 +969,10 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    background: color-mix(in srgb, var(--green) 22%, var(--glass-2-bg));
-    border: 1px solid var(--green);
+    background: color-mix(in srgb, var(--green) 30%, var(--glass-2-bg));
     border-radius: inherit;
     color: var(--green);
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -975,7 +982,7 @@
   }
   .action-btn-feedback::before {
     content: "✓";
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
   }
   .action-btn.is-copied .action-btn-feedback {
@@ -2262,9 +2269,10 @@ font-size: 10px;
     <div class="section">
       <h3>Tipificación</h3>
 
-      <!-- FILA 1: 3 action-buttons compactos (RESET · APN · CASO) — copy al click
-           Layout horizontal pill (icon + label), 44px altura, gradiente por acción.
-           Feedback "✓ COPIADO" via overlay (no destruye el árbol DOM). -->
+      <!-- FILA 1: 3 action-buttons (RESET · APN · CASO) — copy al click
+           v3.2 segmented control: single glass container con dividers internos.
+           Cada botón: flex 1 1 0 (equal distribution), 34px altura, gradiente
+           por acción en el icono. Feedback "✓ COPIADO" via overlay. -->
       <div class="action-buttons-row" role="group" aria-label="Acciones rápidas de tipificación">
         <button type="button" class="action-btn" data-action="reset" onclick="copySpeech('reset')" aria-label="Copiar texto de proceso RESET">
           <span class="action-btn-icon" aria-hidden="true">
@@ -2303,9 +2311,11 @@ font-size: 10px;
         </button>
       </div>
 
-      <!-- FILA 2: Etiquetas de Transferencia — v3.1 redesign (CRIT-009 Avanzado+)
-           Categorías como design tokens de primera clase · Block-level data-cat ·
-           Search con icono + clear button · Chips con indicator themed · Preview premium card -->
+      <!-- FILA 2: Etiquetas de Transferencia — v3.2 (CRIT-009 Avanzado+)
+           Categorías como design tokens · Block-level data-cat · Search icon + clear
+           button · Chips themed indicator · Preview premium card ·
+           v3.2 ADD: dropdown bounded al .etiquetas-block (no al viewport) via
+           etiquetasFitToBlock (portal pattern preservado para stacking safety) -->
       <div class="etiquetas-block" data-cat="POSTPAGO" id="etiquetasBlock">
         <h4 class="etiquetas-title">
           <svg class="etiquetas-title-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2758,23 +2768,69 @@ function renderEtiquetasDropdown(query) {
   renderEtiquetasDropdownPosition();
 }
 
-// Posiciona el dropdown con portal pattern + bounds-aware (reusa acFitToGrid)
+// v3.2 FIX: Dropdown bounded al .etiquetas-block (no al viewport).
+// Antes usaba acFitToGrid que buscaba .grid-block (no existe para etiquetas)
+// → caía a window.innerHeight → max-height cap 220px → overflow visual
+// cuando el contenido del bloque era mayor a 220. Ahora:
+//   - width = input width (alineado exacto al search, contención horizontal)
+//   - max-height = espacio vertical entre search input y bottom de .etiquetas-block
+//   - flip arriba si no entra suficiente debajo (FLIP_THRESHOLD)
+// Mantiene portal pattern (position:fixed + document.body appendChild) para
+// escapar el isolation:isolate del .section padre (CRIT-009 stack safety).
+function etiquetasFitToBlock(drop, input) {
+  if (!drop || !input) return;
+  var block = input.closest('.etiquetas-block');
+  if (!block) {
+    // Fallback: si no hay block, comportarse como acFitToGrid
+    return typeof acFitToGrid === 'function' ? acFitToGrid(drop, input) : null;
+  }
+  var inputRect = input.getBoundingClientRect();
+  var blockRect = block.getBoundingClientRect();
+
+  // (a) WIDTH — match exacto del input (alineado horizontalmente con el search)
+  drop.style.width = inputRect.width + 'px';
+  drop.style.left  = inputRect.left + 'px';
+
+  // (b) HEIGHT — bound al bloque vertical
+  var MARGIN = 6;
+  var FLIP_THRESHOLD = 100;
+  var MIN_CAP = 80;
+  var MAX_CAP = 280;
+  var available = blockRect.bottom - inputRect.bottom - MARGIN;
+
+  if (available < FLIP_THRESHOLD) {
+    // FLIP ARRIBA: usar espacio encima del input dentro del bloque
+    var aboveAvailable = inputRect.top - blockRect.top - MARGIN;
+    var flipCap = Math.max(MIN_CAP, Math.min(MAX_CAP, aboveAvailable));
+    drop.style.top = Math.max(blockRect.top + 8, inputRect.top - 4 - flipCap) + 'px';
+    drop.style.maxHeight = flipCap + 'px';
+    drop.classList.add('is-flipped');
+  } else {
+    drop.style.top = (inputRect.bottom + 4) + 'px';
+    drop.style.maxHeight = Math.max(MIN_CAP + 40, Math.min(MAX_CAP, available)) + 'px';
+    drop.classList.remove('is-flipped');
+  }
+}
+
+// Posiciona el dropdown con portal pattern + bounds-aware a .etiquetas-block
 function renderEtiquetasDropdownPosition() {
   var input = $('etiquetaSearch');
   var drop = $('ac-etiqueta');
   if (!input || !drop || drop.hidden) return;
-  // Portal pattern: mover al body si no está ya
+  // Portal pattern: mover al body si no está ya (escapa isolation:isolate del .section)
   if (drop.parentNode !== document.body) {
     drop._originalParent = drop.parentNode;
     drop._originalNextSibling = drop.nextSibling;
     document.body.appendChild(drop);
   }
   drop.style.position = 'fixed';
-  // Reusar helper de bounds-aware (definido en sección Address)
-  if (typeof acFitToGrid === 'function') {
+  // v3.2: bound al .etiquetas-block (no al viewport) para contención visual.
+  // Fallback a acFitToGrid si la nueva función no está disponible (defensivo).
+  if (typeof etiquetasFitToBlock === 'function') {
+    etiquetasFitToBlock(drop, input);
+  } else if (typeof acFitToGrid === 'function') {
     acFitToGrid(drop, input);
   } else {
-    // Fallback simple si no está disponible
     var rect = input.getBoundingClientRect();
     drop.style.top  = (rect.bottom + 4) + 'px';
     drop.style.left = rect.left + 'px';
