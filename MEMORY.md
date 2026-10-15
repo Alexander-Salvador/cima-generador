@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — v2.0.8 COMMITEADO (`7a16ed5`), búsqueda CCPP exacto + distrito preventivo (call center 0 fallos)**.
+Memoria persistente. Última actualización: **2026-10-14 — v2.1.0 COMMITEADO (`6e04355`), pipeline idempotente regenerate_data.py (CEO-edit adaptable a nuevas bases)**.
 
 ---
 
