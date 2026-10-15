@@ -321,6 +321,46 @@ def test(html_path):
     else:
         result.ok('coberturaLabel eliminado (icon-only)')
 
+    # 7.7 v2.0.6 — Badge opt-in: NO auto-show, solo al click en ⚠️
+    print('\n▸ Badge opt-in v2.0.6 (badge oculto hasta click)')
+    # CSS .zona-apagada-badge debe tener UN SOLO display:none (sin doble declaration)
+    css_badge_match = re.search(
+        r'\.zona-apagada-badge\s*\{([^}]+)\}',
+        html
+    )
+    if css_badge_match:
+        css_body = css_badge_match.group(1)
+        n_display_none = css_body.count('display: none')
+        if n_display_none == 1:
+            result.ok('.zona-apagada-badge tiene 1 sola declaración display: none')
+        else:
+            result.fail('.zona-apagada-badge display', f'{n_display_none} declaraciones (esperaba 1)')
+
+    # JS checkAndRenderZonaApagada NO debe auto-agregar 'show'
+    fn_match = re.search(
+        r'function checkAndRenderZonaApagada\(\)\s*\{([\s\S]*?)\n\}',
+        html
+    )
+    if fn_match:
+        fn_body = fn_match.group(1)
+        # Cuando hay check: debe haber classList.remove('show') (no add)
+        # Buscamos el patrón "if (check) { ... classList.remove('show');"
+        if re.search(r'if\s*\(\s*check\s*\)\s*\{[\s\S]*?classList\.remove\([\'\"]show[\'\"]\)', fn_body):
+            result.ok('checkAndRenderZonaApagada oculta badge (no auto-show)')
+        else:
+            result.fail('checkAndRenderZonaApagada', 'patrón de auto-show detectado')
+        # No debe haber classList.add('show') en ninguna rama del if-else
+        if "classList.add('show')" in fn_body or 'classList.add("show")' in fn_body:
+            result.fail('auto-show residual', "classList.add('show') aún presente")
+        else:
+            result.ok("classList.add('show') eliminado (badge opt-in)")
+
+    # CSS .zona-apagada-badge.show debe seguir existiendo (toggleCoberturaDetail lo usa)
+    if '.zona-apagada-badge.show' in html:
+        result.ok('.zona-apagada-badge.show sigue presente (toggle click)')
+    else:
+        result.fail('.zona-apagada-badge.show', 'eliminado (toggle click roto)')
+
     # 8. CSS / HTML quality
     print('\n▸ HTML quality')
     if 'function debounce' in html:
