@@ -2,7 +2,7 @@
 
 Memoria persistente. Última actualización: **2026-10-15 — v3.0 TIPIFICACIÓN TX COMMITEADO LOCAL** (HEAD `8fdc3b0` en `develop`, feature commit `501b4d4`). 166/166 tests PASS. Working tree clean. **NO push** a remoto esta sesión. GitHub Pages sigue sirviendo v2.1.8 (HEAD `33aeda8` en `main`) hasta que CEO autorice subtree split + force-push.
 
-> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]`. Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (283/283).
+> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]`. Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (286/286).
 
 ---
 
@@ -863,8 +863,8 @@ git diff
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.4.1` — CLEAR SEARCH RESET + TOOLTIP POSITION) | `apps/cima-generador/index.html` |
-| **Tests popup local** | 286/286 PASS | `apps/cima-generador/test_popup.py` |
+| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.4.2` — ETIQUETAS_DATA EXPANDIDO +6) | `apps/cima-generador/index.html` |
+| **Tests popup local** | 291/291 PASS | `apps/cima-generador/test_popup.py` |
 | **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
 | **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
 | **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
@@ -1115,7 +1115,7 @@ python3 /home/braka/Systems/projects/work/cima/apps/cima-generador/test_popup.py
 
 | Item | Valor |
 |---|---|
-| Local HEAD | `8fdc3b0` (v3.10 MEMORY) — feature v3.4.0 DROPDOWN OPEN/CLOSE FLOW REVERTIDO (VERSION bump 3.3.9→3.4.0) |
+| Local HEAD | `8fdc3b0` (v3.10 MEMORY) — feature v3.4.1 CLEAR SEARCH RESET + TOOLTIP POSITION (VERSION bump 3.4.0→3.4.1) |
 | Working tree | clean |
 | Tests | 166/166 PASS |
 | GitHub Pages LIVE | v2.1.8 (`33aeda8`) — **sin actualizar a v3.0 todavía** |

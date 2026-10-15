@@ -1,5 +1,118 @@
 # Changelog — cima-generador
 
+## [3.4.2] - 2026-10-15 — ETIQUETAS_DATA EXPANDIDO (6 records nuevos)
+
+CEO directive 2026-10-15 (con análisis end-to-end del Excel):
+- ACREDITACIONES → POST/PRE
+- COMERCIAL → en POST/PRE, MT y STANDALONE (ya estaba id 1, 7, 13)
+- VENTAS → analizar sub-tipos y aplicar misma lógica
+- ROAMING → POST/PRE (ya estaba id 4)
+- RETENCIONES → en los 3 por igual (ya estaba id 3, 9, 15)
+- TÉCNICO = LINE 2 → en los 3 por igual (nuevo POSTPAGO)
+- CORPORATIVO → mostrar lo que tiene (no es etiqueta, es workflow)
+
+### Added — 6 records nuevos al ETIQUETAS_DATA
+
+**Análisis Excel:** XLSX `Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx` (670 strings, 17 sheets). Skill codes identificados: SK_CV_ACREDITACIONES_TX, SK_CV_TECNICO_MOVIL_TX_KONECTA, etc.
+
+**Sin modificar ni perder ningún record existente.** Solo APPEND de 6 records nuevos (id 18-23).
+
+#### POSTPAGO (+3 records, total 6 → 9)
+
+```js
+// v3.4.2: ACREDITACIONES → solo POST/PRE
+{ id: 18, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'ACREDITACIONES',
+  detalle: 'Cliente solicita gestión de acreditaciones del servicio móvil.',
+  skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: 'DP_CV_ACREDITACIONES_TX',
+  validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
+
+// v3.4.2: TECNICO MOVIL (LINE 2) → POST/PRE
+{ id: 19, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'TECNICO MOVIL',
+  detalle: 'Cliente requiere soporte técnico móvil (avería datos/voz).',
+  skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: 'DP_CV_TECNICO_MOVIL_TX_KONECTA',
+  validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
+
+// v3.4.2: VENTAS - ALTA NUEVA → POST/PRE
+{ id: 20, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO',
+  solicitud: 'VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO',
+  detalle: 'Cliente manifiesta interés en adquirir producto móvil.',
+  skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+  validacion: 'TITULAR o USUARIO. Validar identidad.' },
+```
+
+#### MTOTAL (+2 records, total 6 → 8)
+
+```js
+// v3.4.2: TECNICO MOVIL 2 (LINE 2) → MT
+{ id: 21, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'TECNICO MOVIL 2 (LINE 2)',
+  detalle: 'Cliente requiere soporte técnico móvil nivel 2 (konekta) para servicio Movistar Total.',
+  skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: 'DP_CV_TECNICO_MOVIL_TX_KONECTA',
+  validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
+
+// v3.4.2: VENTAS - ALTA NUEVA MT → MT
+{ id: 22, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'VENTAS - ALTA NUEVA MT',
+  detalle: 'Cliente quiere alta nueva del servicio convergente Movistar Total (Mono/Duo/Trio).',
+  skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+  validacion: 'TITULAR. Validar identidad y factibilidad.' },
+```
+
+#### STANDALONE (+1 record, total 5 → 6)
+
+```js
+// v3.4.2: VENTAS - ALTA NUEVA FIJA → STANDALONE
+{ id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE',
+  solicitud: 'VENTAS - ALTA NUEVA FIJA',
+  detalle: 'Cliente quiere alta nueva del servicio fijo Stand Alone (Mono/Duo/Trio).',
+  skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+  validacion: 'TITULAR. Validar identidad y factibilidad.' }
+```
+
+### CORPORATIVO (NO agregado — explicación)
+
+**Análisis:** "CORPORATIVO" en el Excel aparece como workflow/proceso, no como etiqueta de transferencia:
+
+```
+- "CASOS DE CORTE CORPORATIVO" → procedure con plazos (1 DIA UTIL / 24 HORAS HABILES)
+- "RUC 20" → tipo de cliente (Empresa/educamos)
+- "CLIENTE EMPRESA / EDUCAMOS" → tipo de cliente
+- "BLOQUE DE EQUIPO X DEUDA" → procedure con plazos
+- Sin skill codes específicos (SK_CV_CORPORATIVO_TX no existe)
+```
+
+**Conclusión:** CORPORATIVO no es una etiqueta de transferencia — es un workflow/proceso con plazos. No se agrega a ETIQUETAS_DATA. Si CEO confirma que necesita etiqueta para CORPORATIVO, podemos usar SK_CV_COMERCIAL_TX genérico.
+
+### Conteo final
+
+| Categoría | Antes | Ahora | Δ |
+|---|---|---|---|
+| POSTPAGO | 6 | **9** | +3 |
+| MTOTAL | 6 | **8** | +2 |
+| STANDALONE | 5 | **6** | +1 |
+| **TOTAL** | **17** | **23** | **+6** |
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — ETIQUETAS_DATA +6 records (ids 18-23) (~50 líneas agregadas)
+- `apps/cima-generador/VERSION` — `3.4.1` → `3.4.2` (patch — data expansion)
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +5 tests v3.4.2 (291/291 PASS)
+
+### Tests
+
+- **291/291 PASS** (era 286/286; +5 nuevos v3.4.2)
+- +1 conteos expandidos POSTPAGO>=9, MTOTAL>=8, STANDALONE>=6
+- +1 SK_CV_ACREDITACIONES_TX presente
+- +1 SK_CV_TECNICO_MOVIL_TX_KONECTA presente
+- +1 TECNICO MOVIL >=4 referencias (en los 3 categorías)
+- +1 ACREDITACIONES solo en POSTPAGO (cat check)
+- +1 TECNICO MOVIL (LINE 2) en POSTPAGO id 19 + MTOTAL id 21
+
+### Lección nueva
+
+- **L-044:** Cuando el CEO pide expandir un dataset, siempre analizar el Excel FUENTE antes de inventar datos. Identificar skill codes existentes y matchear con nuevas solicitudes. Nunca inventar — si falta data en Excel, reportarlo explícitamente (como hice con CORPORATIVO).
+
+---
+
 ## [3.4.1] - 2026-10-15 — CLEAR SEARCH RESET PREVIEW + TOOLTIP POSITION
 
 CEO directive 2026-10-15:
