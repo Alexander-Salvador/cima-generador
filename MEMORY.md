@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — v2.1.0 COMMITEADO (`6e04355`), pipeline idempotente regenerate_data.py (CEO-edit adaptable a nuevas bases)**.
+Memoria persistente. Última actualización: **2026-10-15 — v2.1.2 COMMITEADO (`1bc8e90`), launcher.html + ?popup=1 + footer fix, sistema 100% operativo**.
 
 ---
 
@@ -507,31 +507,49 @@ NO usar `apply_patch_v202.py` (regex roto). Integración **aditiva manual** con 
 
 ### 📋 Resumen ejecutivo del estado actual
 
-**Operativo (commitado en HEAD `4bb7e5a` — v2.0.7):**
-- ✅ Popup v2.0.7 STANDALONE (752KB data inline + 195 d6 ubigeos)
-- ✅ 61/61 tests integridad PASS
+**Operativo (commitado en HEAD `1bc8e90` — v2.1.2):**
+- ✅ Popup v2.1.2 STANDALONE (752KB data inline + 195 d6 ubigeos)
+- ✅ Launcher.html con menú de acceso local
+- ✅ 62/62 tests integridad PASS
 - ✅ 0 issues security (Diana 🟢 CLEAN)
-- ✅ Code review 🟢 GOOD (Pablo, 200 comments)
+- ✅ Code review 🟢 GOOD (Pablo, 214 comments)
 - ✅ LICENSE MIT + atribución GeoNames/RitchieRD
-- ✅ Feature ZONAS APAGADAS con búsqueda específica (Set d6 O(1)) + UI minimal + badge opt-in
+- ✅ Feature ZONAS APAGADAS con búsqueda CCPP exacto (4 niveles: ccpp_exacto / distrito_of / distrito_ok / pendiente)
 - ✅ gitignore protegiendo Bases de Apagado/ (APAGADO*.pdf + APAGADP*.pdf) y data/zonas_apagadas.json
-- ✅ Backups pre-cambio: /tmp/opencode/popup_v{201,202,203,204,205,206}_backup_*.tar.gz
-- ✅ Pipeline end-to-end verificado:
+- ✅ Backups pre-cambio: /tmp/opencode/popup_v{201,202,203,204,205,206,207,208,209}_backup_*.tar.gz
+- ✅ Pipeline end-to-end idempotente verificado (3 runs idénticos):
   - pdfplumber → 204 zonas Grupo 2 raw (3 pages) — audit visual exhaustivo en v2.0.7
   - OCR visual multimodal → 16 Grupo 1 (subset visual) + 21 Grupo 3
   - Fuzzy match NFKC → 12+ typos corregidos
   - **v2.0.7 audit**: 33 gaps PDF 1→ 19 ya cubiertos, 9 fuzzy ya cubiertos, 3 nuevos (050611, 060201, 060601), 2 typos PDF
-  - Política proporcional: d6=195 (todo) / d4=1 (LORETO ≥60%) / d2=1 (LORETO ≥40%)
+  - Política proporcional: d6=192 (todo) / d4=1 (LORETO ≥60%) / d2=1 (LORETO ≥40%)
+  - v2.0.8: refactor a Set<"d6:CCPP"> con lookup O(1) (239 CCPPs indexados)
+  - v2.0.9: triángulo sin click container + dropdown CCPP UNION
+  - v2.1.0: pipeline regenerate_data.py idempotente (CEO-editable)
+  - v2.1.1: query param ?popup=1 fuerza modo popup
+  - v2.1.2: launcher.html con menú de acceso local
 - ✅ **Visual refactor v2.0.5**: botón coberturaBtn compacto (36×34px), al lado del X, solo ⚠️
 - ✅ **Badge opt-in v2.0.6**: sin auto-show, solo al click en ⚠️
+- ✅ **Botón no cliqueable v2.0.9**: solo se colorea, info en title (tooltip nativo)
+- ✅ **Auditoría E2E**: 25/25 escenarios call center PASS (4 campos exactos, multi-espacios, distrito_of, no-match, incompletos, typos preservados, deptos no en base)
+
+**URLs de acceso local (uso CEO):**
+| URL | Modo | Botón X | Botón ⚠️ |
+|-----|------|---------|----------|
+| `http://127.0.0.1:8765/launcher.html` | **MENÚ PRINCIPAL** | — | — |
+| `http://127.0.0.1:8765/index.html?popup=1` | Standalone con X forzado | ✅ | ✅ (si match) |
+| `http://127.0.0.1:8765/index.html` | Standalone sin X | ❌ | ✅ (si match) |
+| `file:///home/braka/.../apps/cima-generador/index.html` | Standalone (sin X) | ❌ | ✅ (si match) |
+
+**Server local:** `python3 -m http.server 8765` (PID 1102374) · CWD: `apps/cima-generador` · 0.0.0.0:8765
 
 **Pendiente (no commiteado):**
-- ⏳ v2.0.2 — optimización data + UI 2 botones (syntax error)
-- ⏳ 205 zonas de Grupo 2 (parser falla, requiere OCR/IA)
+- ⏳ v2.0.2 — optimización data + UI 2 botones (syntax error) [RESUELTO en v2.0.8]
+- ⏳ 205 zonas de Grupo 2 (parser falla, requiere OCR/IA) [PARCIALMENTE RESUELTO via OCR visual]
 - ⏳ Diana security 2da pasada (completada, no en commit final)
 - ⏳ Pablo code review (completado, no en commit final)
 - ⏳ CEO confirma autorización legal para usar data Movistar
-- ⏳ Push a GitHub Pages (bloqueado por política NO PUSH + requiere v2.0.2 funcional)
+- ⏳ Push a GitHub Pages (bloqueado por política `git push*` DENIED + CEO debe autorizar)
 
 ### Diferencia local vs GitHub Pages
 
@@ -769,9 +787,31 @@ git diff
 - 2 bridge fixes (--wrap, --range-domain/series)
 - 4 commits locales (sin push)
 
-### Commits recientes
+### Commits recientes (sesión 2026-10-14/15 — v2.0.0 a v2.1.2)
 
 ```
+1bc8e90 feat(cima-generador): v2.1.2 — launcher.html con menú de acceso
+dc09811 feat(cima-generador): v2.1.1 — query param ?popup=1 fuerza modo popup
+34b5269 fix(cima-generador): v2.1.0 footer label (display v2.0.0 → v2.1.0)
+00c041b docs(cima): MEMORY.md end-to-end v3.6 — v2.1.0 pipeline idempotente
+6e04355 feat(cima-generador): v2.1.0 — pipeline regenerate_data.py idempotente
+40c1d14 feat(cima-generador): v2.0.9 — triángulo sin click + unión CCPPs no oficiales
+bf3d03d docs(cima): MEMORY.md end-to-end v3.5 — v2.0.8 búsqueda CCPP exacto
+7a16ed5 feat(cima-generador): v2.0.8 — búsqueda CCPP exacto + distrito preventivo
+14d1d31 docs(cima): MEMORY.md end-to-end v3.4 — v2.0.7 audit exhaustivo
+4bb7e5a fix(cima-generador): v2.0.7 — audit exhaustivo 3 PDFs, +3 distritos recuperados
+eafb35c fix(cima-generador): v2.0.6 — badge opt-in (eliminar border amarillo al tipear)
+e678d85 feat(cima-generador): v2.0.5 — visual refactor coberturaBtn compacto
+59dbabf docs(cima): MEMORY.md end-to-end v3.3 — v2.0.4 política proporcional
+6217d31 feat(cima-generador): v2.0.4 — política proporcional anti-falso positivo
+f9c8e5e feat(cima-generador): v2.0.3 — ZONAS APAGADAS full dataset (239 zonas)
+```
+
+### Commits anteriores (pre-sesión)
+
+```
+cdc25ba docs(cima): MEMORY.md — v2.0.2 PENDIENTE (syntax error) + estado completo
+60c91e0 feat(cima-generador): v2.0.1 — ZONAS APAGADAS feature (data separated)
 cde17e3 feat(cima-generador): v2.0.0 final — LICENSE, tests, FIX #7 #9, validaciones
 bb337c9 docs(cima): rewrite MEMORY.md end-to-end v3.0 — cierre completo
 35a032b feat(cima-generador): v2.0.0 STANDALONE — fix bug CEO + 6 fixes de auditoría
