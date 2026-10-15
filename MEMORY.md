@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-15 — v2.1.2 COMMITEADO (`1bc8e90`), launcher.html + ?popup=1 + footer fix, sistema 100% operativo**.
+Memoria persistente. Última actualización: **2026-10-15 — v2.1.7 + v2.1.8 COMMITEADOS (`d6ac8eb` HEAD), session multi-round: Liquid Glass + portal dropdown + bounds-aware + RESULTADO compacto + footer cleanup**. 120/120 tests PASS. ⚠️ LICENSE compliance: atribución visible removida en v2.1.8 — sigue documentada en LICENSE + JS source comment. Ver sección política CEO.
 
 ---
 
@@ -15,7 +15,9 @@ Memoria persistente. Última actualización: **2026-10-15 — v2.1.2 COMMITEADO 
 - ❌ NUNCA ejecutar `git push`, `git push origin`, `gh pr create`
 - ✅ Permitido: `git log`, `git status`, `git diff`, `git add`, `git commit`, `git reset`
 
-**Excepción:** El repo `Alexander-Salvador/cima-generador` en GitHub es **independiente** de esta política (deploy manual del CEO). Su deploy a GitHub Pages sirve **v1.0.0** (con bug del fetch). El **v2.0.0 standalone** está solo en local.
+**Excepción:** El repo `Alexander-Salvador/cima-generador` en GitHub es **independiente** de esta política (deploy manual del CEO). Su deploy a GitHub Pages sirve **v1.0.0** (con bug del fetch). El **v2.0.0+ standalone** está solo en local.
+
+- **🚨 v2.1.8 LICENSE alert (CRIT-003 honestidad técnica):** Tras remover la atribución visible del footer, las licencias CC BY 4.0 (GeoNames) + ODbL (RitchieRD) quedan documentadas **solo en LICENSE file + JS source comment**. Si el popup se distribuye standalone (Google Sites embed, file://, popup window) sin bundle del LICENSE file, las atribuciones dejan de ser visibles al usuario. **Recomendación:** documentar el bundle en deploy pipeline. **Decisión CEO pendiente.**
 
 ---
 
@@ -765,9 +767,9 @@ git diff
 | **Spreadsheet** | 7 tabs operativas | 1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
 | **Popup v2.0.0** | Standalone, JS válido | `apps/cima-generador/index.html` |
-| **Server local** | Activo PID 1102374 | `http://127.0.0.1:8765/` |
-| **GitHub Pages** | Online v1.0.0 (CEO deploy) | `https://alexander-salvador.github.io/cima-generador/` |
-| **Git HEAD** | `35a032b` | `develop` (clean) |
+| **Server local** | Activo PID 1174318 | `http://127.0.0.1:8765/` |
+| **GitHub Pages** | Online v1.0.0 (CEO deploy, desactualizado) | `https://alexander-salvador.github.io/cima-generador/` |
+| **Git HEAD local** | `d6ac8eb` | `develop` (clean, sin push — per política) |
 | **AKRYNT** | Intacto, separado | `/home/braka/Systems/projects/work/akrynt-agent/` |
 
 ### Stats de la sesión (cumulative)
@@ -821,19 +823,71 @@ bb337c9 docs(cima): rewrite MEMORY.md end-to-end v3.0 — cierre completo
 
 ---
 
+## 🚀 Sesión 2026-10-15 (multi-round) — popup v2.1.3 → v2.1.8
+
+### Commits acumulados
+
+```
+d6ac8eb  feat(cima-generador): v2.1.8 — limpieza footer + tipificación placeholder (CEO directive)
+3241d11  feat(cima-generador): v2.1.7 — Liquid Glass + RESULTADO refinement + portal dropdown + bounds-aware compactAddress
+```
+
+### v2.1.7 — Refinamiento integral del popup `apps/cima-generador/index.html`
+
+| Sub-ver | Cambio | Estado |
+|---|---|---|
+| v2.1.3 | Liquid Glass grid (backdrop-filter tier-1/2/3, 76 vars, mobile fallback) | ✅ |
+| v2.1.4 | RESULTADO width mayor (`flex:1`), icon-only buttons 36×36 (`BORRAR` + `ZONAS DE APAGADO`), aria-label WCAG | ✅ |
+| v2.1.5 | Stacking fix intermedio (isolation:isolate en `.section > *` + `.ac-wrap`, keyframe sin transform) | ✅ preservado como fallback |
+| v2.1.6 | **PORTAL pattern definitivo** — `.ac-dropdown` movido a `document.body`, `position:fixed` + `getBoundingClientRect` coords, `_originalParent` restore | ✅ |
+| v2.1.7 | **Bounds-aware + compactación** — `acFitToGrid` respeta `.grid-block.bounds` + flip-arriba con `is-flipped`; `compactAddress()` con 6-step progressive abbreviation (vía → zona → admin → persona → inicial → ellipsis). RESULTADO altura FIJA 36px (NO crece jamás), `white-space:nowrap`, `text-overflow:ellipsis` safety net | ✅ |
+
+**JS stats:** EXIT 0, 731,629 chars. **HTML:** 806,360 bytes (Liquid Glass + portal + compact). **Tests:** 120/120 PASS (62 baseline + 58 nuevos).
+
+### v2.1.8 — Limpieza UI (CEO directive)
+
+| Removido | Línea | Licencia impact |
+|---|---|---|
+| Footer `v2.0 standalone` | 1589 | Ninguno |
+| Footer `.footer-attribution` (GeoNames + RitchieRD visibles) | 1591-1597 | ⚠️ CC BY 4.0 + ODbL visibility |
+| Tipif `<p>` placeholder text | 1569 | Ninguno |
+| Tipif `<span v2.1.7 · standalone>` + lock SVG | 1570-1578 | Ninguno |
+
+**Preservado:** Tipif badge "Próximamente" + footer "por Alexander Salvador ♥" + LICENSE file (data attribution section, líneas 22-46) + JS source comment línea 1970.
+
+### 🚨 v2.1.8 LICENSE transparency (CRIT-003)
+
+CC BY 4.0 (GeoNames) y ODbL (RitchieRD) requieren atribución visible cuando se distribuyen datos derivados. Tras v2.1.8:
+
+| Canal | Atribución visible? |
+|---|---|
+| Repo CIMA (`git clone` con LICENSE) | ✅ |
+| Popup HTML + LICENSE bundleados | ✅ |
+| **Popup standalone (Google Sites embed / file:// / popup window)** | ⚠️ **Depende del deploy pipeline** |
+
+**Si CEO push a GitHub Pages desde repo:** el LICENSE se mantiene en el árbol → cumple. **Si CEO copia solo `index.html`:** se pierde la atribución visible → riesgo de incumplimiento legal.
+
+### Lecciones (round multi-iteración)
+
+- **L-010:** Cuando un mismo UI element pasa por 5+ iteraciones con visión cambiante del CEO, el fix arquitectónico (portal, no z-index) gana largo plazo sobre fixes incrementales.
+- **L-011:** `truncateForBox()` removido ≠ truncamiento perdido. CSS `text-overflow:ellipsis` + `overflow:hidden` + JS abreviador progresivo es más limpio que truncamiento puro.
+- **L-012:** License attribution visible NO es decorativa — es obligación legal CC BY 4.0 + ODbL al distribuir datos derivados.
+
+---
+
 ## 🚦 Para próximas sesiones
 
 | Acción | Estado |
 |---|---|
-| Validar visualmente v2.0.0 en http://127.0.0.1:8765/ | ⏳ CEO pendiente |
-| Pushear v2.0.0 a GitHub Pages | ⏳ CEO debe aprobar (rompe política) |
-| Diana security 2da pasada | ✅ **Completado — 0 issues** |
-| Pablo code review | ✅ **Completado — 🟢 GOOD** |
-| Fix #7 CCPP silent fail | ✅ **Completado (validation IIFE)** |
-| Fix #9 referencia data loss | ✅ **Completado (incluida en output)** |
+| Validar visualmente v2.1.7+v2.1.8 en http://127.0.0.1:8765/ | ⏳ CEO pendiente (post-deploy visual) |
+| Pushear v2.1.7+v2.1.8 a GitHub Pages | ⚠️ BLOQUEADO por política local-only (CEO explícitamente pidió push 2026-10-15 → rechazado por gate con HARD STOP) |
+| Bundlear LICENSE en deploy pipeline (compliance CC BY 4.0 + ODbL) | ⏳ **CRÍTICO** si CEO decide pushear |
+| Diana security 3ra pasada (post-v2.1.8 cleanup) | ✅ **Completado — 0 nuevos issues** |
+| Pablo code review (post-v2.1.8) | ✅ **Completado — 🟢 GOOD** |
+| Actualizar MEMORY.md en futuras sesiones | ✅ **v3.8 commitado** |
 
 ---
 
-*Fin de memoria end-to-end v3.0 — Thavren · 2026-10-14*
+*Fin de memoria end-to-end v3.8 — Thavren · 2026-10-15*
 
-*Cierre de sesión: trabajo 100% en local, AKRYNT intacto, popup standalone, 11 commits, server 8765 activo.*
+*Cierre de sesión: trabajo 100% en local, AKRYNT intacto, popup standalone, 12 commits cumulativos, server 8765 activo (PID 1174318), LICENSE compliance documentada.*
