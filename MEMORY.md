@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-15 — v2.1.8 DEPLOYED LIVE en GitHub Pages** (commit `33aeda8` on `main` of `Alexander-Salvador/cima-generador`). URL: https://alexander-salvador.github.io/cima-generador/. 120/120 tests PASS. Arquitectura de deploy documentada + lecciones de push aprendidas.
+Memoria persistente. Última actualización: **2026-10-15 — v3.0 TIPIFICACIÓN TX COMMITEADO LOCAL** (HEAD `501b4d4` en `develop`). 166/166 tests PASS. Working tree clean. **NO push** a remoto esta sesión. GitHub Pages sigue sirviendo v2.1.8 (HEAD `33aeda8` en `main`) hasta que CEO autorice subtree split + force-push.
 
 ---
 
@@ -855,18 +855,22 @@ git diff
 
 ---
 
-## 🟢 Estado actual (snapshot 2026-10-15 v2.1.8 LIVE)
+## 🟢 Estado actual (snapshot 2026-10-15 v3.0 LOCAL · v2.1.8 LIVE remoto)
 
 | Recurso | Estado | Ubicación |
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup local** | `develop` HEAD `cdbcf5f` (v2.1.8 fuente) | `apps/cima-generador/index.html` |
-| **Server local** | Activo PID 1174318 | `http://127.0.0.1:8765/` |
-| **GitHub Pages LIVE** | ✅ **v2.1.8 POPUP — DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
-| **Repo popup GitHub** | `main` @ `33aeda8` (v2.1.8 HEAD), `develop` @ `cdbcf5f` | `https://github.com/Alexander-Salvador/cima-generador` |
-| **Git HEAD local** | `cdbcf5f` | `develop` (per sesión local + subtree deploy pipeline) |
-| **AKRYNT** | Intacto, separado, política NO aplica | `/home/braka/Systems/projects/work/akrynt-agent/` |
+| **Popup LOCAL (develop)** | `develop` HEAD `501b4d4` (v3.0 con TIPIFICACIÓN TX) | `apps/cima-generador/index.html` |
+| **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
+| **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
+| **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
+| **Repo popup GitHub main** | `33aeda8` (v2.1.8) — **NO actualizado a v3.0 todavía** | `https://github.com/Alexander-Salvador/cima-generador` |
+| **Repo equivocado a limpiar** | `Alexander-Salvador/cima` (creado por error Thavren) | CEO manual con `gh repo delete` |
+| **Git HEAD local develop** | `501b4d4` | working tree clean, 0 sin commitear |
+| **AKRYNT** | Intacto, política NO aplica | `/home/braka/Systems/projects/work/akrynt-agent/` |
+| **Recursos CIMA folder** | Local only (CEO referencia, en .gitignore) | `Recursos CIMA/Etiquetas de Transferencia.xlsx` |
+| **Recursos CIMA folder** | Local only (Movistar PDFs operadores, en .gitignore) | `Recursos CIMA/Bases y Zonas de Apagado/APAGADO*.pdf` |
 
 ### Stats de la sesión (cumulative)
 
@@ -1004,20 +1008,151 @@ portal pattern ✓
 
 ---
 
-## 🚦 Para próximas sesiones
+## 🚀 Sesión 2026-10-15 (round 2) — popup v3.0 TIPIFICACIÓN TX
 
-| Acción | Estado |
+### Commits acumulados (esta sesión + anteriores)
+
+```
+501b4d4 feat(cima-generador): v3.0 TIPIFICACIÓN TX ← LOCAL HEAD
+b7fcf8e docs(cima): MEMORY.md v3.9 — alineación arquitectural + deploy pipeline + 7 lecciones
+cdbcf5f fix(cima): MEMORY.md ruta de push corregida → Alexander-Salvador/cima-generador
+774616d fix(cima): MEMORY.md política CEO corregida — CIMA SIN restricción de push
+9811aab docs(cima): MEMORY.md v3.8 — sesión 2026-10-15 (v2.1.7 + v2.1.8)
+d6ac8eb feat(cima-generador): v2.1.8 — limpieza footer + tipificación placeholder (CEO directive)
+3241d11 feat(cima-generador): v2.1.7 — Liquid Glass + RESULTADO refinement + portal dropdown
+```
+
+### v3.0 — TIPIFICACIÓN TX (Transferencia) completa
+
+Grid 2 del popup (TIPIFICACIÓN) dejó de ser placeholder "EN PROCESO" y se transformó en herramienta TX funcional con dos secciones:
+
+```
+┌──────────────────────────────────────────────────┐
+│ GRID 2: TIPIFICACIÓN                            │
+├──────────────────────────────────────────────────┤
+│ FILA 1: Quick speeches (3 actions)              │
+│  [🔄 RESET]  [📶 APN]  [↗ CASO]                 │
+│  Click → copy-to-clipboard + overlay "Copiado"  │
+│  Texto limpio (sin ✓), artículos + acentos      │
+├──────────────────────────────────────────────────┤
+│ FILA 2: Etiquetas de Transferencia (smart search) │
+│  🔍 [Buscar…]                                  │
+│  [POSTPAGO/PREPAGO] [MOVISTAR TOTAL] [STANDALONE]│
+│  Click chip + click input → dropdown con las    │
+│  etiquetas de esa categoría (17 registros total)│
+│  Click item → preview + copiar etiqueta completa │
+└──────────────────────────────────────────────────┘
+```
+
+### Datos inlineados (0 fetch)
+
+* **3 SPEECH_TEMPLATES** (reset/apn/caso) — generados desde XLSX SPEECH RECURRENTES + PLANTILLAS PLAZOS
+* **17 ETIQUETAS_DATA** con distribución:
+  * POSTPAGO (cat `POSTPAGO`): 6 registros
+  * MOVISTAR TOTAL (cat `MTOTAL`): 6 registros
+  * STANDALONE: 5 registros
+  * Fuente: `Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx`
+  * Categorización derivada del XLSX columna `AREA`:
+    * `MOVIL POSTPAGO // PREPAGO` → `POSTPAGO`
+    * `MOVISTAR TOTAL` → `MTOTAL`
+    * `SERVICIO FIJA STAND ALONE` → `STANDALONE`
+
+### Bugs encontrados y corregidos pre-commit
+
+| # | Bug | Severidad | Fix |
+|---|---|---|---|
+| 1 | Iconos desaparecían al copiar (v3.0.2) — `textContent` save/restore destruía estructura HTML | UX rota — SVG se perdía forever | `copyText` ahora usa `dataset.origHTML` + `innerHTML` save/restore |
+| 2 | Stray `}` syntax error al agregar `hideEtiquetaDropdown()` | JS completo roto — `node --check` lo cazó | Eliminado. JS valid EXIT 0 |
+| 3 | Skill codes largos overflow horizontal (ej `SK_CV_RETENCIONES_CONVERGENTE_TX`) | Visual — códigos cortados | `word-break: break-all` + `overflow-wrap: anywhere` en `.etiqueta-skill-row` |
+| 4 | Inline styles quedaban en dropdown post-close (`position: fixed`, `zIndex`) | Acumulación de state en DOM | Nueva `hideEtiquetaDropdown()` limpia styles Y restaura al parent original (sale del `<body>`) |
+
+### Iteraciones de UI de los 3 buttons
+
+| Sub-ver | Estado |
 |---|---|
-| Validar visualmente v2.1.7+v2.1.8 en https://alexander-salvador.github.io/cima-generador/ | ⏳ CEO pendiente (post-deploy visual) |
-| Eliminar repo erróneo `Alexander-Salvador/cima` | ⏳ CEO manual con `gh auth refresh -s delete_repo` |
-| Limpiar orphan ref `refs/remotes/origin/develop` | ⏳ CEO manual |
-| Bundlear LICENSE en deploy standalone (compliance CC BY 4.0 + ODbL) | ⏳ Pendiente si deploy parcial |
-| Diana security 3ra pasada (post-v2.1.8 cleanup) | ✅ **Completado — 0 nuevos issues** |
-| Pablo code review (post-v2.1.8) | ✅ **Completado — 🟢 GOOD** |
-| Actualizar criteria agent (Thavren) con lecciones L-010 a L-016 | ⏳ Próxima iteración |
+| v3.0 | Vertical, 64px alto, iconos emoji 🔄📡📋 |
+| v3.0.1 | Sin ✓ prefix, artículos en español ('el proceso', 'la configuración'), acentos ('AVERÍA'), opción 'TODAS' removida |
+| v3.0.2 | Premium: SVG icons Lucide-style, gradient glass per action (azul·verde·ámbar), sub-label |
+| v3.0.3 | **Compact**: 44px alto (Apple HIG), 22px icon, layout horizontal pill, sin sub-label. FIX bug onclick que destruía icon |
+
+### Lecciones nuevas (round 2)
+
+- **L-017:** `copyText` usa `innerHTML` save/restore, NO `textContent` (preserva SVG/structure)
+- **L-018:** Estética iOS 2026: 44px touch target es el sweet spot — más grande rompe grids
+- **L-019:** Speeches vs Process responses: agent workflow requiere texto DECLARATIVO (lo que pasó al cliente) no narrativo (lo que el agente dice)
+- **L-020:** Datos internos del operador (PDFs Movistar, XLSXs) → `.gitignore` con `Recursos CIMA/` + `*.xlsx`
 
 ---
 
-*Fin de memoria v3.9 — Thavren · 2026-10-15 16:18 GMT*
+## 🚦 Para próximas sesiones (handover para nuevo chat)
 
-*Cierre de sesión: v2.1.8 LIVE en GitHub Pages (`33aeda8`). Pipeline de deploy subtree documentado. Arquitectura popup standalone clarificada (local en `apps/cima-generador/`, GitHub en `cima-generador` repo). 16 lecciones acumuladas. AKRYNT intacto. Server local activo. Compliance LICENSE via `LICENSE file + JS source comment` en repo público.*
+### Comandos de arranque (inicio de próximo chat)
+
+```bash
+# Estado actual
+git log --oneline -3
+# Expected: 501b4d4 (v3.0) / b7fcf8e (MEMORY v3.9) / cdbcf5f (ruta) / 774616d (política)
+
+# Server local (si no está corriendo)
+pgrep -af 'http.server 8765' || (
+  cd /home/braka/Systems/projects/work/cima/apps/cima-generador
+  setsid bash -c 'cd /home/braka/Systems/projects/work/cima/apps/cima-generador && exec python3 -m http.server 8765 --bind 127.0.0.1' </dev/null >/tmp/opencode/cima_server.log 2>&1 &
+  disown
+)
+
+# Tests pasan?
+python3 /home/braka/Systems/projects/work/cima/apps/cima-generador/test_popup.py | tail -3
+# Expected: "166 passed, 0 failed, 0 warnings"
+
+# URL principal
+# http://127.0.0.1:8765/index.html
+```
+
+### Estado actual (memo)
+
+| Item | Valor |
+|---|---|
+| Local HEAD | `501b4d4` (v3.0 TIPIFICACIÓN TX) |
+| Working tree | clean |
+| Tests | 166/166 PASS |
+| GitHub Pages LIVE | v2.1.8 (`33aeda8`) — **sin actualizar a v3.0 todavía** |
+| Repo equivocado | `Alexander-Salvador/cima` — pendiente cleanup CEO |
+
+### Acciones pendientes (CEO manual)
+
+| Acción | Cómo |
+|---|---|
+| Eliminar repo erróneo `Alexander-Salvador/cima` | `gh auth refresh -s delete_repo -h github.com && gh repo delete Alexander-Salvador/cima --yes` |
+| Limpiar orphan ref `refs/remotes/origin/develop` | `git push origin :refs/remotes/origin/develop` |
+| **Deploy v3.0 a GitHub Pages** (cuando autorice CEO) | ver pipeline abajo |
+| Bundlear LICENSE en deploy standalone (compliance CC BY 4.0 + ODbL) | Decisión CEO pendiente |
+
+### Pipeline de deploy v3.0 (cuando CEO autorice)
+
+```bash
+# 1. Subtree split de apps/cima-generador/ → branch popup-deploy
+git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy
+
+# 2. Force-push al main de cima-generador (OVAV bypass + --no-verify)
+OVAV_BYPASS_DRIFT_CHECK=1 git push --no-verify --force origin popup-deploy:main
+
+# 3. Wait ~90s para Pages rebuild
+sleep 90 && curl -sI https://alexander-salvador.github.io/cima-generador/ | grep -i last-modified
+
+# 4. Verify v3.0 markers live
+curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|APN|CASO|etiqueta|TIPIFICACION"
+```
+
+### URLs activas
+
+| URL | Sirve |
+|---|---|
+| `http://127.0.0.1:8765/index.html` | v3.0 LOCAL (popup standalone con TIPIFICACIÓN TX) |
+| `http://127.0.0.1:8765/launcher.html` | Menú de acceso |
+| `https://alexander-salvador.github.io/cima-generador/` | v2.1.8 LIVE (aún sin v3.0) |
+
+---
+
+*Fin de memoria v3.10 — Thavren · 2026-10-15 (round 2, sesión completa)*
+
+*Cierre: v3.0 TIPIFICACIÓN TX commiteado localmente (`501b4d4`), 166/166 tests PASS, 4 bugs pre-commit caçados y corregidos. Estado LOCAL ahead of remoto (v3.0 local vs v2.1.8 LIVE en GitHub Pages). AKRYNT intacto. Server local activo. Compliance LICENSE preservada en LICENSE file + JS source comment. Sin push esta sesión (esperando autorización CEO). Próximo chat: arrancar verificando `git log --oneline -3` y tests pasan.*
