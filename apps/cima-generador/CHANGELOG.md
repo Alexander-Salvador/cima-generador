@@ -1,5 +1,72 @@
 # Changelog — cima-generador
 
+## [3.3] - 2026-10-15 — POPUP MODE 1-COL + BUTTON→DROPDOWN GUARD
+
+CEO directive 2026-10-15 (con screenshot): "estas tratando de modificar para un modo desktop normal. estamos sobre el diseño de responsive popup y en modo popup se mantiene en 1 opción por row. Recuerda que nos centramos en el diseño popup siempre".
+
+Además: "cuando le doy click a uno de los buttons se abre automáticamente el dropdown y es incorrecto, el flujo es click al button y luego click al inputsearch para que se muestre el dropdown".
+
+### Fixed — Popup Mode: chips SIEMPRE 1-col
+
+Antes: chips en grid 3-col por default, fallback a 1-col solo en `@media (max-width: 480px)`. CEO diseñando en popup mode (520px) veía chips en 3-col → no era el layout deseado.
+
+Ahora: **popup mode es el target primario de diseño**. En `body[data-popup="true"]` (signal que JS pone en `?popup=1` o cuando hay `window.opener`), las chips y skills SIEMPRE van 1 opción por row:
+
+```css
+body[data-popup="true"] .etiqueta-categories,
+body[data-popup="true"] .etiqueta-preview-skills {
+  grid-template-columns: 1fr;
+}
+```
+
+Mobile fallback ampliado a `max-width: 640px` (cubre popup mode también).
+
+### Fixed — Action Button Click NO triggerea dropdown
+
+Antes: el click en action button (RESET/APN/CASO) ejecutaba `copySpeech()` que solo copiaba el texto. PERO la propagación del mousedown + cualquier focus chain podía generar la percepción de "button abre dropdown". CEO explícitamente pidió el flujo:
+1. Click button → NO dropdown
+2. Click search input → dropdown abre
+
+Ahora: `copySpeech()` tiene **guards defensivos múltiples**:
+1. `document.activeElement.blur()` — elimina focus chain que pueda reabrir dropdown
+3. `hideEtiquetaDropdown()` explícito — si dropdown estaba abierto, lo cierra (no abre nunca)
+4. `return false` — detiene propagación a cualquier listener externo
+
+Además, `setupEtiquetas` document mousedown handler ahora skip explícito clicks dentro de `.action-buttons-row` (belt-and-suspenders contra race conditions con mousedown bubbling):
+
+```js
+if (e.target.closest('.action-buttons-row')) return;
+hideEtiquetaDropdown();
+```
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — CSS popup-mode selectors (~10 líneas) + media query ampliada + copySpeech defensive guards (~12 líneas JS) + document mousedown skip (.action-buttons-row) (~3 líneas)
+- `apps/cima-generador/VERSION` — `3.2` → `3.3`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +6 tests (234 → 240)
+
+### Tests
+
+- **240/240 PASS** (era 234/234 en v3.2; +6 nuevos para v3.3)
+- +1 popup mode chips 1-col via body[data-popup] selector
+- +1 popup mode skills 1-col via body[data-popup] selector
+- +1 mobile fallback max-width 640px
+- +1 copySpeech defensive: blur() active element
+- +1 copySpeech: hideEtiquetaDropdown() invocado explícitamente
+- +1 document mousedown: skip .action-buttons-row
+
+### Lecciones nuevas
+
+- **L-026:** "Popup mode" debe ser un PRIMER CLASE en CSS, no un side-effect del screen width. Usar `body[data-popup="true"]` permite target comportamiento popup-específico sin asumir dimensiones de viewport.
+- **L-027:** Action buttons deben tener `return false` + `blur()` + `hide*()` triple-guard cuando hay dropdowns floating. UX flow estricto requiere defense-in-depth contra cualquier focus chain que pueda triggerear open.
+
+### Pendiente
+
+- ⏳ Push a GitHub Pages (CEO autoriza)
+
+---
+
 ## [3.2] - 2026-10-15 — DROPDOWN BOUNDS + SEGMENTED ACTIONS (CRIT-009)
 
 Fix crítico reportado por CEO: "los 3 botones no estaban en 1 row bien optimizadas" + "el dropdown sobrepasaba los límites del grid contenedor de etiquetas en altura y anchura". Cirugía arquitectónica, no parches.

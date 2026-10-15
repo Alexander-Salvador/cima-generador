@@ -1493,8 +1493,16 @@
     margin-top: 4px;
   }
 
-  /* ── Mobile fallback (≤480px) ──────────────────────────────────────── */
-  @media (max-width: 480px) {
+  /* ── Popup mode: 1-col chips + skills (default en popup) ─────────────── */
+  /* v3.3: el popup mode es el target primario de diseño.
+     En body[data-popup="true"] las chips y skills SIEMPRE van 1 por row
+     (CEO directive 2026-10-15: "diseño popup siempre, 1 opción por row"). */
+  body[data-popup="true"] .etiqueta-categories,
+  body[data-popup="true"] .etiqueta-preview-skills {
+    grid-template-columns: 1fr;
+  }
+  /* v3.3: en mobile/responsive fallback (no-popup) hasta 640px también 1-col */
+  @media (max-width: 640px) {
     .etiqueta-categories {
       grid-template-columns: 1fr;
     }
@@ -2668,6 +2676,16 @@ function copySpeech(type) {
   var btn = document.querySelector('.action-btn[data-action="' + type + '"]');
   if (!btn) return;
 
+  // v3.3 DEFENSIVO: el click en action button NO debe triggear el dropdown de
+  // etiquetas. CEO directive 2026-10-15: "click al button, luego click al
+  // inputsearch para que se muestre el dropdown". Garantizamos:
+  //   1. Blur active element (evita focus chain que pueda reabrir el dropdown)
+  //   2. Cerrar etiqueta dropdown si estaba abierto (no abrirlo nunca)
+  //   3. Detener propagación para que ningún listener externo reaccione
+  try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+  var drop = $('ac-etiqueta');
+  if (drop && !drop.hidden) hideEtiquetaDropdown();
+
   // Helper: muestra feedback via class toggle (preserva DOM)
   function showOk() {
     btn.classList.add('is-copied');
@@ -2686,6 +2704,7 @@ function copySpeech(type) {
     fallbackCopy(txt);
     showOk();
   }
+  return false;
 }
 
 // Filtrar etiquetas por categoría (chip buttons) + abre el dropdown
@@ -2963,6 +2982,10 @@ function setupEtiquetas() {
     if (!drop || drop.hidden) return;
     if (e.target.closest('#etiquetaSearch')) return;
     if (e.target.closest('#ac-etiqueta')) return;
+    // v3.3 DEFENSIVO: clicks dentro de .action-buttons-row NO deben tocar
+    // el dropdown de etiquetas. copySpeech ya fuerza cierre explícitamente,
+    // pero esto previene race conditions con mousedown bubbling.
+    if (e.target.closest('.action-buttons-row')) return;
     hideEtiquetaDropdown();   // FIX v3.0.3: limpiar inline styles + restore parent
   });
 }

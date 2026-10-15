@@ -969,6 +969,44 @@ def test(html_path):
     if re.search(r'\.action-btn\s*\{[^}]*flex:\s*1 1 0', html, re.DOTALL):
         result.ok('TIPIF v3.2 action-btn flex: 1 1 0 (equal distribution)')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3 — Popup mode 1-col chips + button→dropdown guard
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3 — Popup mode 1-col + button→dropdown guard')
+
+    # Popup mode: chips SIEMPRE 1-col (CEO directive: popup es target primario)
+    if 'body[data-popup="true"] .etiqueta-categories' in html and \
+       re.search(r'body\[data-popup="true"\]\s+\.etiqueta-categories[^}]*grid-template-columns:\s*1fr', html, re.DOTALL):
+        result.ok('TIPIF v3.3 popup mode: chips SIEMPRE 1-col via body[data-popup]')
+    else:
+        result.fail('popup-mode chips 1-col', 'selector ausente o grid no es 1fr')
+    # Skills grid también 1-col en popup mode
+    if 'body[data-popup="true"] .etiqueta-preview-skills' in html and \
+       re.search(r'body\[data-popup="true"\]\s+\.etiqueta-preview-skills[^}]*grid-template-columns:\s*1fr', html, re.DOTALL):
+        result.ok('TIPIF v3.3 popup mode: preview-skills SIEMPRE 1-col')
+    else:
+        result.fail('popup-mode skills 1-col', 'selector ausente')
+    # Mobile fallback ampliado a 640px (cubre popup mode también)
+    if '@media (max-width: 640px)' in html:
+        result.ok('TIPIF v3.3 mobile fallback: max-width 640px (cubre popup)')
+
+    # copySpeech tiene guard defensivo contra trigger del dropdown
+    if 'document.activeElement.blur' in html and 'copySpeech' in html:
+        result.ok('TIPIF v3.3 copySpeech defensive: blur() active element')
+    if 'hideEtiquetaDropdown' in html:
+        # Verificar que se invoca dentro de copySpeech (no solo definida)
+        # Buscar el contexto: copySpeech body debe contener hideEtiquetaDropdown
+        m = re.search(r'function copySpeech\(type\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+        if m and 'hideEtiquetaDropdown()' in m.group(1):
+            result.ok('TIPIF v3.3 copySpeech: hideEtiquetaDropdown() invocado explícitamente')
+        else:
+            result.fail('copySpeech hide guard', 'no se invoca dentro de copySpeech')
+    # setupEtiquetas document mousedown handler skips action-buttons-row
+    if "e.target.closest('.action-buttons-row')" in html:
+        result.ok('TIPIF v3.3 document mousedown: skip .action-buttons-row')
+    else:
+        result.fail('mousedown skip buttons-row', 'guard ausente')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
