@@ -859,6 +859,8 @@
      ══════════════════════════════════════════════════════════════════════ */
   .action-buttons-row {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: stretch;
     gap: 0;
     background: var(--glass-2-bg);
@@ -875,7 +877,7 @@
     position: relative;
     display: flex;
     flex: 1 1 0;
-    min-width: 0;
+    min-width: 56px;
     align-items: center;
     justify-content: center;
     gap: 5px;
@@ -1494,12 +1496,16 @@
   }
 
   /* ── Popup mode: 1-col chips + skills (default en popup) ─────────────── */
-  /* v3.3: el popup mode es el target primario de diseño.
-     En body[data-popup="true"] las chips y skills SIEMPRE van 1 por row
-     (CEO directive 2026-10-15: "diseño popup siempre, 1 opción por row"). */
+  /* v3.3.1 BULLETPROOF: triple selector (html + body + class) con !important
+     para garantizar que las chips/skills SIEMPRE sean 1-col en popup mode.
+     CEO directive 2026-10-15: "diseño popup siempre, 1 opción por row". */
+  html[data-popup="true"] .etiqueta-categories,
   body[data-popup="true"] .etiqueta-categories,
-  body[data-popup="true"] .etiqueta-preview-skills {
-    grid-template-columns: 1fr;
+  .popup-mode .etiqueta-categories,
+  html[data-popup="true"] .etiqueta-preview-skills,
+  body[data-popup="true"] .etiqueta-preview-skills,
+  .popup-mode .etiqueta-preview-skills {
+    grid-template-columns: 1fr !important;
   }
   /* v3.3: en mobile/responsive fallback (no-popup) hasta 640px también 1-col */
   @media (max-width: 640px) {
@@ -4311,7 +4317,12 @@ function initPopupMode() {
   var forcePopup = /[?&]popup=1\b/.test(location.search);
   var isPopup = forcePopup || !!(window.opener || window.parent !== window);
   if (isPopup) {
+    // v3.3.1 BULLETPROOF: setear en <html> Y <body> para que cualquier CSS selector
+    // que elija el dev (body[data-popup] o html[data-popup]) funcione.
+    document.documentElement.setAttribute('data-popup', 'true');
     document.body.setAttribute('data-popup', 'true');
+    // Debug visibility para DevTools (no afecta UX)
+    if (typeof console !== 'undefined' && console.log) console.log('[CIMA popup-mode] data-popup=true en html y body');
     closeBtn.addEventListener('click', function () {
       window.close();
     });

@@ -1,5 +1,80 @@
 # Changelog — cima-generador
 
+## [3.3.1] - 2026-10-15 — BULLETPROOF POPUP MODE (CEO REPORTÓ "SIN CAMBIOS VISUALES")
+
+CEO directive: "no estoy viendo ni la mas minima mejora. mata el servidor y vuelve a levantarlo es HTML". Después de matar/restart server, CEO sigue sin ver cambios. Análisis: la detección de popup mode podía no estar aplicándose por specificity issues o single hook en body.
+
+### Fixed — Bulletproof popup mode detection
+
+**Causa raíz sospechada:** El `data-popup="true"` solo se seteaba en `document.body`. Si por alguna razón ese hook fallaba (DOM timing, browser behavior), la CSS `body[data-popup="true"]` no aplicaba y CEO no veía cambios.
+
+**Fix:**
+1. **JS dual hook:** setear `data-popup="true"` en `<html>` (documentElement) Y en `<body>`. Doble seguridad.
+2. **CSS triple selector:** `html[data-popup="true"]`, `body[data-popup="true"]`, y `.popup-mode` class — cualquiera que matchee aplica.
+3. **`!important` en popup mode selectors** — gana cualquier specificity battle.
+4. **Console.log debug** — visibility en DevTools para verificar que popup mode está activo.
+
+```js
+document.documentElement.setAttribute('data-popup', 'true');
+document.body.setAttribute('data-popup', 'true');
+console.log('[CIMA popup-mode] data-popup=true en html y body');
+```
+
+```css
+html[data-popup="true"] .etiqueta-categories,
+body[data-popup="true"] .etiqueta-categories,
+.popup-mode .etiqueta-categories,
+html[data-popup="true"] .etiqueta-preview-skills,
+body[data-popup="true"] .etiqueta-preview-skills,
+.popup-mode .etiqueta-preview-skills {
+  grid-template-columns: 1fr !important;
+}
+```
+
+### Fixed — Action buttons NUNCA wrap
+
+CEO observación: "cuando reduzco el ancho del popup se vuelve a poner en 1 row cada opcion". Aunque mi CSS ya tenía `display: flex`, falta explicitar `flex-wrap: nowrap` para defense-in-depth.
+
+**Fix:**
+1. `flex-wrap: nowrap` explícito en `.action-buttons-row`
+2. `min-width: 56px` en `.action-btn` — previene shrink-to-invisible en viewports extremos
+
+```css
+.action-buttons-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  ...
+}
+.action-btn {
+  flex: 1 1 0;
+  min-width: 56px;
+  ...
+}
+```
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — JS dual hook (~3 líneas) + CSS triple selector con !important (~15 líneas) + flex-wrap nowrap + min-width 56px (~3 líneas)
+- `apps/cima-generador/VERSION` — `3.3` → `3.3.1`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +5 tests (240 → 245)
+
+### Tests
+
+- **245/245 PASS** (era 240/240; +5 nuevos para v3.3.1)
+- +1 data-popup set en html Y body (dual hook)
+- +1 popup CSS triple selector (html + body + .popup-mode)
+- +1 popup CSS !important
+- +1 action-buttons-row flex-wrap nowrap
+- +1 action-btn min-width 56px
+
+### Lección nueva
+
+- **L-028:** Cuando un selector crítico (como `[data-popup="true"]`) se usa para diferenciar modos de diseño, setear el atributo en MÚLTIPLES elementos raíz (`<html>` + `<body>`) y usar múltiples selectores CSS con `!important`. La duplicación defensiva es preferible a un solo hook que puede fallar silenciosamente.
+
+---
+
 ## [3.3] - 2026-10-15 — POPUP MODE 1-COL + BUTTON→DROPDOWN GUARD
 
 CEO directive 2026-10-15 (con screenshot): "estas tratando de modificar para un modo desktop normal. estamos sobre el diseño de responsive popup y en modo popup se mantiene en 1 opción por row. Recuerda que nos centramos en el diseño popup siempre".

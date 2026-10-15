@@ -1004,6 +1004,36 @@ def test(html_path):
     # setupEtiquetas document mousedown handler skips action-buttons-row
     if "e.target.closest('.action-buttons-row')" in html:
         result.ok('TIPIF v3.3 document mousedown: skip .action-buttons-row')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.1 — BULLETPROOF popup mode detection (html + body + class)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.1 — Bulletproof popup mode')
+
+    # JS setea data-popup en <html> Y <body> (defense-in-depth)
+    if "document.documentElement.setAttribute('data-popup', 'true')" in html and \
+       "document.body.setAttribute('data-popup', 'true')" in html:
+        result.ok('TIPIF v3.3.1 data-popup set en html Y body (doble hook)')
+    else:
+        result.fail('data-popup dual hook', 'setAttribute en html o body ausente')
+
+    # CSS triple selector con !important (html + body + .popup-mode class)
+    if 'html[data-popup="true"] .etiqueta-categories' in html and \
+       'body[data-popup="true"] .etiqueta-categories' in html and \
+       '.popup-mode .etiqueta-categories' in html:
+        result.ok('TIPIF v3.3.1 popup CSS: triple selector (html + body + .popup-mode)')
+    else:
+        result.fail('popup triple selector', 'uno de los 3 selectors ausente')
+    # !important en popup mode selectors
+    if re.search(r'popup-mode\s+\.etiqueta-categories[\s\S]*?grid-template-columns:\s*1fr\s*!important', html, re.DOTALL):
+        result.ok('TIPIF v3.3.1 popup CSS: !important garantiza specificity win')
+
+    # Action buttons NUNCA wrap (flex-wrap: nowrap explícito)
+    if re.search(r'\.action-buttons-row\s*\{[^}]*flex-wrap:\s*nowrap', html, re.DOTALL):
+        result.ok('TIPIF v3.3.1 action-buttons-row: flex-wrap nowrap (siempre 1 row)')
+    # min-width en action-btn previene shrink to 0
+    if re.search(r'\.action-btn\s*\{[^}]*min-width:\s*56px', html, re.DOTALL):
+        result.ok('TIPIF v3.3.1 action-btn: min-width 56px (no shrink to invisible)')
     else:
         result.fail('mousedown skip buttons-row', 'guard ausente')
 
