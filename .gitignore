@@ -57,6 +57,14 @@ apps/cima-generador/.regenerate_state.json
 **/APAGADP*.pdf
 **/APAGADP*.pdf:Zone.Identifier
 
+# Recursos CIMA folder is CEO's internal reference data (movistar XLSX,
+# PDF operator docs, Zone.Identifier Windows metadata) — keep local only.
+# The popup already inlines the relevant SK_CV_* skill codes as constants.
+"Recursos CIMA/"
+"Recursos CIMA"/
+**/*.xlsx
+**/*.xlsx:Zone.Identifier
+
 # Derived data from restricted sources — never commit
 # zonas_apagadas.json is generated from Movistar PDFs (confidential)
 apps/cima-generador/data/zonas_apagadas.json
