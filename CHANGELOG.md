@@ -1,5 +1,102 @@
 # Changelog — cima-generador
 
+## [3.3.9] - 2026-10-15 — PREVIEW CARDS SIEMPRE VISIBLES (2 cards siempre ahí)
+
+CEO directive 2026-10-15 (clarificación):
+"el flujo es SELECCIONO un botton POST/PRE|MT|STANDALONE y luego voy al
+inputsearch hago la busqueda selecciono y se abre las 2 opciones de OPER
+TO OPER Y TX DIRECTA <- esto va cambiar las opcion de OPER TO OPER Y TX
+DIRECTA siempre deben estar ahi, cuando se complete la busqueda en el
+searchinput se rellena con la busqueda correcta".
+
+**Interpretación:** Los 2 cards (TX OPER TO OPER + TX DIRECTA) deben estar
+SIEMPRE visibles desde el inicio (con sus labels). Cuando el usuario
+selecciona del dropdown, los codes (skill_tx2, skill_txdirecto) se rellenan
+en los cards existentes — NO se "abren/cambian" los cards.
+
+### Fixed — Preview cards siempre visibles
+
+**Antes (v3.3.6-v3.3.8):** Preview container tenía `hidden` attribute por default. Los 2 cards solo aparecían DESPUÉS de la primera selección. Si el usuario cambiaba de chip a uno sin etiqueta seleccionada, el preview se OCULTABA (hideEtiquetaPreview en filterEtiquetasByCat).
+
+**Ahora (v3.3.9):**
+- Preview container SIN `hidden` desde el inicio → vive en DOM visible
+- 2 cards renderizados en setupEtiquetas() con `showEtiquetaPreview(null)` → solo labels, sin codes (empty state)
+- Cuando user selecciona del dropdown → `showEtiquetaPreview(e)` rellena los codes
+- Cuando user cambia de chip sin etiqueta válida → `showEtiquetaPreview(null)` (vuelve a empty state, NO oculta)
+- Cuando user cambia de chip con etiqueta válida → codes se actualizan con nueva etiqueta
+
+```js
+// v3.3.9: setupEtiquetas init
+function setupEtiquetas() {
+  ...
+  showEtiquetaPreview(null);  // empty state inicial (2 cards sin codes)
+}
+
+// v3.3.9: render condicional
+function showEtiquetaPreview(e) {
+  var tx2Code = e ? e.skill_tx2 : '';       // null → empty
+  var txDirCode = e ? e.skill_txdirecto : '';
+  $('etiquetaPreviewSkills').innerHTML =
+    skillCardHtml('TX OPER TO OPER', tx2Code) +
+    skillCardHtml('TX DIRECTA', txDirCode);
+  // NO preview.hidden = false — preview ya está visible siempre
+  // Solo scroll si hay e (no en empty state inicial)
+  if (e) preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// v3.3.9: filterEtiquetasByCat limpia selección sin ocultar preview
+function filterEtiquetasByCat(cat) {
+  if (TX_STATE.selectedId) {
+    var e = ETIQUETAS_DATA.find(function (x) { return x.id === TX_STATE.selectedId; });
+    if (!e || e.cat !== cat) {
+      TX_STATE.selectedId = null;
+      showEtiquetaPreview(null);  // v3.3.9: empty state, NO hide
+    }
+  }
+}
+```
+
+### HTML
+
+```html
+<!-- v3.3.9: preview SIEMPRE visible — CEO directive "siempre deben estar ahi" -->
+<div class="etiqueta-preview" id="etiquetaPreview">
+  <div class="etiqueta-preview-skills" id="etiquetaPreviewSkills"></div>
+</div>
+```
+
+### Preserved (no cambios)
+
+- v3.3.8 dropdown siempre visible + Copiado placeholder
+- v3.3.7 skill cards click-to-copy + empty data fallback
+- v3.3.6 selection persiste + preview minimal
+- v3.3.5 dropdown navegable
+- v3.3.4 dropdown items minimal
+- v3.3.3 chip click = solo selección
+- v3.3.2 chips 1-row horizontal + labels abreviados
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — HTML preview SIN hidden + showEtiquetaPreview null-aware + setupEtiquetas init call (~15 líneas) + filterEtiquetasByCat usa show(null) en vez de hide (~5 líneas)
+- `apps/cima-generador/VERSION` — `3.3.8` → `3.3.9`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +5 tests v3.3.9 (281/281 PASS)
+
+### Tests
+
+- **281/281 PASS** (era 276/276; +5 nuevos v3.3.9)
+- +1 HTML preview SIN hidden inicial (siempre visible)
+- +1 setupEtiquetas init showEtiquetaPreview(null) (2 cards vacíos)
+- +1 showEtiquetaPreview maneja null (e ? e.skill : empty)
+- +1 showEtiquetaPreview NO oculta preview (siempre visible)
+- +1 filterEtiquetasByCat usa showEtiquetaPreview(null) (NO oculta)
+
+### Lección nueva
+
+- **L-040:** Containers con estado persistente (preview cards, dropdowns) deben vivir SIEMPRE en el DOM, no toggle hidden. Hide/show causa layout shift, re-render work, y memory churn. Mejor: render empty state inicial, luego solo actualizar contenido. Layout estable, performance óptima.
+
+---
+
 ## [3.3.8] - 2026-10-15 — DROPDOWN SIEMPRE VISIBLE + COPIADO PLACEHOLDER
 
 CEO directive 2026-10-15:

@@ -1324,8 +1324,48 @@ def test(html_path):
         result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::after: arrow del tooltip')
     if '@keyframes copiadoFloatIn' in html:
         result.ok('TIPIF v3.3.8 @keyframes copiadoFloatIn: animación entrada del tooltip')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.9 — Preview cards SIEMPRE visibles (empty state inicial)
+    # CEO directive: "esto va cambiar las opcion de OPER TO OPER Y TX DIRECTA
+    # siempre deben estar ahi, cuando se complete la busqueda en el searchinput
+    # se rellena con la busqueda correcta".
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.9 — Preview cards siempre visibles')
+
+    # HTML preview SIN hidden inicial
+    preview_html = re.search(r'<div class="etiqueta-preview"[^>]*>', html)
+    if preview_html and 'hidden' not in preview_html.group(0):
+        result.ok('TIPIF v3.3.9 HTML preview: SIN hidden inicial (siempre visible)')
     else:
-        result.fail('CSS preview obsoleto', f'aún contiene: {bad_css}')
+        result.fail('preview hidden inicial', 'preview aún tiene hidden attribute')
+
+    # setupEtiquetas llama showEtiquetaPreview(null) en init
+    m_setup = re.search(r'function setupEtiquetas\(.*?\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m_setup and 'showEtiquetaPreview(null)' in m_setup.group(1):
+        result.ok('TIPIF v3.3.9 setupEtiquetas: init showEtiquetaPreview(null) (2 cards vacíos)')
+    else:
+        result.fail('init empty preview', 'showEtiquetaPreview(null) ausente en setupEtiquetas')
+
+    # showEtiquetaPreview maneja null = empty state
+    m = re.search(r'function showEtiquetaPreview\(e\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m:
+        body = m.group(1)
+        # Debe usar e como condicional: si e, codes reales; si null, codes vacíos
+        if 'e ?' in body or "e\\s*\\?" in body or "e.skill_tx2 : ''" in body:
+            result.ok('TIPIF v3.3.9 showEtiquetaPreview: maneja null (e ? e.skill : empty)')
+        else:
+            result.fail('showEtiquetaPreview null', 'no tiene condicional para null')
+        # NO debe ocultar el preview (ya no hay `preview.hidden = false` — siempre visible)
+        if 'preview.hidden = false' not in body:
+            result.ok('TIPIF v3.3.9 showEtiquetaPreview: NO oculta preview (siempre visible)')
+
+    # filterEtiquetasByCat: usa showEtiquetaPreview(null) cuando selección se invalida
+    m_filter = re.search(r'function filterEtiquetasByCat\(cat\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m_filter and 'showEtiquetaPreview(null)' in m_filter.group(1):
+        result.ok('TIPIF v3.3.9 filterEtiquetasByCat: usa showEtiquetaPreview(null) (NO oculta)')
+    else:
+        result.fail('filterEtiquetasByCat empty', 'aún usa hideEtiquetaPreview() en vez de show(null)')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
