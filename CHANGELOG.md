@@ -1,5 +1,72 @@
 # Changelog — cima-generador
 
+## [3.3.2] - 2026-10-15 — CHIPS 1 SOLA ROW HORIZONTAL + LABELS ABREVIADOS
+
+CEO directive 2026-10-15 (con screenshot): "los botones POSTPAGO MOVISTAR TOTAL Y STANDALONE deben estar en 1 solo row. puedes abreviarlo POST/PRE | MT | STANDALONE".
+
+**REVERSIÓN de v3.3:** había interpretado mal la directiva previa como "1 opción por row stacked vertical". CEO clarifica: es 1 SOLA ROW horizontal con labels abreviados. v3.3 popup-mode 1-col override se elimina.
+
+### Fixed — Chips SIEMPRE 3-col horizontal (1 sola row)
+
+Antes (v3.3.1): `body[data-popup="true"] .etiqueta-categories { grid-template-columns: 1fr !important; }` → chips stacked vertical (1 per row).
+
+Ahora: default `.etiqueta-categories { grid-template-columns: repeat(3, 1fr); }` → 3 chips en 1 sola row horizontal. Mobile fallback solo en viewports EXTREMOS (<320px) — irrelevante para popup mode.
+
+```css
+.etiqueta-categories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);  /* 3 chips en 1 row */
+  gap: 5px;
+  ...
+}
+@media (max-width: 320px) {
+  .etiqueta-categories { grid-template-columns: 1fr; }
+}
+```
+
+### Added — Labels abreviados (CEO directive)
+
+| Visible label | data-cat (JS logic) | title attribute (tooltip) |
+|---|---|---|
+| **POST/PRE** | `POSTPAGO` | "POSTPAGO/PREPAGO" |
+| **MT** | `MTOTAL` | "MOVISTAR TOTAL" |
+| **STANDALONE** | `STANDALONE` | "STANDALONE (servicio fijo)" |
+
+**Importante:** `data-cat` preserva los nombres lógicos (POSTPAGO/MTOTAL/STANDALONE) — la lógica JS de `filterEtiquetasByCat`, `TX_STATE.cat`, `ETIQUETAS_DATA[i].cat` no cambia. Solo cambia el texto visible + title attributes para accesibilidad.
+
+### Preserved
+
+- v3.3.1 dual hook `data-popup="true"` en `<html>` + `<body>` (defense-in-depth, harmless ahora)
+- v3.3 button→dropdown guard (`copySpeech` defensive, document mousedown skip)
+- v3.3.1 `flex-wrap: nowrap` + `min-width: 56px` en action buttons
+- v3.2 dropdown bounded a `.etiquetas-block` + segmented actions
+- v3.1 category system design tokens
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — CSS chips revertido a 3-col + labels abreviados en HTML (~5 líneas) + comment actualizado
+- `apps/cima-generador/VERSION` — `3.3.1` → `3.3.2`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — tests obsoletos removidos + nuevos tests v3.3.2 (252/252 PASS)
+
+### Tests
+
+- **252/252 PASS** (era 245/245; +7 nuevos v3.3.2)
+- Tests obsoletos v3.3 popup-mode-1-col REMOVIDOS (-5)
+- Tests preservados v3.3 button guards + v3.3.1 dual hook + flex-wrap + min-width
+- +1 chips grid-template-columns repeat(3, 1fr)
+- +1 mobile fallback solo @ <=320px
+- +3 labels abreviados (POST/PRE, MT, STANDALONE)
+- +3 data-cat preservados (POSTPAGO, MTOTAL, STANDALONE)
+- +3 title attributes para tooltips completos
+- +1 labels viejos removidos (sin POSTPAGO/PREPAGO ni MOVISTAR TOTAL en chips)
+
+### Lección nueva
+
+- **L-029:** "1 opción por row" es ambiguo entre (a) 1 opción por FILA (stacked) y (b) 1 ROW de opciones (horizontal). Cuando el CEO clarifica con screenshot, alinear inmediatamente. Asumir lo incorrecto genera trabajo revertido.
+
+---
+
 ## [3.3.1] - 2026-10-15 — BULLETPROOF POPUP MODE (CEO REPORTÓ "SIN CAMBIOS VISUALES")
 
 CEO directive: "no estoy viendo ni la mas minima mejora. mata el servidor y vuelve a levantarlo es HTML". Después de matar/restart server, CEO sigue sin ver cambios. Análisis: la detección de popup mode podía no estar aplicándose por specificity issues o single hook en body.

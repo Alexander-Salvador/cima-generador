@@ -1495,20 +1495,26 @@
     margin-top: 4px;
   }
 
-  /* ── Popup mode: 1-col chips + skills (default en popup) ─────────────── */
-  /* v3.3.1 BULLETPROOF: triple selector (html + body + class) con !important
-     para garantizar que las chips/skills SIEMPRE sean 1-col en popup mode.
-     CEO directive 2026-10-15: "diseño popup siempre, 1 opción por row". */
-  html[data-popup="true"] .etiqueta-categories,
-  body[data-popup="true"] .etiqueta-categories,
-  .popup-mode .etiqueta-categories,
-  html[data-popup="true"] .etiqueta-preview-skills,
-  body[data-popup="true"] .etiqueta-preview-skills,
-  .popup-mode .etiqueta-preview-skills {
-    grid-template-columns: 1fr !important;
+  /* ── Category chips: 3-col horizontal (segmented control) ─────────────── */
+  /* v3.3.2: CEO directive 2026-10-15 — chips en 1 SOLA ROW horizontal.
+     Labels abreviados: POST/PRE | MT | STANDALONE.
+     En viewports <320px cae a 1-col como fallback mobile extremo. */
+  .etiqueta-categories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 4px;
+    background: var(--glass-1-bg);
+    -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--ring-hairline);
   }
-  /* v3.3: en mobile/responsive fallback (no-popup) hasta 640px también 1-col */
-  @media (max-width: 640px) {
+  /* v3.3.2: solo en viewports EXTREMOS (<320px) cae a 1-col stacked */
+  @media (max-width: 320px) {
     .etiqueta-categories {
       grid-template-columns: 1fr;
     }
@@ -2358,24 +2364,26 @@ font-size: 10px;
           <div class="ac-dropdown" id="ac-etiqueta" role="listbox" hidden></div>
         </div>
 
-        <!-- Chips de categoría (siempre una activa — sin TODAS) -->
+        <!-- Chips de categoría (siempre una activa — sin TODAS)
+             v3.3.2: labels abreviados CEO directive: POST/PRE | MT | STANDALONE
+             data-cat preservado para JS logic (POSTPAGO/MTOTAL/STANDALONE). -->
         <div class="etiqueta-categories" role="group" aria-label="Filtro por categoría">
-          <button type="button" class="cat-chip is-active" data-cat="POSTPAGO" onclick="filterEtiquetasByCat('POSTPAGO')" aria-pressed="true">
+          <button type="button" class="cat-chip is-active" data-cat="POSTPAGO" onclick="filterEtiquetasByCat('POSTPAGO')" aria-pressed="true" title="POSTPAGO/PREPAGO">
             <svg class="cat-chip-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
               <line x1="12" y1="18" x2="12.01" y2="18"/>
             </svg>
-            <span>POSTPAGO</span>
+            <span>POST/PRE</span>
           </button>
-          <button type="button" class="cat-chip" data-cat="MTOTAL" onclick="filterEtiquetasByCat('MTOTAL')" aria-pressed="false">
+          <button type="button" class="cat-chip" data-cat="MTOTAL" onclick="filterEtiquetasByCat('MTOTAL')" aria-pressed="false" title="MOVISTAR TOTAL">
             <svg class="cat-chip-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2L2 7l10 5 10-5-10-5z"/>
               <path d="M2 17l10 5 10-5"/>
               <path d="M2 12l10 5 10-5"/>
             </svg>
-            <span>MOVISTAR TOTAL</span>
+            <span>MT</span>
           </button>
-          <button type="button" class="cat-chip" data-cat="STANDALONE" onclick="filterEtiquetasByCat('STANDALONE')" aria-pressed="false">
+          <button type="button" class="cat-chip" data-cat="STANDALONE" onclick="filterEtiquetasByCat('STANDALONE')" aria-pressed="false" title="STANDALONE (servicio fijo)">
             <svg class="cat-chip-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               <polyline points="9 22 9 12 15 12 15 22"/>
