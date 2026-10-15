@@ -2865,18 +2865,20 @@ function setupEtiquetas() {
     var n = ETIQUETAS_DATA.filter(function (x) { return x.cat === TX_STATE.cat; }).length;
     countEl.textContent = n;
   }
-  // v3.3.8: renderizar dropdown en init — siempre visible si hay cat activa
-  renderEtiquetasDropdown('');
+  // v3.4.0 REVERTIDO v3.3.8: NO renderizar dropdown en init.
+  // CEO directive 2026-10-15: "al actualizar la ruta se abre automaticamente
+  // el dropdown de searchinput sin seleccionar nada" — BUG.
+  // El dropdown ahora se abre SOLO via user interaction (focus/mousedown/input).
   // v3.3.9: renderizar preview en init — 2 cards vacíos (solo labels) visibles
   // desde el inicio. CEO directive: "siempre deben estar ahi, solo que sin
   // datos hasta que se use el searchinput". Cuando user selecciona → codes
   // se rellenan via showEtiquetaPreview(e).
   showEtiquetaPreview(null);
-  // Click/focus en el input → re-renderiza dropdown (filtros actuales)
+  // Click/focus en el input → abre el dropdown con etiquetas de la categoría activa
   input.addEventListener('focus', function () {
     renderEtiquetasDropdown(this.value);
   });
-  // mousedown (más robusto que click) → re-renderiza si se clickeó el input
+  // mousedown (más robusto que click) → abre el dropdown si se clickeó el input
   input.addEventListener('mousedown', function () {
     renderEtiquetasDropdown(this.value);
   });
@@ -2885,11 +2887,17 @@ function setupEtiquetas() {
     updateEtiquetaClearVisibility();
     renderEtiquetasDropdown(this.value);
   });
-  // v3.3.8 CEO directive: dropdown items SIEMPRE activos. Sin click-outside
-  // close — el layout debe ser estable (no shift al abrir/cerrar dropdown).
-  // El dropdown vive en portal pattern con position:fixed → no afecta el flow
-  // del .etiquetas-block. La visibilidad se controla SOLO por renderEtiquetasDropdown
-  // (que SIEMPRE pone drop.hidden = false cuando hay cat activa).
+  // v3.4.0: click-outside RE-AÑADIDO — cierra el dropdown cuando user click
+  // fuera del search input. v3.3.8 había removido esto (siempre visible)
+  // pero CEO revertió: dropdown ahora abre/cierra según interacción.
+  document.addEventListener('mousedown', function (e) {
+    var drop = $('ac-etiqueta');
+    if (!drop || drop.hidden) return;
+    if (e.target.closest('#etiquetaSearch')) return;
+    if (e.target.closest('#ac-etiqueta')) return;
+    if (e.target.closest('.action-buttons-row')) return;
+    hideEtiquetaDropdown();
+  });
 }
 
 // FIX v3.0.3: cleanup completo del dropdown de etiquetas al cerrar

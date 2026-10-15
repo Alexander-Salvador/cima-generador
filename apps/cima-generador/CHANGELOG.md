@@ -1,5 +1,91 @@
 # Changelog — cima-generador
 
+## [3.4.0] - 2026-10-15 — DROPDOWN OPEN/CLOSE FLOW (REVERTIDO v3.3.8 always-visible)
+
+CEO directive 2026-10-15: "al actualizar la ruta se abre automaticamente el
+dropdown de searchinput sin seleccionar nada". BUG — el dropdown aparece
+automáticamente al cargar/recargar la página sin que el usuario interactúe.
+
+### Fixed — Dropdown ya NO se abre solo en page load
+
+**v3.3.8 (revertido):** setupEtiquetas llamaba `renderEtiquetasDropdown('')` en init → dropdown abría automáticamente con empty state al cargar la página. Esto causaba el bug "se abre automaticamente el dropdown sin seleccionar nada".
+
+**v3.4.0 (fix):** setupEtiquetas NO llama renderEtiquetasDropdown en init. El dropdown vive con `hidden` attribute. Solo se abre via:
+1. `focus` event en search input
+2. `mousedown` event en search input
+3. `input` event (typing)
+4. Click-outside handler (closes)
+
+```js
+function setupEtiquetas() {
+  ...
+  // v3.4.0 REVERTIDO v3.3.8: NO renderizar dropdown en init
+  showEtiquetaPreview(null);  // preview sí (per v3.3.9)
+  // Click-outside RE-AÑADIDO
+  document.addEventListener('mousedown', function (e) {
+    var drop = $('ac-etiqueta');
+    if (!drop || drop.hidden) return;
+    if (e.target.closest('#etiquetaSearch')) return;
+    if (e.target.closest('#ac-etiqueta')) return;
+    if (e.target.closest('.action-buttons-row')) return;
+    hideEtiquetaDropdown();
+  });
+}
+```
+
+### Estado del flujo final (post v3.4.0)
+
+| Acción | Estado |
+|---|---|
+| Page load | dropdown **HIDDEN** + preview visible (2 cards vacíos) |
+| Click search input | dropdown OPEN con items de la cat activa |
+| Type en search | dropdown filtra items en vivo |
+| Click fuera | dropdown CLOSE (volver a hidden) |
+| Click chip | cat cambia, dropdown CLOSE (if open) |
+| Click search item | selection + preview codes filled + dropdown CLOSE |
+| Click action button (RESET/APN/CASO) | copy, NO afecta dropdown |
+
+### Distinción crítica (clarificación de directiva previa)
+
+| Componente | Visibilidad inicial |
+|---|---|
+| **Preview cards** (TX OPER TO OPER + TX DIRECTA) | **SIEMPRE VISIBLE** (v3.3.9) |
+| **Search input dropdown** | **HIDDEN** hasta interacción (v3.4.0) |
+
+CEO directive v3.3.8 interpretaba "siempre activas" como dropdown siempre
+visible. Corrección v3.4.0: lo que debe estar "siempre activo" es el
+**preview cards** (v3.3.9 fix), NO el search input dropdown.
+
+### Preserved (no cambios)
+
+- v3.3.9 preview cards siempre visibles
+- v3.3.8 Copiado placeholder (floating tooltip)
+- v3.3.7 skill cards click-to-copy + empty fallback
+- v3.3.6 selection persiste + preview minimal
+- v3.3.5 dropdown navegable (font-size 10px)
+- v3.3.4 dropdown items minimal (solo title)
+- v3.3.3 chip click = solo selección
+- v3.3.2 chips 1-row horizontal + labels abreviados
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — setupEtiquetas sin render init + click-outside RE-AÑADIDO (~10 líneas)
+- `apps/cima-generador/VERSION` — `3.3.9` → `3.4.0` (minor bump — fix crítico UX)
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +2 tests v3.4.0 (283/283 PASS)
+
+### Tests
+
+- **283/283 PASS** (era 281/281; +2 nuevos v3.4.0)
+- +1 setupEtiquetas: click-outside handler RE-AÑADIDO (dropdown se cierra)
+- +1 setupEtiquetas: SIN render en init (dropdown NO se abre solo)
+
+### Lección nueva
+
+- **L-041:** "Siempre visible" vs "se abre al interactuar" son dos patrones UX distintos. Para inputs/dropdowns, el patrón open-on-interaction es generalmente correcto (no sorprende al usuario). Para info cards / preview containers, "siempre visible" con empty state es el patrón correcto. Distinguir el componente antes de aplicar directivas de visibilidad.
+
+---
+
 ## [3.3.9] - 2026-10-15 — PREVIEW CARDS SIEMPRE VISIBLES (2 cards siempre ahí)
 
 CEO directive 2026-10-15 (clarificación):

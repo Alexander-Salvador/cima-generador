@@ -1305,15 +1305,24 @@ def test(html_path):
         if 'drop.hidden = false' in body and body.count('drop.hidden = false') >= 2:
             result.ok('TIPIF v3.3.8 renderEtiquetasDropdown: drop.hidden = false (siempre visible)')
 
-    # Click-outside close handler REMOVIDO del setupEtiquetas (dropdown siempre visible)
-    # Verifica que setupEtiquetas() no contiene addEventListener con mousedown + hideEtiquetaDropdown
+    # Click-outside close handler RE-AÑADIDO en setupEtiquetas (v3.4.0 REVERTIDO de v3.3.8)
+    # CEO directive 2026-10-15: "al actualizar la ruta se abre automaticamente
+    # el dropdown de searchinput sin seleccionar nada". v3.3.8 "always visible"
+    # abrió el dropdown al page load. v3.4.0 revierte: dropdown HIDDEN por
+    # default, abre en focus/mousedown/input, cierra en click-outside.
     m_setup = re.search(r'function setupEtiquetas\(.*?\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
     if m_setup:
         body_setup = m_setup.group(1)
-        if "hideEtiquetaDropdown()" not in body_setup and "document.addEventListener('mousedown'" not in body_setup:
-            result.ok('TIPIF v3.3.8 setupEtiquetas: SIN click-outside close handler (layout estable)')
+        # Click-outside handler con hideEtiquetaDropdown debe estar PRESENTE
+        if "document.addEventListener('mousedown'" in body_setup and "hideEtiquetaDropdown()" in body_setup:
+            result.ok('TIPIF v3.4.0 setupEtiquetas: click-outside handler RE-AÑADIDO (dropdown se cierra)')
         else:
-            result.fail('click-outside handler', 'aún presente en setupEtiquetas — debería removerse en v3.3.8')
+            result.fail('click-outside handler', 'aún ausente — debería estar RE-AÑADIDO en v3.4.0')
+        # NO debe renderizar dropdown en init (CEO directive)
+        if "renderEtiquetasDropdown('')" not in body_setup:
+            result.ok('TIPIF v3.4.0 setupEtiquetas: SIN render en init (dropdown NO se abre solo)')
+        else:
+            result.fail('init dropdown', 'aún renderiza dropdown en init — causa el bug')
 
     # Floating "Copiado" placeholder CSS — tooltip arriba del card
     if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*Copiado', html, re.DOTALL):
