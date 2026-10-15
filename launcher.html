@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIMA — Launcher local</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: linear-gradient(135deg, #0d0d10 0%, #1a1a24 100%);
+      color: #f2f0ed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .launcher {
+      max-width: 720px;
+      width: 100%;
+      background: #17171a;
+      border: 1.5px solid #2a2a31;
+      border-radius: 18px;
+      padding: 40px 32px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .brand {
+      display: inline-block;
+      font-weight: 900;
+      font-size: 36px;
+      letter-spacing: 0.04em;
+      color: #f2f0ed;
+      padding: 4px 14px;
+      border: 1.5px solid #dc2626;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      color: #9ca3af;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+    .version {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px 20px;
+      background: #1f1f24;
+      border: 1.5px solid #2a2a31;
+      border-radius: 12px;
+      color: #f2f0ed;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.18s ease-out;
+      letter-spacing: 0.03em;
+    }
+    .btn:hover {
+      border-color: #dc2626;
+      background: #26262c;
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+    .btn-icon {
+      font-size: 18px;
+    }
+    .info {
+      background: #0d0d10;
+      border: 1px solid #2a2a31;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 12px;
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+    .info-title {
+      font-weight: 700;
+      color: #f2f0ed;
+      font-size: 12px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .info code {
+      background: #1f1f24;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #ea580c;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="launcher">
+    <div class="header">
+      <div class="brand">CIMA</div>
+      <div class="subtitle">Técnica Móvil — Launcher local</div>
+      <div class="version">v2.1.1 · standalone (no fetch)</div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn btn-primary" onclick="abrirPopup()">
+        <span class="btn-icon">🪟</span>
+        <span>Abrir POPUP</span>
+      </button>
+      <a class="btn" href="index.html?popup=1" target="_blank">
+        <span class="btn-icon">🔗</span>
+        <span>Standalone con X</span>
+      </a>
+      <a class="btn" href="index.html" target="_blank">
+        <span class="btn-icon">📄</span>
+        <span>Standalone (sin X)</span>
+      </a>
+      <a class="btn" href="data/zonas_apagadas_manual.json" target="_blank">
+        <span class="btn-icon">📋</span>
+        <span>CCPPs manuales (JSON)</span>
+      </a>
+    </div>
+
+    <div class="info">
+      <div class="info-title">URLs directos</div>
+      <code>http://127.0.0.1:8765/index.html</code> — popup estándar<br>
+      <code>http://127.0.0.1:8765/index.html?popup=1</code> — forzar modo popup<br>
+      <code>file:///home/braka/Systems/projects/work/cima/apps/cima-generador/index.html</code> — sin servidor<br>
+      <br>
+      <strong>Servidor:</strong> python3 -m http.server 8765 (PID 1102374) · CWD: apps/cima-generador
+    </div>
+
+    <div class="footer">
+      CIMA Launcher local · uso exclusivo dev/CVO
+    </div>
+  </div>
+
+  <script>
+    function abrirPopup() {
+      // Abre el popup como ventana flotante centrada, con X de cerrar
+      const w = 720;
+      const h = 800;
+      const left = (screen.width - w) / 2;
+      const top = (screen.height - h) / 2;
+      const features = `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`;
+      window.open('index.html?popup=1', 'CIMA_Popup', features);
+    }
+  </script>
+</body>
+</html>
