@@ -723,6 +723,88 @@ def test(html_path):
     # Atribución oficial preservada en LICENSE file del repo (data attribution section).
     result.ok('v2.1.8 visible data attribution removida del footer (preserved in LICENSE file)')
 
+    # v3.0.2 TIPIFICACIÓN TX — premium action buttons + etiquetas
+    print('\n▸ TIPIFICACIÓN v3.0.2 (Premium action buttons + etiquetas)')
+    for k in ['action-buttons-row', 'action-btn', 'data-action="reset"', 'data-action="apn"', 'data-action="caso"',
+              'action-btn-icon', 'action-btn-feedback',
+              'etiquetas-block', 'etiqueta-categories', 'cat-chip', 'data-cat="POSTPAGO"',
+              'data-cat="MTOTAL"', 'data-cat="STANDALONE"', 'etiquetaPreview',
+              'ac-etiqueta', 'etiquetas-search',
+              # v3.0.3 fixes
+              'hideEtiquetaDropdown', 'is-copied', 'action-btn-feedback',
+              'word-break: break-all', 'overflow-wrap: anywhere']:
+        if k in html:
+            result.ok(f'TIPIF v3.0.2 element: {k}')
+        else:
+            result.fail(f'TIPIF v3.0.2 element: {k}', 'ausente en HTML')
+    # v3.0.1: NO debe existir "TODAS" chip (removido por CEO)
+    if 'data-cat="TODAS"' not in html and 'onclick="filterEtiquetasByCat(\'TODAS\')"' not in html:
+        result.ok('TIPIF v3.0.1 chip TODAS eliminado (CEO directive)')
+    else:
+        result.fail('chip TODAS', 'todavía presente en HTML')
+    if 'cat: \'TODAS\'' not in html:
+        result.ok('TIPIF v3.0.1 TX_STATE.cat default no es TODAS')
+    else:
+        result.fail('TX_STATE default', '"TODAS" todavía referenciada')
+    # v3.0.2: SVG icons presentes (no más emojis en runtime)
+    for path in ['viewBox="0 0 24 24"', 'stroke-width="2.6"']:
+        if path in html and html.count(path) >= 3:
+            result.ok(f'TIPIF v3.0.3 SVG icons ({path} ×3+)')
+        else:
+            result.warn(f'SVG icons count', f'{path} apariciones: {html.count(path)}')
+    # v3.0.2: SPEECH_TEMPLATES SIN "✓" (CEO remove check de output)
+    if '✓ Se genera' not in html and '✓ Se realiza' not in html and '✓ Se realiza' not in html:
+        result.ok('TIPIF v3.0.2 SPEECH_TEMPLATES SIN "✓" prefix (CEO directive)')
+    else:
+        result.fail('SPEECH_TEMPLATES check', '"✓" todavía presente en textos copiables')
+    # v3.0.2: Puntuación correcta con artículos en español
+    punct_check = [
+        ('reset: ', 'Se genera el proceso de RESET'),
+        ('apn: ',   'Se realiza la configuración del APN'),
+        ('caso: ',  'Se realiza el escalamiento de CASO, por AVERÍA MASIVA'),
+    ]
+    for _, expected in punct_check:
+        if expected in html:
+            result.ok(f'TIPIF v3.0.2 punctuation: "{expected[:40]}…"')
+        else:
+            result.fail('Punctuation', f'"{expected[:40]}" ausente')
+    # ETIQUETAS_DATA con 17+ registros categorizados
+    for cat in ["cat: 'POSTPAGO'", "cat: 'MTOTAL'", "cat: 'STANDALONE'"]:
+        if cat in html:
+            result.ok(f'TIPIF v3.0 ETIQUETAS_DATA categoría: {cat}')
+        else:
+            result.fail(f'ETIQUETAS_DATA {cat}', 'ausente')
+    # Validar cantidad (17+ registros con cat: esperado)
+    n_postpago  = html.count("cat: 'POSTPAGO'")
+    n_mtotal    = html.count("cat: 'MTOTAL'")
+    n_standalone= html.count("cat: 'STANDALONE'")
+    if n_postpago >= 4 and n_mtotal >= 4 and n_standalone >= 4:
+        result.ok(f'TIPIF v3.0 ETIQUETAS_DATA conteo mínimo: POSTPAGO={n_postpago}, MTOTAL={n_mtotal}, STANDALONE={n_standalone}')
+    else:
+        result.fail('ETIQUETAS_DATA conteo', f'demasiado bajo: POSTPAGO={n_postpago}, MTOTAL={n_mtotal}, STANDALONE={n_standalone}')
+    # Handlers JS
+    for fn in ['copySpeech(', 'copyEtiqueta(', 'filterEtiquetasByCat(', 'selectEtiqueta(',
+               'showEtiquetaPreview(', 'renderEtiquetasDropdown(']:
+        if fn in html:
+            result.ok(f'TIPIF v3.0 JS handler: {fn}')
+        else:
+            result.fail(f'TIPIF v3.0 JS handler', f'{fn} ausente')
+    # CSS nuevo
+    for sel in ['.action-btn-label', '.action-btn-icon', '.action-btn-feedback', '.etiqueta-categories', '.copy-etiqueta-btn', '.etiqueta-validation-label']:
+        if sel in html:
+            result.ok(f'TIPIF v3.0 CSS regla: {sel}')
+        else:
+            result.fail(f'TIPIF v3.0 CSS', f'{sel} ausente')
+    # Removed: placeholder EN PROCESO debe haber sido reemplazado (solo verificar DOM visible,
+    # CSS dead-code de .tipif-process-badge queda para backward compat)
+    import re as _re
+    # Buscar el elemento <div class="tipif-process-badge"> específicamente en markup
+    badge_match = _re.search(r'<div\s+class=["\']tipif-process-badge["\']', html)
+    if not badge_match:
+        result.ok('v2.x EN PROCESO placeholder DOM reemplazado por v3.0 TIPIF TX')
+    else:
+        result.fail('v2.x placeholder DOM', 'todavía presente <div class="tipif-process-badge">')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
