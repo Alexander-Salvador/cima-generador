@@ -1,5 +1,32 @@
 # Changelog — cima-generador
 
+## [2.0.6] - 2026-10-14 — Badge opt-in (no auto-show, only on ⚠️ click)
+
+### Fixed
+- **Border amarillo persistente eliminado**: el `.zona-apagada-badge` ya NO aparece automáticamente al tipear una zona de apagado
+- **Badge opt-in**: solo visible cuando el supervisor hace click en el botón ⚠️ (toggleCoberturaDetail)
+- **CSS cleanup**: 2 declaraciones duplicadas `display: none` en `.zona-apagada-badge` reducidas a 1
+
+### Changed
+- `checkAndRenderZonaApagada()` ya no hace `classList.add('show')` automático. Solo prepara el contenido HTML del badge.
+- Si el badge estaba visible y el supervisor cambia la dirección, el badge se oculta automáticamente (`classList.remove('show')`)
+
+### UX nuevo
+```
+1. Tipear LORETO → ⚠️ aparece al lado del X (no border amarillo)
+2. Click en ⚠️ → badge amarillo aparece debajo con detalle
+3. Click again en ⚠️ → badge desaparece (toggle)
+4. Cambiar dirección → badge se cierra automáticamente
+```
+
+### Tests
+- 54 → **58 tests PASS** (+4 nuevos en sección "Badge opt-in v2.0.6"):
+  - .zona-apagada-badge tiene 1 sola declaración display: none
+  - checkAndRenderZonaApagada oculta badge (no auto-show)
+  - classList.add('show') eliminado (badge opt-in)
+  - .zona-apagada-badge.show sigue presente (toggle click)
+- `node --check` → EXIT 0
+
 ## [2.0.5] - 2026-10-14 — Visual refactor: coberturaBtn compacto al lado del X
 
 ### Changed
