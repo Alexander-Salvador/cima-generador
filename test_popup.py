@@ -1446,6 +1446,58 @@ def test(html_path):
         if f'id: {nid}' in html:
             result.ok(f'TIPIF v3.4.3 record id {nid} presente')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.4.4 — Auditoría datos Excel + DP fixes + search improvement
+    # CEO directive 2026-10-15:
+    # 1. "No debes inventar etiquetas elimina todo lo que no este en el excel"
+    # 2. "Si ves duplicados valida el nombre para separarlos"
+    # 3. "Mejores la busqueda del agente ARREGLANDO minimamente los nombres"
+    # 4. "ACREDITACIONES y LINEA 2 no tienen TX DIRECTA"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.4.4 — Auditoría Excel + DP fixes + search improvement')
+
+    # DP fixes — skill_txdirecto debe ser '' para SK codes sin DP counterpart
+    # id 18 ACREDITACIONES (SK_CV_ACREDITACIONES_TX sin DP)
+    m18 = re.search(r"id:\s*18,[^}]*?skill_tx2:\s*'SK_CV_ACREDITACIONES_TX',\s*skill_txdirecto:\s*''", html, re.DOTALL)
+    if m18:
+        result.ok('TIPIF v3.4.4 id 18 ACREDITACIONES: skill_txdirecto = \'\' (no DP en Excel)')
+    else:
+        result.fail('id 18 DP fix', 'skill_txdirecto no está vacío')
+    # id 21 LINE 2 (SK_CV_TECNICO_MOVIL_TX_KONECTA sin DP)
+    m21 = re.search(r"id:\s*21,[^}]*?skill_tx2:\s*'SK_CV_TECNICO_MOVIL_TX_KONECTA',\s*skill_txdirecto:\s*''", html, re.DOTALL)
+    if m21:
+        result.ok('TIPIF v3.4.4 id 21 LINE 2: skill_txdirecto = \'\' (no DP en Excel)')
+    # id 19 TECNICO MOVIL (mismo SK KONECTA, sin DP)
+    m19 = re.search(r"id:\s*19,[^}]*?skill_tx2:\s*'SK_CV_TECNICO_MOVIL_TX_KONECTA',\s*skill_txdirecto:\s*''", html, re.DOTALL)
+    if m19:
+        result.ok('TIPIF v3.4.4 id 19 TECNICO MOVIL: skill_txdirecto = \'\' (mismo SK KONECTA, sin DP)')
+
+    # VENTAS simplificado — solicitud='VENTAS' (no inventado)
+    n_ventas = html.count("solicitud: 'VENTAS'")
+    if n_ventas >= 3:
+        result.ok(f'TIPIF v3.4.4 VENTAS simplificado: {n_ventas} records con solicitud="VENTAS" (genérico)')
+    else:
+        result.fail('VENTAS simplificado', f'expected >=3, got {n_ventas}')
+
+    # Search improvement — accent normalization
+    if 'normalizeSearch' in html and 'NFD' in html and '\\u0300-\\u036f' in html:
+        result.ok('TIPIF v3.4.4 search: normalizeSearch con NFD + remove combining marks (acentos)')
+    if 'String(e.id) === q' in html:
+        result.ok('TIPIF v3.4.4 search: búsqueda exacta por id (String(e.id) === q)')
+    # Search incluye skill_txdirecto (busca en TX directa también)
+    if 'normalizeSearch(e.skill_txdirecto)' in html:
+        result.ok('TIPIF v3.4.4 search: incluye skill_txdirecto en búsqueda')
+
+    # Duplicados validados — PLAN MENOR variantes tienen skills diferentes
+    # id 2 PLAN MENOR (POSTPAGO) → SK_CV_COMERCIAL_TX
+    # id 8 PLAN MENOR MT (MTOTAL) → SK_CV_DOWNSELL_FIJA_TX
+    # id 14 PLAN MENOR STAND ALONE (STANDALONE) → SK_CV_DOWNSELL_FIJA_TX
+    plan_menor_postpago = re.search(r"id:\s*2,[^}]*?PLAN MENOR[^}]*?SK_CV_COMERCIAL_TX", html, re.DOTALL)
+    plan_menor_mt = re.search(r"id:\s*8,[^}]*?PLAN MENOR MT[^}]*?DOWNSELL_FIJA_TX", html, re.DOTALL)
+    plan_menor_std = re.search(r"id:\s*14,[^}]*?PLAN MENOR STAND ALONE[^}]*?DOWNSELL_FIJA_TX", html, re.DOTALL)
+    if plan_menor_postpago and plan_menor_mt and plan_menor_std:
+        result.ok('TIPIF v3.4.4 duplicados PLAN MENOR: 3 records con skills DIFERENTES (no son dup)')
+
     # Floating "Copiado" placeholder CSS — tooltip arriba del card
     if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*Copiado', html, re.DOTALL):
         result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::before: "Copiado" text')

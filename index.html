@@ -2426,33 +2426,40 @@ const ETIQUETAS_DATA = [
   // 17 sheets). Sin modificar ni perder ningún record existente.
   // ═══════════════════════════════════════════════════════════════════════
 
-  // ── POSTPAGO additions (CEO: ACREDITACIONES + VENTAS + TECNICO MOVIL) ──
+// ── POSTPAGO additions (CEO: ACREDITACIONES + VENTAS + TECNICO MOVIL) ──
+  // v3.4.4 FIX DP: SK_CV_ACREDITACIONES_TX NO tiene DP counterpart en Excel → empty
   { id: 18, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'ACREDITACIONES',
     detalle: 'Cliente solicita gestión de acreditaciones del servicio móvil (recargas, abonos, ajustes).',
-    skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: 'DP_CV_ACREDITACIONES_TX',
+    skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: '',
     validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
+  // v3.4.4 FIX DP: SK_CV_TECNICO_MOVIL_TX_KONECTA NO tiene DP counterpart → empty
   { id: 19, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'TECNICO MOVIL',
     detalle: 'Cliente requiere soporte técnico móvil (avería datos/voz). Comunicarse oper to oper si es necesario.',
-    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: 'DP_CV_TECNICO_MOVIL_TX_KONECTA',
+    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: '',
     validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
-  { id: 20, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO',
-    detalle: 'Cliente manifiesta interés en adquirir producto móvil: alta nueva, portabilidad o cambio de equipo.',
+  // v3.4.4 SIMPLIFICADO: VENTAS (genérico) — Excel solo tiene "VENTAS" como
+  // categoria, no "VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO"
+  { id: 20, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'VENTAS',
+    detalle: 'Cliente manifiesta interés en adquirir producto móvil (alta nueva, portabilidad o cambio de equipo).',
     skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
     validacion: 'TITULAR o USUARIO. Validar identidad.' },
 
   // ── MTOTAL additions (CEO: TECNICO MOVIL 2 = LINE 2 + VENTAS ALTA MT) ──
+  // v3.4.4 FIX DP: LINE 2 (KONECTA) NO tiene DP counterpart en Excel → empty
   { id: 21, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'TECNICO MOVIL 2 (LINE 2)',
     detalle: 'Cliente requiere soporte técnico móvil nivel 2 (konekta) para servicio Movistar Total.',
-    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: 'DP_CV_TECNICO_MOVIL_TX_KONECTA',
+    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: '',
     validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
-  { id: 22, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'VENTAS - ALTA NUEVA MT',
-    detalle: 'Cliente quiere alta nueva del servicio convergente Movistar Total (Mono/Duo/Trio).',
+  // v3.4.4 SIMPLIFICADO: VENTAS (genérico)
+  { id: 22, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'VENTAS',
+    detalle: 'Cliente quiere alta nueva del servicio Movistar Total (Mono/Duo/Trio).',
     skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
     validacion: 'TITULAR. Validar identidad y factibilidad.' },
 
   // ── STANDALONE additions (CEO: VENTAS ALTA FIJA) ──
-{ id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE',
-    solicitud: 'VENTAS - ALTA NUEVA FIJA',
+  // v3.4.4 SIMPLIFICADO: VENTAS (genérico)
+  { id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE',
+    solicitud: 'VENTAS',
     detalle: 'Cliente quiere alta nueva del servicio fijo Stand Alone (Mono/Duo/Trio).',
     skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
     validacion: 'TITULAR. Validar identidad y factibilidad.' },
@@ -2697,18 +2704,37 @@ function filterEtiquetasByCat(cat) {
   // (chip es outside #etiquetaSearch + #ac-etiqueta + .action-buttons-row).
 }
 
-// Búsqueda inteligente: filtra por query + categoría (cat siempre activa)
+// v3.4.4: Búsqueda inteligente mejorada — accent normalization.
+// Antes: "MIGRACION" no matcheaba "MIGRACIÓN" (acento). Ahora:
+//   - NFD decomposition + remove combining marks → "migracion" == "migración"
+//   - case-insensitive (toLowerCase)
+//   - busca en solicitud, detalle, area, skill_tx2, skill_txdirecto, id
+// CEO directive: "Mejores la busqueda del agente ARREGLANDO minimamente los nombres".
+function normalizeSearch(str) {
+  // NFD: descompone acentos en char + combining mark (e.g. "ó" → "o" + "́")
+  // Luego remueve los combining marks (U+0300-U+036F)
+  return (str || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 function filterEtiquetas(query, cat) {
-  var q = (query || '').trim().toLowerCase();
+  var q = normalizeSearch(query);
   var c = cat || TX_STATE.cat;
   return ETIQUETAS_DATA.filter(function (e) {
     if (e.cat !== c) return false;  // siempre filtrar por categoría activa
     if (!q) return true;
+    // Normalizamos cada campo searchable para comparación consistente
     return (
-      e.solicitud.toLowerCase().indexOf(q) >= 0 ||
-      e.detalle.toLowerCase().indexOf(q) >= 0 ||
-      e.area.toLowerCase().indexOf(q) >= 0 ||
-      e.skill_tx2.toLowerCase().indexOf(q) >= 0
+      normalizeSearch(e.solicitud).indexOf(q) >= 0 ||
+      normalizeSearch(e.detalle).indexOf(q) >= 0 ||
+      normalizeSearch(e.area).indexOf(q) >= 0 ||
+      normalizeSearch(e.skill_tx2).indexOf(q) >= 0 ||
+      normalizeSearch(e.skill_txdirecto).indexOf(q) >= 0 ||
+      String(e.id) === q  // búsqueda exacta por id
     );
   });
 }
