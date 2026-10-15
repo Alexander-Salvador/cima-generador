@@ -1069,6 +1069,32 @@ def test(html_path):
     else:
         result.ok('TIPIF v3.3.2 labels viejos removidos (chips compactos)')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.3 — Chip click SOLO selección (NO abre dropdown)
+    # CEO directive: "los botones son de seleccion, el dropdown solo se debe
+    # abrir mientras tengamos una seleccion y le demos click al searchinput"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.3 — Chip click = selección pura (NO abre dropdown)')
+
+    # filterEtiquetasByCat NO debe llamar renderEtiquetasDropdown
+    # Verificar el body de la función: NO contiene renderEtiquetasDropdown(
+    m = re.search(r'function filterEtiquetasByCat\(cat\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m and 'renderEtiquetasDropdown(' not in m.group(1):
+        result.ok('TIPIF v3.3.3 filterEtiquetasByCat: NO llama renderEtiquetasDropdown (chip es selección pura)')
+    else:
+        result.fail('filterEtiquetasByCat bug', 'aún llama renderEtiquetasDropdown → chip abre dropdown')
+
+    # renderEtiquetasDropdown: guard defensivo si NO hay cat
+    m2 = re.search(r'function renderEtiquetasDropdown\(query\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m2 and '!TX_STATE.cat' in m2.group(1) and 'drop.hidden = true' in m2.group(1):
+        result.ok('TIPIF v3.3.3 renderEtiquetasDropdown: guard !TX_STATE.cat → no abre sin selection')
+    else:
+        result.fail('renderEtiquetasDropdown guard', 'guard defensivo ausente')
+
+    # El comment explicativo del fix debe estar presente
+    if 'v3.3.3' in html and 'los botones son de seleccion' in html:
+        result.ok('TIPIF v3.3.3 comment explicativo presente (CEO directive)')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
