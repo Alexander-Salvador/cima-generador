@@ -225,15 +225,15 @@ def test(html_path):
         d2_items = re.findall(r'"(\d+)"', sets_match.group(3))
         total = int(sets_match.group(4))
 
-        # Size tests (v2.0.4 política: d6=192, d4=1, d2=1)
-        if len(d6_items) == 192: result.ok(f'd6 size = {len(d6_items)} (192 expected)')
-        else: result.fail(f'd6 size', f'{len(d6_items)} (expected 192)')
+        # Size tests (v2.0.7 audit exhaustivo: d6=195, d4=1, d2=1)
+        if len(d6_items) == 195: result.ok(f'd6 size = {len(d6_items)} (195 expected — audit v2.0.7)')
+        else: result.fail(f'd6 size', f'{len(d6_items)} (expected 195)')
         if len(d4_items) == 1: result.ok(f'd4 size = {len(d4_items)} (1 — solo LORETO prov)')
         else: result.fail(f'd4 size', f'{len(d4_items)} (expected 1)')
         if len(d2_items) == 1: result.ok(f'd2 size = {len(d2_items)} (1 — solo LORETO depto)')
         else: result.fail(f'd2 size', f'{len(d2_items)} (expected 1)')
-        if total == 239: result.ok(f'total = {total} (239 expected)')
-        else: result.fail(f'total', f'{total} (expected 239)')
+        if total == 242: result.ok(f'total = {total} (242 expected — audit v2.0.7)')
+        else: result.fail(f'total', f'{total} (expected 242)')
 
         # Policy verify: d4 y d2 deben ser LORETO específicamente
         if d4_items == ['1603']: result.ok('d4 = ["1603"] (LORETO prov)')
@@ -254,6 +254,10 @@ def test(html_path):
             ('160305', 'SANTA ROSA Loreto (Grupo 1 visual)'),
             ('1603', 'LORETO prov (d4 proporcional)'),
             ('16', 'LORETO depto (d2 proporcional)'),
+            # v2.0.7 audit exhaustivo: 3 distritos recuperados
+            ('050611', 'UCHUYMARCA Ayacucho (PDF1 Grupo 2 — antes faltante)'),
+            ('060601', 'CONDORHUASI Cajamarca (PDF1 Grupo 2 — antes faltante)'),
+            ('060201', 'CAJABAMBA dist con typo PDF (recuperado via fuzzy)'),
         ]
         all_set = set(d6_items) | set(d4_items) | set(d2_items)
         for ubigeo, label in samples:
