@@ -1359,6 +1359,53 @@ def test(html_path):
     if re.search(r'\.etiqueta-skill-card\s*\{[^}]*position:\s*relative', html, re.DOTALL):
         result.ok('TIPIF v3.4.1 .etiqueta-skill-card: position relative (tooltip anclado al card, no al preview)')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.4.2 — ETIQUETAS_DATA expandido (records nuevos CEO directive)
+    # CEO directive 2026-10-15 (con análisis del Excel):
+    #   ACREDITACIONES → POST/PRE
+    #   COMERCIAL → en los 3 (ya estaba id 1, 7, 13)
+    #   VENTAS → analizar sub-tipos (Alta/Portabilidad/Cambio)
+    #   ROAMING → POST/PRE (ya estaba id 4)
+    #   RETENCIONES → en los 3 (ya estaba id 3, 9, 15)
+    #   TÉCNICO = LINE 2 → en los 3 (ya id 11 MT, id 16 STD; nuevo POSTPAGO)
+    #   CORPORATIVO → mostrado al CEO (no es etiqueta, es workflow)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.4.2 — ETIQUETAS_DATA expandido (6 records nuevos)')
+
+    # Conteos por categoría
+    n_postpago  = html.count("cat: 'POSTPAGO'")
+    n_mtotal    = html.count("cat: 'MTOTAL'")
+    n_standalone= html.count("cat: 'STANDALONE'")
+    print(f'  POST/PAGE counts: POSTPAGO={n_postpago} MTOTAL={n_mtotal} STANDALONE={n_standalone}')
+    if n_postpago >= 9 and n_mtotal >= 8 and n_standalone >= 6:
+        result.ok(f'TIPIF v3.4.2 ETIQUETAS_DATA: conteos expandidos (POSTPAGO={n_postpago}, MTOTAL={n_mtotal}, STANDALONE={n_standalone})')
+    else:
+        result.fail('conteos', f'POSTPAGO={n_postpago}, MTOTAL={n_mtotal}, STANDALONE={n_standalone} — esperados >=9/8/6')
+
+    # Nuevos skill codes presentes
+    if 'SK_CV_ACREDITACIONES_TX' in html:
+        result.ok('TIPIF v3.4.2 SK_CV_ACREDITACIONES_TX: presente (CEO: ACREDITACIONES → POST/PRE)')
+    else:
+        result.fail('SK_CV_ACREDITACIONES_TX', 'ausente')
+    if 'SK_CV_TECNICO_MOVIL_TX_KONECTA' in html:
+        result.ok('TIPIF v3.4.2 SK_CV_TECNICO_MOVIL_TX_KONECTA: presente (CEO: LINE 2 en los 3)')
+
+    # Conteo de TECNICO MOVIL (debe estar en POSTPAGO, MTOTAL, STANDALONE)
+    n_tec_mov = html.count("SK_CV_TECNICO_MOVIL")
+    if n_tec_mov >= 4:  # 2 nuevos + 2 existentes en sharedStrings
+        result.ok(f'TIPIF v3.4.2 TECNICO MOVIL: {n_tec_mov} referencias (en los 3 categorías)')
+
+    # ACREDITACIONES solo en POSTPAGO (cat: 'POSTPAGO' cerca de ACREDITACIONES)
+    m = re.search(r"\{ id:\s*\d+,\s*cat:\s*'POSTPAGO'[^}]*ACREDITACIONES", html, re.DOTALL)
+    if m:
+        result.ok('TIPIF v3.4.2 ACREDITACIONES: solo en POSTPAGO (CEO directive)')
+    else:
+        result.fail('ACREDITACIONES cat', 'no se encuentra solo en POSTPAGO')
+
+    # TÉCNICO MOVIL (LINE 2) en cada categoría (id 19 POSTPAGO, id 21 MTOTAL)
+    if 'id: 19' in html and 'id: 21' in html and "'TECNICO MOVIL" in html:
+        result.ok('TIPIF v3.4.2 TECNICO MOVIL (LINE 2): en POSTPAGO (id 19) + MTOTAL (id 21)')
+
     # Floating "Copiado" placeholder CSS — tooltip arriba del card
     if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*Copiado', html, re.DOTALL):
         result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::before: "Copiado" text')

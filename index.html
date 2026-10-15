@@ -2418,7 +2418,43 @@ const ETIQUETAS_DATA = [
   { id: 17, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'AVERÍAS HOGAR (DTH - SATELITAL)',
     detalle: 'Cliente solicita atención por su servicio de TV Satelital - DTH (STAND ALONE).',
     skill_tx2: 'SK_CV_DTH_TX', skill_txdirecto: 'DP_CV_DTH_TX',
-    validacion: 'Clientes TV Satelital.' }
+    validacion: 'Clientes TV Satelital.' },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // v3.4.2: Records adicionales por CEO directive 2026-10-15.
+  // Análisis end-to-end del XLSX "Etiquetas de Transferencia.xlsx" (670 strings,
+  // 17 sheets). Sin modificar ni perder ningún record existente.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ── POSTPAGO additions (CEO: ACREDITACIONES + VENTAS + TECNICO MOVIL) ──
+  { id: 18, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'ACREDITACIONES',
+    detalle: 'Cliente solicita gestión de acreditaciones del servicio móvil (recargas, abonos, ajustes).',
+    skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: 'DP_CV_ACREDITACIONES_TX',
+    validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
+  { id: 19, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'TECNICO MOVIL',
+    detalle: 'Cliente requiere soporte técnico móvil (avería datos/voz). Comunicarse oper to oper si es necesario.',
+    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: 'DP_CV_TECNICO_MOVIL_TX_KONECTA',
+    validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
+  { id: 20, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO',
+    detalle: 'Cliente manifiesta interés en adquirir producto móvil: alta nueva, portabilidad o cambio de equipo.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. Validar identidad.' },
+
+  // ── MTOTAL additions (CEO: TECNICO MOVIL 2 = LINE 2 + VENTAS ALTA MT) ──
+  { id: 21, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'TECNICO MOVIL 2 (LINE 2)',
+    detalle: 'Cliente requiere soporte técnico móvil nivel 2 (konekta) para servicio Movistar Total.',
+    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: 'DP_CV_TECNICO_MOVIL_TX_KONECTA',
+    validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
+  { id: 22, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'VENTAS - ALTA NUEVA MT',
+    detalle: 'Cliente quiere alta nueva del servicio convergente Movistar Total (Mono/Duo/Trio).',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR. Validar identidad y factibilidad.' },
+
+  // ── STANDALONE additions (CEO: VENTAS ALTA FIJA) ──
+  { id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'VENTAS - ALTA NUEVA FIJA',
+    detalle: 'Cliente quiere alta nueva del servicio fijo Stand Alone (Mono/Duo/Trio).',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR. Validar identidad y factibilidad.' }
 ];
 
 // Estado del cliente (cat siempre activa — sin opción TODAS)
