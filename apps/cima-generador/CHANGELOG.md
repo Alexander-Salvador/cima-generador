@@ -1,5 +1,83 @@
 # Changelog — cima-generador
 
+## [3.2] - 2026-10-15 — DROPDOWN BOUNDS + SEGMENTED ACTIONS (CRIT-009)
+
+Fix crítico reportado por CEO: "los 3 botones no estaban en 1 row bien optimizadas" + "el dropdown sobrepasaba los límites del grid contenedor de etiquetas en altura y anchura". Cirugía arquitectónica, no parches.
+
+### Fixed — 3 Action Buttons: Segmented Control (iOS 2026)
+
+**Antes:** 3 buttons independientes con glass bg individual, grid 1fr 1fr 1fr, gap 6px, min-height 44px. Parecían 3 islas separadas.
+
+**Ahora:** Single glass container con dividers internos (iOS segment control aesthetic):
+
+| Aspecto | Antes | Ahora |
+|---|---|---|
+| Container display | grid (1fr 1fr 1fr) | **flex (stretch)** |
+| Container gap | 6px | **0** (dividers via border-left) |
+| Container padding | none | **3px** (buttons no tocan border) |
+| Container border-radius | none (per-btn) | **pill** (segmented) |
+| Per-button bg | glass-2-bg + blur-md | **transparent** (segmented) |
+| Per-button border | 1px glass-border | **none** |
+| Per-button min-height | 44px | **34px** (compact popup) |
+| Per-button flex | implicit grid | **1 1 0** (equal distribution) |
+| Hover state | translateY(-1px) + box-shadow lift | **bg accent-tint + hairline highlight** |
+| Press state | scale(0.96) | **scale(0.97)** |
+| Icon size | 22px | **18px** |
+| Label size | 10.5px | **9.5px** |
+| Dividers | none | **border-left 1px glass-border** en cada sibling |
+| Feedback overlay border | 1px green | **none** (borderless, more premium) |
+
+**Visual:** Single unified row, 3 actions como 1 segment, dividers sutiles entre acciones. iOS Settings-style.
+
+### Fixed — Dropdown Bounds (.etiquetas-block contained)
+
+**Antes:** `renderEtiquetasDropdownPosition` → `acFitToGrid` → buscaba `.grid-block` (no existe en Etiquetas) → fallback a `window.innerHeight` → max-height cap 220px → overflow visual cuando el bloque era mayor a 220px. Width nunca se seteaba → dropdown se expandía al content width natural.
+
+**Ahora:** Nueva función `etiquetasFitToBlock(drop, input)` que:
+
+1. **Bounds:** `input.closest('.etiquetas-block')` (NO viewport, NO .grid-block)
+2. **Width:** `inputRect.width + 'px'` — match exacto del search (alineado horizontalmente)
+3. **Height:** `blockRect.bottom - inputRect.bottom - MARGIN` (espacio restante del bloque)
+4. **Cap:** MIN 120px, MAX 280px
+5. **Flip:** Si `available < FLIP_THRESHOLD (100px)` → flip arriba dentro del bloque
+6. **Fallback:** Si no hay `.etiquetas-block` ancestor → `acFitToGrid` (defensivo)
+
+**Portal pattern preservado:** position:fixed + document.body appendChild para escapar `isolation:isolate` del `.section` padre (CRIT-009 stack safety intacto).
+
+**Visual:** Dropdown queda contenido horizontalmente al ancho del search input (alineado exacto) y verticalmente al bloque de etiquetas. Ya no desborda en altura ni anchura.
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — `etiquetasFitToBlock` function (~50 líneas JS) + CSS action-buttons-row rediseñado (~80 líneas CSS) + comments actualizados
+- `apps/cima-generador/VERSION` — `3.1` → `3.2`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +10 tests (224 → 234)
+
+### Tests
+
+- **234/234 PASS** (era 224/234; +10 nuevos para v3.2)
+- +1 etiquetasFitToBlock function exists
+- +1 llamada desde renderEtiquetasDropdownPosition
+- +1 bounds lookup con closest('.etiquetas-block')
+- +1 width alignment a inputRect.width
+- +1 action-buttons-row display flex
+- +1 segment dividers via + .action-btn border-left
+- +1 button bg transparent
+- +1 sin border individual
+- +1 height 34px compact
+- +1 flex 1 1 0 equal distribution
+
+### Lecciones nuevas
+
+- **L-024:** Un solo grid con `closest()` lookup puede no cubrir todos los dropdowns — cada bloque especializado merece su propio helper de bounds. Generalizar prematuramente es anti-pattern.
+- **L-025:** `position:fixed` + portal pattern resuelve stacking context pero NO visual containment. Para containment visual se necesitan bounds explícitos calculados contra el contenedor lógico del dropdown.
+
+### Pendiente
+
+- ⏳ Push a GitHub Pages (CEO autoriza)
+
+---
+
 ## [3.1] - 2026-10-15 — ETIQUETAS REDESIGN (CRIT-009 Avanzado+)
 
 Rediseño end-to-end del bloque Etiquetas de Transferencia. Category System como design tokens de primera clase, hierarchy visual premium, motion design iOS 2026.

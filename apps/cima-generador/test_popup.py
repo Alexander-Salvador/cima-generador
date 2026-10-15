@@ -915,6 +915,60 @@ def test(html_path):
     if '@media (max-width: 480px)' in html and '.etiqueta-categories' in html:
         result.ok('ETIQUETAS v3.1 mobile fallback: chips 1-col @ <=480px')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.2 — Dropdown bounded a .etiquetas-block + 3 buttons segmented control
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.2 — Dropdown bounds + segmented action buttons')
+
+    # etquetasFitToBlock function existe y es usada
+    if 'function etiquetasFitToBlock' in html:
+        result.ok('TIPIF v3.2 etiquetasFitToBlock function definida')
+    else:
+        result.fail('etiquetasFitToBlock function', 'ausente')
+    # Llamada desde renderEtiquetasDropdownPosition
+    if 'etiquetasFitToBlock(drop, input)' in html:
+        result.ok('TIPIF v3.2 etiquetasFitToBlock invocada desde renderEtiquetasDropdownPosition')
+    else:
+        result.fail('etiquetasFitToBlock call', 'no se llama desde renderEtiquetasDropdownPosition')
+    # usa closest(.etiquetas-block) como bounds
+    if "input.closest('.etiquetas-block')" in html:
+        result.ok('TIPIF v3.2 bounds: input.closest(.etiquetas-block)')
+    else:
+        result.fail('etiquetasFitToBlock bounds', '.etiquetas-block lookup ausente')
+    # Width matching input
+    if "drop.style.width = inputRect.width + 'px'" in html:
+        result.ok('TIPIF v3.2 dropdown width = inputRect.width (alineado exacto)')
+    else:
+        result.fail('dropdown width align', 'width alignment ausente')
+
+    # 3 buttons row — segmented control aesthetic (CRIT-009 avanzado+)
+    # Container: flex (no grid) + glass + padding interno
+    if re.search(r'\.action-buttons-row\s*\{[^}]*display:\s*flex', html, re.DOTALL):
+        result.ok('TIPIF v3.2 action-buttons-row: display flex (segmented control)')
+    else:
+        result.fail('action-buttons-row display', 'no es flex')
+    # Dividers via border-left en siblings
+    if '.action-btn + .action-btn' in html and 'border-left' in html:
+        result.ok('TIPIF v3.2 segment dividers: .action-btn + .action-btn border-left')
+    else:
+        result.fail('segment dividers', 'dividers via border-left ausente')
+    # Buttons transparentes (segmented control = bg en container, no en buttons)
+    if re.search(r'\.action-btn\s*\{[^}]*background:\s*transparent', html, re.DOTALL):
+        result.ok('TIPIF v3.2 action-btn background transparent (segmented)')
+    else:
+        result.fail('button-bg-transparent', 'segmented control bg ausente')
+    # Sin individual border (segmented = solo container tiene border)
+    if '.action-btn {' in html and 'border: none' in html:
+        result.ok('TIPIF v3.2 action-btn sin border individual (segmented control)')
+    # Compact height 34px (no min-height: 44px)
+    if re.search(r'\.action-btn\s*\{[^}]*height:\s*34px', html, re.DOTALL):
+        result.ok('TIPIF v3.2 action-btn height: 34px (compact popup)')
+    else:
+        result.fail('action-btn height 34px', 'height ausente')
+    # flex 1 1 0 para equal distribution
+    if re.search(r'\.action-btn\s*\{[^}]*flex:\s*1 1 0', html, re.DOTALL):
+        result.ok('TIPIF v3.2 action-btn flex: 1 1 0 (equal distribution)')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')

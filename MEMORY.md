@@ -863,7 +863,8 @@ git diff
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.1` — ETIQUETAS REDESIGN CRIT-009 Avanzado+) | `apps/cima-generador/index.html` |
+| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.2` — DROPDOWN BOUNDS + SEGMENTED ACTIONS) | `apps/cima-generador/index.html` |
+| **Tests popup local** | 234/234 PASS | `apps/cima-generador/test_popup.py` |
 | **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
 | **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
 | **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
@@ -1114,7 +1115,7 @@ python3 /home/braka/Systems/projects/work/cima/apps/cima-generador/test_popup.py
 
 | Item | Valor |
 |---|---|
-| Local HEAD | `8fdc3b0` (v3.10 MEMORY) — feature v3.1 ETIQUETAS REDESIGN (VERSION bump 3.0→3.1) |
+| Local HEAD | `8fdc3b0` (v3.10 MEMORY) — feature v3.2 DROPDOWN BOUNDS + SEGMENTED ACTIONS (VERSION bump 3.1→3.2) |
 | Working tree | clean |
 | Tests | 166/166 PASS |
 | GitHub Pages LIVE | v2.1.8 (`33aeda8`) — **sin actualizar a v3.0 todavía** |
