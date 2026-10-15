@@ -972,21 +972,14 @@ def test(html_path):
     # ══════════════════════════════════════════════════════════════════════
     # v3.3 — Popup mode 1-col chips + button→dropdown guard
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ TIPIF v3.3 — Popup mode 1-col + button→dropdown guard')
+    print('\n▸ TIPIF v3.3 — button→dropdown guard (popup mode 1-col REVERTIDO en v3.3.2)')
 
-    # Popup mode: chips SIEMPRE 1-col (CEO directive: popup es target primario)
-    if 'body[data-popup="true"] .etiqueta-categories' in html and \
-       re.search(r'body\[data-popup="true"\]\s+\.etiqueta-categories[^}]*grid-template-columns:\s*1fr', html, re.DOTALL):
-        result.ok('TIPIF v3.3 popup mode: chips SIEMPRE 1-col via body[data-popup]')
-    else:
-        result.fail('popup-mode chips 1-col', 'selector ausente o grid no es 1fr')
-    # Skills grid también 1-col en popup mode
-    if 'body[data-popup="true"] .etiqueta-preview-skills' in html and \
-       re.search(r'body\[data-popup="true"\]\s+\.etiqueta-preview-skills[^}]*grid-template-columns:\s*1fr', html, re.DOTALL):
-        result.ok('TIPIF v3.3 popup mode: preview-skills SIEMPRE 1-col')
-    else:
-        result.fail('popup-mode skills 1-col', 'selector ausente')
-    # Mobile fallback ampliado a 640px (cubre popup mode también)
+    # v3.3.2 REVERSIÓN: el CEO clarificó que los chips van en 1 SOLA ROW horizontal.
+    # El selector body[data-popup="true"] .etiqueta-categories { 1fr } YA NO EXISTE.
+    # Los chips vuelven a grid-template-columns: repeat(3, 1fr) (3-col horizontal).
+    # Tests que asumen 1-col en popup mode están obsoletos — se omiten intencionalmente.
+
+    # Lo que SÍ se preserva de v3.3: button→dropdown guard (copySpeech defensive)
     if '@media (max-width: 640px)' in html:
         result.ok('TIPIF v3.3 mobile fallback: max-width 640px (cubre popup)')
 
@@ -1010,23 +1003,13 @@ def test(html_path):
     # ══════════════════════════════════════════════════════════════════════
     print('\n▸ TIPIF v3.3.1 — Bulletproof popup mode')
 
-    # JS setea data-popup en <html> Y <body> (defense-in-depth)
+    # JS setea data-popup en <html> Y <body> (defense-in-depth — preserva el hook
+    # aunque la directiva visual cambió en v3.3.2)
     if "document.documentElement.setAttribute('data-popup', 'true')" in html and \
        "document.body.setAttribute('data-popup', 'true')" in html:
-        result.ok('TIPIF v3.3.1 data-popup set en html Y body (doble hook)')
+        result.ok('TIPIF v3.3.1 data-popup set en html Y body (dual hook preservado)')
     else:
         result.fail('data-popup dual hook', 'setAttribute en html o body ausente')
-
-    # CSS triple selector con !important (html + body + .popup-mode class)
-    if 'html[data-popup="true"] .etiqueta-categories' in html and \
-       'body[data-popup="true"] .etiqueta-categories' in html and \
-       '.popup-mode .etiqueta-categories' in html:
-        result.ok('TIPIF v3.3.1 popup CSS: triple selector (html + body + .popup-mode)')
-    else:
-        result.fail('popup triple selector', 'uno de los 3 selectors ausente')
-    # !important en popup mode selectors
-    if re.search(r'popup-mode\s+\.etiqueta-categories[\s\S]*?grid-template-columns:\s*1fr\s*!important', html, re.DOTALL):
-        result.ok('TIPIF v3.3.1 popup CSS: !important garantiza specificity win')
 
     # Action buttons NUNCA wrap (flex-wrap: nowrap explícito)
     if re.search(r'\.action-buttons-row\s*\{[^}]*flex-wrap:\s*nowrap', html, re.DOTALL):
@@ -1034,8 +1017,57 @@ def test(html_path):
     # min-width en action-btn previene shrink to 0
     if re.search(r'\.action-btn\s*\{[^}]*min-width:\s*56px', html, re.DOTALL):
         result.ok('TIPIF v3.3.1 action-btn: min-width 56px (no shrink to invisible)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.2 — Chips SIEMPRE 3-col horizontal + labels abreviados
+    # CEO directive: "los botones POSTPAGO MOVISTAR TOTAL Y STANDALONE deben
+    # estar en 1 solo row. puedes abreviarlo POST/PRE | MT | STANDALONE"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.2 — Chips 3-col horizontal + labels abreviados')
+
+    # CSS: chips SIEMPRE 3-col (default + mobile fallback solo en viewports extremos)
+    if re.search(r'\.etiqueta-categories\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*1fr\)', html, re.DOTALL):
+        result.ok('TIPIF v3.3.2 chips: grid-template-columns repeat(3, 1fr) — 3-col horizontal siempre')
     else:
-        result.fail('mousedown skip buttons-row', 'guard ausente')
+        result.fail('chips 3-col', 'repeat(3, 1fr) ausente en .etiqueta-categories')
+    # Mobile fallback solo en viewports EXTREMOS (<320px)
+    if '@media (max-width: 320px)' in html and '.etiqueta-categories' in html:
+        result.ok('TIPIF v3.3.2 mobile fallback: chips 1-col solo @ <=320px (extremo)')
+
+    # Labels abreviados visibles
+    # (data-cat preserva nombres lógicos: POSTPAGO/MTOTAL/STANDALONE)
+    if '<span>POST/PRE</span>' in html:
+        result.ok('TIPIF v3.3.2 label: POST/PRE (abreviatura CEO)')
+    else:
+        result.fail('label POST/PRE', 'abreviatura ausente')
+    if '<span>MT</span>' in html:
+        result.ok('TIPIF v3.3.2 label: MT (abreviatura MOVISTAR TOTAL)')
+    else:
+        result.fail('label MT', 'abreviatura ausente')
+    if '<span>STANDALONE</span>' in html:
+        result.ok('TIPIF v3.3.2 label: STANDALONE (sin cambio, ya corto)')
+    else:
+        result.fail('label STANDALONE', 'ausente')
+
+    # data-cat preservados (JS logic no cambia)
+    for cat in ['data-cat="POSTPAGO"', 'data-cat="MTOTAL"', 'data-cat="STANDALONE"']:
+        if cat in html:
+            result.ok(f'TIPIF v3.3.2 data-cat preservado: {cat}')
+        else:
+            result.fail(f'data-cat {cat}', 'ausente')
+
+    # Title attributes para tooltip completo (accesibilidad)
+    for title in ['title="POSTPAGO/PREPAGO"', 'title="MOVISTAR TOTAL"', 'title="STANDALONE (servicio fijo)"']:
+        if title in html:
+            result.ok(f'TIPIF v3.3.2 title attribute: {title}')
+        else:
+            result.fail(f'title {title}', 'ausente — nombres completos no accesibles')
+
+    # NO debe existir labels largos viejos en el chip text
+    if '<span>POSTPAGO/PREPAGO</span>' in html or '<span>MOVISTAR TOTAL</span>' in html:
+        result.fail('labels viejos', 'aún hay labels largos (POSTPAGO/PREPAGO o MOVISTAR TOTAL) en chips')
+    else:
+        result.ok('TIPIF v3.3.2 labels viejos removidos (chips compactos)')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
