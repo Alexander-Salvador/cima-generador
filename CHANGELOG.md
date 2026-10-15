@@ -1,5 +1,116 @@
 # Changelog — cima-generador
 
+## [3.3.8] - 2026-10-15 — DROPDOWN SIEMPRE VISIBLE + COPIADO PLACEHOLDER
+
+CEO directive 2026-10-15:
+1. "cuando actualiza la web desaparecen la posicion de las etiquetas deben
+   mantenerse siempre activas, solo que sin datos hasta que se use el
+   searchinput" — dropdown items SIEMPRE visibles (layout estable)
+2. "al seleccionar la etiqueta debe salir un placeholder encima de copiado"
+   — floating "✓ Copiado" tooltip ARRIBA del skill card
+
+### Fixed — Dropdown SIEMPRE visible (layout estable)
+
+**Antes:** Dropdown se abría/cerraba con click en search input + click-outside. Cada toggle causaba shift visual en el .etiquetas-block (aunque portal pattern minimizaba el shift, el `drop.hidden` toggle afectaba percepción de "presencia").
+
+**Ahora:** Dropdown SIEMPRE visible cuando hay categoría activa. Empty state ("Escribe para buscar…") si no hay query, items si hay matches. Layout completamente estable, no shift.
+
+```js
+function renderEtiquetasDropdown(query) {
+  if (!TX_STATE.cat) { drop.hidden = true; return; }
+  var matches = filterEtiquetas(query, TX_STATE.cat);
+  if (!matches.length) {
+    var emptyMsg = query
+      ? 'Sin resultados para «' + escapeHtml(query) + '»'
+      : 'Escribe para buscar…';   // v3.3.8: empty state distintivo
+    drop.innerHTML = '<div class="ac-empty">' + emptyMsg + '</div>';
+    drop.hidden = false;          // v3.3.8: SIEMPRE visible
+    renderEtiquetasDropdownPosition();
+    return;
+  }
+  // ... items render ...
+  drop.hidden = false;
+}
+```
+
+**Click-outside handler REMOVIDO** de `setupEtiquetas()` — el dropdown ya no necesita cerrarse porque siempre está visible. Solo se re-renderiza via search input events (focus/mousedown/input).
+
+**Inicialización en setupEtiquetas:** `renderEtiquetasDropdown('')` se ejecuta al cargar — dropdown visible inmediatamente con empty state.
+
+### Added — Floating "✓ Copiado" tooltip arriba del card
+
+**Antes:** Click en skill card → `is-copied` class añadida → background del card se vuelve verde. Feedback visual sutil pero ambiguo (¿copió? ¿error?).
+
+**Ahora:** Click → tooltip flotante ARRIBA del card con texto "✓ Copiado" + flecha pointing down. Feedback claro, obvio, con shadow glow.
+
+```css
+.etiqueta-skill-card.is-copied::before {
+  content: "✓ Copiado";
+  position: absolute;
+  bottom: calc(100% + 8px);      /* ARRIBA del card */
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: white;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  animation: copiadoFloatIn var(--motion-base) var(--motion-spring);
+  z-index: 10;
+}
+.etiqueta-skill-card.is-copied::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  border: 5px solid transparent;
+  border-top-color: var(--green);   /* arrow del tooltip */
+}
+@keyframes copiadoFloatIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+```
+
+CEO directive: "al seleccionar la etiqueta debe salir un placeholder encima de copiado". Implementado como tooltip-style con arrow.
+
+### Preserved (no cambios)
+
+- v3.3.7 skill cards click-to-copy + empty data fallback
+- v3.3.6 selection persiste + preview minimal
+- v3.3.5 dropdown navegable (font-size 10px)
+- v3.3.4 dropdown items minimal
+- v3.3.3 chip click = solo selección
+- v3.3.2 chips 1-row horizontal + labels abreviados
+- v3.3.1 dual hook data-popup
+- v3.2 dropdown bounded + segmented actions
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — renderEtiquetasDropdown empty state distintivo + setupEtiquetas sin click-outside + `renderEtiquetasDropdown('')` en init (~10 líneas) + CSS tooltip Copiado (~35 líneas)
+- `apps/cima-generador/VERSION` — `3.3.7` → `3.3.8`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +5 tests v3.3.8 (276/276 PASS)
+
+### Tests
+
+- **276/276 PASS** (era 271/271; +5 nuevos v3.3.8)
+- +1 renderEtiquetasDropdown: empty state distintivo (query vs no matches)
+- +1 renderEtiquetasDropdown: drop.hidden = false (siempre visible)
+- +1 setupEtiquetas: SIN click-outside close handler (layout estable)
+- +1 .etiqueta-skill-card.is-copied::before: "Copiado" text
+- +1 .etiqueta-skill-card.is-copied::before: posicionado bottom 100% (arriba)
+- +1 .etiqueta-skill-card.is-copied::after: arrow del tooltip
+- +1 @keyframes copiadoFloatIn: animación entrada del tooltip
+
+### Lecciones nuevas
+
+- **L-038:** Layout stability es UX fundamental. Dropdowns que se abren/cierran con cada focus/blur causan shift visual — incluso con position:fixed portal pattern. Mejor: dropdowns ALWAYS-OPEN con empty state cuando no hay matches. Solo filter changes.
+- **L-039:** Click-to-copy feedback debe ser visualmente obvio. Background color change es sutil y ambiguo. Tooltip flotante "✓ Copiado" con arrow pointing al card es más claro y discoverable.
+
+---
+
 ## [3.3.7] - 2026-10-15 — SKILL CARDS CLICK-TO-COPY + EMPTY FALLBACK
 
 CEO directive 2026-10-15 (con screenshot):

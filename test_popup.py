@@ -1282,6 +1282,48 @@ def test(html_path):
     # Hover lift visual feedback
     if re.search(r'\.etiqueta-skill-card:hover[^}]*translateY', html, re.DOTALL):
         result.ok('TIPIF v3.3.7 .etiqueta-skill-card: hover lift (translateY -1px)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.3.8 — Dropdown SIEMPRE visible + floating "Copiado" placeholder
+    # CEO directive:
+    # 1. "cuando actualiza la web desaparecen la posicion de las etiquetas
+    #    deben mantenerse siempre activas, solo que sin datos hasta que se use
+    #    el searchinput" — dropdown items siempre visibles (layout estable)
+    # 2. "al seleccionar la etiqueta debe salir un placeholder encima de copiado"
+    #    — floating tooltip "✓ Copiado" arriba del skill card
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ TIPIF v3.3.8 — Dropdown siempre visible + Copiado placeholder')
+
+    # Dropdown items siempre visibles: empty state si no matches, items si matches
+    m = re.search(r'function renderEtiquetasDropdown\(query\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m:
+        body = m.group(1)
+        # Empty state con mensaje distinto para query vacía vs no matches
+        if 'Escribe para buscar' in body or "query\\s*\\?" in body or "query ?" in body:
+            result.ok('TIPIF v3.3.8 renderEtiquetasDropdown: empty state distinto (query vs no matches)')
+        # Drop hidden = false se mantiene cuando hay items
+        if 'drop.hidden = false' in body and body.count('drop.hidden = false') >= 2:
+            result.ok('TIPIF v3.3.8 renderEtiquetasDropdown: drop.hidden = false (siempre visible)')
+
+    # Click-outside close handler REMOVIDO del setupEtiquetas (dropdown siempre visible)
+    # Verifica que setupEtiquetas() no contiene addEventListener con mousedown + hideEtiquetaDropdown
+    m_setup = re.search(r'function setupEtiquetas\(.*?\)\s*\{(.*?)(?=\nfunction )', html, re.DOTALL)
+    if m_setup:
+        body_setup = m_setup.group(1)
+        if "hideEtiquetaDropdown()" not in body_setup and "document.addEventListener('mousedown'" not in body_setup:
+            result.ok('TIPIF v3.3.8 setupEtiquetas: SIN click-outside close handler (layout estable)')
+        else:
+            result.fail('click-outside handler', 'aún presente en setupEtiquetas — debería removerse en v3.3.8')
+
+    # Floating "Copiado" placeholder CSS — tooltip arriba del card
+    if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*Copiado', html, re.DOTALL):
+        result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::before: "Copiado" text')
+    if re.search(r'\.etiqueta-skill-card\.is-copied::before[^}]*100%', html, re.DOTALL):
+        result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::before: posicionado bottom: 100% (arriba del card)')
+    if re.search(r'\.etiqueta-skill-card\.is-copied::after[^}]*border-top-color', html, re.DOTALL):
+        result.ok('TIPIF v3.3.8 .etiqueta-skill-card.is-copied::after: arrow del tooltip')
+    if '@keyframes copiadoFloatIn' in html:
+        result.ok('TIPIF v3.3.8 @keyframes copiadoFloatIn: animación entrada del tooltip')
     else:
         result.fail('CSS preview obsoleto', f'aún contiene: {bad_css}')
 
