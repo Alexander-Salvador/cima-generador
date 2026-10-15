@@ -1,5 +1,102 @@
 # Changelog — cima-generador
 
+## [3.4.3] - 2026-10-15 — COMPARATIVA EXCEL: 3 SKUs NUEVOS
+
+CEO directive 2026-10-15: "necesito que hagas una comparativa end to end,
+exhaustiva del contenido del excel y lo que tenemos en CIMA como etiquetas
+para ver si aun quedo algo fuera".
+
+### Análisis comparativo Excel vs CIMA
+
+**Metodología:** Parse exhaustivo del XLSX `Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx` (670 strings, 17 sheets). Mapeo de todas las solicitudes + skill codes contra ETIQUETAS_DATA de CIMA.
+
+**Skill codes en XLSX no usados en CIMA (pre-v3.4.3):**
+
+| Skill code | Solicitud | Categoría | Estado v3.4.3 |
+|---|---|---|---|
+| `SK_CV_DOWNSELL_MOVIL_TX` | MIGRACION DOWN (MOVIL) | POSTPAGO | ✅ AGREGADO id 24 |
+| `SK_CV_TRASLADO_BAJA_FIJA_TX` | TRASLADO / MUDANZA | STANDALONE | ✅ AGREGADO id 26 |
+| `SK_CV_RETENCIONES_MOVIL_TX` | BAJA FINAL POSTPAGO (separado de BAJA DE TOTAL) | POSTPAGO | ✅ AGREGADO id 25 |
+| `SK_CV_CROSS_MOVIL_FIJA_TX` | CROSS-sell / "Cambio de Plan" | ¿? | ❓ CEO guidance |
+| `SK_CV_TECF_PRIORITY_TX` | sin solicitud clara | ¿? | ❓ CEO guidance |
+| `SK_DP_CV_BLINDAJE_FIJA_PRIORITY_TX` | typo en Excel (debería ser SK_) | n/a | ❌ ignorado |
+
+### Added — 3 SKUs nuevos (sin perder existentes)
+
+```js
+// v3.4.3: MIGRACION DOWN (MOVIL) → POST/PRE
+{ id: 24, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'MIGRACION DOWN (MOVIL)',
+  detalle: 'Cliente solicita migrar a un plan de menor tarifa móvil (down-sell).',
+  skill_tx2: 'SK_CV_DOWNSELL_MOVIL_TX', skill_txdirecto: 'DP_CV_DOWNSELL_MOVIL_TX',
+  validacion: 'TITULAR. Confirmar nuevo plan y factibilidad.' },
+
+// v3.4.3: BAJA FINAL POSTPAGO → POST/PRE
+{ id: 25, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'BAJA FINAL POSTPAGO',
+  detalle: 'Cliente solicita la baja final del servicio móvil (postpago).',
+  skill_tx2: 'SK_CV_RETENCIONES_MOVIL_TX', skill_txdirecto: 'DP_CV_RETENCIONES_MOVIL_TX',
+  validacion: 'TITULAR. Validar identidad y confirmar baja.' },
+
+// v3.4.3: TRASLADO / MUDANZA → STANDALONE
+{ id: 26, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'TRASLADO / MUDANZA',
+  detalle: 'Cliente solicita traslado o mudanza del servicio fijo Stand Alone.',
+  skill_tx2: 'SK_CV_TRASLADO_BAJA_FIJA_TX', skill_txdirecto: 'DP_CV_TRASLADO_BAJA_FIJA_TX',
+  validacion: 'TITULAR. Confirmar nueva dirección y factibilidad técnica.' }
+```
+
+### Reporte al CEO — edge cases restantes
+
+**Items en Excel que NO son etiquetas de transferencia** (workflows/procedimientos):
+- "CASOS DE CORTE CORPORATIVO" → procedure con plazos
+- "BLOQUE DE EQUIPO X DEUDA" → procedure con plazos
+- "RUC 20" / "CLIENTE EMPRESA / EDUCAMOS" → tipo de cliente, no etiqueta
+- "TRANSFERENCIAS DESDE TECNICO MOVIL" → categoría de transferencia (workflow)
+- "BO TECNICA MOVIL" / "BO TECNICO N2 (KONECTA)" → títulos sin skill code específico
+- Speech templates (SPEECH CONSULTA PLAN, SPEECH CONSULTA SALDO) → otros flows
+- Eventos masivos / FO → no aplica a popup
+
+**Skill codes sin solicitud clara:**
+- `SK_CV_CROSS_MOVIL_FIJA_TX` → CEO: ¿es para "Cambio de Plan" (mantiene/downsell/upsell)?
+- `SK_CV_TECF_PRIORITY_TX` → CEO: ¿qué significa "TECF" + qué solicitud?
+- `SK_DP_CV_BLINDAJE_FIJA_PRIORITY_TX` → typo en Excel (debería ser SK_), ya tenemos SK_CV_BLINDAJE_FIJA_PRIORITY_TX
+
+**Categorías nuevas potenciales** (CEO no mencionadas pero detectables):
+- "Venta" como categoría separada — actualmente mezclada con COMERCIAL
+- "Postventa" o "Soporte" — sin skill codes específicos
+
+### Conteo final
+
+| Categoría | Antes (v3.4.2) | Ahora (v3.4.3) | Δ |
+|---|---|---|---|
+| POSTPAGO | 9 | **11** | +2 |
+| MTOTAL | 8 | **8** | — |
+| STANDALONE | 6 | **7** | +1 |
+| **TOTAL** | **23** | **26** | **+3** |
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — ETIQUETAS_DATA +3 records (ids 24-26) (~30 líneas agregadas)
+- `apps/cima-generador/VERSION` — `3.4.2` → `3.4.3` (patch)
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +9 tests v3.4.3 (300/300 PASS)
+
+### Tests
+
+- **300/300 PASS** (era 291/291; +9 nuevos v3.4.3)
+- +1 conteos expandidos (POSTPAGO>=11, STANDALONE>=7, total 26)
+- +1 SK_CV_DOWNSELL_MOVIL_TX presente
+- +1 SK_CV_TRASLADO_BAJA_FIJA_TX presente
+- +1 solicitud MIGRACION DOWN (MOVIL)
+- +1 solicitud BAJA FINAL POSTPAGO
+- +1 solicitud TRASLADO / MUDANZA
+- +3 ids nuevos (24, 25, 26)
+
+### Lecciones nuevas
+
+- **L-045:** Comparativa exhaustiva Excel vs código es tarea esencial de auditoría de datos. No confiar en "lo que CEO mencionó" — parsear TODO el Excel y mapear cada solicitud+skill_code contra ETIQUETAS_DATA. Identifica gaps que ni CEO ni el dev conocen.
+- **L-046:** Skill codes únicos en Excel = etiquetas únicas que probablemente faltan en popup. `SK_CV_DOWNSELL_MOVIL_TX` (down-sell móvil) ≠ `SK_CV_DOWNSELL_FIJA_TX` (down-sell fija) — son operaciones distintas en operadores Telefónica.
+
+---
+
 ## [3.4.2] - 2026-10-15 — ETIQUETAS_DATA EXPANDIDO (6 records nuevos)
 
 CEO directive 2026-10-15 (con análisis end-to-end del Excel):
