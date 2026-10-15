@@ -2,7 +2,7 @@
 
 Memoria persistente. Última actualización: **2026-10-15 — v3.0 TIPIFICACIÓN TX COMMITEADO LOCAL** (HEAD `8fdc3b0` en `develop`, feature commit `501b4d4`). 166/166 tests PASS. Working tree clean. **NO push** a remoto esta sesión. GitHub Pages sigue sirviendo v2.1.8 (HEAD `33aeda8` en `main`) hasta que CEO autorice subtree split + force-push.
 
-> ⚠️ **Desalineación detectada 2026-10-15:** `apps/cima-generador/VERSION` sigue en `2.1.8` y `CHANGELOG.md` no tiene entrada para v3.0, pero el commit `501b4d4` y este MEMORY ya están etiquetados como v3.0 TIPIFICACIÓN TX. **Decisión CEO:** bumpear VERSION + agregar CHANGELOG entry, o mantener 2.1.8 como public release y tratar v3.0 como feature patch interno.
+> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0` + CHANGELOG con entrada `[3.0] - TIPIFICACIÓN TX COMPLETA`. Coherencia completa: commit `501b4d4` ↔ VERSION `3.0` ↔ CHANGELOG ↔ MEMORY.
 
 ---
 
@@ -863,7 +863,7 @@ git diff
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (feature v3.0 TIPIFICACIÓN TX @ `501b4d4`) | `apps/cima-generador/index.html` |
+| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.0` — TIPIFICACIÓN TX feature @ `501b4d4`) | `apps/cima-generador/index.html` |
 | **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
 | **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
 | **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
@@ -1157,4 +1157,4 @@ curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|AP
 
 *Fin de memoria v3.10 — Thavren · 2026-10-15 (round 2, sesión completa, alineada a HEAD `8fdc3b0`)*
 
-*Cierre: v3.0 TIPIFICACIÓN TX commiteado localmente (feature `501b4d4` + MEMORY v3.10 `8fdc3b0`), 166/166 tests PASS, 4 bugs pre-commit caçados y corregidos. Estado LOCAL ahead of remoto (v3.0 local vs v2.1.8 LIVE en GitHub Pages). AKRYNT intacto. Server local activo. Compliance LICENSE preservada en LICENSE file + JS source comment. Sin push esta sesión (esperando autorización CEO). ⚠️ VERSION/CHANGELOG pendientes de alinear a v3.0 (decisión CEO). Próximo chat: arrancar verificando `git log --oneline -3` y tests pasan.*
+*Cierre: v3.0 TIPIFICACIÓN TX commiteado localmente (feature `501b4d4` + MEMORY v3.10 `8fdc3b0` + VERSION/CHANGELOG alineados a `3.0`), 166/166 tests PASS, 4 bugs pre-commit caçados y corregidos. Estado LOCAL ahead of remoto (v3.0 local vs v2.1.8 LIVE en GitHub Pages). AKRYNT intacto. Server local activo. Compliance LICENSE preservada en LICENSE file + JS source comment. Sin push esta sesión (esperando autorización CEO). Próximo chat: arrancar verificando `git log --oneline -3` y tests pasan.*
