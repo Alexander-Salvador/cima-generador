@@ -716,14 +716,12 @@ def test(html_path):
     print('\n▸ Footer & credits')
     if 'Alexander Salvador' in html:
         result.ok('Author credit present')
-    if 'v2.0' in html or 'v2.0.0' in html:
-        result.ok('v2.0 marker present')
-    else:
-        result.warn('v2.0 marker', 'not found in HTML')
-    if 'GeoNames' in html:
-        result.ok('GeoNames attribution in HTML (source comment)')
-    else:
-        result.warn('GeoNames attribution', 'missing in HTML source')
+    # v2.1.8: v2.0 "standalone" marker removido del HTML body (CEO directive).
+    # Versión oficial vive en VERSION + CHANGELOG del repo.
+    result.ok('v2.1.8 v2.0 standalone marker removido del HTML (preserved in VERSION file)')
+    # v2.1.8: Atribución visible GeoNames/CC BY 4.0 + RitchieRD/ODbL removida del footer (CEO directive).
+    # Atribución oficial preservada en LICENSE file del repo (data attribution section).
+    result.ok('v2.1.8 visible data attribution removida del footer (preserved in LICENSE file)')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
