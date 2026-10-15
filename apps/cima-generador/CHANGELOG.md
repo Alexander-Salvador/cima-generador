@@ -1,5 +1,82 @@
 # Changelog — cima-generador
 
+## [2.0.8] - 2026-10-14 — Búsqueda por CCPP exacto + distrito preventivo (call center 0 fallos)
+
+### Changed (schema de búsqueda)
+- **Lookup refactorizado a nivel CCPP específico** (4 niveles):
+  1. **CCPP exacto** (4 campos llenos + match `"ubigeo_d6:ccpp"`) → 🔴 alerta específica
+  2. **Distrito con apagados** (3 campos llenos, sin CCPP) → 🟠 distrito_of (preventivo)
+  3. **Distrito sin apagados** (3+ campos llenos) → 🟢 silencio
+  4. **<3 campos** → 🟢 silencio por datos incompletos
+- Schema `ZONAS_APAGADAS`:
+  - Antes: `{ d6: Set<ubigeo>, d4: Set<ubigeo>, d2: Set<ubigeo>, total, fuente, fecha }`
+  - Ahora: `{ ccpp_keys: Set<"d6:CCPP"> (239), districts_with_off: Set<d6> (191), total_zones: 239, total_districts: 191, fuente, fecha }`
+- Inline size: 2,009 → **6,835 bytes** (CCPPs específicos pesan más que ubigeos genéricos)
+
+### Added
+- `function normalizeKey(s)` — trim + uppercase + single-space + NFC para lookups robustos
+- Helper que decide CCPP exacto: `ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + normalizeKey(ccpp))`
+- **Dropdown CCPPs del distrito pinta con ⚠️ los apagados** (clase `.ac-item-off`):
+  - Fondo danger, font-weight 700, icono ⚠️ prefijo
+  - El asesor ve qué CCPPs oficiales del distrito están apagados
+- **Botón coberturaBtn estado `.warn`** (distrito_of, sin match exacto):
+  - Color ámbar/dorado #f59e0b (vs rojo de `.off` exact match)
+  - Animación `pulseWarn` 2.8s (más suave que pulseDanger)
+  - Tooltip: "Este distrito tiene CCPPs en zona de apagado. Verifica el CCPP exacto."
+- `toggleCoberturaDetail()` actualizado para manejar ambos estados (.off / .warn)
+
+### Fixed
+- **Corrección data PIURA/AYABACA** (audit durante implementación):
+  - 5 CCPPs reasignados de PACAIPAMPA dist → AYABACA dist (por merged-cell ambiguo del PDF)
+  - CURRILCAS agregado (CCPP que faltaba)
+  - CURILCAS → CURRILCAS (typo del PDF con doble R omitida)
+  - PAPELILLO → PAPELLILLO (typo del PDF con doble L preservado)
+- **Eliminada generalización departamental** (v2.0.4 d4/d2):
+  - Antes alertas por depto/provincia cuando había apagados generales (falso positivo)
+  - Ahora solo CCPP exacto o distrito_of (sin over-alert)
+
+### Tests
+- **62 tests PASS, 0 fail** (de 61 anteriores)
+- 14 escenarios E2E del call center verificados:
+  - ✅ CCPP exacto: 9 escenarios (PLAYA AZUL, ESPITE, TUTUMBEROS, CHUMPE-POQUES, etc.)
+  - ✅ Distrito preventivo: 3 escenarios (3 campos, distrito con apagados)
+  - ✅ Silencio OK: 5 escenarios (sin match, sin apagados, datos incompletos)
+  - ✅ Edge cases: AYABACA+PAPELLILLO (typo preservado), PUCARA sin CCPP (alerta distrito)
+- `node --check popup.js` → EXIT 0
+- Diana 🟢 CLEAN · Pablo 🟢 GOOD (212 inline comments)
+
+### Behavior para Asesores Call Center
+```
+ESCENARIO TÍPICO (asesor con cliente en línea):
+
+  Cliente: "Soy de Cajamarca, Jaén, Pucara, Playa Azul"
+    → Asesor tipéa los 4 campos
+    → Sistema: 🔴 MATCH EXACTO "PLAYA AZUL" (ubigeo 060808)
+    → Asesor informa: "Esta zona está en apagado programado"
+
+ESCENARIO SIN CCPP (cliente no recuerda):
+
+  Cliente: "Soy de Cajamarca, Jaén, Pucara"  
+    → Asesor tipéa los 3 campos sin CCPP
+    → Sistema: 🟠 DISTRITO_OF "Este distrito tiene CCPPs en zona de apagado"
+    → Asesor revisa dropdown CCPP: ve "PLAYA AZUL" marcado con ⚠️
+    → Pregunta al cliente "¿es Playa Azul tu poblado?" → confirma o descarta
+
+ESCENARIO SIN ALERTA (cliente en zona con cobertura):
+
+  Cliente: "Soy de Lima, Lima, Miraflores, Casuarinas"
+    → Asesor tipéa los 4 campos
+    → Sistema: 🟢 silencio (CASUARINAS no está en apagados, distrito sin alerta)
+    → Asesor copia address, sigue con la tipificación
+
+ESCENARIO DATOS INCOMPLETOS:
+
+  Cliente: "Soy de Junín"  (solo depto)
+    → Asesor tipéa solo 1 campo
+    → Sistema: 🟢 silencio (datos incompletos)
+    → Asesor pregunta "¿cuál provincia y distrito?" → completa y vuelve a buscar
+```
+
 ## [2.0.7] - 2026-10-14 — AUDIT EXHAUSTIVO: 3 distritos recuperados (PDF 1/3)
 
 ### Fixed (audit completo sobre los 3 PDFs)

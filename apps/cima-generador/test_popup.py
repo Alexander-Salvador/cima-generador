@@ -198,15 +198,20 @@ def test(html_path):
         'UBIGEO const': 'const UBIGEO = {' in html,
         'CCPP_DATA const': 'const CCPP_DATA = {' in html,
         'ZONAS_APAGADAS const': 'const ZONAS_APAGADAS = {' in html,
-        'ZONAS_APAGADAS compact Set d6': 'd6: new Set([' in html,
-        'ZONAS_APAGADAS compact Set d4': 'd4: new Set([' in html,
-        'ZONAS_APAGADAS compact Set d2': 'd2: new Set([' in html,
+        'ZONAS_APAGADAS ccpp_keys Set': 'ccpp_keys: new Set([' in html,
+        'ZONAS_APAGADAS districts_with_off Set': 'districts_with_off: new Set([' in html,
         'getUbigeoCodesForAddress function': 'function getUbigeoCodesForAddress' in html,
         'renderCoberturaButton function': 'function renderCoberturaButton' in html,
         'toggleCoberturaDetail function': 'function toggleCoberturaDetail' in html,
         'coberturaBtn element': 'id="coberturaBtn"' in html,
         'pulseDanger keyframes': '@keyframes pulseDanger' in html,
         'checkZonaApagada function': 'function checkZonaApagada' in html,
+        # v2.0.8: schema ccpp_keys + districts_with_off
+        'ccpp_keys Set': 'ccpp_keys: new Set(' in html,
+        'districts_with_off Set': 'districts_with_off: new Set(' in html,
+        'normalizeKey helper': 'function normalizeKey' in html,
+        'warn state CSS': '.cobertura-btn.warn' in html,
+        'ac-item-off CSS': '.ac-item.ac-item-off' in html,
     }
     for name, present in checks.items():
         if present:
@@ -225,50 +230,53 @@ def test(html_path):
         d2_items = re.findall(r'"(\d+)"', sets_match.group(3))
         total = int(sets_match.group(4))
 
-        # Size tests (v2.0.7 audit exhaustivo: d6=195, d4=1, d2=1)
-        if len(d6_items) == 195: result.ok(f'd6 size = {len(d6_items)} (195 expected — audit v2.0.7)')
-        else: result.fail(f'd6 size', f'{len(d6_items)} (expected 195)')
-        if len(d4_items) == 1: result.ok(f'd4 size = {len(d4_items)} (1 — solo LORETO prov)')
-        else: result.fail(f'd4 size', f'{len(d4_items)} (expected 1)')
-        if len(d2_items) == 1: result.ok(f'd2 size = {len(d2_items)} (1 — solo LORETO depto)')
-        else: result.fail(f'd2 size', f'{len(d2_items)} (expected 1)')
-        if total == 242: result.ok(f'total = {total} (242 expected — audit v2.0.7)')
-        else: result.fail(f'total', f'{total} (expected 242)')
+        # v2.0.8: schema ccpp_keys + districts_with_off (reemplaza d6/d4/d2)
+    sizes = re.search(
+        r'ccpp_keys: new Set\(\[(.*?)\]\).*?districts_with_off: new Set\(\[(.*?)\]\).*?total_zones:\s*(\d+).*?total_districts:\s*(\d+)',
+        html, re.DOTALL)
+    if sizes:
+        ccpp_items = re.findall(r'"([^"]+)"', sizes.group(1))
+        dist_items = re.findall(r'"([^"]+)"', sizes.group(2))
+        total_zones = int(sizes.group(3))
+        total_districts = int(sizes.group(4))
+        if len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 expected)')
+        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 239)')
+        if len(dist_items) == 191: result.ok(f'districts_with_off size = {len(dist_items)} (191 expected)')
+        else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected 191)')
+        if total_zones == 239: result.ok(f'total_zones = {total_zones}')
+        else: result.fail(f'total_zones', f'{total_zones} (expected 239)')
+        if total_districts == 191: result.ok(f'total_districts = {total_districts}')
+        else: result.fail(f'total_districts', f'{total_districts} (expected 191)')
 
-        # Policy verify: d4 y d2 deben ser LORETO específicamente
-        if d4_items == ['1603']: result.ok('d4 = ["1603"] (LORETO prov)')
-        else: result.fail(f'd4 content', f'{d4_items} (expected ["1603"])')
-        if d2_items == ['16']: result.ok('d2 = ["16"] (LORETO depto)')
-        else: result.fail(f'd2 content', f'{d2_items} (expected ["16"])')
+        # Formato de keys: "d6:ccpp"
+        if all(':' in k for k in ccpp_items): result.ok('all ccpp_keys tienen formato d6:ccpp')
+        else: result.fail('ccpp_keys format', 'falta ":" en alguna key')
+        # Formato de districts: 6 dígitos
+        if all(len(d) == 6 for d in dist_items): result.ok('districts_with_off todos 6 dígitos')
+        else: result.fail('districts_with_off length', 'algunos no son 6d')
 
-        # Uniqueness
-        if len(set(d6_items)) == len(d6_items): result.ok('d6 items unique')
-        else: result.fail('d6 items', f'{len(d6_items)-len(set(d6_items))} duplicates')
-
-        # Real samples present (zonas nuevas + regresión)
+        # Muestras críticas (escenarios call center)
+        ccpp_set = set(ccpp_items)
+        dist_set = set(dist_items)
         samples = [
-            ('060808', 'PUCARA Cajamarca (baseline v2.0.1)'),
-            ('040206', 'OCONA Arequipa (Grupo 1, fuzzy OCOÑA)'),
-            ('051012', 'VILCANCHOS Ayacucho (Grupo 3 OCR visual)'),
-            ('120606', 'COVIRIALI Junín (Grupo 1 visual)'),
-            ('160305', 'SANTA ROSA Loreto (Grupo 1 visual)'),
-            ('1603', 'LORETO prov (d4 proporcional)'),
-            ('16', 'LORETO depto (d2 proporcional)'),
-            # v2.0.7 audit exhaustivo: 3 distritos recuperados
-            ('050611', 'UCHUYMARCA Ayacucho (PDF1 Grupo 2 — antes faltante)'),
-            ('060601', 'CONDORHUASI Cajamarca (PDF1 Grupo 2 — antes faltante)'),
-            ('060201', 'CAJABAMBA dist con typo PDF (recuperado via fuzzy)'),
+            ('060808:PLAYA AZUL', 'PDF clásico Grupo 1'),
+            ('080403:CHUMPE-POQUES', 'PDF Grupo 1 visual'),
+            ('200201:PAPELLILLO', 'typo PDF con doble L preservado'),
+            ('200201:CURRILCAS', 'corregido CURILCAS → CURRILCAS'),
+            ('051012:ESPITE', 'OCR visual Grupo 3'),
+            ('010202:TUTUMBEROS', 'Amazonas rural clásico'),
+            ('060808', 'PUCARA dist con apagados'),
+            ('080403', 'LAMAY dist con apagados'),
         ]
-        all_set = set(d6_items) | set(d4_items) | set(d2_items)
-        for ubigeo, label in samples:
-            if ubigeo in all_set:
-                result.ok(f'{ubigeo} present ({label})')
+        for s, label in samples:
+            if s in ccpp_set or s in dist_set:
+                result.ok(f'{s} presente ({label})')
             else:
-                result.fail(f'{ubigeo} missing', label)
+                result.fail(f'{s} missing', label)
     else:
-        result.fail('ZONAS_APAGADAS pattern', 'no match')
+        result.fail('v2.0.8 schema pattern', 'no match en HTML')
 
-    # 7.6 v2.0.5 Visual layout: coberturaBtn dentro del output-row, compacto
+        # 7.6 v2.0.5 Visual layout: coberturaBtn dentro del output-row, compacto
     print('\n▸ Visual layout v2.0.5 (coberturaBtn compact inside output-row)')
     # Buscar orden: <div class="output-row"> ... id="coberturaBtn" ... en orden
     btn_pos = html.find('id="coberturaBtn"')
