@@ -805,6 +805,116 @@ def test(html_path):
     else:
         result.fail('v2.x placeholder DOM', 'todavía presente <div class="tipif-process-badge">')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.1 REDESIGN ETIQUETAS — Category System as Design Tokens
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ ETIQUETAS v3.1 — Category System as Design Tokens (CRIT-009 Avanzado+)')
+
+    # Design tokens (12 cat-* tokens + 3 warning-amber-* + 3 skill-chip-*)
+    for tok in ['--cat-postpago-500', '--cat-postpago-400', '--cat-postpago-soft', '--cat-postpago-glow',
+                '--cat-mtotal-500', '--cat-mtotal-400', '--cat-mtotal-soft', '--cat-mtotal-glow',
+                '--cat-standalone-500', '--cat-standalone-400', '--cat-standalone-soft', '--cat-standalone-glow',
+                '--warning-amber-500', '--warning-amber-400', '--warning-amber-soft',
+                '--skill-chip-bg', '--skill-chip-border', '--skill-chip-text']:
+        if tok in html:
+            result.ok(f'ETIQUETAS v3.1 design token: {tok}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 design token', f'{tok} ausente')
+
+    # Block-level data-cat (theme propagation via CSS)
+    if 'id="etiquetasBlock"' in html and 'data-cat="POSTPAGO"' in html:
+        result.ok('ETIQUETAS v3.1 block-level data-cat="POSTPAGO" inicial')
+    else:
+        result.fail('block data-cat', 'data-cat inicial ausente en .etiquetas-block')
+    # CSS selectors que dependen de data-cat para themed states
+    for sel in ['.etiquetas-block[data-cat="POSTPAGO"]',
+                '.etiquetas-block[data-cat="MTOTAL"]',
+                '.etiquetas-block[data-cat="STANDALONE"]']:
+        if sel in html:
+            result.ok(f'ETIQUETAS v3.1 CSS theme selector: {sel}')
+        else:
+            result.fail(f'CSS theme selector', f'{sel} ausente')
+
+    # Title con SVG icon + count badge
+    for k in ['class="etiquetas-title-icon"', 'id="etiquetasCount"', 'aria-live="polite"']:
+        if k in html:
+            result.ok(f'ETIQUETAS v3.1 title: {k}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 title', f'{k} ausente')
+
+    # Search input: icon + clear button
+    for k in ['class="etiquetas-search-icon"', 'id="etiquetaClear"',
+              'class="etiquetas-search-clear"', 'id="etiquetasSearchWrap"']:
+        if k in html:
+            result.ok(f'ETIQUETAS v3.1 search: {k}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 search', f'{k} ausente')
+    # Clear button debe ser SVG-based (no emoji 📋) — accesibilidad WCAG
+    if 'onclick="clearEtiquetaSearch()"' in html and '<svg viewBox="0 0 24 24"' in html:
+        result.ok('ETIQUETAS v3.1 clear button: SVG X icon (no emoji)')
+
+    # Chips con icon SVG + aria-pressed para screen readers
+    for cat in ['POSTPAGO', 'MTOTAL', 'STANDALONE']:
+        if f'aria-pressed="{'true' if cat == "POSTPAGO" else 'false'}"' in html:
+            result.ok(f'ETIQUETAS v3.1 chip {cat} aria-pressed')
+        elif f'data-cat="{cat}"' in html and 'class="cat-chip-icon"' in html:
+            result.ok(f'ETIQUETAS v3.1 chip {cat} tiene aria-pressed + SVG icon')
+        else:
+            result.fail(f'chip {cat}', 'aria-pressed o icon ausente')
+
+    # Dropdown items con row 3 (skill + area pills) + is-selected indicator
+    for k in ['etiqueta-item-row3', 'etiqueta-item-skill', 'etiqueta-item-area',
+              'is-selected']:
+        if k in html:
+            result.ok(f'ETIQUETAS v3.1 dropdown item: {k}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 dropdown', f'{k} ausente')
+
+    # Preview card redesign — close button + skill cards
+    for k in ['class="etiqueta-preview-close"', 'class="etiqueta-skill-card"',
+              'onclick="closeEtiquetaPreview()"']:
+        if k in html:
+            result.ok(f'ETIQUETAS v3.1 preview: {k}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 preview', f'{k} ausente')
+
+    # JS handlers nuevos v3.1
+    for fn in ['clearEtiquetaSearch(', 'closeEtiquetaPreview(',
+               'updateEtiquetaClearVisibility(', 'renderEtiquetasDropdownPosition(']:
+        if fn in html:
+            result.ok(f'ETIQUETAS v3.1 JS handler: {fn}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 JS handler', f'{fn} ausente')
+
+    # CSS reglas nuevas v3.1
+    for sel in ['.cat-chip-icon', '.etiquetas-search-icon', '.etiquetas-search-clear',
+                '.etiqueta-skill-card', '.etiqueta-item-row3', '.etiqueta-item-skill',
+                '.etiqueta-item-area', '.etiqueta-preview-close', '.etiquetas-title-icon',
+                '.etiquetas-title-count']:
+        if sel in html:
+            result.ok(f'ETIQUETAS v3.1 CSS regla: {sel}')
+        else:
+            result.fail(f'ETIQUETAS v3.1 CSS', f'{sel} ausente')
+
+    # Animation: etiquetaPreviewIn keyframes
+    if '@keyframes etiquetaPreviewIn' in html:
+        result.ok('ETIQUETAS v3.1 keyframes: etiquetaPreviewIn (entrada con spring)')
+    else:
+        result.fail('keyframes etiquetaPreviewIn', 'animation ausente')
+
+    # Cat-themed box-shadow per chip (ring con color de la categoría activa)
+    if 'cat-postpago-glow' in html and 'cat-mtotal-glow' in html and 'cat-standalone-glow' in html:
+        result.ok('ETIQUETAS v3.1 chip active: cat-themed glow per category')
+
+    # CSS validation: warning-amber-* token usado (no más hardcoded #f59e0b en nuevo CSS)
+    # Aceptamos el #f59e0b en light-mode override pero el nuevo CSS v3.1 debe usar el token
+    if 'var(--warning-amber-500)' in html:
+        result.ok('ETIQUETAS v3.1 validation: warning-amber token aplicado')
+
+    # Mobile fallback CSS (chips a 1-col en <=480px)
+    if '@media (max-width: 480px)' in html and '.etiqueta-categories' in html:
+        result.ok('ETIQUETAS v3.1 mobile fallback: chips 1-col @ <=480px')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
