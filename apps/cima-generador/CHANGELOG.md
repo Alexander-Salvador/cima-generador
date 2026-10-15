@@ -1,5 +1,129 @@
 # Changelog — cima-generador
 
+## [3.1] - 2026-10-15 — ETIQUETAS REDESIGN (CRIT-009 Avanzado+)
+
+Rediseño end-to-end del bloque Etiquetas de Transferencia. Category System como design tokens de primera clase, hierarchy visual premium, motion design iOS 2026.
+
+### Category System as Design Tokens
+
+Cada categoría (POSTPAGO/MTOTAL/STANDALONE) expone 4 tokens dedicados en `:root` + overrides para `prefers-color-scheme: light`:
+
+| Token | Dark | Light | Uso |
+|---|---|---|---|
+| `--cat-{name}-500` | `#3b82f6` / `#8b5cf6` / `#10b981` | `#2563eb` / `#7c3aed` / `#059669` | Base saturada (UI activa, dot indicator) |
+| `--cat-{name}-400` | `#93c5fd` / `#c4b5fd` / `#6ee7b7` | `#1d4ed8` / `#6d28d9` / `#047857` | Texto de badge (contraste WCAG) |
+| `--cat-{name}-soft` | mix 18% / glass-3 | mix 10% / surface | Fondo glass del badge |
+| `--cat-{name}-glow` | mix 38% / transparent | mix 26% / transparent | Shadow de elevación + ring focus |
+
+**Validación amber tokenizada** (`--warning-amber-500/400/soft`) — reemplaza hardcoded `#f59e0b` en CSS.
+
+**Skills accent tokenizado** (`--skill-chip-bg/border/text`) — reusa `--accent-2` pero ahora dedicado.
+
+### Block-level theme propagation
+
+`.etiquetas-block[data-cat="POSTPAGO|MTOTAL|STANDALONE"]` cambia `data-cat` cuando el usuario cambia de chip. Todos los hijos heredan el tema vía CSS attribute selectors — un único punto de control, sin clases separadas.
+
+### Search input rediseñado
+
+- **SVG icon 🔍** a la izquierda (era placeholder)
+- **Clear button X** (SVG, no emoji) que aparece solo cuando hay valor (`has-value` class)
+- **Focus ring themed**: cambia al color de la categoría activa (no más accent genérico)
+- **Placeholder italic** preservado
+
+### Chips rediseñados (3-col, no 4-col)
+
+- **Grid 3-col** (era 4-col con 1 vacía)
+- **SVG icon por categoría**: phone (POSTPAGO), layers (MTOTAL), home (STANDALONE)
+- **Container con bg glass** alrededor (look "pill segment control" iOS)
+- **Active state themed**: dot indicator con color de categoría + glow
+- **Focus-visible ring**: 2px accent (accesibilidad teclado)
+- **Hover state**: bg glass-2 + icon opacity 0.6→1
+
+### Dropdown items rediseñados (3 filas)
+
+- **Row 1**: cat badge (con dot themed) + solicitud (truncada con ellipsis)
+- **Row 2**: detalle (2-line clamp en lugar de truncado a 80 chars + ellipsis)
+- **Row 3 (NUEVO)**: mini skill chip (mono font, color accent-2) + area pill (texto dim)
+- **Selected indicator**: dot vertical a la izquierda del item activo (themed por categoría)
+- **Hover**: bg accent + on-accent text (era accent genérico)
+
+### Preview card rediseñado (premium card)
+
+- **Container glass tier-2** con shadow-tier-2 (era tier-1)
+- **Header reorganizado**: cat badge + ID + close button (X SVG)
+- **Title**: 12px bold (era 11.5px)
+- **Description**: 10.5px (era 10px) — más legible
+- **Skills como 2 mini-cards** (grid 1fr 1fr): cada card tiene label + skill code
+  - Hover: border + bg intensify
+  - Stack vertical en mobile
+- **Validation card**: icon ⚠️ ahora es CSS mask (warning-amber-500 themed), no emoji
+- **Animation**: `etiquetaPreviewIn` (opacity + translateY + scale) con spring motion
+- **Hairline highlight superior** (iOS refraction)
+
+### Counter live
+
+- `<span id="etiquetasCount" aria-live="polite">` muestra conteo de etiquetas en la categoría activa (6/6/5)
+- Cambia dinámicamente al filtrar
+
+### Mobile fallback
+
+- `@media (max-width: 480px)`: chips colapsan a grid 1-col, skills a 1-col
+
+### Accessibility (WCAG)
+
+- `aria-pressed` en chips (state screen readers)
+- `aria-live="polite"` en count
+- `role="option"` en dropdown items
+- `aria-label` en clear + close buttons
+- `aria-controls` en search input
+- Focus-visible rings themed (no generic outline)
+- SVG icons con `aria-hidden="true"` (decorativos)
+- Keyboard: input focus + click-outside para dropdown (pre-existing)
+
+### Tests
+
+- **224/224 PASS** (era 166/166 en v3.0; +58 nuevos para v3.1)
+- +12 design tokens verificados
+- +3 data-cat CSS selectors
+- +3 title elements (icon, count, aria-live)
+- +4 search elements (icon, clear button, wrap)
+- +3 chip aria-pressed verifications
+- +4 dropdown item new classes
+- +3 preview new elements (close, skill-card, onclick)
+- +4 JS handlers nuevos (clearEtiquetaSearch, closeEtiquetaPreview, updateEtiquetaClearVisibility, renderEtiquetasDropdownPosition)
+- +10 CSS reglas nuevas
+- +1 keyframes animation
+- +1 cat-themed glow check
+- +1 warning token usage
+- +1 mobile fallback check
+
+### Iteraciones internas
+
+| Sub-ver | Estado |
+|---|---|
+| v3.1 | Category tokens + block data-cat + search icon/clear + chips 3-col + dropdown 3-row + preview premium + mobile fallback |
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — ~+556/-80 líneas CSS/HTML/JS
+- `apps/cima-generador/VERSION` — `3.0` → `3.1`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +58 tests (166 → 224)
+- `MEMORY.md` — actualización arquitectural v3.1
+
+### Lecciones nuevas
+
+- **L-021:** Block-level `data-cat` + CSS attribute selectors es más mantenible que clases separadas por variante. Un solo switch en JS, todos los hijos heredan.
+- **L-022:** Hardcoded color values (#f59e0b, #3b82f6) son deuda inmediata. Tokenizar desde el día 1 evita refactor masivo después.
+- **L-023:** `text-overflow: ellipsis` es solo el safety net. Mejor progressive disclosure (line-clamp, expandable sections) cuando el contenido es semánticamente importante.
+
+### Pendiente
+
+- ⏳ Push a GitHub Pages (CEO autoriza; subtree split + force-push pendiente)
+- ⏳ Bundle LICENSE en deploy standalone si CEO decide distribución parcial
+
+---
+
 ## [3.0] - 2026-10-15 — TIPIFICACIÓN TX (Transferencia) COMPLETA
 
 Feature mayor: el Grid 2 (TIPIFICACIÓN) deja de ser placeholder "EN PROCESO" y se transforma en herramienta TX funcional con dos secciones operativas.
