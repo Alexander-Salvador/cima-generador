@@ -7,8 +7,8 @@
 <title>CIMA — Técnica móvil | Generador</title>
 <link rel="icon" href="data:,">
 <!-- D-30: preload de JSON críticos. CCPP baja prioridad porque es lazy -->
-<!-- <link rel="preload" href="data/ubigeo_consolidated.json" as="fetch" crossorigin="anonymous" fetchpriority="high"> (eliminado: data inline v2.0.0) -->
-<!-- <link rel="preload" href="data/ccpp_by_distrito.json" as="fetch" crossorigin="anonymous" fetchpriority="low"> (eliminado: data inline v2.0.0) -->
+<!-- <link rel="preload" href="data/ubigeo_consolidated.json" as="fetch" crossorigin="anonymous" fetchpriority="high"> (eliminado: data inline v2.1.1) -->
+<!-- <link rel="preload" href="data/ccpp_by_distrito.json" as="fetch" crossorigin="anonymous" fetchpriority="low"> (eliminado: data inline v2.1.1) -->
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      DESIGN TOKENS GLOBALES (D-14) — sistema escalable premium 2026
@@ -1224,7 +1224,7 @@ font-size: 10px;
             <rect x="3" y="11" width="18" height="11" rx="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
-          <span>v2.1.0 · standalone (no fetch)</span>
+          <span>v2.1.1 · standalone (no fetch)</span>
         </span>
       </div>
     </div>
@@ -1437,7 +1437,7 @@ function copyTipifOutput(id) {
 // ══════════════════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════════════════
-// DATA INLINE v2.0.0 — eliminamos fetch() para 100% standalone
+// DATA INLINE v2.1.1 — eliminamos fetch() para 100% standalone
 // Ubigeo: RitchieRD (ODbL) · 25 deptos
 // CCPP: GeoNames (CC BY 4.0) · 1851 distritos · 43,491 caseríos
 // ══════════════════════════════════════════════════════════════════════
@@ -1577,7 +1577,7 @@ function checkAndRenderZonaApagada() {
   renderCoberturaButton(check);
 }
 
-// DATA VALIDATION (v2.0.0) — surface errors at startup (FIX #7)
+// DATA VALIDATION (v2.1.1) — surface errors at startup (FIX #7)
 // ══════════════════════════════════════════════════════════════════════
 (function validateInlineData() {
   var errors = [];
@@ -1890,12 +1890,12 @@ document.addEventListener('mousedown', function (e) {
 // ══════════════════════════════════════════════════════════════════════
 // UBIGEO PERÚ — carga
 // ══════════════════════════════════════════════════════════════════════
-// v2.0.0 STANDALONE: data inline como const arriba. loadUbigeo() es no-op.
+// v2.1.1 STANDALONE: data inline como const arriba. loadUbigeo() es no-op.
 // Mantenemos la firma por compatibilidad con llamadas existentes.
 var ubigeoLoadToken = 0;
 
 function loadUbigeo() {
-  // v2.0.0: no-op. UBIGEO ya está inline como const al inicio del script.
+  // v2.1.1: no-op. UBIGEO ya está inline como const al inicio del script.
   // Si el input departamento ya tiene valor, refrescar dropdown
   var dep = $('departamento');
   if (dep && dep.value.trim()) acRender('departamento');
@@ -1929,7 +1929,7 @@ var CCPP_LOADING = false;
 var ccppLoadToken = 0;
 
 function loadCCPP() {
-  // v2.0.0 STANDALONE: no-op. CCPP_DATA ya está inline como const.
+  // v2.1.1 STANDALONE: no-op. CCPP_DATA ya está inline como const.
   if (AC_STATE.active === 'ccpp') acRender('ccpp');
   var dist = upper('distrito');
   if (dist) updateCcppHint(dist);
@@ -2298,7 +2298,7 @@ function buildAddressForMaps() {
   var dist = upper('distrito');
   var prov = upper('provincia');
   var dep  = upper('departamento');
-  // FIX #9 (v2.0.0): incluir referencia entre direccion y ccpp (entre corchetes)
+  // FIX #9 (v2.1.1): incluir referencia entre direccion y ccpp (entre corchetes)
   // Formato: "[referencia]" para diferenciar visualmente de la dirección
   var streetParts = [dir, ref ? '(' + ref + ')' : '', ccpp].filter(function (x) { return x; });
   var geoParts = [];
@@ -2398,7 +2398,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function initPopupMode() {
   var closeBtn = $('popupClose');
   if (!closeBtn) return;
-  var isPopup = !!(window.opener || window.parent !== window);
+  // v2.1.1: query param ?popup=1 fuerza modo popup (botón X visible)
+  var forcePopup = /[?&]popup=1\b/.test(location.search);
+  var isPopup = forcePopup || !!(window.opener || window.parent !== window);
   if (isPopup) {
     document.body.setAttribute('data-popup', 'true');
     closeBtn.addEventListener('click', function () {
