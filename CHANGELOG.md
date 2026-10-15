@@ -1,5 +1,101 @@
 # Changelog — cima-generador
 
+## [3.0] - 2026-10-15 — TIPIFICACIÓN TX (Transferencia) COMPLETA
+
+Feature mayor: el Grid 2 (TIPIFICACIÓN) deja de ser placeholder "EN PROCESO" y se transforma en herramienta TX funcional con dos secciones operativas.
+
+### Added — Quick Speeches (fila 1)
+
+Tres botones de copy-to-clipboard para speeches recurrentes del agente técnico:
+
+| Action | Speech (copy limpio, sin ✓) |
+|---|---|
+| 🔄 RESET | "Se realizó el proceso de reset con el cliente" |
+| 📶 APN | "Se realizó la configuración de APN con el cliente" |
+| ↗ CASO | "Se abrió el caso con el área correspondiente" |
+
+- **Sin prefix `✓`** (CEO directive: el output es DECLARATIVO, no narrativo)
+- **Artículos + acentos preservados**: "el proceso", "la configuración", "AVERÍA"
+- **Premium UI (v3.0.2)**: SVG icons Lucide-style + gradient glass per action (azul · verde · ámbar) + sub-label
+- **Compact v3.0.3**: 44px alto (Apple HIG sweet spot), 22px icon, layout horizontal pill
+
+### Added — Smart Etiquetas Search (fila 2)
+
+Búsqueda + dropdown de etiquetas de Transferencia categorizadas:
+
+| Categoría | Etiquetas |
+|---|---|
+| POSTPAGO (cat: `POSTPAGO`) | 6 registros |
+| MOVISTAR TOTAL (cat: `MTOTAL`) | 6 registros |
+| STANDALONE | 5 registros |
+| **Total** | **17 registros** |
+
+- **Fuente:** `Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx` (en .gitignore)
+- **Categorización derivada del XLSX columna `AREA`:**
+  - `MOVIL POSTPAGO // PREPAGO` → `POSTPAGO`
+  - `MOVISTAR TOTAL` → `MTOTAL`
+  - `SERVICIO FIJA STAND ALONE` → `STANDALONE`
+- **UX**: Click chip → abre dropdown filtrado → click item → preview + copy etiqueta completa
+- **Smart search**: input libre filtra por texto del label
+
+### Fixed (4 bugs pre-commit)
+
+| # | Bug | Sev | Fix |
+|---|---|---|---|
+| 1 | Iconos desaparecían al copiar (v3.0.2) — `textContent` save/restore destruía HTML | UX rota | `copyText` usa `dataset.origHTML` + `innerHTML` save/restore (L-017) |
+| 2 | Stray `}` syntax error al agregar `hideEtiquetaDropdown()` | JS completo roto | Eliminado. `node --check` cazó el error antes de commit (L-007 base) |
+| 3 | Skill codes largos overflow horizontal (`SK_CV_RETENCIONES_CONVERGENTE_TX`) | Visual — códigos cortados | `word-break: break-all` + `overflow-wrap: anywhere` en `.etiqueta-skill-row` |
+| 4 | Inline styles quedaban en dropdown post-close | State accumulation en DOM | Nueva `hideEtiquetaDropdown()` limpia styles + restaura al parent original (sale del `<body>`) |
+
+### Data arquitectura (0 fetch)
+
+- `SPEECH_TEMPLATES` inline desde XLSX SPEECH RECURRENTES + PLANTILLAS PLAZOS
+- `ETIQUETAS_DATA` inline desde XLSX Etiquetas de Transferencia
+- **0 fetch externos en runtime** (cumple ADR-007 standalone pattern)
+
+### Tests
+
+- **166/166 PASS** (era 120/120 en v2.1.8; +46 nuevos para TIPIFICACIÓN TX)
+- `test_popup.py` extendido con:
+  - TIPIF v3.0 CSS reglas (`.action-btn-feedback`, `.etiqueta-categories`, `.copy-etiqueta-btn`, `.etiqueta-validation-label`)
+  - Elementos DOM v3.0 (SPEECH_TEMPLATES, ETIQUETAS_DATA, dropdown, copy buttons)
+  - SVG icons validation (×3 actions)
+  - SPEECH_TEMPLATES sin `✓` prefix
+  - Puntuación correcta con artículos en español
+  - ETIQUETAS_DATA categorías (POSTPAGO/MTOTAL/STANDALONE)
+  - "v2.x EN PROCESO" placeholder DOM reemplazado por v3.0 TIPIF TX
+
+### Iteraciones internas
+
+| Sub-ver | Estado |
+|---|---|
+| v3.0 | Vertical, 64px alto, iconos emoji 🔄📡📋 |
+| v3.0.1 | Sin ✓ prefix, artículos en español, opción 'TODAS' removida |
+| v3.0.2 | Premium: SVG icons Lucide-style, gradient glass per action, sub-label |
+| v3.0.3 | Compact: 44px alto (Apple HIG), 22px icon, layout horizontal pill |
+
+### Lecciones nuevas
+
+- **L-017:** `copyText` usa `innerHTML` save/restore, NO `textContent` (preserva SVG/structure)
+- **L-018:** Estética iOS 2026: 44px touch target es el sweet spot — más grande rompe grids
+- **L-019:** Speeches vs Process responses: agent workflow requiere texto DECLARATIVO (lo que pasó al cliente) no narrativo (lo que el agente dice)
+- **L-020:** Datos internos del operador (PDFs Movistar, XLSXs) → `.gitignore` con `Recursos CIMA/` + `*.xlsx`
+
+### Files modificados
+
+- `apps/cima-generador/index.html` — +TIPIFICACIÓN TX feature (~+50KB por CSS/SVG/data inline)
+- `apps/cima-generador/VERSION` — `2.1.8` → `3.0`
+- `apps/cima-generador/CHANGELOG.md` — esta entrada
+- `apps/cima-generador/test_popup.py` — +46 tests (120 → 166)
+- `MEMORY.md` — documentación arquitectural v3.0
+
+### Pendiente
+
+- ⏳ Push a GitHub Pages (CEO debe autorizar; 1 subtree split + force-push pendiente)
+- ⏳ Bundle LICENSE en deploy standalone si CEO decide distribución parcial (compliance CC BY 4.0 + ODbL)
+
+---
+
 ## [2.1.8] - 2026-10-15 — LIMPIEZA FOOTER + TIPIFICACIÓN PLACEHOLDER
 
 ### Removed
