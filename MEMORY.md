@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-14 — v2.0.7 COMMITEADO (`4bb7e5a`), audit exhaustivo de los 3 PDFs + 3 distritos recuperados + visual refactor + badge opt-in**.
+Memoria persistente. Última actualización: **2026-10-14 — v2.0.8 COMMITEADO (`7a16ed5`), búsqueda CCPP exacto + distrito preventivo (call center 0 fallos)**.
 
 ---
 
