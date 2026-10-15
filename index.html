@@ -336,6 +336,27 @@
     color: white;
     font-weight: 800;
   }
+  /* v2.0.8: CCPP marcado como apagado en dropdown — fondo danger + ⚠️ */
+  .ac-item.ac-item-off {
+    background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+    color: var(--danger);
+    font-weight: 700;
+  }
+  .ac-item.ac-item-off mark {
+    background: color-mix(in srgb, var(--danger) 24%, transparent);
+    color: var(--danger);
+    font-weight: 800;
+  }
+  .ac-item.ac-item-off:hover,
+  .ac-item.ac-item-off.active {
+    background: color-mix(in srgb, var(--danger) 28%, var(--surface));
+    color: var(--on-accent);
+  }
+  .ac-item .ac-off-icon {
+    display: inline-block;
+    margin-right: 4px;
+    font-size: 13px;
+  }
   .ac-item mark {
     background: color-mix(in srgb, var(--accent) 30%, transparent);
     color: var(--accent);
@@ -847,9 +868,33 @@
     outline: 2px solid var(--danger);
     outline-offset: 2px;
   }
+  /* v2.0.8: estado .warn = distrito con apagados (preventivo, no exacto) */
+  .cobertura-btn.warn {
+    display: inline-flex;
+    background: color-mix(in srgb, #f59e0b 24%, var(--surface));
+    border-color: #f59e0b;
+    color: #f59e0b;
+    animation: pulseWarn 2.8s ease-in-out infinite;
+  }
+  .cobertura-btn.warn:hover,
+  .cobertura-btn.warn:focus-visible {
+    background: color-mix(in srgb, #f59e0b 36%, var(--surface));
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+  }
   .cobertura-btn:focus-visible {
     outline: 2px solid var(--danger);
     outline-offset: 2px;
+  }
+  @keyframes pulseWarn {
+    0%, 100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 60%, transparent);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 0 5px color-mix(in srgb, #f59e0b 0%, transparent);
+      transform: scale(1.02);
+    }
   }
   @keyframes pulseDanger {
     0%, 100% {
@@ -1452,10 +1497,10 @@ const CCPP_LOADED = true;
 //   - d2: solo departamentos con >=40% de distritos apagados (≥10 distritos)
 // Extracción: pdfplumber (Grupo 1) + OCR visual (Grupo 3) en sesión 2026-10-14.
 const ZONAS_APAGADAS = {
-  d6: new Set(["010105","010114","010116","010117","010118","010121","010202","010512","010513","010520","010602","010608","010609","010610","010611","010701","010705","010706","020110","020508","020804","021015","021206","021208","021701","021707","030104","030107","030201","030207","030209","030218","030415","030504","030505","030608","030611","030702","040204","040206","040308","040411","040504","040603","040810","050113","050203","050205","050406","050502","050507","050603","050609","050611","050613","050618","050701","050703","051005","051012","051103","060201","060202","060204","060305","060418","060506","060601","060602","060606","060801","060805","060808","060812","060901","060906","060907","061304","080203","080206","080401","080403","080407","080408","080507","080602","080701","080706","080806","080807","080904","080905","080906","080909","080914","080918","081009","081106","081201","081208","081210","090102","090108","090119","090301","090510","090706","090718","100201","100507","100511","100903","101005","110208","120124","120134","120302","120304","120405","120602","120606","120607","120701","120801","130801","130809","130901","130902","140110","140202","140203","140205","140307","140308","150204","150508","150606","150611","150708","150720","150809","150901","151002","160101","160103","160107","160108","160113","160201","160210","160211","160301","160302","160305","160401","160503","160504","160505","160507","160508","160509","160603","160605","160702","160705","170202","180202","190102","190104","190106","190107","190109","200201","200206","200304","200409","200604","210208","210309","210803","220101","220204","220304","220406","220502","220504","220510","220601","220704","220906","221003","230107","230302","230405","250301"]),
-  d4: new Set(["1603"]),
-  d2: new Set(["16"]),
-  total: 242,
+  ccpp_keys: new Set(["010105:CHILIQUIN","010105:VITUYA","010114:SAN JOSE","010114:SANTA CRUZ DEL TINGO","010116:OLLEROS","010116:SAN MIGUEL DE LA REYNA","010117:QUINJALCA","010118:PIPUS","010121:SAN JUAN DE SONCHE","010202:TUTUMBEROS","010512:OCALLI","010513:COLLONCE","010520:SANTA CATALINA","010602:ACHAMAL","010608:MILPUC","010609:SAN JOSE","010610:SANTA ROSA DE HUAYABAMBA","010611:TOTORA","010701:VISTA HERMOSA","010705:LA PALMA","010705:TAMBOLIC","010706:NUEVA YORK","020110:CHACCHAN","020508:CHUSPIC","020804:CASABLANCA","021015:VICHON","021206:CHACLANCAYO","021208:HUARIPAMPA","021701:COLLAHUASI","021707:PAMPAS CHICO","030104:ANTILLA","030107:ACCOPAMPA","030107:PICHIRHUA","030201:SOCNACANCHA","030207:CAVIRA","030209:ARGAMA BAJA","030218:BELEN ANTA","030415:TINTAY","030504:PATAN","030505:PITIC","030608:OCCCEPATA","030611:CHUYAMA","030611:RIO BLANCO","030702:RACCKEY","040204:PUCCHUN","040206:OCONA","040308:ACHANIZO","040411:TIPAN","040504:HUITLLANE","040603:ARCATA","040603:TOCROYO (TOCJRULLO)","040810:TOMEPAMPA","050113:MUYURINA","050203:CUSIBAMBA","050205:CCARHUACCOCCO","050406:SAN JOSE DE SECCE","050502:SACHARACCAY","050507:COMUNPIARI","050507:SIMARIBA","050507:YANASACHA","050603:CABANA","050609:NUEVO SANTIAGO","050609:UCHUYMARCA","050613:OTOCA","050618:SAN ISIDRO DE TOTORA","050701:PAMPAMARCA","050703:PALLANCATA","051005:RACCAYA","051012:ESPITE","051103:CARHUANCA","060202:CACHACHI","060204:LLUCHUBAMBA","060305:LUCMAPAMPA","060418:TOCMOCHE","060506:SANTA CRUZ DE TOLED","060602:CHIPLE","060606:CONDORHUASI","060606:CUYCA","060801:EL NOGAL","060805:EL HUACO","060808:PLAYA AZUL","060812:LA YUNGA","060812:PUERTO HUALLAPE","060901:LA MORA GRANDE","060906:PUERTO TUPAC AMARU","060907:LINDEROS","060907:MANCHARA","061304:CHANCAYBANOS","080203:HUAYQUI","080206:RONDOCAN","080401:ACCHA PAMPA","080403:CHUMPE-POQUES","080407:HUANCALLE","080408:PALTAYBAMBA","080507:QUEHUE","080602:CHUQUICAHUANA","080701:LA ESQUINA","080706:LUTTO","080806:PICHIGUA","080807:VIRGINIYOC","080904:SANTA MARIA LA NUEVA","080905:CHICO CHINGANILLA","080906:CHANCAMAYO","080906:PUTUCUSI","080909:HUANCACALLE","080914:NUEVO MUNDO","080918:TERESA","081009:POMATE","081106:ATALAYA","081201:URCOS","081208:LUCRE","081210:JULLICUNCA","081210:MAHUAYANI","081210:OCONGATE","090102:ACOBAMBILLA","090108:LARMENTA","090119:HUANDO","090301:TACCSANA","090510:PALTAMARCA","090706:LA COLPA","090706:RUNDO","090718:TINTAY","100201:CAPAPAMPA","100507:PALO ACERO","100511:COYLLARBAMBA","100903:HONORIA","101005:PILCOCANCHA","110208:SAN JUAN DE YANAC","120124:HUANUSCO","120124:MIO TAMBO","120124:SAN BALVIN","120124:SANTA ROSA DE ILA","120134:LA LIBERTAD","120302:SANTA ROSA DE RIO AMARILLO","120304:PLAYA PAMPA BAJO","120304:SAN FRANCISCO DE ASIS","120304:SAN LUIS DE SHUARO","120405:CANCHAYLLO","120602:RIO BLANCO","120606:ALTO ANAPATI","120606:CIUDAD DE DIOS","120607:SAN JUAN DE HUAHUARI","120701:PIAN","120801:HUARI","130801:JUCUSBAMBA","130809:CHAGUAL","130809:MAYAS","130901:YANASARA","130902:YAMAN","140110:SANTA RITA","140202:CHIÑAMA","140203:LAQUIPAMPA","140205:MOCHUMI VIEJO","140307:MONDRAGON","140308:PASAJE NORTE","140308:QUERPON","150204:LATERAL L","150508:CATAPALLA","150606:YUNGUY","150606:ÑAUPAY","150611:PISCOCOTO","150708:HUANZA","150720:SAN JUAN DE TANTARANCHE","150809:CHIUCHIN","150901:PATON","150901:VIROC","151002:YAURICOCHA","160101:FRAY MARTIN","160103:GALLITO","160107:SANTA CLOTILDE","160108:SANTA MARIA DE OJEAL","160113:MORALILLO","160201:COTOYACU","160201:TUPAC AMARU","160210:POLLERA POZA","160210:SANTA CRUZ","160211:NUEVO CANAAN","160301:SAN REGIS","160302:PARINARI","160305:CONCORDIA","160305:SAN JOSE DE SARAMURO","160401:CHIMBOTE","160401:CUSHILLO COCHA","160503:FLOR DE PUNGA","160503:PINTULLACTA","160504:DOCE DE OCTUBRE","160504:NUEVO ACURACAY","160505:SAN MARTIN DE PIURI ISLA","160505:SANTA ISABEL","160507:MARISCAL CASTILLA","160508:NUEVA ALEJANDRIA","160509:IBERIA","160603:TIRUNTAN","160605:DOS DE MAYO","160605:JUANCITO","160605:TIERRA BLANCA","160702:SANTA MARIA DE CAHUAPANAS","160705:ULLPAYACU","170202:BOCA MANU","180202:SANTIAGO DE PACHAS","190102:QUIPARACRA","190104:ANIMON","190106:PALLANCHACRA","190107:CUTUCHACA","190109:SAN PEDRO DE RACO","200201:CURRILCAS","200201:PAPELLILLO","200201:PARAGUERO","200201:PINGOLA","200201:TOJAS","200201:TULMAN DE MATALACAS","200304:CONGOÑA","200409:SAN MIGUEL","200604:LANCONES","210208:MUNANI","210309:LANLACUNI BAJO","210803:CUPI","220101:LOS ANGELES","220204:LEDOY","220304:EL CHAPARRAL","220406:TINGO DE SAPOSOA","220502:ALTO CUTERVO","220502:PACAYZAPA","220502:PORVENIR AMAZONICO","220504:BONILLA","220504:SHUCSHUYACU","220510:PONAZAPA","220601:HUAYABAMBA","220601:HUINGUILLO","220704:MISHQUIYACU","220906:NUEVO SAN JUAN","220906:PELEJO","221003:BUENOS AIRES (LA LOMA)","221003:POLVORA","230107:VILA VILANI","230302:EL CAIRO","230302:ILABAYA","230405:CHALLAGUAYA","250301:HUIPOCA"]),
+  districts_with_off: new Set(["010105","010114","010116","010117","010118","010121","010202","010512","010513","010520","010602","010608","010609","010610","010611","010701","010705","010706","020110","020508","020804","021015","021206","021208","021701","021707","030104","030107","030201","030207","030209","030218","030415","030504","030505","030608","030611","030702","040204","040206","040308","040411","040504","040603","040810","050113","050203","050205","050406","050502","050507","050603","050609","050613","050618","050701","050703","051005","051012","051103","060202","060204","060305","060418","060506","060602","060606","060801","060805","060808","060812","060901","060906","060907","061304","080203","080206","080401","080403","080407","080408","080507","080602","080701","080706","080806","080807","080904","080905","080906","080909","080914","080918","081009","081106","081201","081208","081210","090102","090108","090119","090301","090510","090706","090718","100201","100507","100511","100903","101005","110208","120124","120134","120302","120304","120405","120602","120606","120607","120701","120801","130801","130809","130901","130902","140110","140202","140203","140205","140307","140308","150204","150508","150606","150611","150708","150720","150809","150901","151002","160101","160103","160107","160108","160113","160201","160210","160211","160301","160302","160305","160401","160503","160504","160505","160507","160508","160509","160603","160605","160702","160705","170202","180202","190102","190104","190106","190107","190109","200201","200304","200409","200604","210208","210309","210803","220101","220204","220304","220406","220502","220504","220510","220601","220704","220906","221003","230107","230302","230405","250301"]),
+  total_zones: 239,
+  total_districts: 191,
   fuente: "Bases de Apagado Movistar (Grupo 1: APAGADP1.pdf; Grupo 2: APAGADO.pdf 3 pages auditado; Grupo 3: APAGADO2.pdf)",
   fecha: "2026-10-14"
 };
@@ -1481,21 +1526,44 @@ function getUbigeoCodesForAddress(depto, prov, dist) {
   return { d2: d2, d4: d4, d6: di._ubigeo || '' };
 }
 
-function checkZonaApagada(depto, prov, dist) {
+// Normaliza CCPP para lookup: trim + upper + single-space + NFC
+function normalizeKey(s) {
+  if (!s) return '';
+  s = String(s).trim().toUpperCase().replace(/\s+/g, ' ');
+  return s.normalize ? s.normalize('NFC') : s;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ZONAS APAGADAS MOVISTAR (v2.0.8) — check basado en CCPP exacto + distrito
+// 4 niveles:
+//   1. CCPP exacto (4 campos llenos) matchea → {nivel:'ccpp_exacto', ...} 🔴
+//   2. Distrito con apagados (3 campos llenos, sin CCPP exacto) → {nivel:'distrito_of', ...} 🔴
+//   3. Distrito SIN apagados (4 o 3 campos llenos) → null 🟢
+//   4. < 3 campos → null 🟢 (silencio por datos incompletos)
+// ══════════════════════════════════════════════════════════════════════
+function checkZonaApagada(depto, prov, dist, ccpp) {
   if (typeof ZONAS_APAGADAS === 'undefined') return null;
   if (!depto) return null;
   var codes = getUbigeoCodesForAddress(depto, prov, dist);
-  if (!codes) return null;
-  // Specificity order: distrito (6d) > provincia (4d) > departamento (2d)
-  if (codes.d6 && ZONAS_APAGADAS.d6.has(codes.d6)) {
-    return { nivel: 'distrito', code: codes.d6, mensaje: 'Cobertura retirada en este distrito' };
+  if (!codes || !codes.d6) return null;
+  var d6 = codes.d6;
+
+  // Nivel 1: CCPP exacto (los 4 campos llenos y matchean)
+  if (ccpp && ccpp.trim()) {
+    var key = d6 + ':' + normalizeKey(ccpp);
+    if (ZONAS_APAGADAS.ccpp_keys.has(key)) {
+      return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar' };
+    }
+    // CCPP tipeado pero NO matchea exacto → silencio (sin match exacto, no alertar)
+    return null;
   }
-  if (codes.d4 && ZONAS_APAGADAS.d4.has(codes.d4)) {
-    return { nivel: 'provincia', code: codes.d4, mensaje: 'Cobertura retirada en toda la provincia' };
+
+  // Nivel 2: 3 campos (distrito lleno) sin CCPP → si distrito tiene apagados, alerta genérica
+  if (codes.d6 && ZONAS_APAGADAS.districts_with_off.has(d6)) {
+    return { nivel: 'distrito_of', code: d6, mensaje: 'Este distrito tiene CCPPs en zona de apagado. Verifica el CCPP exacto.' };
   }
-  if (codes.d2 && ZONAS_APAGADAS.d2.has(codes.d2)) {
-    return { nivel: 'departamento', code: codes.d2, mensaje: 'Cobertura retirada en todo el departamento' };
-  }
+
+  // Nivel 3: distrito sin apagados
   return null;
 }
 
@@ -1522,27 +1590,35 @@ function escapeHtml(s) {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// COBERTURA BUTTON (v2.0.5) — compact icon-only, al lado del X clear
-// Aparece SOLO cuando hay alerta (clase .off). Hidden por default.
+// COBERTURA BUTTON (v2.0.8) — 3 estados según nivel de alerta
+// - exact-match: CCPP exacto matchea → 🔴 pulse fuerte
+// - district-of:  distrito tiene apagados, sin CCPP exacto → 🟠 pulse medio
+// - (oculto): sin alerta
 // ══════════════════════════════════════════════════════════════════════
 function renderCoberturaButton(check) {
   var btn = $('coberturaBtn');
   if (!btn) return;
-  btn.classList.remove('off');
+  btn.classList.remove('off', 'warn');
   btn.setAttribute('aria-pressed', 'false');
-  if (check) {
+  if (!check) { btn.title = ''; return; }
+
+  if (check.nivel === 'ccpp_exacto') {
+    // CCPP exacto matcheado — alerta específica fuerte
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = check.mensaje + ' (ubigeo ' + check.code + '). Click para detalles.';
-  } else {
-    btn.title = '';
+    btn.title = '⚠️ ' + check.mensaje + ' (' + check.code + '). Click para detalles.';
+  } else if (check.nivel === 'distrito_of') {
+    // Distrito con apagados, sin CCPP exacto — alerta preventiva
+    btn.classList.add('warn');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.title = '⚠️ ' + check.mensaje + ' (distrito ' + check.code + '). Click para detalles.';
   }
 }
 
-// Toggle: cuando el botón está en OFF (zona detectada), click muestra/oculta badge detalle
+// Toggle: cuando el botón está en alerta, click muestra/oculta badge detalle
 function toggleCoberturaDetail() {
   var btn = $('coberturaBtn');
-  if (!btn || btn.classList.contains('pending') || btn.classList.contains('ok')) return;
+  if (!btn || (!btn.classList.contains('off') && !btn.classList.contains('warn'))) return;
   var badgeArea = $('zonaApagadaBadge');
   if (!badgeArea) return;
   if (badgeArea.classList.contains('show')) {
@@ -1742,10 +1818,6 @@ function acRender(key) {
   AC_STATE.items = acFilter(allOptions, query);
   AC_STATE.selectedIdx = -1;
   if (AC_STATE.items.length === 0) {
-    // D-25 fix: si NO hay datos disponibles para este campo (ej: CCPP
-    // sin distrito seleccionado), NO abrir dropdown y NO mostrar
-    // "Sin coincidencias". Solo mostrar mensaje cuando el usuario
-    // buscó y no encontró matches sobre datos reales.
     if (allOptions.length === 0) {
       drop.hidden = true;
       input.setAttribute('aria-expanded', 'false');
@@ -1756,10 +1828,24 @@ function acRender(key) {
     input.setAttribute('aria-expanded', 'true');
     return;
   }
+  // v2.0.8: marcar CCPPs apagados en el dropdown con ⚠️ (solo si key === 'ccpp' y distrito listo)
+  var d6ForMark = null;
+  if (key === 'ccpp' && typeof ZONAS_APAGADAS !== 'undefined') {
+    var d = upper('departamento');
+    var p = upper('provincia');
+    var di = upper('distrito');
+    var codes = getUbigeoCodesForAddress(d, p, di);
+    if (codes && codes.d6) d6ForMark = codes.d6;
+  }
   var html = AC_STATE.items.map(function (item, i) {
-    return '<div class="ac-item" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + acHighlight(item, query) + '</div>';
+    var off = false;
+    if (d6ForMark && typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
+      off = ZONAS_APAGADAS.ccpp_keys.has(d6ForMark + ':' + (item.normalize ? item.normalize('NFC').toUpperCase() : item.toUpperCase()));
+    }
+    var cls = 'ac-item' + (off ? ' ac-item-off' : '');
+    var prefix = off ? '<span class="ac-off-icon" aria-hidden="true">⚠️</span>' : '';
+    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + prefix + acHighlight(item, query) + '</div>';
   }).join('');
-  // D-26 fix + D-30: meta footer solo si hay suficientes items. Usar total cacheado.
   var total = allOptions.length;
   if (total > 5 && total > AC_STATE.items.length && AC_STATE.items.length >= 2) {
     html += '<div class="ac-meta">' + AC_STATE.items.length + ' de ' + total + '</div>';
