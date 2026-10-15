@@ -1,5 +1,42 @@
 # Changelog — cima-generador
 
+## [2.0.9] - 2026-10-14 — Triángulo solo se colorea (sin click container) + unión CCPPs no oficiales
+
+### Changed
+- **Botón ⚠️ ya NO es cliqueable**. Sin contenedor debajo. Solo se colorea:
+  - Removido `onclick="toggleCoberturaDetail()"` del botón
+  - Removida función `toggleCoberturaDetail()`
+  - Removido HTML `<div id="zonaApagadaBadge">` y CSS `.zona-apagada-badge`
+  - Removida función `renderZonaApagadaBadge()` y referencias a `badgeArea`
+  - `title` del botón ahora muestra la info via tooltip nativo (no requiere click)
+- **Dropdown CCPP ahora UNION**:
+  - Antes: solo CCPPs oficiales de CCPP_DATA
+  - Ahora: CCPP_DATA oficial + CCPPs apagados (de `ccpp_keys`) que NO son oficiales
+  - 131 CCPPs apagados antes invisibles ahora aparecen en el dropdown marcados con ⚠️
+  - Cobertura completa para call center: el supervisor ve TODOS los caseríos posibles
+
+### Fixed
+- Búsqueda robusta: el supervisor ve "CHILIQUIN" en el dropdown aunque no esté en CCPP_DATA oficial
+- dropdown CCPP pinta con ⚠️ los apagados no oficiales (antes ni aparecían)
+
+### Removed
+- HTML: `<div id="zonaApagadaBadge">` (contenedor amarillo)
+- CSS: `.zona-apagada-badge` (incluyendo `.show`)
+- JS: `toggleCoberturaDetail()`, `renderZonaApagadaBadge()`, lógica `classList.add/remove('show')`
+- Toda referencia a badge en el flujo
+
+### Audit E2E
+- **25/25 escenarios PASS, 0 fallos** (call center zero-failure)
+- 9 grupos cubiertos: exact-match, lowercase, multi-espacios, distrito_of, no-match, incompletos, tildes, typos PDF preservados, deptos no en base
+- Verificación cross: 239/239 zonas con UBIGEO consistente
+- 106 CCPPs matchean con CCPP_DATA oficial · 131 CCPPs apagados NO oficiales ahora visibles en dropdown
+
+### Tests
+- **62/62 tests PASS** (de 62 anteriores)
+- Diana 🟢 CLEAN (innerHTML x5 después de eliminar badge rendering)
+- Pablo 🟢 GOOD (214 comments)
+- `node --check` → EXIT 0
+
 ## [2.0.8] - 2026-10-14 — Búsqueda por CCPP exacto + distrito preventivo (call center 0 fallos)
 
 ### Changed (schema de búsqueda)

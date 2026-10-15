@@ -773,40 +773,6 @@
     border-style: solid;
   }
 
-  .zona-apagada-badge {
-    display: none;
-    margin-top: var(--space-2);
-    padding: 8px 10px;
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 1.5px solid #f59e0b;
-    border-radius: var(--radius-md);
-    color: #78350f;
-    font-size: 11px;
-    line-height: 1.3;
-    align-items: center;
-    gap: 8px;
-  }
-  .zona-apagada-badge.show { display: flex; }
-  .zona-apagada-badge .badge-icon {
-    font-size: 20px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
-  .zona-apagada-badge .badge-text {
-    flex: 1;
-    font-weight: 600;
-  }
-  .zona-apagada-badge .badge-text strong {
-    color: #92400e;
-  }
-  .zona-apagada-badge .badge-detail {
-    font-size: 9px;
-    color: #78350f;
-    display: block;
-    margin-top: 2px;
-    font-weight: 400;
-  }
-
     .output-box:hover:not(.placeholder) {
     border-color: var(--text-faint);
   }
@@ -1229,15 +1195,13 @@ font-size: 10px;
         </button>
         <!-- v2.0.5: Botón cobertura compacto al costado del X (solo aparece cuando hay alerta) -->
         <button id="coberturaBtn" class="cobertura-btn" type="button"
-                aria-label="Alerta de cobertura Movistar — click para detalles"
+                aria-label="Alerta de cobertura Movistar"
                 aria-pressed="false"
-                title=""
-                onclick="toggleCoberturaDetail()">
+                title="">
           <span id="coberturaIcon" class="icon" aria-hidden="true">⚠️</span>
         </button>
       </div>
 </div>
-      <div id="zonaApagadaBadge" class="zona-apagada-badge"></div>
   </div>
 
   <!-- ═══════════ GRID 2: TIPIFICACIÓN (D-22: CTA honesto, sin promesa falsa) ═══════════ -->
@@ -1567,21 +1531,6 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   return null;
 }
 
-function renderZonaApagadaBadge(check) {
-  if (!check) return '';
-  var labels = {
-    'distrito': 'Distrito completo',
-    'provincia': 'Provincia completa',
-    'departamento': 'Departamento completo'
-  };
-  var label = labels[check.nivel] || check.nivel;
-  return '<div class="zona-apagada-badge" role="alert" aria-live="polite">' +
-    '<span class="badge-icon">⚠️</span>' +
-    '<span class="badge-text"><strong>ZONA DE APAGADO — MOVISTAR RETIRA COBERTURA</strong></span>' +
-    '<span class="badge-detail">' + escapeHtml(label) + ' — ' + escapeHtml(check.mensaje) + '</span>' +
-    '</div>';
-}
-
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"'\/]/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;' }[c];
@@ -1606,51 +1555,25 @@ function renderCoberturaButton(check) {
     // CCPP exacto matcheado — alerta específica fuerte
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = '⚠️ ' + check.mensaje + ' (' + check.code + '). Click para detalles.';
+    btn.title = '⚠️ CCPP exacto apagado Movistar: ' + check.code + ' — ' + check.mensaje;
   } else if (check.nivel === 'distrito_of') {
     // Distrito con apagados, sin CCPP exacto — alerta preventiva
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = '⚠️ ' + check.mensaje + ' (distrito ' + check.code + '). Click para detalles.';
-  }
-}
-
-// Toggle: cuando el botón está en alerta, click muestra/oculta badge detalle
-function toggleCoberturaDetail() {
-  var btn = $('coberturaBtn');
-  if (!btn || (!btn.classList.contains('off') && !btn.classList.contains('warn'))) return;
-  var badgeArea = $('zonaApagadaBadge');
-  if (!badgeArea) return;
-  if (badgeArea.classList.contains('show')) {
-    badgeArea.classList.remove('show');
-    btn.setAttribute('aria-expanded', 'false');
-  } else {
-    badgeArea.classList.add('show');
-    btn.setAttribute('aria-expanded', 'true');
+    btn.title = '⚠️ Distrito con apagados Movistar: ' + check.code + ' — ' + check.mensaje;
   }
 }
 
 // ZONAS APAGADAS: check on every address change
-// (v2.0.6) Badge SOLO visible al click en ⚠️ (toggleCoberturaDetail).
-// El JS prepara el contenido pero NO auto-muestra — el supervisor decide.
+// (v2.0.9) Botón ⚠️ se colorea según check; ya no abre contenedor debajo.
+// El botón refleja el estado (oculto / distrito warn / ccpp exacto off)
+// y la info está disponible en el title (tooltip nativo) del botón.
 function checkAndRenderZonaApagada() {
   var dep = upper('departamento');
   var prov = upper('provincia');
   var dist = upper('distrito');
-  var ccpp = upper('ccpp');
-  var check = checkZonaApagada(dep, prov, dist);
-  var badgeArea = $('zonaApagadaBadge');
-  if (badgeArea) {
-    if (check) {
-      // Preparar HTML del badge (listo para mostrar al click), pero sin auto-mostrar
-      badgeArea.innerHTML = renderZonaApagadaBadge(check);
-      badgeArea.classList.remove('show');
-    } else {
-      badgeArea.innerHTML = '';
-      badgeArea.classList.remove('show');
-    }
-  }
-  // Botón ⚠️ al lado del X — visibilidad automática según check
+  var ccpp_val = ($('ccpp') && $('ccpp').value || '').trim();
+  var check = checkZonaApagada(dep, prov, dist, ccpp_val);
   renderCoberturaButton(check);
 }
 
@@ -1763,10 +1686,30 @@ function acOptionsFor(key) {
     var dep3 = upper('departamento');
     var prov3 = upper('provincia');
     var ubigeo = findDistritoUbigeo(dep3, prov3, dist);
-    if (ubigeo && CCPP_DATA && CCPP_DATA[ubigeo]) {
-      return CCPP_DATA[ubigeo];
+    if (!ubigeo) return [];
+    // v2.0.9: Unión CCPP_DATA oficial + CCPPs apagados (no oficiales)
+    // El supervisor ve TODOS los caseríos posibles del distrito,
+    // marcados con ⚠️ los apagados — para call center zero-failure
+    var oficiales = (CCPP_DATA && CCPP_DATA[ubigeo]) ? CCPP_DATA[ubigeo].slice() : [];
+    var apagados = [];
+    if (typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
+      var prefix = ubigeo + ':';
+      ZONAS_APAGADAS.ccpp_keys.forEach(function (key) {
+        if (key.indexOf(prefix) === 0) {
+          apagados.push(key.substring(prefix.length));
+        }
+      });
     }
-    return [];
+    // Unión única (case-insensitive para dedup)
+    var seen = {};
+    var union = [];
+    function addItem(s) {
+      var u = s.toUpperCase();
+      if (!seen[u]) { seen[u] = true; union.push(s); }
+    }
+    oficiales.forEach(addItem);
+    apagados.forEach(addItem);
+    return union.sort();
   }
   return [];
 }
