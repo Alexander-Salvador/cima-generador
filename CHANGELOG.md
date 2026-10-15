@@ -1,5 +1,24 @@
 # Changelog — cima-generador
 
+## [2.1.8] - 2026-10-15 — LIMPIEZA FOOTER + TIPIFICACIÓN PLACEHOLDER
+
+### Removed
+- **Footer (HTML 1583-1598):** Eliminado `<span>v2.0 standalone</span>` (marker obsoleto de versión).
+- **Footer (HTML 1591-1597):** Eliminado bloque `.footer-attribution` con atribución visible a GeoNames CC BY 4.0 + RitchieRD ODbL (CEO directive: UI minimal). La atribución legal permanece documentada en `LICENSE` (data attribution section) del repo.
+- **Tipificación (HTML 1569):** Eliminado `<p class="tipif-process-text">Tipificación dinámica disponible en próxima iteración</p>`.
+- **Tipificación (HTML 1570-1578):** Eliminado `<span class="tipif-process-cta">v2.1.7 · standalone (no fetch)</span>` con su SVG lock icon.
+
+### Test suite update
+- `'v2.0 marker present'` → actualizado a `v2.1.8 v2.0 standalone marker removido del HTML (preserved in VERSION file)`.
+- `'GeoNames attribution in HTML (source comment)'` → actualizado a `v2.1.8 visible data attribution removida del footer (preserved in LICENSE file)`.
+
+### Preserved
+- `<svg clock>...</svg> + <span>Próximamente</span>` badge del Tipificación (líneas 1562-1567) → mantiene UX de "feature coming".
+- `<strong>Alexander Salvador</strong>` + heart → author credit en footer se mantiene.
+- LICENSE file (data attribution section, líneas 22-46) → atribución legal GeoNames/CC BY 4.0 + RitchieRD/ODbL preservada para distribución.
+
+⚠️ **License compliance note:** Si el popup se distribuye standalone (Google Sites embed, file://, popup window) sin el `LICENSE` file bundleado, las atribuciones CC BY 4.0 y ODbL dejan de ser visibles al usuario. La atribución en `LICENSE` satisface el código fuente del repo, pero **recomendado**: documentar este bundle en deploy pipeline.
+
 ## [2.1.7] - 2026-10-15 — BOUNDS-AWARE DROPDOWN + COMPACTACIÓN INTELIGENTE RESULTADO
 
 ### Issue 1 FIXED — Dropdown respeta límites del grid contenedor (no invade Tipificación)
