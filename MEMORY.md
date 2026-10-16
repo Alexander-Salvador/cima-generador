@@ -14,11 +14,11 @@
 | **Servidor local dev** | `python3 -m http.server 8765` (puerto 8765, NO 8000) |
 | **URL local popup mode** | http://127.0.0.1:8765/index.html?popup=1 |
 | **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) |
-| **Branch de trabajo** | `feat/apagado-inteligente` (HEAD `dc297fc` v3.6.0, base `a05780f` en `develop`) |
-| **Versión LIVE (Pages)** | v3.4.4 en `cd997c4` (sin pushear v3.5.x/3.6.0) |
-| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` con 50+ entradas (v1.0 → v3.6.0) |
+| **Branch de trabajo** | `feat/apagado-inteligente` (HEAD `38f20b2` v3.7.8, base `a05780f` en `develop`, 23 commits ahead) |
+| **Versión LIVE (Pages)** | v3.4.4 en `cd997c4` (sin pushear v3.5.x/3.6.0/v3.7.x — feature branch en local) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` con 50+ entradas (v1.0 → v3.7.8) |
 | **Working dir del popup** | `apps/cima-generador/` |
-| **Tests** | 308/308 PASS (`apps/cima-generador/test_popup.py`) |
+| **Tests** | 370/370 PASS (`apps/cima-generador/test_popup.py`) |
 
 ### Arquitectura (1-archivo monolítico)
 
@@ -56,9 +56,11 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-15 — v3.6.0 REBUILD LIMPIO ZONAS APAGADO** (HEAD `dc297fc` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`). 308/308 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
+Memoria persistente. Última actualización: **2026-10-16 — v3.7.8 DROPDOWN ITEMS MAYÚSCULAS** (HEAD `38f20b2` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`, 23 commits ahead con v3.5.0→v3.7.8). 370/370 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
 
-> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (308/308) ↔ REMOTO.
+> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (370/370 feat branch) ↔ REMOTO.
+
+> ✅ **Alineación feat/apagado-inteligente 2026-10-16:** VERSION `3.4.4 → 3.5.0 → 3.5.5 → 3.5.8 → 3.6.0 → 3.7.0 → 3.7.1 → 3.7.2 → 3.7.3 → 3.7.4 → 3.7.5 → 3.7.6 → 3.7.7 → 3.7.8` en rama local `feat/apagado-inteligente` (HEAD `38f20b2`). CHANGELOG actualizado con todas las entradas. Tests: 370/370 PASS (refactor de tests obsoletos v3.5.3-v3.5.7 que testeaban features revertidas por v3.5.6/v3.6.0/v3.7.4). **NO pusheado a remoto** (CEO directive: "Avanza end to end todo en local").
 
 ---
 
@@ -913,20 +915,20 @@ git diff
 
 ---
 
-## 🟢 Estado actual (snapshot 2026-10-15 v3.0 LOCAL · v2.1.8 LIVE remoto)
+## 🟢 Estado actual (snapshot 2026-10-16 v3.7.8 feat/apagado-inteligente · v3.4.4 LIVE remoto)
 
 | Recurso | Estado | Ubicación |
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.4.4` — AUDITORIA EXCEL + DP FIXES + SEARCH) | `apps/cima-generador/index.html` |
-| **Tests popup local** | 308/308 PASS | `apps/cima-generador/test_popup.py` |
-| **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
-| **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
-| **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
-| **Repo popup GitHub main** | `33aeda8` (v2.1.8) — **NO actualizado a v3.0 todavía** | `https://github.com/Alexander-Salvador/cima-generador` |
+| **Popup LOCAL (feat/apagado-inteligente)** | HEAD `38f20b2` (VERSION `3.7.8` — DROPDOWN ITEMS MAYÚSCULAS, 23 commits ahead de develop) | `apps/cima-generador/index.html` |
+| **Tests popup local** | **370/370 PASS** | `apps/cima-generador/test_popup.py` |
+| **Server local** | Activo PID 10699 | `http://127.0.0.1:8765/` |
+| **GitHub Pages LIVE (remoto)** | v3.4.4 POPUP — sigue DEPLOYED (sin pushear v3.5.0→v3.7.8) | `https://alexander-salvador.github.io/cima-generador/` |
+| **Repo popup GitHub main** | `cd997c4` (v3.4.4) | `https://github.com/Alexander-Salvador/cima-generador` |
 | **Repo equivocado a limpiar** | `Alexander-Salvador/cima` (creado por error Thavren) | CEO manual con `gh repo delete` |
-| **Git HEAD local develop** | `8fdc3b0` (v3.10 MEMORY) → feature `501b4d4` (v3.0 TX) | working tree clean, 0 sin commitear |
+| **Git HEAD local develop** | `a05780f` (MEMORY v3.10.2) | working tree clean, 0 sin commitear |
+| **Git HEAD feat/apagado-inteligente** | `38f20b2` (v3.7.8 — 23 commits ahead) | working tree clean, 0 sin commitear |
 | **AKRYNT** | Intacto, política NO aplica | `/home/braka/Systems/projects/work/akrynt-agent/` |
 | **Recursos CIMA folder** | Local only (CEO referencia, en .gitignore) | `Recursos CIMA/Etiquetas de Transferencia.xlsx` |
 | **Recursos CIMA folder** | Local only (Movistar PDFs operadores, en .gitignore) | `Recursos CIMA/Bases y Zonas de Apagado/APAGADO*.pdf` |
@@ -1206,15 +1208,128 @@ curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|AP
 
 | URL | Sirve |
 |---|---|
-| `http://127.0.0.1:8765/index.html` | v3.0 LOCAL (popup standalone con TIPIFICACIÓN TX) |
+| `http://127.0.0.1:8765/index.html` | v3.7.8 LOCAL feat/apagado-inteligente (popup standalone con ZONAS APAGADO INTELIGENTE) |
 | `http://127.0.0.1:8765/launcher.html` | Menú de acceso |
-| `https://alexander-salvador.github.io/cima-generador/` | v2.1.8 LIVE (aún sin v3.0) |
+| `https://alexander-salvador.github.io/cima-generador/` | v3.4.4 LIVE (sin pushear v3.5.0→v3.7.8) |
 
 ---
 
-*Fin de memoria v3.10.1 — Thavren · 2026-10-15 (round 2 + round 3, sesión extendida, v3.4.4 PUSHEADO A REMOTO)*
+## 🚀 Sesión 2026-10-16 — feat/apagado-inteligente: v3.5.0 → v3.7.8
 
-*Cierre: v3.4.4 PUSHEADO EXITOSAMENTE a `https://github.com/Alexander-Salvador/cima-generador` via `git subtree split` + force-push. GitHub Pages LIVE ahora sirve popup v3.4.4 (HEAD `cd997c4` en `origin/main`). Local HEAD `e862c62` (develop). Tests: 308/308 PASS local. Working tree clean.*
+### Trabajo de la sesión (todo en local, NO pusheado)
+
+Rama `feat/apagado-inteligente` con 23 commits ahead de develop. Implementación
+de feature "Zonas Apagado Inteligente" + iteraciones de UX de dropdowns.
+
+### Commits acumulados (todos en `feat/apagado-inteligente`)
+
+```
+38f20b2 fix(cima): v3.7.8 dropdown items en MAYÚSCULAS (.ac-item + .ac-empty)
+c3afab6 fix(cima): v3.7.7 input CCPP MAYÚSCULAS explícitas (no herencia)
+47e8cae fix(cima): v3.7.6 dropdown CCPP siempre debajo del input (sin flip)
+57bdcf0 fix(cima): v3.7.5 eliminar footer 'X de Y' del dropdown
+25357ec fix(cima): v3.7.4 CCPP dropdown IDÉNTICO a depto/prov/dist
+f3ae807 fix(cima): v3.7.3 búsqueda INTELIGENTE por SCORING (sin highlight que parta)
+7f5353a fix(cima): v3.7.2 búsqueda por SIMILITUD + highlight sin partir texto
+52edcc0 refactor(cima): v3.7.1 dropdowns ADDRESS unificados (mismo estilo 4 inputs)
+4a9fc22 fix(cima): v3.7.0 búsqueda ADDRESS accent-insensitive + sin reset cursor
+5864db2 test(cima): cobertura agresiva 46/46 PASS — Perú 100% cubierto
+2cb6d45 docs(cima): L-051 auditoría visual PDFs + sección IDENTIDAD + fix mapeo PDF→Grupo
+dc297fc refactor(cima-generador): v3.6.0 — REBUILD LIMPIO del bloque ZONAS APAGADO
+086c2bf fix(cima-generador): v3.5.8 — regex [dd/m] bug + JSON v3.0.0 completo (239 CCPPs)
+9ff718c fix(cima-generador): v3.5.7 — marca visual sutil CCPP en zona apagada
+a35cbff fix(cima-generador): v3.5.6 — dropdown LIMPIO (revierte v3.5.4 contaminante)
+957cc94 fix(cima-generador): v3.5.5 — input CCPP pintado por zona (recuperado)
+27b3263 fix(cima-generador): v3.5.4 — descontaminar IPT (naranja fuerte → sutil)
+abece47 fix(cima-generador): v3.5.3 — marcado visual CCPP apagado ALTO CONTRASTE
+be94a7f fix(cima-generador): v3.5.2 — BUG 1 persistente + tooltip anclado (BUG 4)
+5c5d43f fix(cima-generador): v3.5.1 — 3 bug fixes Zonas Apagado Inteligente
+0e5e249 docs(cima): MEMORY.md v3.10.3 — handover v3.5.0 Zonas Apagado Inteligente
+9ded893 feat(cima-generador): v3.5.0 — Zonas Apagado Inteligente (click ⚠️ → popover)
+```
+
+### Fases de iteración (histórico de la sesión)
+
+**Fase 1 — ZONAS APAGADO INTELIGENTE (v3.5.0 → v3.5.8)**
+- v3.5.0: Feature inicial — click en ⚠️ → popover con speech COMU-5472/COMU-5514
+- v3.5.1-v3.5.2: 3 bug fixes (BUG 1: CSS cascade, BUG 2: click handler, BUG 4: tooltip anclado)
+- v3.5.3: Marcado visual CCPP apagado con `border-left 4px`, `font-weight 800`, `⚠️ 16px pulse`
+- v3.5.4: Descontaminación IPT (naranja fuerte → sutil)
+- v3.5.5: Input CCPP pintado por zona (rojo exacto / ámbar IPT)
+- v3.5.6: REVERTIR v3.5.4 (CEO feedback: "el dropdown se ve diferente al resto")
+- v3.5.7: Marca visual sutil zone-off (ámbar sin pulse) — REVERTIDA después
+- v3.5.8: Fix regex `[dd/m]` en speech (BUG auditoría)
+
+**Fase 2 — REBUILD LIMPIO (v3.6.0)**
+- CEO: "mATA EL servidor rebuildealo completo es HTML crudo con js"
+- Namespace `za*` + state `ZONAS_APAGADAS_STATE` (single source of truth)
+- CSS rebuild consolida todas las iteraciones intermedias
+- Legacy code marcado DEPRECATED
+
+**Fase 3 — UNIFICACIÓN DROPDOWNS (v3.7.0 → v3.7.8)**
+- v3.7.0: Búsqueda ADDRESS accent-insensitive (NFD + remove combining marks)
+- v3.7.1: Dropdowns ADDRESS unificados (mismo estilo 4 inputs)
+- v3.7.2: Búsqueda por similitud (subsequence match)
+- v3.7.3: Búsqueda INTELIGENTE por SCORING (sin highlight que parta)
+- v3.7.4: CCPP dropdown IDÉNTICO a los otros (L-057)
+- v3.7.5: Footer "X de Y" eliminado (L-058)
+- v3.7.6: Dropdown SIEMPRE debajo del input, sin flip (L-059)
+- v3.7.7: Input CCPP MAYÚSCULAS explícitas (L-060)
+- v3.7.8: Dropdown items en MAYÚSCULAS (L-061)
+
+### Cambios de tests (sesión 2026-10-16)
+
+| Item | Antes | Después |
+|---|---|---|
+| Tests que pasaban | 339 | 370 |
+| Tests que fallaban | 13 | 0 |
+| Tests obsoletos removidos | — | 13 (v3.5.3 styling revertido + v3.5.7 zone-off revertido) |
+| Tests nuevos agregados | — | 44 (v3.7.0-v3.7.8 unificación + accent-insensitive + scoring + uppercase) |
+| Lección nueva | — | L-062 (test_obsolescencia) |
+
+### Decisión de tests obsoletos (CRIT-003 honestidad técnica)
+
+Tests `test_popup.py` líneas ~1663-1857 testeaban comportamiento de
+**versiones intermedias v3.5.3-v3.5.7** que fueron EXPLÍCITAMENTE
+REVERTIDAS por CEO en v3.5.6 ("revierte v3.5.4 contaminante"),
+v3.6.0 (REBUILD LIMPIO) y v3.7.4 (unificación L-057). Refactor aplicado
+en sesión 2026-10-16:
+
+- Reemplazadas assertions de v3.5.3 styling (22% bg, border-left 4px,
+  font 800, padding-left 14px, keyframe apagadoPulse) con assertions
+  de v3.5.6/v3.7.4 (SUTIL ≤12%, sin border-left 4px, sin font 800, sin
+  padding-left 14, sin pulse en items)
+- Reemplazadas assertions de v3.5.7 zone-off (ac-item-zone-off, ámbar
+  sutil) con assertions de v3.7.4 (ccpp_keys.has() para match exacto
+  SOLO, no distrito completo)
+- Removidas assertions de v2.1.7 flip logic (CEO feedback L-059: SIN
+  flip-arriba, REVERTIDO)
+- Removida assertion de marker legacy `v3.5.6: marcado LIMPIO`
+  (sobreescrito por v3.6.0 REBUILD — presencia del comportamiento sí
+  se valida via ausencia de `ac-item-ipt-hint`/`ac-ipt-banner` en HTML)
+- Agregadas assertions para v3.7.0-v3.7.8 (uppercase, no flip, scoring,
+  acento-insensibilidad, dot sutil, maxHeight 80px piso)
+
+Lección L-062: "Cuando los tests testean features revertidas por
+versiones posteriores, los tests están MAL — la fuente de verdad es
+el código actual (CEO-approved), no el código histórico. Refactor
+de tests > reescribir código para que coincida con tests obsoletos."
+
+### Pendiente (no en esta sesión)
+
+- ⏳ Merge `feat/apagado-inteligente` → `develop` (CEO autorización)
+- ⏳ Subtree split + force-push a `cima-generador/main` para deploy v3.7.8
+- ⏳ Bundle LICENSE en deploy standalone (compliance CC BY 4.0 + ODbL)
+- ⏳ Eliminar repo erróneo `Alexander-Salvador/cima` (CEO manual)
+- ⏳ Limpiar orphan ref `refs/remotes/origin/develop` (CEO manual)
+
+---
+
+---
+
+*Fin de memoria v3.11 — Thavren · 2026-10-16 (sesión feat/apagado-inteligente: v3.5.0→v3.7.8 + tests 370/370 PASS + sync MEMORY/CHANGELOG/VERSION)*
+
+*Cierre 2026-10-16: feat/apagado-inteligente con v3.7.8 (HEAD `38f20b2`, 23 commits ahead de develop) tiene 370/370 tests PASS. VERSION bump 3.4.4 → 3.7.8. CHANGELOG con 14 entradas nuevas. MEMORY.md v3.11 sincronizado. Working tree clean. NO pusheado a remoto (CEO directive: "todo en local").*
 
 ---
 
@@ -1223,17 +1338,21 @@ curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|AP
 ### Quickstart — Comandos de arranque (verificar primero)
 
 ```bash
-# 1. Verificar estado del repo
+# 1. Verificar estado del repo (estamos en feat/apagado-inteligente)
+git branch --show-current
+# Expected: feat/apagado-inteligente
+
 git log --oneline -3
-# Expected: e862c62 (MEMORY v3.10.1) / b78ece3 (v3.4.4) / 631a74e (v3.4.3)
+# Expected: 38f20b2 (v3.7.8) / c3afab6 (v3.7.7) / 47e8cae (v3.7.6)
 
 # 2. Tests deben pasar
 python3 apps/cima-generador/test_popup.py 2>&1 | tail -3
-# Expected: 308 passed, 0 failed, 0 warnings
+# Expected: 370 passed, 0 failed, 0 warnings
 
 # 3. Verificar popup live en GitHub Pages
 curl -sI "https://alexander-salvador.github.io/cima-generador/"
 # Expected: HTTP/2 200, last-modified reciente
+# ⚠️ LIVE sigue en v3.4.4 (no pusheado v3.5.0→v3.7.8)
 
 # 4. Si server local está corriendo:
 pgrep -af 'http.server 8765' | head -2
@@ -1246,14 +1365,16 @@ cd apps/cima-generador && python3 -m http.server 8765 --bind 127.0.0.1
 
 | Recurso | Estado |
 |---|---|
-| **Local HEAD develop** | `e862c62` (MEMORY v3.10.1) |
-| **Popup HEAD (origin/main)** | `cd997c4` (v3.4.4 LIVE) |
-| **Tests** | 308/308 PASS local |
+| **Branch actual** | `feat/apagado-inteligente` |
+| **Local HEAD (rama)** | `38f20b2` (v3.7.8 — 23 commits ahead) |
+| **develop HEAD** | `a05780f` (MEMORY v3.10.2) |
+| **Popup LIVE (origin/main)** | `cd997c4` (v3.4.4 — sin pushear v3.5.0→v3.7.8) |
+| **Tests** | **370/370 PASS** local (refactor tests obsoletos v3.5.3-v3.5.7) |
 | **Working tree** | clean |
-| **GitHub Pages** | 🟢 v3.4.4 sirviendo |
-| **MEMORY.md** | actualizado v3.10.1 |
-| **VERSION** | `3.4.4` |
-| **CHANGELOG** | entrada `[3.4.4]` |
+| **GitHub Pages** | 🟢 v3.4.4 sirviendo (no actualizado a v3.7.8) |
+| **MEMORY.md** | actualizado v3.11 |
+| **VERSION** | `3.7.8` |
+| **CHANGELOG** | 14 entradas nuevas: `[3.5.0]`, `[3.5.5]`, `[3.5.8]`, `[3.6.0]`, `[3.7.0]`, `[3.7.1]`, `[3.7.2]`, `[3.7.3]`, `[3.7.4]`, `[3.7.5]`, `[3.7.6]`, `[3.7.7]`, `[3.7.8]` |
 
 ### Estructura del popup
 
@@ -1356,6 +1477,7 @@ curl -sI "https://alexander-salvador.github.io/cima-generador/" | head -5
 | L-059 | v3.7.6 DROPDOWN SIEMPRE ABAJO DEL INPUT (2026-10-15) — `test_dropdown_position.js` 13/13 PASS. CEO feedback: "Falta arreglar el input de CCPP/CASERIO al darle click sale el input arriba al top del container no mantiene su posicion original del input". Diagnóstico: `acFitToGrid` tenía lógica de FLIP-ARRIBA cuando el espacio disponible debajo del input era < 100px. En popup mode (max 800px), el CCPP está en `row-2` (más abajo) y el grid container se quedaba corto → FLIP-ARRIBA → el dropdown saltaba al top del container (UX rota). Fix: (1) Eliminada la rama `if (available < FLIP_THRESHOLD)` que hacía flip-arriba. (2) Eliminadas variables: `FLIP_THRESHOLD`, `aboveAvailable`, `flipCap`, `topAbove`. (3) Eliminada la clase `is-flipped` que se aplicaba. (4) Ahora SIEMPRE `top = rect.bottom + 4` y `maxHeight = min(220, available) con piso 80px` (mínimo usable). Sin flip. UX: el dropdown se queda pegado al input, sin importar el espacio. |
 | L-060 | v3.7.7 CCPP MAYÚSCULAS EXPLÍCITAS (2026-10-15) — `test_ccpp_uppercase.js` 8/8 PASS. CEO feedback: "al darle click a CCPP/CASERIO el input con texto lleno al editarlo salen los datos en minúsculas, revisalo bien que no este pisandose el CSS todos es MAYUSCULA". Diagnóstico: La regla base `.field input, .field textarea` (línea 634) tiene `text-transform: uppercase`, pero las clases dinámicas `ccpp-off-confirmed` y `ccpp-off-ipt` (que se aplican cuando el CCPP está en zona apagada) NO especificaban text-transform. Aunque deberían heredar, el CEO sospecha que algo las está pisando. Fix DEFENSIVO: agregado `text-transform: uppercase` EXPLÍCITO a las 4 clases (.ccpp-off-confirmed, .ccpp-off-confirmed.filled, .ccpp-off-ipt, .ccpp-off-ipt.filled) en 2 lugares (main + popup). Ahora las clases dinámicas GARANTIZAN mayúsculas sin depender de la herencia. |
 | L-061 | v3.7.8 DROPDOWN ITEMS EN MAYÚSCULAS (2026-10-15) — `test_dropdown_uppercase.js` 8/8 PASS. CEO feedback: "CCPP/CASERIO su input al darle click abre un dropdown con las opciones en minusculas y es incorrecto debe salir todo en MAYUSCULAS". Diagnóstico: (1) `CCPP_DATA` inline (43,491 caseríos) tiene 99.9% de items en minúsculas/case mixto (ej. "Bellavista", "Buena Vista", "Bufeo") — el data viene de GeoNames con case natural. (2) La regla CSS `.ac-item` NO tenía `text-transform: uppercase`, por lo que los items del dropdown se renderizaban con su case original. (3) `.ac-empty` ("Sin coincidencias") tampoco tenía la regla. Fix: agregado `text-transform: uppercase` a `.ac-item` y `.ac-empty`. Ahora TODOS los items del dropdown se ven en MAYÚSCULAS visualmente, sin importar el case del data. |
+| L-062 | **TESTS OBSOLETOS REVERTIDOS POR FEATURES POSTERIORES (2026-10-16)** — `test_popup.py` 13 tests fallaban porque testeaban features de v3.5.3-v3.5.7 que fueron EXPLÍCITAMENTE REVERTIDAS en v3.5.6 ("revierte v3.5.4 contaminante"), v3.6.0 (REBUILD LIMPIO) y v3.7.4 (unificación L-057). Cuando un test valida comportamiento de una versión histórica que el CEO explícitamente rechazó, **el test está mal, no el código**. Refactor: reemplazar assertions obsoletas con assertions de la versión actual (CEO-approved). Lección: la fuente de verdad es el CÓDIGO ACTUAL + CEO directive, no el código histórico. Tests son spec del comportamiento presente, no del pasado. Antes: 339/352 PASS. Después: 370/370 PASS. |
 | L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
 | L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
 
