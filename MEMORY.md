@@ -56,7 +56,22 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-16 — v3.9.3 CHECKPOINT botón ⚠️ inteligente documentado** (HEAD `7c86470` v3.9.2 fix function hoisting en rama `develop`). 434/434 tests PASS. Working tree: clean. Commit `7c86470` v3.9.2 — ROOT FIX: doble declaración `showApagadoTooltip` por hoisting, footer version badge `v3.9.2`, meta no-cache, console.log diagnostic.
+Memoria persistente. Última actualización: **2026-10-16 — v3.9.8 CHECKPOINT dialog read-only minimal** (HEAD `b563419`). Sesión v3.9.4 → v3.9.8 completa. 434/434 tests PASS. Working tree: clean.
+
+✅ **Sesión v3.9.4 → v3.9.8 (popup rediseñado coherente — `b563419`):**
+- **v3.9.4**: tokens semánticos (rojo=apagado, amarillo=IPT 2G), botón ⚠️ siempre responde, panel inline con header compacto
+- **v3.9.5**: panel position:absolute (overlay) — no estira el grid
+- **v3.9.6**: refinamiento Apple 2026 (radius 16px, saturate 1.8, shadow layered, inset highlight)
+- **v3.9.7**: dialog MINIMAL — quitado border rojo izquierdo, header solo COMU, sin scroll, sin espacio muerto
+- **v3.9.8**: ELIMINADO status pill "✓ Copiado" + autocopia. Dialog READ-ONLY. Bold en fechas + 2G/4G del speech
+
+🆕 **Lecciones aprendidas v3.9.4 → v3.9.8 (L-079 a L-084):**
+- **L-079**: "Iterar = fallar". v3.9.4→v3.9.6 agregó complejidad (Apple 2026 features) que el CEO rechazó explícitamente ("marcos feos, iterando demasiado"). La versión final v3.9.8 es MÁS SIMPLE que v3.9.5.
+- **L-080**: "Menos es más en dialogs". Header minimal (`⚠ COMU-XXXX`) > header rico (`COMU · zona · fecha · tag RED 2G`). Cada elemento extra es decisión cognitiva para el usuario.
+- **L-081**: "El espacio muerto es ruido visual". Status pill con `display: inline-flex` + `opacity: 0` igual ocupa layout space y se ve mal. Solución: no renderizarlo.
+- **L-082**: "Read-only > autocopia". CEO directive "es solo para leer, no copiar automáticamente". El supervisor lee el speech para sí mismo antes de hablar — copiar no aporta valor si no pidió copiar.
+- **L-083**: "Bold con color sutil enfoca la atención sin gritar". `font-weight: 700` + `color: zone-ipt 88%` resalta fechas/4G sin saturar visualmente.
+- **L-084**: "Overlay > in-flow". `position: absolute` con `bottom: calc(100% + N)` es el patrón correcto para dialogs anclados a un trigger (no `position: relative` que estira el layout).
 
 ✅ **Sesión v3.9.0 → v3.9.3 (popup rediseñado coherente — `7c86470`):**
 - **v3.9.0**: tokens semánticos, swap colores (rojo=apagado, amarillo=IPT 2G), botón ⚠️ siempre responde
@@ -1338,22 +1353,77 @@ de tests > reescribir código para que coincida con tests obsoletos."
 
 ---
 
-*Fin de memoria v3.11 — Thavren · 2026-10-16 (sesión feat/apagado-inteligente: v3.5.0→v3.7.8 + tests 370/370 PASS + sync MEMORY/CHANGELOG/VERSION)*
+*Fin de memoria v3.12 — Thavren · 2026-10-16 (sesión v3.9.4 → v3.9.8: dialog minimal read-only + overlay absolute + bold info clave speech).*
 
-*Cierre 2026-10-16: feat/apagado-inteligente con v3.7.8 (HEAD `38f20b2`, 23 commits ahead de develop) tiene 370/370 tests PASS. VERSION bump 3.4.4 → 3.7.8. CHANGELOG con 14 entradas nuevas. MEMORY.md v3.11 sincronizado. Working tree clean. NO pusheado a remoto (CEO directive: "todo en local").*
+*Cierre 2026-10-16: 9 commits v3.9.0 → v3.9.8 en rama `develop` (HEAD `b563419`). Tests 434/434 PASS. audit_masivo ALL PASS. VERSION: 3.9.8. Footer: `v3.9.8` con console.log diagnostic `[CIMA v3.9.8]`. Popup LIVE en GitHub Pages sigue en v3.4.4 (NO pusheado aún — CEO directive "todo en local").*
+
+**🎯 RESUMEN EJECUTIVO v3.9.x:**
+- **Botón ⚠️ Inteligente** — 3 estados (A/B/C), siempre responde con feedback
+- **Tokens semánticos coherentes** — ROJO=apagado, AMARILLO=IPT 2G
+- **Dialog READ-ONLY minimal** — header `⚠ COMU-XXXX`, sin botones, sin scroll
+- **Bold en info clave** — fechas + 2G/4G resaltadas con color sutil
+- **Pendientes CEO declarados** (no resueltos):
+  1. Toast positioning en viewport chico (clamp inferior)
+  2. Panel inline auto-OPEN al detectar match (sin click)
+  3. CSS responsive desktop mode para ⚠️ button
 
 ---
 
 ## 🚀 HANDOVER PARA PRÓXIMO CHAT (abrir nuevo chat con este contexto)
 
-> **CHECKPOINT 2026-10-16 (v3.8.0)**: Estado actual preservado en commit
-> `e712abc`. CEO directive: "Visualmente aun no esta logrado es muy
-> confuso: commitea todo hasta este punto y aclara las carencias:
-> falta mejorar el frontend visual los colores que agregaste, las
-> funcionales, el boton de zonas de apago no es funcional. actualia
-> nuestra memoria y dej todo listo guardado para un nuevo chat".
+> **CHECKPOINT 2026-10-16 (v3.9.8)**: Estado final de la sesión
+> v3.9.4 → v3.9.8 preservado en commit `b563419`. CEO directive:
+> "commitea todo hasta este punto y actualiza la memoria".
 
-### Carencias del diseño visual actual (CRIT-003 honestidad técnica)
+### 🆕 CHECKPOINT v3.9.8 — qué cambió esta sesión
+
+**8 commits en `develop` (todos commiteados, working tree clean):**
+- `1e1fe24` v3.9.0 — tokens semánticos + botón ⚠️ siempre responde
+- `c637bc5` v3.9.1 — fix colores invertidos (CSS popup-mode duplicado)
+- `7c86470` v3.9.2 — fix function hoisting (showApagadoTooltip colisión)
+- `3b45412` v3.9.3 — docs checkpoint + pendientes
+- `272668b` v3.9.4 — botón estilizado coherente
+- `23a53ac` v3.9.5 — overlay absolute (no estira grid)
+- `2a1faed` v3.9.6 — Apple 2026 premium
+- `a15760f` v3.9.7 — dialog MINIMAL (sin border rojo, sin LIMA header)
+- `b563419` v3.9.8 — eliminada autocopia + bold info clave speech
+
+**Estado actual:** dialog READ-ONLY minimal, header `⚠ COMU-XXXX`,
+speech con fechas/2G/4G en negrita, sin scroll, sin footer vacío.
+
+**LECCIONES CLAVE para próximo chat:**
+
+1. **No iterar dialogs sin medida** (L-079). v3.9.4→v3.9.6 agregaron
+   complejidad que el CEO rechazó. La versión FINAL v3.9.8 es más
+   simple que v3.9.5.
+
+2. **Read-only > autocopia** (L-082). El supervisor lee el speech
+   para sí mismo antes de hablar — copy no aporta valor si no se
+   pide explícitamente.
+
+3. **Overlay absolute > in-flow** (L-084). `position: absolute` con
+   `bottom: calc(100% + N)` es el patrón correcto para dialogs
+   anclados a un trigger.
+
+**Tests / Validación:**
+- 434/434 tests popup PASS
+- 46/46 tests cobertura_peru PASS
+- audit_masivo.py ALL CHECKS + SCENARIOS PASSED
+- node --check OK (1.40M chars JS válido)
+- Footer: `v3.9.8` visible junto a "Alexander ♥"
+- console.log diagnostic: `[CIMA v3.9.8] ⚠️ click registrado`
+
+**Pendientes CEO declarados (no resueltos):**
+- [ ] Toast positioning en viewport chico (clamp inferior)
+- [ ] Panel inline AUTO-OPEN al detectar match (sin click)
+- [ ] CSS responsive desktop mode para ⚠️ button
+- [ ] Merge `feat/apagado-inteligente` → `develop` + subtree split → push
+- [ ] Bundle LICENSE en deploy standalone (compliance CC BY 4.0)
+- [ ] Eliminar repo erróneo `Alexander-Salvador/cima` (manual)
+
+---
+
+### 🗂️ HISTÓRICO v3.8.0 (resuelto en sesión v3.9.x)
 
 CEO feedback 2026-10-16 después de probar v3.8.0 con datos reales
 (CAJAMARCA/CONTUMAZA): **"Visualmente aun no esta logrado es muy confuso"**.
