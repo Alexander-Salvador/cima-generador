@@ -1,5 +1,61 @@
 # Changelog — cima-generador
 
+## [3.7.9] - 2026-10-16 — MARCADO END-TO-END DISTRITO+CCPP EN BÚSQUEDA
+
+CEO directive 2026-10-16: "Si hago una busqueda debe pintarse el
+distrito y centro poblando/caserio exacto que tiene afectacion para que
+se diferencie de los demas. <- end to end".
+
+### Added — Marcado end-to-end de zonas en flujo de búsqueda
+
+El supervisor ahora ve QUÉ DISTRITOS y QUÉ CCPPs tienen afectación
+mientras busca, sin tener que seleccionar y abrir el popover.
+
+| Nivel | Dropdown item | Input field |
+|---|---|---|
+| **Distrito** en `districts_with_off` | 🟠 ámbar sutil (`.ac-item-zone`) | 🟠 ámbar (`.dist-off-warn`) |
+| **CCPP exacto** en `ccpp_keys` | 🔴 rojo + dot (`.ac-item-off` + `.ac-off-dot`) | 🔴 rojo (`.ccpp-off-confirmed`) |
+
+### Cambios
+
+| Cambio | Detalle | Estado |
+|---|---|---|
+| **CSS `.ac-item-zone`** | Ámbar sutil (color #b45309, fondo 10% #f59e0b) | ✅ |
+| **CSS `.dist-off-warn`** | Ámbar para input distrito (border #f59e0b, fondo 22%, text-transform uppercase) | ✅ |
+| **JS `acRender(key)` extendido** | Para `key === 'distrito'`, pre-computa d6ByDistName y marca items con `.ac-item-zone` si están en `districts_with_off` | ✅ |
+| **JS `updateDistInputZoneClass()`** | Marca input distrito con `.dist-off-warn` si está afectado | ✅ |
+| **JS `zaUpdateDistInputZoneClass()`** | Versión za* (v3.6.0 namespace) para consistencia con `zaUpdateCcppInputZoneClass` | ✅ |
+| **JS `acSelect` hook** | Llama `updateDistInputZoneClass()` cuando `AC_STATE.active === 'distrito'` | ✅ |
+| **JS `onProvChange` hook** | Reevalúa la marca del distrito con la nueva provincia | ✅ |
+| **JS `onDepChange` hook** | Limpia `.dist-off-warn` al cambiar de departamento | ✅ |
+| **JS `onDistChange` hook** | Reevalúa la marca al editar manualmente el input | ✅ |
+| **Tests** | 13 nuevos tests v3.7.9 (CSS, JS, hooks) → 383/383 PASS | ✅ |
+
+### Flujo end-to-end verificado
+
+1. Tipear en **departamento** → seleccionar (sin marca, no hay data a este nivel)
+2. Tipear en **provincia** → seleccionar (sin marca)
+3. Tipear en **distrito** → items aparecen:
+   - **Sin afectación**: estilo normal
+   - **Con afectación potencial**: fondo ámbar sutil (.ac-item-zone)
+4. Seleccionar distrito afectado → input distrito se pinta ÁMBAR (.dist-off-warn)
+5. Tipear en **ccpp** → items aparecen:
+   - **Sin match exacto**: estilo normal
+   - **Match exacto confirmado**: fondo rojo + dot (.ac-item-off)
+6. Seleccionar CCPP exacto → input CCPP se pinta ROJO (.ccpp-off-confirmed)
+7. Botón ⚠️ `coberturaBtn` refleja estado (idle / warn / off)
+8. Click ⚠️ → popover con speech completo COMU-5472/COMU-5514
+
+### Lecciones (L-063, L-064)
+
+- **L-063**: Diferenciar 2 niveles de afectación visualmente:
+  - ROJO = CONFIRMADO (CCPP exacto en `ccpp_keys`) — el supervisor puede leer el speech seguro
+  - ÁMBAR = POTENCIAL (distrito en `districts_with_off`, sin match exacto) — el supervisor verifica antes de afirmar
+  - Mezclar ambos con la misma intensidad pierde la información de certeza.
+- **L-064**: Cascada de input classes requiere 4 hooks (`acSelect`, `onProvChange`, `onDepChange`, `onDistChange`) para cubrir todos los caminos de cambio: dropdown selection, provincia change, departamento change, typing manual.
+
+---
+
 ## [3.7.8] - 2026-10-16 — DROPDOWN ITEMS EN MAYÚSCULAS (L-061)
 
 CEO directive 2026-10-16: "CCPP/CASERIO su input al darle click abre un

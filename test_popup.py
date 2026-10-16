@@ -2065,6 +2065,88 @@ def test(html_path):
     if re.search(r'\.ac-empty\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
         result.ok('v3.7.8 CSS: .ac-empty con text-transform:uppercase (L-061)')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.7.9 — DISTRITO en districts_with_off marca dropdown + input (end-to-end)
+    # CEO directive 2026-10-16: "Si hago una busqueda debe pintarse el
+    # distrito y centro poblando/caserio exacto que tiene afectacion
+    # para que se diferencie de los demas".
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.7.9 — Marcado end-to-end distrito+ccpp en búsqueda')
+
+    # CSS: .ac-item-zone (dropdown distrito) — ámbar sutil
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*#f59e0b', html, re.DOTALL):
+        result.ok('v3.7.9 CSS: .ac-item-zone con color #f59e0b (ámbar sutil)')
+    else:
+        result.fail('CSS ac-item-zone', 'falta regla .ac-item-zone con color ámbar')
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*background', html, re.DOTALL):
+        result.ok('v3.7.9 CSS: .ac-item-zone con background (transparente/ámbar)')
+    else:
+        result.fail('CSS ac-item-zone bg', 'falta background en .ac-item-zone')
+    # v3.7.9: SIN pulse en .ac-item-zone (unificado con otros items, sin animación)
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*animation', html, re.DOTALL):
+        result.fail('CSS ac-item-zone anim', '.ac-item-zone tiene animation (no debe)')
+    else:
+        result.ok('v3.7.9 CSS: .ac-item-zone SIN animation (unificado)')
+
+    # CSS: .dist-off-warn (input distrito) — ámbar
+    # El selector puede estar agrupado con ,filled — buscar cualquiera de los dos
+    if re.search(r'\.field\s+input\.dist-off-warn[^{}]*\{[^}]*#f59e0b', html, re.DOTALL):
+        result.ok('v3.7.9 CSS: .dist-off-warn con #f59e0b (input distrito ámbar)')
+    else:
+        result.fail('CSS dist-off-warn', 'falta regla .dist-off-warn con color ámbar')
+    if re.search(r'\.field\s+input\.dist-off-warn\.filled', html, re.DOTALL):
+        result.ok('v3.7.9 CSS: .dist-off-warn.filled (estado filled preservado)')
+
+    # JS: function updateDistInputZoneClass presente
+    if 'function updateDistInputZoneClass' in html:
+        result.ok('v3.7.9 JS: updateDistInputZoneClass() definida')
+    else:
+        result.fail('JS updateDistInputZoneClass', 'función no encontrada')
+    # JS: function zaUpdateDistInputZoneClass presente (namespace za*)
+    if 'function zaUpdateDistInputZoneClass' in html:
+        result.ok('v3.7.9 JS: zaUpdateDistInputZoneClass() (za* namespace) presente')
+    else:
+        result.fail('JS zaUpdateDistInputZoneClass', 'función za* no encontrada')
+    # JS: window.zaUpdateDistInputZoneClass expuesto
+    if 'window.zaUpdateDistInputZoneClass' in html:
+        result.ok('v3.7.9 JS: window.zaUpdateDistInputZoneClass expuesto')
+    else:
+        result.fail('JS window zaUpdate', 'window.zaUpdateDistInputZoneClass no expuesto')
+
+    # JS: acSelect llama updateDistInputZoneClass cuando es distrito
+    m_select = re.search(r'function acSelect\(item\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_select and "AC_STATE.active === 'distrito'" in m_select.group(1) and 'updateDistInputZoneClass()' in m_select.group(1):
+        result.ok('v3.7.9 JS: acSelect llama updateDistInputZoneClass al seleccionar distrito')
+    else:
+        result.fail('JS acSelect hook', 'acSelect no llama updateDistInputZoneClass para distrito')
+
+    # JS: onProvChange llama updateDistInputZoneClass (cascada)
+    m_prov = re.search(r'function onProvChange\(\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_prov and 'updateDistInputZoneClass()' in m_prov.group(1):
+        result.ok('v3.7.9 JS: onProvChange llama updateDistInputZoneClass (cascada)')
+    else:
+        result.fail('JS onProvChange hook', 'onProvChange no llama updateDistInputZoneClass')
+
+    # JS: onDepChange limpia .dist-off-warn (cascada al cambiar depto)
+    m_dep = re.search(r'function onDepChange\(\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_dep and "dist-off-warn" in m_dep.group(1):
+        result.ok('v3.7.9 JS: onDepChange limpia .dist-off-warn (cascada al cambiar depto)')
+    else:
+        result.fail('JS onDepChange hook', 'onDepChange no limpia .dist-off-warn')
+
+    # JS: acRender marca distrito items con .ac-item-zone
+    m_render = re.search(r'function acRender\(key\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_render and "key === 'distrito'" in m_render.group(1) and 'd6ByDistName' in m_render.group(1):
+        result.ok('v3.7.9 JS: acRender marca distrito items con .ac-item-zone vía d6ByDistName')
+    else:
+        result.fail('JS acRender dist', 'acRender no marca distrito items')
+
+    # JS: el .ac-item-zone en el render se aplica con cls += ' ac-item-zone'
+    if m_render and "cls += ' ac-item-zone'" in m_render.group(1):
+        result.ok('v3.7.9 JS: cls += \' ac-item-zone\' aplicado en render (sin dot, sin border-left)')
+    else:
+        result.fail('JS cls zone', 'cls no incluye ac-item-zone')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
