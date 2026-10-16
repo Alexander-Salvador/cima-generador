@@ -1357,6 +1357,8 @@ de tests > reescribir código para que coincida con tests obsoletos."
 
 *Cierre 2026-10-16: 9 commits v3.9.0 → v3.9.8 en rama `develop` (HEAD `b563419`). Tests 434/434 PASS. audit_masivo ALL PASS. VERSION: 3.9.8. Footer: `v3.9.8` con console.log diagnostic `[CIMA v3.9.8]`. Popup LIVE en GitHub Pages sigue en v3.4.4 (NO pusheado aún — CEO directive "todo en local").*
 
+*Cierre 2026-10-16 v2: TOTAL 14+ commits v3.9.0 → v3.9.14 en `develop` (HEAD `9f35852`). Tests 432/432 PASS (1 test refactor para v3.9.12 layout). audit_masivo ALL PASS. VERSION: 3.9.14. Footer: `v3.9.14` con diagnostic `[CIMA v3.9.14]`. Popup LIVE en GitHub Pages **DEPLOYADO v3.9.14** ✅.*
+
 **🎯 RESUMEN EJECUTIVO v3.9.x:**
 - **Botón ⚠️ Inteligente** — 3 estados (A/B/C), siempre responde con feedback
 - **Tokens semánticos coherentes** — ROJO=apagado, AMARILLO=IPT 2G
