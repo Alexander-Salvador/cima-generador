@@ -3694,9 +3694,15 @@ function showApagadoTooltip(btn, currentCheck, addrCtx) {
   var f = parseFechaES ? parseFechaES(fechaApagadoIso) : { dd: '—', mes: '—', anio: '—' };
 
   var speechFinal = speechRaw
-    .replace(/\[d[\u00edi]a?d?\](?:\/mm)?\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
-    .replace(/\[d[\u00edi]a\]\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
-    .replace(/\[d[\u00edi]a\]/gi, f.dd)
+    // v3.5.8: soporte para [dd/m] y [dd/mm] (variantes con /mes).
+    // IMPORTANTE: usar [d\u00edi] (incluye d) — el bug previo [\u00edi] solo matchea í
+    // y rompía el reemplazo para [dd/m] y [dd].
+    .replace(/\[d[d\u00edi]a?d?\/m+\]\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
+    .replace(/\[d[d\u00edi]a?d?(?:\/mm)?\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
+    .replace(/\[d[d\u00edi]a\]\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
+    .replace(/\[d[d\u00edi]a?d?\/m+\]/gi, f.dd)
+    .replace(/\[d[d\u00edi]a?d?(?:\/mm)?\]/gi, f.dd)
+    .replace(/\[d[d\u00edi]a\]/gi, f.dd)
     .replace(/\[dd\]/gi, f.dd)
     .replace(/\[mes\]/gi, f.mes)
     .replace(/\[zona\]/gi, zonaLabel)

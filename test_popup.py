@@ -1805,6 +1805,26 @@ def test(html_path):
         else:
             result.fail('JS prefix zone', 'prefijo ⚠️ debería ser SOLO para off')
 
+    print('\n▸ v3.5.8 — Regex fix [dd/m] en speech (BUG auditoría CEO)')
+
+    # El regex del JS usa [d\u00edi] que solo matchea í, NO d.
+    # Esto rompe el placeholder [dd/m] de ipt_postventa_sin_4g.
+    # v3.5.8 fix: usar [d\u00edi] (incluye d) en vez de [\u00edi].
+    m_re = re.search(r"// v3\.5\.8: soporte para \[dd/m\]", html)
+    if m_re:
+        result.ok('v3.5.8 JS: marker v3.5.8 (fix regex [dd/m]) presente')
+    else:
+        result.fail('JS marker v3.5.8', 'falta marker')
+
+    # El nuevo regex debe incluir 'd' (no solo í): [d\u00edi]
+    if r'\[d[d\u00edi]a?d?\/m+\]\s+de\s+\[mes\]' in html:
+        result.ok('v3.5.8 JS: regex [dd/m] con [dí] (incluye d) presente')
+    else:
+        result.fail('JS regex fix', 'falta regex [dí]')
+    # El regex viejo (que solo ten\u00eda í) NO debe seguir all\u00ed:
+    if r'\[d[\u00edi]a?d?\/m+\]\s+de\s+\[mes\]' in html:
+        result.fail('JS regex bug', 'regex viejo con [\u00edi] solo aún presente')
+
     print('\n▸ v3.5.5 — Input CCPP pintado por zona')
 
     # CSS: clase ccpp-off-confirmed (ROJO)
