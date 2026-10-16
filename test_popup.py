@@ -339,17 +339,20 @@ def test(html_path):
             result.fail('.cobertura-btn border-radius', 'pill esperado en v2.1.4')
 
     # v2.1.4: .cobertura-btn.off ya no controla display (siempre visible);
-    # validamos la animation pulseDanger (alerta roja iOS-style) en su lugar.
+    # validamos la animation (alerta ámbar iOS-style) en su lugar.
+    # v3.8.0: .off y .warn son visualmente IGUALES (ámbar unificado).
+    # El selector CSS puede ser .off solo, o .off,.warn combinado.
     css_off_match = re.search(
-        r'\.cobertura-btn\.off\s*\{([^}]+)\}',
+        r'\.cobertura-btn\.off[^{}]*\{([^}]+)\}',
         html
     )
     if css_off_match:
         css_off_body = css_off_match.group(1)
-        if 'animation:' in css_off_body and 'pulseDanger' in css_off_body:
-            result.ok('.cobertura-btn.off pulseDanger animation (v2.1.4 preserved)')
+        # v3.8.0: coberturaBtn unificado a AMBER, animation = pulseWarn
+        if 'animation:' in css_off_body and ('pulseWarn' in css_off_body or 'pulseDanger' in css_off_body):
+            result.ok('.cobertura-btn.off animation: pulseWarn AMBER (v3.8.0 unificado)')
         else:
-            result.fail('.cobertura-btn.off animation', 'pulseDanger esperado')
+            result.fail('.cobertura-btn.off animation', 'pulseWarn/pulseDanger esperado')
     else:
         result.fail('.cobertura-btn.off CSS', 'no encontrado')
 
@@ -2071,11 +2074,121 @@ def test(html_path):
     # distrito y centro poblando/caserio exacto que tiene afectacion
     # para que se diferencie de los demas".
     # ══════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.8.0 — TRIÁNGULO + LABEL + COLOR ÚNICO ÁMBAR (advanced 2026)
+    # CEO directive 2026-10-16:
+    # - "Al seleccionar el distrito afectado que dentro tiene las zonas
+    #    especificas que han sido apagadas aparecen con un punto y deberian
+    #    tener un 'triangulo' + nommbre de la zona"
+    # - "la seleccion inteligente debe tener el mismo color para no
+    #    confundir la vista, todo lo que este en zona de apagado se puede
+    #    pintar en amarillo un solo color uniforme incluido el boton de
+    #    alerta de deteccion inteligente"
+    # - "verifica que todas las zonas de apagado funcionen al 100% y que
+    #    no exista la dispariedad si se pinta es por que si contiene
+    #    apagado end to end"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.8.0 — Advanced 2026: triángulo + label + color único ámbar')
+
+    # CSS: --zone-amber definido (single source of truth)
+    if re.search(r'--zone-amber:\s*#f59e0b', html):
+        result.ok('v3.8.0 CSS: --zone-amber: #f59e0b definido en :root (single source of truth)')
+    else:
+        result.fail('CSS zone-amber', 'falta --zone-amber en :root')
+    if re.search(r'--zone-amber-deep:\s*#b45309', html):
+        result.ok('v3.8.0 CSS: --zone-amber-deep: #b45309 (texto sobre fondo ámbar)')
+
+    # CSS: .ac-off-tri (triángulo CSS via border trick)
+    if re.search(r'\.ac-item\s+\.ac-off-tri\s*\{[^}]*border-bottom:\s*8px', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-off-tri triángulo CSS (border-bottom 8px)')
+    else:
+        result.fail('CSS ac-off-tri', 'falta triángulo CSS')
+    if re.search(r'\.ac-item\s+\.ac-off-tri\s*\{[^}]*border-left:\s*5px\s+solid\s+transparent', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-off-tri border-left transparent (técnica border trick)')
+
+    # CSS: .ac-off-label (label "APAGADO" / "DISTRITO")
+    if re.search(r'\.ac-item\s+\.ac-off-label\s*\{', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-off-label (label inline) presente')
+    if re.search(r'\.ac-item\s+\.ac-off-label\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-off-label con text-transform: uppercase')
+
+    # CSS: .ac-item-off + .ac-item-zone con --zone-amber (NO var(--danger) rojo)
+    if re.search(r'\.ac-item\.ac-item-off\s*\{[^}]*--zone-amber', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-item-off usa --zone-amber (unificado, NO rojo)')
+    else:
+        result.fail('CSS ac-item-off color', '.ac-item-off no usa --zone-amber')
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*--zone-amber', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-item-zone usa --zone-amber (mismo color que .ac-item-off)')
+    else:
+        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa --zone-amber')
+
+    # CSS: input classes unificadas a --zone-amber (ccpp-off-confirmed ya no usa --danger)
+    # Usamos border-color para evitar matches con comments que mencionan --danger
+    if not re.search(r'\.field\s+input\.ccpp-off-confirmed[^{}]*\{[^{}]*border-color:\s*var\(--danger\)', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ccpp-off-confirmed NO usa var(--danger) (unificado a ámbar)')
+    else:
+        result.fail('CSS ccpp-off-confirmed', '.ccpp-off-confirmed aún usa --danger (debe ser ámbar)')
+
+    # CSS: coberturaBtn .off,.warn mismo color
+    if re.search(r'\.cobertura-btn\.off,\s*\.cobertura-btn\.warn\s*\{', html):
+        result.ok('v3.8.0 CSS: .cobertura-btn.off + .warn selector combinado (mismo color)')
+    else:
+        result.fail('CSS cobertura off+warn', 'falta selector combinado .off,.warn')
+
+    # JS: renderCoberturaButton unifica los 2 estados
+    m_btn = re.search(r'function renderCoberturaButton\(check\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_btn and 'ZONA DE APAGADO (CCPP exacto)' in m_btn.group(1) and 'ZONA DE APAGADO (distrito)' in m_btn.group(1):
+        result.ok('v3.8.0 JS: renderCoberturaButton usa labels distintos pero mismo color')
+    else:
+        result.fail('JS renderCoberturaButton labels', 'labels CCPP/distrito no presentes')
+
+    # JS: acRender emite triángulo + label para items ccpp apagados
+    m_render = re.search(r'function acRender\(key\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_render:
+        if 'ac-off-tri' in m_render.group(1) and 'ac-off-label' in m_render.group(1):
+            result.ok('v3.8.0 JS: acRender emite triángulo + label para items ccpp apagados')
+        else:
+            result.fail('JS acRender triangle', 'acRender no emite triángulo/label')
+        if 'data-zone="ccpp_exacto"' in m_render.group(1) and 'data-zone="distrito_of"' in m_render.group(1):
+            result.ok('v3.8.0 JS: data-zone attributes (ccpp_exacto / distrito_of)')
+
+    # JS: auditZonasApagadas function presente
+    if 'function auditZonasApagadas' in html:
+        result.ok('v3.8.0 JS: auditZonasApagadas() definida')
+    else:
+        result.fail('JS audit', 'falta auditZonasApagadas')
+    if re.search(r'auditZonasApagadas\(\)', html):
+        result.ok('v3.8.0 JS: auditZonasApagadas() llamada al startup (DOMContentLoaded)')
+
+    # JS: CCPP_KEYS_NORMALIZED pre-normalizado
+    if 'var CCPP_KEYS_NORMALIZED' in html and 'CCPP_KEYS_NORMALIZED = new Set()' in html:
+        result.ok('v3.8.0 JS: CCPP_KEYS_NORMALIZED pre-normalizado al startup')
+    else:
+        result.fail('JS CCPP_KEYS_NORMALIZED', 'falta pre-normalización')
+    if re.search(r'CCPP_KEYS_NORMALIZED\.has\([^)]+\)', html):
+        result.ok('v3.8.0 JS: lookup en CCPP_KEYS_NORMALIZED (O(1))')
+
+    # JS: checkZonaApagada usa el pre-normalized set
+    m_check = re.search(r'function checkZonaApagada\([^)]+\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_check and 'CCPP_KEYS_NORMALIZED' in m_check.group(1):
+        result.ok('v3.8.0 JS: checkZonaApagada usa CCPP_KEYS_NORMALIZED (lookup O(1))')
+    else:
+        result.fail('JS checkZonaApagada normalized', 'checkZonaApagada no usa pre-normalized')
+
+    # JS: data integrity audit checks
+    if 'ccpp_keys con formato inválido' in html:
+        result.ok('v3.8.0 JS: audit valida formato ccpp_keys (\\d{6}:.+)')
+    if 'ccpp_keys d6 NO en districts_with_off' in html:
+        result.ok('v3.8.0 JS: audit valida que ccpp_keys ⊆ districts_with_off')
+    if 'total_zones' in html and 'ccpp_keys.size' in html:
+        result.ok('v3.8.0 JS: audit valida consistencia total_zones vs ccpp_keys.size')
+
     print('\n▸ v3.7.9 — Marcado end-to-end distrito+ccpp en búsqueda')
 
-    # CSS: .ac-item-zone (dropdown distrito) — ámbar sutil
-    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*#f59e0b', html, re.DOTALL):
-        result.ok('v3.7.9 CSS: .ac-item-zone con color #f59e0b (ámbar sutil)')
+    # v3.7.9 + v3.8.0: .ac-item-zone color ámbar (vía var(--zone-amber) o #f59e0b)
+    # v3.8.0: unificado a --zone-amber (#f59e0b)
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*(--zone-amber|#f59e0b)', html, re.DOTALL):
+        result.ok('v3.7.9/v3.8.0 CSS: .ac-item-zone con color ámbar (--zone-amber/#f59e0b)')
     else:
         result.fail('CSS ac-item-zone', 'falta regla .ac-item-zone con color ámbar')
     if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*background', html, re.DOTALL):
@@ -2088,10 +2201,9 @@ def test(html_path):
     else:
         result.ok('v3.7.9 CSS: .ac-item-zone SIN animation (unificado)')
 
-    # CSS: .dist-off-warn (input distrito) — ámbar
-    # El selector puede estar agrupado con ,filled — buscar cualquiera de los dos
-    if re.search(r'\.field\s+input\.dist-off-warn[^{}]*\{[^}]*#f59e0b', html, re.DOTALL):
-        result.ok('v3.7.9 CSS: .dist-off-warn con #f59e0b (input distrito ámbar)')
+    # v3.7.9 + v3.8.0: .dist-off-warn color ámbar (vía var(--zone-amber) o #f59e0b)
+    if re.search(r'\.field\s+input\.dist-off-warn[^{}]*\{[^}]*(--zone-amber|#f59e0b)', html, re.DOTALL):
+        result.ok('v3.7.9/v3.8.0 CSS: .dist-off-warn con color ámbar (--zone-amber/#f59e0b)')
     else:
         result.fail('CSS dist-off-warn', 'falta regla .dist-off-warn con color ámbar')
     if re.search(r'\.field\s+input\.dist-off-warn\.filled', html, re.DOTALL):
