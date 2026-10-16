@@ -2115,18 +2115,19 @@ def test(html_path):
         result.ok('v3.8.0 CSS: .ac-off-label con text-transform: uppercase')
 
     # CSS: .ac-item-off con --zone-amber (NO var(--danger) rojo).
-    # v3.8.0 (FIX BUG 2): .ac-item-zone YA NO usa --zone-amber para color
-    # (ahora usa var(--text) normal). El indicador visual es el triángulo
-    # ámbar (.ac-off-tri) dentro del item, no el color del texto.
+    # v3.8.0 (FIX 3 ipt): .ac-item-zone AHORA USA --zone-amber (visible
+    # amber) — CEO feedback "No se diferencia las zonas de apagado"
+    # cuando .ac-item-zone tenía color normal (no se distinguía de
+    # items sin zona). Ahora: amber text + amber background para
+    # distinción VISUAL clara entre ccpp_keys vs ipt-only vs sin zona.
     if re.search(r'\.ac-item\.ac-item-off\s*\{[^}]*--zone-amber', html, re.DOTALL):
         result.ok('v3.8.0 CSS: .ac-item-off usa --zone-amber (unificado, NO rojo)')
     else:
         result.fail('CSS ac-item-off color', '.ac-item-off no usa --zone-amber')
-    # v3.8.0 (FIX BUG 2): .ac-item-zone con color NORMAL (no amber)
-    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*color:\s*var\(--text\)', html, re.DOTALL):
-        result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con color normal (var(--text))')
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*--zone-amber', html, re.DOTALL):
+        result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone usa --zone-amber (visible amber, FIX 3)')
     else:
-        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color normal')
+        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa --zone-amber (FIX 3)')
     # v3.8.0 (FIX BUG 2.1): distrito items solo se marcan si tienen
     # CCPPs en ccpp_keys (NO solo en districts_with_off preventivo).
     # CEO: "solo deben tenerlo los distritos afectados que contienen
@@ -2272,15 +2273,15 @@ def test(html_path):
     css_zone = re.search(r'\.ac-item\.ac-item-zone\s*\{([^}]+)\}', html, re.DOTALL)
     if css_zone:
         body = css_zone.group(1)
-        if 'var(--zone-amber)' in body and 'color:' in body and 'var(--zone-amber-deep)' not in body:
-            # Si usa zone-amber para color, FALLA
-            result.fail('CSS zone color', '.ac-item-zone aún usa --zone-amber para color (debe ser normal)')
+        if 'var(--zone-amber)' in body and 'var(--zone-amber-deep)' in body:
+            # v3.8.0 (FIX 3): ahora usa zone-amber-deep para texto
+            result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con color amber-deep (visible, FIX 3)')
         else:
-            result.ok('v3.8.0 CSS: .ac-item-zone con color NORMAL (no amber)')
+            result.fail('CSS zone color', '.ac-item-zone no usa zone-amber-deep (FIX 3)')
 
-    # CSS: .ac-item-zone background transparent (no amber)
-    if css_zone and 'background: transparent' in body:
-        result.ok('v3.8.0 CSS: .ac-item-zone con background transparent (no amber)')
+    # CSS: .ac-item-zone background amber 14% (FIX 3)
+    if css_zone and '14%' in body:
+        result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con background amber 14% (visible, FIX 3)')
 
     # CSS: .ac-item-zone .ac-off-tri con tamaño sutil (border-bottom 6px vs 8px)
     if re.search(r'\.ac-item\.ac-item-zone\s+\.ac-off-tri\s*\{[^}]*border-bottom-width:\s*6px', html, re.DOTALL):
@@ -2385,24 +2386,58 @@ def test(html_path):
         if ipt_pos > 0 and distrito_of_pos > ipt_pos:
             result.ok('v3.8.0 JS: precedencia ipt_distrito > distrito_of en checkZonaApagada')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.8.0 (FIX 3) — Botón ⚠️ funciona con 3 campos para IPT
+    # CEO: "si en el distrito entero se apago el 2G el boton de zona
+    # de apagado debe funcionar activarse y al darle click mostrar el
+    # speech directo sin extenderse, y debe contenerse en la grid".
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.8.0 FIX 3 — botón IPT 3 campos + panel inline')
+
+    # JS: el listener del botón ⚠️ permite 3 campos (depto+prov+dist)
+    # sin requerir ccpp para IPT
+    if re.search(r"if \(!dep \|\| !prov \|\| !dist\)", html):
+        result.ok('v3.8.0 (FIX 3) JS: botón ⚠️ valida 3 campos (depto+prov+dist) — IPT funciona')
+    if re.search(r"classList\.contains\('ipt'\)\s*\|\|", html):
+        result.ok('v3.8.0 (FIX 3) JS: handler incluye class="ipt" (botón responde a IPT)')
+
+    # CSS: apagado-speech-panel (panel inline)
+    if re.search(r'\.apagado-speech-panel\s*\{', html):
+        result.ok('v3.8.0 (FIX 3) CSS: .apagado-speech-panel (panel inline) presente')
+    if re.search(r'\.apagado-speech-panel\s*\{[^}]*max-height', html, re.DOTALL):
+        result.ok('v3.8.0 (FIX 3) CSS: .apagado-speech-panel con max-height (contenido)')
+
+    # HTML: container #apagadoSpeechPanel dentro de #gridAddress
+    m_panel = re.search(r'id="gridAddress"[\s\S]{0,5000}id="apagadoSpeechPanel"', html, re.DOTALL)
+    if m_panel:
+        result.ok('v3.8.0 (FIX 3) HTML: #apagadoSpeechPanel dentro de #gridAddress (contenido)')
+
+    # JS: showApagadoTooltip ahora popula el panel inline (no crea div flotante)
+    if re.search(r"document\.getElementById\('apagadoSpeechPanel'\)", html):
+        result.ok('v3.8.0 (FIX 3) JS: showApagadoTooltip usa #apagadoSpeechPanel (no flotante)')
+
+    # JS: panel.hidden = false para mostrar, true para cerrar
+    if re.search(r"apagadoSpeechPanel[\s\S]{0,200}\.hidden\s*=\s*false", html):
+        result.ok('v3.8.0 (FIX 3) JS: apagadoSpeechPanel.hidden controla visibilidad (inline)')
+
     print('\n▸ v3.7.9 — Marcado end-to-end distrito+ccpp en búsqueda')
 
-    # v3.8.0 (FIX BUG 2): .ac-item-zone color NORMAL (no amber) — CEO feedback.
-    # Antes: amber text + amber background (yellow on yellow, sin sentido).
-    # Ahora: color normal, background transparent, + triángulo ámbar como
-    # indicador visual. El .ac-item-zone sigue diferenciándose de items sin
-    # zona (que NO tienen triángulo) pero con texto y fondo NORMALES.
+    # v3.8.0 (FIX 3): .ac-item-zone color AMBER (visible) — CEO feedback
+    # "No se diferencia las zonas de apagado". El blanco/transparent
+    # original (FIX BUG 2) no diferenciaba de items sin zona. Ahora:
+    # amber text + amber background para que el usuario DISTINGA
+    # VISUALMENTE items en zona (ccpp_keys).
     css_zone = re.search(r'\.ac-item\.ac-item-zone\s*\{([^}]+)\}', html, re.DOTALL)
     if css_zone:
         body = css_zone.group(1)
-        if 'color: var(--text)' in body or 'color:var(--text)' in body:
-            result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con color NORMAL (var(--text))')
+        if 'var(--zone-amber-deep)' in body:
+            result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con color amber-deep (visible)')
         else:
-            result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color normal (debería ser var(--text))')
-        if 'background: transparent' in body or 'background:transparent' in body:
-            result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con background transparent')
+            result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color amber (FIX 3)')
+        if '14%' in body or '12%' in body:
+            result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con background amber (visible)')
         else:
-            result.fail('CSS ac-item-zone bg', '.ac-item-zone no tiene background transparent')
+            result.fail('CSS ac-item-zone bg', '.ac-item-zone no tiene background amber visible')
     # v3.7.9: SIN pulse en .ac-item-zone (unificado con otros items, sin animación)
     if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*animation', html, re.DOTALL):
         result.fail('CSS ac-item-zone anim', '.ac-item-zone tiene animation (no debe)')
