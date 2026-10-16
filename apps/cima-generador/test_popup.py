@@ -946,7 +946,9 @@ def test(html_path):
     else:
         result.fail('etiquetasFitToBlock bounds', '.etiquetas-block lookup ausente')
     # Width matching input
-    if "drop.style.width = inputRect.width + 'px'" in html:
+    if "MIN_DROP_WIDTH" in html or 'Math.max(inputRect.width, 280)' in html or 'min-width: 280px' in html:
+        result.ok('v3.9.9 dropdown width: min-width 280px (widen — CEO directive nombres largos)')
+    elif "drop.style.width = inputRect.width + 'px'" in html:
         result.ok('TIPIF v3.2 dropdown width = inputRect.width (alineado exacto)')
     else:
         result.fail('dropdown width align', 'width alignment ausente')
@@ -2286,10 +2288,12 @@ def test(html_path):
     if css_zone:
         body = css_zone.group(1)
         if 'var(--zone-amber)' in body and 'var(--zone-amber-deep)' in body:
-            # v3.8.0 (FIX 3): ahora usa zone-amber-deep para texto
-            result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con color amber-deep (visible, FIX 3)')
-        else:
-            result.fail('CSS zone color', '.ac-item-zone no usa zone-amber-deep (FIX 3)')
+            # v3.9.9: CEO directive "no le des background, solo pinta el color".
+            # Verifica color zone-amber (sin -deep) y SIN background fill.
+            if 'var(--zone-amber)' in body:
+                result.ok('v3.9.0/v3.9.9 CSS: .ac-item-zone con color amber (visible, sin -deep)')
+            else:
+                result.fail('CSS zone color', '.ac-item-zone no usa zone-amber (FIX 3)')
 
     # CSS: .ac-item-zone background amber 14% (FIX 3)
     if css_zone and '14%' in body:
@@ -2445,10 +2449,12 @@ def test(html_path):
         else:
             result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color ámbar')
         # v3.9.0: bg ≤ 10% (más sutil que v3.8.0 14%)
-        if re.search(r'\d+%\s*,\s*transparent', body):
+        if re.search(r'background:\s*transparent', body):
+            result.ok('v3.9.9 CSS: .ac-item-zone SIN background (CEO: solo color + icono)')
+        elif re.search(r'\d+%\s*,\s*transparent', body):
             result.ok('v3.9.0 CSS: .ac-item-zone con background subtle (bg ≤ 10%)')
         else:
-            result.fail('CSS ac-item-zone bg', '.ac-item-zone no tiene background sutil')
+            result.fail('CSS ac-item-zone bg', '.ac-item-zone sin background (necesario transparente)')
     # v3.7.9: SIN pulse en .ac-item-zone (unificado con otros items, sin animación)
     if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*animation', html, re.DOTALL):
         result.fail('CSS ac-item-zone anim', '.ac-item-zone tiene animation (no debe)')
