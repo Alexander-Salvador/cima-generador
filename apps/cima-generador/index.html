@@ -36,6 +36,11 @@
        Single source of truth — cambiar aquí cambia todos los elementos. */
     --zone-amber: #f59e0b;
     --zone-amber-deep: #b45309;
+    /* v3.8.0: zone-ipt = color para distritos en COMU-5672 (Apagado Zonas IPT).
+       Red porque afecta TODA la red 2G del distrito (39.5K clientes), más
+       severo que COMU-5514 (CCPP específico). Single source of truth. */
+    --zone-ipt: #dc2626;
+    --zone-ipt-deep: #991b1b;
     --soft-gray: #3a3a44;
     --on-accent: #ffffff;
 
@@ -628,6 +633,24 @@
     border-left-width: 4px;
     border-right-width: 4px;
   }
+  /* v3.8.0: DISTRITO en ipt_districts (COMU-5672) — ROJO. Mismo
+     triángulo sutil, pero el color base es --zone-ipt (red, más
+     severo que amber porque afecta TODA la red 2G del distrito). */
+  .ac-item.ac-item-ipt {
+    color: var(--zone-ipt);
+    background: color-mix(in srgb, var(--zone-ipt) 10%, transparent);
+  }
+  .ac-item.ac-item-ipt:hover,
+  .ac-item.ac-item-ipt.active {
+    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-3-bg));
+    color: var(--zone-ipt);
+  }
+  .ac-item.ac-item-ipt .ac-off-tri {
+    border-bottom-color: currentColor;
+    border-bottom-width: 7px;  /* intermedio entre CCPP (8) y zone (6) */
+    border-left-width: 4.5px;
+    border-right-width: 4.5px;
+  }
 
   .ac-item mark {
     background: color-mix(in srgb, var(--accent) 30%, transparent);
@@ -777,6 +800,40 @@
   .field input.dist-off-warn:hover:not(:focus),
   .field input.dist-off-warn.filled:hover:not(:focus) {
     background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
+  }
+  /* v3.8.0: DISTRITO en ipt_districts (COMU-5672) pinta el input ROJO.
+     Más severo que el ámbar preventive porque afecta TODA la red 2G
+     del distrito rural (39.5K clientes). El speech cambia a ipt_visor_4g
+     o ipt_visor_sin_4g según el equipo del cliente. */
+  .field input.dist-ipt-warn,
+  .field input.dist-ipt-warn.filled {
+    border-color: var(--zone-ipt);
+    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
+    color: var(--zone-ipt-deep);
+    font-weight: 700;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+    text-transform: uppercase;
+  }
+  .field input.dist-ipt-warn:hover:not(:focus),
+  .field input.dist-ipt-warn.filled:hover:not(:focus) {
+    background: color-mix(in srgb, var(--zone-ipt) 30%, var(--glass-1-bg));
+  }
+  /* v3.8.0: CCPP en ipt_districts (sin match exacto en ccpp_keys) — RED.
+     El distrito está en COMU-5672 (red 2G apagada), pero el CCPP
+     específico no está listado. El agente sabe que el distrito es
+     IPT y debe verificar 4G del cliente. */
+  .field input.ccpp-ipt-warn,
+  .field input.ccpp-ipt-warn.filled {
+    border-color: var(--zone-ipt);
+    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
+    color: var(--zone-ipt-deep);
+    font-weight: 700;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+    text-transform: uppercase;
+  }
+  .field input.ccpp-ipt-warn:hover:not(:focus),
+  .field input.ccpp-ipt-warn.filled:hover:not(:focus) {
+    background: color-mix(in srgb, var(--zone-ipt) 30%, var(--glass-1-bg));
   }
   .field input[aria-invalid="true"], .field textarea[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--danger) 85%, transparent);
@@ -2185,6 +2242,22 @@
       0 0 0 3px color-mix(in srgb, var(--zone-amber) 28%, transparent),
       var(--ring-hairline);
   }
+  /* v3.8.0: coberturaBtn en ipt_distrito (COMU-5672) — ROJO.
+     Más severo que COMU-5514 (toda la red 2G rural apagada).
+     Usa pulseDanger (más intenso que pulseWarn) para comunicar urgencia. */
+  .cobertura-btn.ipt {
+    background: color-mix(in srgb, var(--zone-ipt) 24%, var(--glass-2-bg));
+    border-color: var(--zone-ipt);
+    color: var(--zone-ipt);
+    animation: pulseDanger 2.4s var(--motion-ease) infinite;
+  }
+  .cobertura-btn.ipt:hover,
+  .cobertura-btn.ipt:focus-visible {
+    background: color-mix(in srgb, var(--zone-ipt) 36%, var(--glass-2-bg));
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--zone-ipt) 28%, transparent),
+      var(--ring-hairline);
+  }
   .cobertura-btn:focus-visible {
     outline: none;
     box-shadow:
@@ -2618,6 +2691,26 @@ font-size: 10px;
       color: var(--zone-amber-deep);
       font-weight: 700;
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
+      text-transform: uppercase;
+    }
+    /* v3.8.0: DISTRITO en ipt_districts (popup mode) — --zone-ipt RED. */
+    .field input.dist-ipt-warn,
+    .field input.dist-ipt-warn.filled {
+      border-color: var(--zone-ipt);
+      background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
+      color: var(--zone-ipt-deep);
+      font-weight: 700;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+      text-transform: uppercase;
+    }
+    /* v3.8.0: CCPP en ipt_districts (popup mode) — --zone-ipt RED. */
+    .field input.ccpp-ipt-warn,
+    .field input.ccpp-ipt-warn.filled {
+      border-color: var(--zone-ipt);
+      background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
+      color: var(--zone-ipt-deep);
+      font-weight: 700;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
       text-transform: uppercase;
     }
 
@@ -3857,6 +3950,11 @@ const ZONAS_APAGADAS_INTEL = {
 var ZONAS_APAGADAS_STATE = {
   ccpp_keys: typeof ZONAS_APAGADAS !== 'undefined' ? ZONAS_APAGADAS.ccpp_keys : new Set(),
   districts_with_off: typeof ZONAS_APAGADAS !== 'undefined' ? ZONAS_APAGADAS.districts_with_off : new Set(),
+  // v3.8.0: ipt_districts (COMU-5672 Apagado Zonas IPT) — exposed at
+  // state level para que checkZonaApagada, renderCoberturaButton,
+  // y las clases de input puedan consultar directamente.
+  ipt_districts: (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.ipt_districts)
+    ? ZONAS_APAGADAS_INTEL.ipt_districts : new Set(),
   // Metadata para el tooltip. Cargada de ZONAS_APAGADAS_INTEL si existe.
   intel: typeof ZONAS_APAGADAS_INTEL !== 'undefined' ? ZONAS_APAGADAS_INTEL : null
 };
@@ -3920,17 +4018,28 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
     return ZONAS_APAGADAS_STATE.ccpp_keys.has(key);
   }
 
-  // Nivel 1: ccpp exacto
+  // Nivel 1: ccpp exacto (precedencia sobre ipt — confirmación más específica)
   if (hasCcpp) {
     var key = d6 + ':' + zaNormalize(ccpp);
     if (lookupCcpp(key)) {
-      return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar' };
+      return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar', comu: 'COMU-5514' };
     }
   }
 
-  // Nivel 2: distrito apagado
+  // Nivel 2: distrito IPT (COMU-5672) — RED
+  if (ZONAS_APAGADAS_STATE.ipt_districts && ZONAS_APAGADAS_STATE.ipt_districts.has(d6)) {
+    return {
+      nivel: 'ipt_distrito',
+      code: d6,
+      mensaje: 'Distrito en COMU-5672 (Apagado Zonas IPT). Red 2G completa apagada.',
+      comu: 'COMU-5672',
+      color: 'red'
+    };
+  }
+
+  // Nivel 3: distrito apagado preventive
   if (ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
-    return { nivel: 'distrito_of', code: d6, mensaje: 'Este distrito tiene zonas de apagado Movistar' };
+    return { nivel: 'distrito_of', code: d6, mensaje: 'Este distrito tiene zonas de apagado Movistar', comu: 'COMU-5514', color: 'amber' };
   }
 
   return null;
@@ -3942,7 +4051,7 @@ function renderCoberturaButton(check) {
   var btn = $('coberturaBtn');
   if (!btn) return;
   // Reset de clases
-  btn.classList.remove('off', 'warn', 'cobertura-btn--idle');
+  btn.classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle');
   btn.setAttribute('aria-pressed', 'false');
   if (!check) {
     btn.title = 'Sin alertas — cobertura OK';
@@ -3950,12 +4059,18 @@ function renderCoberturaButton(check) {
     return;
   }
   // v3.8.0: visualmente .off y .warn son IGUALES (ámbar unificado, CSS).
+  // .ipt es ROJO (más severo — COMU-5672 afecta TODA la red 2G).
   // Labels distintos en title (tooltip nativo) para diferenciar nivel.
   if (check.nivel === 'ccpp_exacto') {
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
     btn.setAttribute('aria-label', 'Centro poblado exacto en zona de apagado Movistar — click para ver speech');
     btn.title = '⚠️ ZONA DE APAGADO (CCPP exacto): ' + check.code + ' — ' + check.mensaje;
+  } else if (check.nivel === 'ipt_distrito') {
+    btn.classList.add('ipt');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.setAttribute('aria-label', 'Distrito en COMU-5672 (Apagado Zonas IPT) — click para ver speech');
+    btn.title = '🔴 COMU-5672 (Apagado Zonas IPT): ' + check.code + ' — ' + check.mensaje;
   } else if (check.nivel === 'distrito_of') {
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
@@ -3983,7 +4098,7 @@ function checkAndRenderZonaApagada() {
 function zaUpdateCcppInputZoneClass() {
   var ccppEl = $('ccpp');
   if (!ccppEl) return;
-  ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt');
+  ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt', 'ccpp-ipt-warn');
   var ccppVal = (ccppEl.value || '').trim();
   if (!ccppVal) return;
   var codes = zaGetCodes(upper('departamento'), upper('provincia'), upper('distrito'));
@@ -3994,8 +4109,11 @@ function zaUpdateCcppInputZoneClass() {
   var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
     ? CCPP_KEYS_NORMALIZED.has(itemKey)
     : ZONAS_APAGADAS_STATE.ccpp_keys.has(itemKey);
+  // Precedencia: ccpp_exacto (específico) > ipt_distrito (broad) > distrito_of (preventive)
   if (hasMatch) {
     ccppEl.classList.add('ccpp-off-confirmed'); // ÁMBAR (v3.8.0 unificado)
+  } else if (ZONAS_APAGADAS_STATE.ipt_districts && ZONAS_APAGADAS_STATE.ipt_districts.has(d6)) {
+    ccppEl.classList.add('ccpp-ipt-warn');      // ROJO — COMU-5672
   } else if (ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
     ccppEl.classList.add('ccpp-off-ipt');        // ÁMBAR
   }
@@ -4007,13 +4125,16 @@ function zaUpdateCcppInputZoneClass() {
 function zaUpdateDistInputZoneClass() {
   var distEl = $('distrito');
   if (!distEl) return;
-  distEl.classList.remove('dist-off-warn');
+  distEl.classList.remove('dist-off-warn', 'dist-ipt-warn');
   var distVal = (distEl.value || '').trim();
   if (!distVal) return;
   var codes = zaGetCodes(upper('departamento'), upper('provincia'), distVal);
   if (!codes || !codes.d6) return;
-  if (ZONAS_APAGADAS_STATE.districts_with_off.has(codes.d6)) {
-    distEl.classList.add('dist-off-warn');
+  // Precedencia: ipt_distrito (broad, más severo) > distrito_of (preventive)
+  if (ZONAS_APAGADAS_STATE.ipt_districts && ZONAS_APAGADAS_STATE.ipt_districts.has(codes.d6)) {
+    distEl.classList.add('dist-ipt-warn');  // ROJO — COMU-5672
+  } else if (ZONAS_APAGADAS_STATE.districts_with_off.has(codes.d6)) {
+    distEl.classList.add('dist-off-warn');  // ÁMBAR
   }
 }
 
@@ -4036,17 +4157,39 @@ function showApagadoTooltip(btn, currentCheck, addrCtx) {
     fechaApagadoIso = '2026-09-11';
     var parts = currentCheck.code.split(':');
     zonaLabel = (parts[1] || currentCheck.code).toLowerCase();
+  } else if (currentCheck.nivel === 'ipt_distrito') {
+    // v3.8.0: nivel EXPLÍCITO para distritos en COMU-5672. Speech ipt_visor_4g
+    // (cliente con 4G, configurar APN) o ipt_visor_sin_4g (sin 4G, sugerir
+    // renovación de equipo). Sin marcaje de visor el agente elige; por
+    // defecto usamos ipt_visor_4g (el caso más común al inicio del apagado).
+    speechKey = 'ipt_visor_4g';
+    comunicadoLabel = 'COMU-5672';
+    comunicadoVersion = 'v00001';
+    fechaApagadoIso = '2026-08-28';
+    var m2 = ZONAS_APAGADAS_STATE.intel && ZONAS_APAGADAS_STATE.intel.ipt_metadata_by_district
+      && ZONAS_APAGADAS_STATE.intel.ipt_metadata_by_district[currentCheck.code];
+    if (m2) {
+      fechaApagadoIso = m2.fecha_apagado || fechaApagadoIso;
+      fechaSmsIso = m2.fecha_sms_inicio || '';
+      zonaLabel = (m2.depto || '').toLowerCase();
+    } else {
+      zonaLabel = (addrCtx.depto || '').toLowerCase();
+    }
   } else if (currentCheck.nivel === 'distrito_of') {
     var d6 = currentCheck.code;
     var isIPT = ZONAS_APAGADAS_STATE.intel && ZONAS_APAGADAS_STATE.intel.ipt_districts
       && ZONAS_APAGADAS_STATE.intel.ipt_districts.has(d6);
     if (isIPT) {
-      speechKey = 'ipt_postventa_4g';
+      // v3.8.0: backward compat — si el nivel es distrito_of pero el d6
+      // está en ipt_districts (caso donde CCPP exacto gana precedencia
+      // sobre ipt, pero el d6 también es IPT), usar speech IPT.
+      speechKey = 'ipt_visor_4g';
       comunicadoLabel = 'COMU-5672';
       comunicadoVersion = 'v00001';
+      fechaApagadoIso = '2026-08-28';
       var m = ZONAS_APAGADAS_STATE.intel.ipt_metadata_by_district[d6];
       if (m) {
-        fechaApagadoIso = m.fecha_apagado || '';
+        fechaApagadoIso = m.fecha_apagado || fechaApagadoIso;
         fechaSmsIso = m.fecha_sms_inicio || '';
         zonaLabel = (m.depto || '').toLowerCase();
       } else {
@@ -4269,9 +4412,11 @@ function normalizeKey(s) {
 // ZONAS APAGADAS MOVISTAR (v2.0.8) — check basado en CCPP exacto + distrito
 // 4 niveles:
 //   1. CCPP exacto (4 campos llenos) matchea → {nivel:'ccpp_exacto', ...} 🔴
-//   2. Distrito con apagados (3 campos llenos, sin CCPP exacto) → {nivel:'distrito_of', ...} 🔴
-//   3. Distrito SIN apagados (4 o 3 campos llenos) → null 🟢
-//   4. < 3 campos → null 🟢 (silencio por datos incompletos)
+//   1. CCPP exacto (4 campos llenos + match estricto) → {nivel:'ccpp_exacto', ...} 🟠
+//   2. Distrito IPT (3 campos, en COMU-5672) → {nivel:'ipt_distrito', ...} 🔴
+//   3. Distrito con apagados (3 campos, en districts_with_off) → {nivel:'distrito_of', ...} 🟠
+//   4. Distrito SIN apagados (4 o 3 campos llenos) → null 🟢
+//   5. < 3 campos → null 🟢 (silencio por datos incompletos)
 // ══════════════════════════════════════════════════════════════════════
 function checkZonaApagada(depto, prov, dist, ccpp) {
   if (typeof ZONAS_APAGADAS === 'undefined') return null;
@@ -4281,6 +4426,9 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   var d6 = codes.d6;
   var hasCcpp = ccpp && ccpp.trim().length > 0;
   var distritoTieneApagados = ZONAS_APAGADAS.districts_with_off.has(d6);
+  var esIptDistrito = typeof ZONAS_APAGADAS_INTEL !== 'undefined'
+    && ZONAS_APAGADAS_INTEL.ipt_districts
+    && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6);
 
   // v3.8.0: lookup en CCPP_KEYS_NORMALIZED (pre-normalizado al startup)
   // para O(1) sin re-normalizar en cada check. Si no está disponible
@@ -4292,22 +4440,36 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
     return ZONAS_APAGADAS.ccpp_keys.has(key);
   }
 
-  // Nivel 1: CCPP exacto matchea (4 campos llenos + match estricto)
+  // Nivel 1: CCPP exacto matchea (4 campos llenos + match estricto) — AMBER
+  // Tiene precedencia sobre ipt_distrito porque es la confirmación más específica.
   if (hasCcpp) {
     var key = d6 + ':' + normalizeKey(ccpp);
     if (lookupCcpp(key)) {
-      return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar' };
+      return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar', comu: 'COMU-5514' };
     }
   }
 
-  // Nivel 2 (BUG 1 fix): distrito con apagados, alertar como distrito_of incluso si
-  //   el CCPP tipeado no matchea exacto. Antes retornaba silencio (alerta se apagaba
-  //   al completar CCPP), ahora mantiene la señal.
+  // Nivel 2 (v3.8.0): distrito en ipt_districts (COMU-5672) — RED.
+  // Se evalúa ANTES de distrito_of porque ipt es más severo
+  // (afecta TODA la red 2G del distrito, no solo CCPPs específicos).
+  if (esIptDistrito) {
+    return {
+      nivel: 'ipt_distrito',
+      code: d6,
+      mensaje: 'Distrito en COMU-5672 (Apagado Zonas IPT). Red 2G completa apagada. Verificar 4G del cliente.',
+      comu: 'COMU-5672',
+      color: 'red'
+    };
+  }
+
+  // Nivel 3: distrito con apagados (preventive, sin IPT, sin CCPP exacto) — AMBER
   if (distritoTieneApagados) {
     return {
       nivel: 'distrito_of',
       code: d6,
       mensaje: 'Este distrito tiene zonas de apagado Movistar. Verifica el CCPP exacto.',
+      comu: 'COMU-5514',
+      color: 'amber',
       ccpp_tipeado: hasCcpp ? normalizeKey(ccpp) : null,
       ccpp_match_exacto: hasCcpp && lookupCcpp(d6 + ':' + normalizeKey(ccpp))
     };
@@ -4603,17 +4765,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // - exact-match: CCPP exacto matchea → 🔴 pulse fuerte
 // - district-of:  distrito tiene apagados, sin CCPP exacto → 🟠 pulse medio
 // - (oculto): sin alerta
+// v3.8.0: + ipt_distrito (COMU-5672) → 🔴 ROJO
 // ══════════════════════════════════════════════════════════════════════
 function renderCoberturaButton(check) {
   var btn = $('coberturaBtn');
   if (!btn) return;
-  // v3.5.2 BUG 1 fix: alternar --idle vs off/warn para que el CSS cascade
+  // v3.5.2 BUG 1 fix: alternar --idle vs off/warn/ipt para que el CSS cascade
   // funcione inequívocamente (antes el botón conservaba --idle junto con
   // off/warn, creando competencia entre selectores same-specificity).
-  // v3.8.0: visualmente .off y .warn son IGUALES (ámbar unificado). La
-  // distinción entre ccpp_exacto y distrito_of se mantiene solo en el
-  // title (tooltip nativo) y el aria-label, no en el color.
-  btn.classList.remove('off', 'warn', 'cobertura-btn--idle');
+  // v3.8.0: visualmente .off y .warn son IGUALES (ámbar unificado). .ipt
+  // es ROJO (más severo — COMU-5672 afecta TODA la red 2G del distrito).
+  // La distinción entre ccpp_exacto y distrito_of y ipt_distrito se mantiene
+  // en el title (tooltip nativo) y el aria-label, no en el color (excepto ipt).
+  btn.classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle');
   btn.setAttribute('aria-pressed', 'false');
   if (!check) {
     btn.title = 'Sin alertas — cobertura OK';
@@ -4626,6 +4790,11 @@ function renderCoberturaButton(check) {
     btn.setAttribute('aria-pressed', 'true');
     btn.setAttribute('aria-label', 'Centro poblado exacto en zona de apagado Movistar — click para ver speech');
     btn.title = '⚠️ ZONA DE APAGADO (CCPP exacto): ' + check.code + ' — ' + check.mensaje;
+  } else if (check.nivel === 'ipt_distrito') {
+    btn.classList.add('ipt');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.setAttribute('aria-label', 'Distrito en COMU-5672 (Apagado Zonas IPT) — click para ver speech');
+    btn.title = '🔴 COMU-5672 (Apagado Zonas IPT): ' + check.code + ' — ' + check.mensaje;
   } else if (check.nivel === 'distrito_of') {
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
@@ -5042,17 +5211,18 @@ function acRender(key) {
     // SOLO 191 distritos tienen CCPPs confirmados en ccpp_keys. Ahora:
     // el triángulo aparece SOLO si el distrito tiene al menos 1 CCPP en
     // ccpp_keys (avería CONFIRMADA, no solo preventiva).
+    // v3.8.0: ADEMÁS, si el distrito está en ipt_districts (COMU-5672)
+    // pero SIN CCPPs confirmados, marca con .ac-item-ipt (ROJO) — es
+    // un nivel de severidad mayor (toda la red 2G rural apagada).
     var zone = false;
+    var ipt = false;
     var d6ForItem = null;
     if (d6ByDistName && d6ByDistName[item]) {
       var d6Candidate = d6ByDistName[item];
+      // Verificar CCPPs confirmados en ccpp_keys (precedencia: AMBER)
       if (ZONAS_APAGADAS.districts_with_off.has(d6Candidate)) {
-        // Verificar que el distrito tenga AL MENOS 1 CCPP en ccpp_keys
-        // (no solo preventivo). Prefix lookup: ccpp_keys tiene formato
-        // "d6:NAME", así que un prefix match cuenta CCPPs para ese d6.
         if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
           var prefix = d6Candidate + ':';
-          // CCPP_KEYS_NORMALIZED es Set, no tiene filter — usamos for...of
           CCPP_KEYS_NORMALIZED.forEach(function (k) {
             if (k.indexOf(prefix) === 0) {
               zone = true;
@@ -5060,13 +5230,20 @@ function acRender(key) {
             }
           });
         } else {
-          // Fallback al set original
           ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
             if (k.indexOf(prefix) === 0) {
               zone = true;
               d6ForItem = d6Candidate;
             }
           });
+        }
+        // v3.8.0: verificar si es IPT (broad, RED). Si no tiene CCPPs
+        // confirmados pero está en ipt_districts, marcar con .ac-item-ipt.
+        if (!zone && typeof ZONAS_APAGADAS_INTEL !== 'undefined'
+            && ZONAS_APAGADAS_INTEL.ipt_districts
+            && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6Candidate)) {
+          ipt = true;
+          d6ForItem = d6Candidate;
         }
       }
     }
@@ -5098,6 +5275,16 @@ function acRender(key) {
       }
       var distTitle = acEscape(item) + ' — distrito con ' + ccppCount + ' CCPP' + (ccppCount === 1 ? '' : 's') + ' en zona de apagado Movistar';
       return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of" title="' + distTitle + '">'
+        + '<span class="ac-off-tri" aria-hidden="true"></span>'
+        + '<span class="ac-off-text">' + acEscape(item) + '</span>'
+        + '</div>';
+    } else if (ipt) {
+      // v3.8.0: distrito en ipt_districts (COMU-5672) — ROJO. Mismo
+      // triángulo sutil pero color base --zone-ipt. Más severo que
+      // .ac-item-zone (amber) porque afecta TODA la red 2G del distrito.
+      cls += ' ac-item-ipt';
+      var iptTitle = acEscape(item) + ' — distrito en COMU-5672 (Apagado Zonas IPT). Red 2G completa apagada.';
+      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="ipt_distrito" title="' + iptTitle + '">'
         + '<span class="ac-off-tri" aria-hidden="true"></span>'
         + '<span class="ac-off-text">' + acEscape(item) + '</span>'
         + '</div>';
@@ -5224,7 +5411,7 @@ function updateCcppInputZoneClass() {
   var ccppEl = $('ccpp');
   if (!ccppEl) return;
   // Limpiar siempre antes de evaluar.
-  ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt');
+  ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt', 'ccpp-ipt-warn');
   var ccppVal = (ccppEl.value || '').trim();
   if (!ccppVal) return;
   if (typeof ZONAS_APAGADAS === 'undefined' || !ZONAS_APAGADAS.ccpp_keys) return;
@@ -5241,8 +5428,15 @@ function updateCcppInputZoneClass() {
   var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
     ? CCPP_KEYS_NORMALIZED.has(d6 + ':' + itemKey)
     : ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + itemKey);
+  // Precedencia: ccpp_exacto (específico) > ipt_distrito (broad) > distrito_of (preventive)
   if (hasMatch) {
     ccppEl.classList.add('ccpp-off-confirmed');
+    return;
+  }
+  // Distrito en ipt_districts pero CCPP sin match exacto → ROJO (input)
+  if (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.ipt_districts
+      && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6)) {
+    ccppEl.classList.add('ccpp-ipt-warn');
     return;
   }
   // Distrito en districts_with_off pero CCPP sin match exacto → AMARILLO (input)
@@ -5251,17 +5445,17 @@ function updateCcppInputZoneClass() {
   }
 }
 
-// ═══ v3.7.9: updateDistInputZoneClass — pinta el input distrito según zona ═══
+// ═══ v3.7.9/v3.8.0: updateDistInputZoneClass — pinta el input distrito según zona ═══
 // Llamar cuando: (a) se selecciona distrito del dropdown, (b) cambia provincia
 // (cascada), (c) checkAndRenderZonaApagada cambia de estado.
-// Marca el input con .dist-off-warn (ámbar) si el distrito está en
-// districts_with_off. Diferenciado del rojo .ccpp-off-confirmed (CCPP
-// exacto) — el ámbar indica afectación POTENCIAL, no confirmada.
+// Marca el input con .dist-ipt-warn (ROJO) si está en ipt_districts (COMU-5672),
+// o .dist-off-warn (ámbar) si está en districts_with_off. Precedencia:
+// ipt_distrito (broad, más severo) > distrito_of (preventive).
 function updateDistInputZoneClass() {
   var distEl = $('distrito');
   if (!distEl) return;
   // Limpiar siempre antes de evaluar.
-  distEl.classList.remove('dist-off-warn');
+  distEl.classList.remove('dist-off-warn', 'dist-ipt-warn');
   var distVal = (distEl.value || '').trim();
   if (!distVal) return;
   if (typeof ZONAS_APAGADAS === 'undefined' || !ZONAS_APAGADAS.districts_with_off) return;
@@ -5269,8 +5463,12 @@ function updateDistInputZoneClass() {
   var p = upper('provincia');
   var codes = getUbigeoCodesForAddress(d, p, distVal);
   if (!codes || !codes.d6) return;
-  if (ZONAS_APAGADAS.districts_with_off.has(codes.d6)) {
-    distEl.classList.add('dist-off-warn');
+  // Precedencia: ipt_distrito (broad, más severo) > distrito_of (preventive)
+  if (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.ipt_districts
+      && ZONAS_APAGADAS_INTEL.ipt_districts.has(codes.d6)) {
+    distEl.classList.add('dist-ipt-warn');  // ROJO — COMU-5672
+  } else if (ZONAS_APAGADAS.districts_with_off.has(codes.d6)) {
+    distEl.classList.add('dist-off-warn');  // ÁMBAR
   }
 }
 
@@ -6117,11 +6315,32 @@ function auditZonasApagadas() {
       issues.push('ccpp_keys contaminated (CCPP name == distrito name): ' + contaminated.length);
     }
   }
+  // Check 6 (v3.8.0): ipt_districts debe existir y ser subset de districts_with_off
+  if (typeof ZONAS_APAGADAS_INTEL === 'undefined' || !ZONAS_APAGADAS_INTEL.ipt_districts) {
+    issues.push('ipt_districts missing o vacío (COMU-5672 IPT zone)');
+  } else {
+    var iptD6 = ZONAS_APAGADAS_INTEL.ipt_districts;
+    if (iptD6.size === 0) {
+      issues.push('ipt_districts está VACÍO');
+    }
+    var iptNotInDistricts = [];
+    iptD6.forEach(function (d6) {
+      if (!ZONAS_APAGADAS.districts_with_off.has(d6)) {
+        iptNotInDistricts.push(d6);
+      }
+    });
+    if (iptNotInDistricts.length > 0) {
+      issues.push('ipt_districts d6 NO en districts_with_off: ' + iptNotInDistricts.length);
+    }
+  }
   // Report
   if (issues.length > 0) {
     console.warn('[CIMA audit] ZONAS_APAGADAS issues:', issues);
   } else {
-    console.log('[CIMA audit] ZONAS_APAGADAS OK: ' + ZONAS_APAGADAS.ccpp_keys.size + ' CCPPs, ' + ZONAS_APAGADAS.districts_with_off.size + ' districts');
+    var iptSize = (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.ipt_districts)
+      ? ZONAS_APAGADAS_INTEL.ipt_districts.size : 0;
+    console.log('[CIMA audit] ZONAS_APAGADAS OK: ' + ZONAS_APAGADAS.ccpp_keys.size + ' CCPPs, ' +
+      ZONAS_APAGADAS.districts_with_off.size + ' districts, ' + iptSize + ' ipt');
   }
 }
 

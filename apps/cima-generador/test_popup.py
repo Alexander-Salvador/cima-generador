@@ -1583,7 +1583,8 @@ def test(html_path):
         # Aceptar cualquier versión de renderCoberturaButton que tenga alternancia
         has_alternate = ("BUG 1 fix: alternar --idle" in render_fn
                         or "BUG 1 fix: alternar" in render_fn
-                        or 'classList.remove(\'off\', \'warn\', \'cobertura-btn--idle\')' in render_fn)
+                        or 'classList.remove(\'off\', \'warn\', \'cobertura-btn--idle\')' in render_fn
+                        or "classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle')" in render_fn)
         if has_alternate:
             if "BUG 1 fix" in render_fn:
                 result.ok('BUG 1 renderCoberturaButton: BUG 1 fix marker presente')
@@ -2166,6 +2167,8 @@ def test(html_path):
     if m_render:
         if 'ac-off-tri' in m_render.group(1):
             result.ok('v3.8.0 JS: acRender emite triángulo para items ccpp apagados (icono solo)')
+        if 'data-zone="ipt_distrito"' in m_render.group(1) and 'ac-item-ipt' in m_render.group(1):
+            result.ok('v3.8.0 JS: acRender marca distrito ipt con .ac-item-ipt (ROJO)')
         else:
             result.fail('JS acRender triangle', 'acRender no emite triángulo')
         # Verificar que NO emite el label "APAGADO" inline (CEO directive)
@@ -2305,6 +2308,82 @@ def test(html_path):
                     result.ok('v3.8.0 JS: acRender distrito case incluye triángulo + ac-off-text')
                 else:
                     result.fail('JS distrito tri', 'distrito case no tiene ac-off-tri/ac-off-text')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.8.0 — IPT DISTRICTS (COMU-5672) workflow con ROJO
+    # CEO directive 2026-10-16: "al detectarse ipt_districts se cumpla
+    # el mismo flujo inteligente de otro color y cambie el color de la
+    # alerta con el speech adecuado".
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.8.0 IPT — COMU-5672 flow con color ROJO')
+
+    # CSS: --zone-ipt (single source of truth) + --zone-ipt-deep
+    if re.search(r'--zone-ipt:\s*#dc2626', html):
+        result.ok('v3.8.0 CSS: --zone-ipt: #dc2626 (RED, single source of truth)')
+    if re.search(r'--zone-ipt-deep:\s*#991b1b', html):
+        result.ok('v3.8.0 CSS: --zone-ipt-deep: #991b1b (texto oscuro sobre fondo rojo)')
+
+    # CSS: .dist-ipt-warn input + .ccpp-ipt-warn input
+    if re.search(r'\.field\s+input\.dist-ipt-warn', html):
+        result.ok('v3.8.0 CSS: .dist-ipt-warn (input distrito en IPT) presente')
+    if re.search(r'\.field\s+input\.ccpp-ipt-warn', html):
+        result.ok('v3.8.0 CSS: .ccpp-ipt-warn (input ccpp en IPT) presente')
+
+    # CSS: .ac-item-ipt (dropdown distrito) — ROJO
+    if re.search(r'\.ac-item\.ac-item-ipt\s*\{[^}]*--zone-ipt', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-item-ipt con --zone-ipt (dropdown distrito IPT)')
+
+    # CSS: .cobertura-btn.ipt (botón alerta) — ROJO
+    if re.search(r'\.cobertura-btn\.ipt\s*\{', html):
+        result.ok('v3.8.0 CSS: .cobertura-btn.ipt (alerta IPT) presente')
+    if re.search(r'\.cobertura-btn\.ipt\s*\{[^}]*pulseDanger', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .cobertura-btn.ipt con pulseDanger (intenso, urgencia)')
+
+    # JS: ZONAS_APAGADAS_STATE.ipt_districts
+    if re.search(r'ipt_districts:\s*\(typeof ZONAS_APAGADAS_INTEL', html):
+        result.ok('v3.8.0 JS: ZONAS_APAGADAS_STATE expone ipt_districts')
+    elif 'ipt_districts:' in html and 'ZONAS_APAGADAS_STATE' in html:
+        result.ok('v3.8.0 JS: ipt_districts en ZONAS_APAGADAS_STATE')
+
+    # JS: checkZonaApagada retorna nivel='ipt_distrito'
+    if re.search(r"nivel:\s*'ipt_distrito'", html):
+        result.ok('v3.8.0 JS: checkZonaApagada retorna nivel="ipt_distrito"')
+    m_check = re.search(r'function checkZonaApagada\([^)]+\)\s*\{(.*?)(?=\nfunction|\Z)', html, re.DOTALL)
+    if m_check and 'ipt_distrito' in m_check.group(0) and 'COMU-5672' in m_check.group(0):
+        result.ok('v3.8.0 JS: checkZonaApagada usa COMU-5672 para ipt_distrito')
+
+    # JS: renderCoberturaButton maneja 'ipt' class
+    if re.search(r"check\.nivel\s*===\s*'ipt_distrito'", html):
+        result.ok('v3.8.0 JS: renderCoberturaButton maneja nivel="ipt_distrito" → class="ipt"')
+
+    # JS: showApagadoTooltip usa ipt_visor_4g o ipt_visor_sin_4g para ipt
+    if re.search(r"speechKey\s*=\s*'ipt_visor_4g'", html) or re.search(r"speechKey\s*=\s*'ipt_visor_sin_4g'", html):
+        result.ok('v3.8.0 JS: showApagadoTooltip usa ipt_visor_4g/ipt_visor_sin_4g (speech IPT)')
+
+    # JS: acRender marca distrito con .ac-item-ipt + data-zone="ipt_distrito"
+    if m_render and 'ac-item-ipt' in m_render.group(1) and 'data-zone="ipt_distrito"' in m_render.group(1):
+        result.ok('v3.8.0 JS: acRender marca distrito IPT con .ac-item-ipt + data-zone="ipt_distrito"')
+
+    # JS: updateCcppInputZoneClass maneja ccpp-ipt-warn (RED)
+    if re.search(r"ccppEl\.classList\.add\('ccpp-ipt-warn'\)", html):
+        result.ok('v3.8.0 JS: updateCcppInputZoneClass aplica .ccpp-ipt-warn (RED)')
+
+    # JS: updateDistInputZoneClass maneja dist-ipt-warn (RED)
+    if re.search(r"distEl\.classList\.add\('dist-ipt-warn'\)", html):
+        result.ok('v3.8.0 JS: updateDistInputZoneClass aplica .dist-ipt-warn (RED)')
+
+    # JS: auditZonasApagadas valida ipt_districts
+    if re.search(r'ipt_districts missing o vacío', html) or re.search(r'ipt_districts.*subset.*districts_with_off', html, re.DOTALL):
+        result.ok('v3.8.0 JS: auditZonasApagadas valida ipt_districts ⊆ districts_with_off')
+
+    # Precedencia: ccpp_exacto > ipt_distrito > distrito_of
+    # Buscamos que el código respete esto
+    if m_check and "ipt_distrito" in m_check.group(0):
+        # El check debe aparecer ANTES del distrito_of
+        ipt_pos = m_check.group(0).find('ipt_distrito')
+        distrito_of_pos = m_check.group(0).find("distrito_of")
+        if ipt_pos > 0 and distrito_of_pos > ipt_pos:
+            result.ok('v3.8.0 JS: precedencia ipt_distrito > distrito_of en checkZonaApagada')
 
     print('\n▸ v3.7.9 — Marcado end-to-end distrito+ccpp en búsqueda')
 
