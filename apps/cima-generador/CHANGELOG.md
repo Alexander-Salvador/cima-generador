@@ -1,5 +1,55 @@
 # Changelog — cima-generador
 
+## [3.9.14] - 2026-10-16 — ✂️ IPT SPEECHES ACORTADOS — mismo template
+
+CEO feedback v3.9.13: "sigue siendo muy extenso utiliza demasiado
+espacio de pantalla" — mostrado al probar IPT speech con
+CAJAMARCA. El speech largo (~95 palabras) aún ocupaba mucho
+espacio en el dialog.
+
+### 📐 Speeches IPT (COMU-5672) acortados con mismo template
+
+Aplicado el template v3.9.13 a las 3 variantes IPT:
+
+| Variante | Antes (palabras) | Ahora |
+|---|---|---|
+| `ipt_visor_4g` (cliente con 4G) | ~85 palabras | ~45 palabras (-47%) |
+| `ipt_postventa_4g` (postventa con 4G) | ~85 palabras | ~45 palabras |
+| `ipt_postventa_sin_4g` (postventa sin 4G — renovación) | ~110 palabras | ~50 palabras |
+
+### ✍️ Sin-4G variant — copy propuesto (espera confirmación CEO)
+
+`ipt_postventa_sin_4g` adapta tono (renovación en tienda) pero
+mantiene la misma estructura 2-párrafos + placeholders:
+
+```
+Queremos informarle que, a partir del {dia} de {mes} el
+servicio de Movistar 2G dejara de funcionar en
+{distrito,departamento}. Como su equipo no soporta la red
+4G, le recomendamos renovarlo en cualquier tienda Movistar
+para seguir disfrutando del servicio.
+
+Para más información sobre puntos de venta, consulte el
+sitio web oficial de Movistar o llame al 104.
+```
+
+CEO puede revisar/ajustar si el copy no encaja con el flujo
+del agente.
+
+### ✅ Validación
+
+- 432/432 tests PASS
+- audit_masivo ALL PASS
+- node --check OK
+
+### 💡 Lección
+
+- **L-089**: "Copy largo = copy no leído". Speeches >70 palabras
+  en un dialog de chat pierden atención del supervisor. Cada
+  speech debe caber en el panel sin scroll y leerse en <30s.
+
+---
+
 ## [3.9.13] - 2026-10-16 — ✍️ SPEECH REESCRITO — template {placeholders}
 
 CEO directive: "Vamos a mejorar el Speech:" + nuevo copy redactado
