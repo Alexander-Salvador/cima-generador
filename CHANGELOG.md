@@ -1,5 +1,78 @@
 # Changelog — cima-generador
 
+## [3.9.4] - 2026-10-16 — 🎯 REDISEÑO PANEL INTELIGENTE + botón estilizado
+
+CEO directives 2026-10-16:
+1. "Vamos a estilizar directamente el button para que tenga coherencia"
+2. "Al darle click no mostrará el contenido hacia abajo debe mostrarlo encima de su contenedor grid BUSQUEDA ADDRESS sin excederse"
+3. "Eliminaremos el botón de cerrar y copiar y mejoraremos el header para que sea más sencillo"
+4. "Optimizaremos sin perder el significado del texto que emite"
+
+### 🎨 Botón ⚠️ — estilizado coherente
+
+Antes: border `1.5px solid var(--danger)` rojo SIEMPRE (incluso en idle).
+Ahora: border `color-mix(text-faint 30%)` neutral; las clases de estado
+(`--idle` / `.off` / `.warn` / `.ipt`) aplican el color correcto.
+
+### 📍 Panel: ARRIBA del botón — sin excederse
+
+```
+Antes (debajo, anclado fixed):            Ahora (arriba, en grid):
+┌──────────────────┐                       ┌─────────────────────────┐
+│   output-row    │                       │  speech-panel (visible) │
+│ [output][x][⚠️]   │                       │  COMU ⚠️ · zona · fecha │
+│ [tooltip popup] │                       │  speech text + status   │
+└──────────────────┘                       │  output-row            │
+                                          │  [output][x][⚠️]        │
+                                          └─────────────────────────┘
+```
+
+- DOM order: panel ANTES de `output-row` → fluye naturalmente arriba.
+- `position: relative` + `width:100%` + `max-width:100%` del section.
+- `max-height:220px` + `overflow-y:auto` (scroll si speech largo).
+- Flecha CSS `::after` apuntando abajo hacia el botón.
+
+### 🗑️ Botones Cerrar / Copiar eliminados del panel
+
+CEO: "eliminaremos el botón cerrar y copiar" — el botón ⚠️ ya cumple
+ese rol:
+- **Re-click** sobre ⚠️ mismo = toggle (abre/cierra panel)
+- **Click inicial** = copia speech automáticamente al clipboard
+- **Status pill** "✓ Copiado" auto-muestra 2s dentro del panel
+
+### 📋 Header 1-línea (más legible)
+
+```
+Antes (2 líneas):                Ahora (1 línea):
+┌──────────────────────┐         ┌──────────────────────────────────────┐
+│ ⚠ COMU-5514 v00003 │         │ ⚠ COMU-5514 · 📍 Chachapoyas · 📅 11/09/2026 │
+│ 📍 Chachapoyas       │         ├──────────────────────────────────────┤
+│   📅 11/09/2026      │         │ speech text...                        │
+├──────────────────────┤         └──────────────────────────────────────┘
+│ [speech text]        │
+│ [📋 Copiar] [Cerrar] │
+└──────────────────────┘
+```
+
+- `comuCorto` shortcodes: COMU-5514 → "Estaciones Base", COMU-5672 → "Zonas IPT"
+- Tag "RED 2G" solo para IPT (badge sutil ámbar)
+- Status pill verde ✓ Copiado — feedback automático tras copy
+- Nota (campo opcional del speech data) cuando exista
+
+### 📝 Texto del speech: SIN modificar
+
+"optimizaremos sin perder el significado del texto que emite" — el speech
+text se mantiene INTACTO. Solo se mejora el chrome alrededor (header,
+status, container).
+
+### ✅ Validación
+
+- 434/434 tests popup PASS
+- audit_masivo ALL CHECKS + SCENARIOS PASSED
+- node --check OK
+
+---
+
 ## [3.9.3] - 2026-10-16 — 📋 DOCUMENTACIÓN del botón ⚠️ inteligente
 
 CEO feedback: "Listo mejoro bastante commitea todo hasta este punto y aclara funcionalidad del button inteligente <- falta arreglar pero funciona".
