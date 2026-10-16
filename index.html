@@ -1827,61 +1827,78 @@
 }
 
 
-/* ═══ v3.9.4 SPEECH PANEL — REDISEÑO coherente con tokens ═══
+/* ═══ v3.9.5 SPEECH PANEL — OVERLAY PREMIUM ═══
      CEO directives 2026-10-16:
-     • "mostrar el contenido ENCIMA del botón" (no debajo) — el panel
-        se renderiza ARRIBA del output-row (antes en el DOM). Flujo
-        natural — sin position:absolute.
-     • "sin excederse del contenedor grid BUSQUEDA ADDRESS" —
-        max-width:100% del section + max-height bounded + overflow.
-     • "eliminaremos los botones de Cerrar y Copiar" — el botón ⚠️ ya
-        hace toggle (re-click cierra) y click → copia (auto-status pill).
-     • "mejoraremos el header" — 1 línea: COMU · ZONA · FECHA.
+     • "el dialog debe ir encima para no ocupar espacio" — position:
+        absolute, anclado al wrapper (.output-row-wrap). NO participa en
+        el flujo del grid BUSQUEDA ADDRESS. Cuando hidden, no estira nada.
+     • "mejorar cuadro del dialog mejores efectos premium modernos" —
+        glass blur saturado, gradient border sutil, sombras profundas,
+        border-radius moderno (12px), animaciones suaves.
+     • "reducir el tamaño del texto dentro el speech, más compacto" —
+        font-size 11px, line-height 1.35.
    ───────────────────────────────────────────────────────────────────── */
-  .apagado-speech-panel {
+  /* Wrapper del output-row: ancla para el panel absolute */
+  .output-row-wrap {
     position: relative;
+    isolation: isolate;       /* crear stacking context limpio */
+  }
+
+  .apagado-speech-panel {
+    /* v3.9.5: position absolute — el panel FLOTA encima, no en flujo */
+    position: absolute;
+    bottom: calc(100% + 8px);   /* 8px de gap respecto al output-row */
+    left: 0;
+    right: 0;
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
-    margin: 0 0 8px 0;   /* v3.9.4: separación visual respecto al output-row */
-    padding: 10px 12px 12px;
-    background: var(--surface, rgba(15,15,18,0.78));
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
-    backdrop-filter: blur(14px) saturate(1.4);
+    margin: 0;
+    padding: 11px 13px 12px;
+    background:
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--surface) 78%, transparent) 0%,
+        color-mix(in srgb, var(--surface) 88%, transparent) 100%);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
     color: var(--text, #f2f0ed);
-    border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
     border-left: 3px solid var(--zone-ipt);
-    border-radius: 9px;
+    border-radius: 12px;
     box-shadow:
-      0 6px 20px rgba(0,0,0,0.22),
-      0 2px 6px rgba(0,0,0,0.14);
-    font-size: 12px;
-    line-height: 1.42;
-    max-height: 220px;
+      0 12px 32px rgba(0,0,0,0.28),
+      0 4px 12px rgba(0,0,0,0.18),
+      inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
+    font-size: 11.5px;
+    line-height: 1.38;
+    max-height: 200px;        /* v3.9.5: un poco más bajo — más compacto */
     overflow-y: auto;
-    z-index: 50;
-    animation: apagadoPanelIn 0.18s var(--motion-ease);
+    z-index: 60;
+    animation: apagadoPanelIn 0.2s var(--motion-spring-soft);
     pointer-events: auto;
+    /* Premium scrollbar */
+    scrollbar-width: thin;
   }
   .apagado-speech-panel[data-com="COMU-5514"] {
     border-left-color: var(--zone-amber);
   }
-  /* Flecha CSS apuntando abajo hacia el botón ⚠️ */
+  /* v3.9.5: flecha CSS apuntando abajo hacia el botón ⚠️ */
   .apagado-speech-panel::after {
     content: "";
     position: absolute;
-    bottom: -5px;
-    right: 12px;
-    width: 10px;
-    height: 10px;
+    bottom: -6px;
+    right: 14px;
+    width: 12px;
+    height: 12px;
     background: inherit;
-    border-right: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
-    border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+    border-right: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
     transform: rotate(45deg);
+    backdrop-filter: blur(0);  /* evitar blur del padre en la flecha */
   }
   @keyframes apagadoPanelIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .apagado-speech-panel[hidden] { display: none !important; }
 
@@ -1889,20 +1906,20 @@
   .apagado-speech-panel .apagado-panel-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
+    gap: 5px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-    padding-bottom: 7px;
-    border-bottom: 1px dashed color-mix(in srgb, var(--border-strong) 40%, transparent);
+    letter-spacing: 0.01em;
+    margin-bottom: 7px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-strong) 30%, transparent);
     color: var(--text-dim, #9ca3af);
-    text-transform: none;       /* v3.9.4: case mixto para legibilidad */
+    text-transform: none;
   }
   .apagado-speech-panel .apagado-panel-com {
     color: var(--zone-ipt);
     font-weight: 800;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.02em;
     flex-shrink: 0;
   }
@@ -1911,13 +1928,13 @@
   }
   .apagado-speech-panel .apagado-panel-sep {
     color: color-mix(in srgb, var(--text-faint) 60%, transparent);
-    margin: 0 2px;
+    margin: 0 1px;
     flex-shrink: 0;
   }
   .apagado-speech-panel .apagado-panel-zona {
     color: var(--text, #f2f0ed);
     font-weight: 600;
-    font-size: 11.5px;
+    font-size: 11px;
     flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1926,43 +1943,44 @@
   .apagado-speech-panel .apagado-panel-fecha {
     color: color-mix(in srgb, var(--text) 80%, transparent);
     font-weight: 500;
-    font-size: 11px;
+    font-size: 10.5px;
     flex-shrink: 0;
   }
-  /* TAG de severidad ("RED 2G" para IPT) */
+  /* TAG severidad ("RED 2G" para IPT) */
   .apagado-speech-panel .apagado-panel-tag {
     flex-shrink: 0;
     padding: 1px 5px;
     border-radius: 3px;
-    font-size: 9px;
+    font-size: 8.5px;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
   .apagado-speech-panel .apagado-panel-tag.tag-ipt {
-    background: color-mix(in srgb, var(--zone-amber) 18%, transparent);
+    background: color-mix(in srgb, var(--zone-amber) 20%, transparent);
     color: var(--zone-amber);
     border: 1px solid color-mix(in srgb, var(--zone-amber) 50%, transparent);
   }
 
-  /* SPEECH BODY — texto completo, sin modificar (lo que el agente lee al cliente) */
+  /* v3.9.5: SPEECH BODY — texto compacto, font-size reducido */
   .apagado-speech-panel .apagado-panel-speech {
-    font-size: 12.5px;
-    line-height: 1.5;
+    font-size: 11px;
+    line-height: 1.38;
     color: var(--text, #f2f0ed);
     white-space: pre-wrap;
     margin: 0;
     word-wrap: break-word;
+    font-weight: 450;
   }
 
-  /* STATUS PILL — reemplazo del botón Copiar (feedback automático tras copy) */
+  /* STATUS PILL — feedback automático post-copy */
   .apagado-speech-panel .apagado-panel-status {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-top: 8px;
-    padding: 2px 8px;
-    font-size: 10.5px;
+    margin-top: 7px;
+    padding: 2px 7px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 0.03em;
     border-radius: 999px;
@@ -1971,30 +1989,36 @@
     border: 1px solid color-mix(in srgb, var(--green) 40%, transparent);
     opacity: 0;
     transform: translateY(-2px);
-    transition: opacity 0.18s var(--motion-ease), transform 0.18s var(--motion-ease);
+    transition: opacity 0.2s var(--motion-ease), transform 0.2s var(--motion-ease);
   }
   .apagado-speech-panel .apagado-panel-status.visible {
     opacity: 1;
     transform: translateY(0);
   }
-  /* NOTA pequeña (campo opcional cuando existe) */
+  /* NOTA pequeña */
   .apagado-speech-panel .apagado-panel-note {
     display: block;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed color-mix(in srgb, var(--border-strong) 30%, transparent);
-    font-size: 10.5px;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid color-mix(in srgb, var(--border-strong) 28%, transparent);
+    font-size: 10px;
     font-style: italic;
     color: var(--text-dim, #9ca3af);
-    line-height: 1.35;
+    line-height: 1.32;
   }
-  /* v3.9.4 (legacy DEPRECATED): botones nunca se renderizan desde JS.
-     Estas reglas existen solo por compat con tests/historical CSS. */
+  /* v3.9.5: legacy DEPRECATED — botones nunca se renderizan */
   .apagado-speech-panel .apagado-panel-actions { display: none; }
   .apagado-speech-panel .apagado-panel-btn { display: none; }
   .apagado-speech-panel .apagado-panel-btn-primary { display: none; }
   .apagado-speech-panel .apagado-panel-feedback { display: none; }
   .apagado-speech-panel .apagado-panel-zona-old { display: none; }
+  /* v3.9.5: scrollbar más sutil */
+  .apagado-speech-panel::-webkit-scrollbar { width: 5px; }
+  .apagado-speech-panel::-webkit-scrollbar-track { background: transparent; }
+  .apagado-speech-panel::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--text-faint) 40%, transparent);
+    border-radius: 999px;
+  }
 
 
 /* APAGADO TOOLTIP (v3.5.2 legacy) — anclado al botón ⚠️, compacto. */
@@ -3199,23 +3223,16 @@ font-size: 10px;
         </div>
       </div>
 
-      <!-- v3.9.4: SPEECH PANEL INLINE — REUBICADO ARRIBA del output-row.
-           CEO directive: "mostrar el contenido ENCIMA del botón". Antes: debajo.
-           DOM order = visual order (panel ANTES del output-row). Flujo natural.
-           Container grid #gridAddress es el límite visual:
-           max-width 100% + max-height 220px + overflow-y:auto (sin exceder). -->
-      <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
-           aria-label="Speech de zona de apagado" hidden></div>
-
-      <!-- v2.1.4 output-row: 3 elementos icon-only compactos
-           - RESULTADO: ocupa ancho mayor (flex:1), altura flexible, pre-wrap multi-línea
-           - BORRAR: solo icono papelera × (icon-only 36×36 circular pill)
-           - ZONAS DE APAGADO: solo icono triángulo ⚠ SVG (icon-only 36×36 circular pill)
-           Botones SIN texto visible mantienen aria-label + title (WCAG accesible) -->
-      <div class="output-row">
-        <div class="output-wrap">
-          <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">LLENAR DATOS</div>
-        </div>
+      <!-- v3.9.5: WRAPPER output-row con position:relative — ancla para
+           el panel .apagado-speech-panel que flota ENCIMA (no en flujo).
+           El panel usa position:absolute (bottom: calc(100% + 8px)) — no
+           ocupa espacio en el grid BUSQUEDA ADDRESS, evitando estirar
+           la layout cuando se muestra. -->
+      <div class="output-row-wrap">
+        <div class="output-row">
+          <div class="output-wrap">
+            <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">LLENAR DATOS</div>
+          </div>
         <button class="btn-icon btn-icon-clear" onclick="clearAddress()" type="button"
                 aria-label="Borrar todos los campos del formulario"
                 title="Borrar">
@@ -3225,15 +3242,23 @@ font-size: 10px;
         </button>
         <!-- v2.1.4: coberturaBtn SIEMPRE visible (idle/warn/off), icono triángulo solamente -->
         <button id="coberturaBtn" class="cobertura-btn cobertura-btn--idle" type="button"
-                aria-label="Estado de zonas de apagado Movistar"
-                aria-pressed="false"
-                title="Sin alertas — cobertura OK">
-          <svg class="cobertura-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 2 L22 20 L2 20 Z"/>
-            <path d="M12 9 L12 14"/>
-            <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
-          </svg>
-        </button>
+                  aria-label="Estado de zonas de apagado Movistar"
+                  aria-pressed="false"
+                  title="Sin alertas — cobertura OK">
+            <svg class="cobertura-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2 L22 20 L2 20 Z"/>
+              <path d="M12 9 L12 14"/>
+              <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- v3.9.5: PANEL ANCLADO ENCIMA (position:absolute).
+             Ahora vive DENTRO del wrapper .output-row-wrap — usa bottom:
+             calc(100% + 8px) para flotar arriba del output-row sin estirar
+             el grid BUSQUEDA ADDRESS. No ocupa layout space cuando hidden. -->
+        <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
+             aria-label="Speech de zona de apagado" hidden></div>
       </div>
 </div>
   </div>
@@ -3367,7 +3392,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.4</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.5</span>
     </span>
   </footer>
 </div>
@@ -4739,7 +4764,7 @@ function escapeHtmlZa(s) {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.4] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.9.5] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -4805,7 +4830,7 @@ function escapeHtmlZa(s) {
         copyText(speechText, btn);
       } catch (e) {
         // copyText puede fallar en file://; no rompemos el flujo
-        console.warn('[CIMA v3.9.4] copyText falló:', e);
+        console.warn('[CIMA v3.9.5] copyText falló:', e);
       }
     }
     // v3.9.4: status pill "✓ Copiado" en el PANEL (no en el botón —
