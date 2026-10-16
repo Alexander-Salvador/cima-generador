@@ -1698,10 +1698,14 @@ def test(html_path):
             result.fail('v3.5.6 regresión', 'ac-item-ipt-hint aún en render limpio')
         else:
             result.ok('v3.5.6 JS: render LIMPIO (sin ipt-hint en items)')
-        if 'districts_with_off.has' in body:
-            result.fail('v3.5.6 regresión', 'render limpio NO debe consultar districts_with_off')
+        # v3.5.7 amplió v3.5.6: ahora consulta districts_with_off para
+        # marca sutil zone-off (sin prefijo, sin animation, fondo + border).
+        if 'zoneOff' in body:
+            result.ok('v3.5.7 JS: render aplica zoneOff sutil (v3.5.7)')
+        elif 'districts_with_off.has' in body:
+            result.fail('v3.5.7 regresión', 'consulta districts_with_off sin zoneOff sutil')
         else:
-            result.ok('v3.5.6 JS: render limpio NO consulta districts_with_off')
+            result.fail('v3.5.7 zone-off', 'falta lógica zoneOff')
     # districts_with_off.has debe seguir existiendo en updateCcppInputZoneClass
     if 'function updateCcppInputZoneClass' in html and 'districts_with_off.has(d6)' in html:
         result.ok('v3.5.5 JS: helper updateCcppInputZoneClass usa districts_with_off (v3.5.5 intacto)')
@@ -1740,7 +1744,15 @@ def test(html_path):
         result.ok('v3.5.6 JS: render dropdown limpio marker presente')
     else:
         result.fail('JS render clean', 'falta marker v3.5.6 limpio')
-    # JS: ya NO debe haber 'var iptHint' (revertido)
+    # v3.5.7: SÍ consulta districts_with_off pero SOLO para zone-off sutil
+    if 'v3.5.7: marca visual SUTIL' in html:
+        result.ok('v3.5.7 JS: render SUTIL SÍ consulta districts_with_off (zone-off)')
+    elif 'ZONAS_APAGADAS.districts_with_off.has(d6ForMark)' in html and 'zoneOff' in html:
+        result.ok('v3.5.7 JS: render SUTIL SÍ consulta districts_with_off (zone-off)')
+    else:
+        result.fail('v3.5.7 zone', 'debería consultar para zone-off sutil')
+    # v3.5.6 marcador aún presente (v3.5.7 amplió v3.5.6, no lo reemplazó)
+    # JS: ya NO debe haber 'var iptHint' (revertido en v3.5.6)
     if 'var iptHint = !off && distritoEnApagado;' in html:
         result.fail('JS revertido', 'iptHint aún presente (debe estar revertido)')
     else:
@@ -1752,6 +1764,47 @@ def test(html_path):
     # input se pinta ROJO (ccpp exacto apagado) o AMARILLO (distrito IPT).
     # Reemplaza el verde .filled cuando aplica.
     # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.7 — Marca visual sutil dropdown (zona apagado)')
+
+    # CSS: nueva clase zone-off
+    if '.ac-item.ac-item-zone-off' in html:
+        result.ok('v3.5.7 CSS: .ac-item-zone-off (subtle) presente')
+    else:
+        result.fail('CSS zone-off', 'falta clase sutil')
+    # CSS: usa ámbar (no rojo) y SIN pulse / SIN prefijo
+    m_zone = re.search(r'\.ac-item\.ac-item-zone-off\s*\{([^}]+)\}', html)
+    if m_zone:
+        body = m_zone.group(1)
+        if '#f59e0b' in body or 'var(--warning' in body:
+            result.ok('v3.5.7 CSS: color base ámbar (no rojo)')
+        else:
+            result.fail('CSS color', 'no usa color ámbar')
+        if 'animation' not in body:
+            result.ok('v3.5.7 CSS: SIN animation (subtle)')
+        else:
+            result.fail('CSS anim', 'no debe tener animation')
+
+    # JS: render dropdown aplica zone-off sutil
+    if 'v3.5.7: marca visual SUTIL' in html:
+        result.ok('v3.5.7 JS: marker v3.5.7 presente')
+    else:
+        result.fail('JS marker', 'falta marker v3.5.7')
+    if 'ac-item-zone-off' in html and "cls += ' ac-item-zone-off'" in html:
+        result.ok('v3.5.7 JS: aplica clase ac-item-zone-off sutil')
+    else:
+        result.fail('JS class', 'no aplica zone-off')
+    # JS: usa districts_with_off.has para detectar zona
+    if 'ZONAS_APAGADAS.districts_with_off.has(d6ForMark)' in html:
+        result.ok('v3.5.7 JS: consulta districts_with_off para sutil')
+    else:
+        result.fail('JS check zone', 'no consulta districts_with_off')
+    # JS: SIN prefijo ⚠️ en items zoneOff
+    if 'zoneOff ? \'<span class=\\"ac-' in html or 'zoneOff ?' in html or 'zoneOff' in html:
+        if "var prefix = off ?" in html and not ("zoneOff ?" in html):
+            result.ok('v3.5.7 JS: prefijo ⚠️ SOLO cuando off (exacto), no para zoneOff')
+        else:
+            result.fail('JS prefix zone', 'prefijo ⚠️ debería ser SOLO para off')
+
     print('\n▸ v3.5.5 — Input CCPP pintado por zona')
 
     # CSS: clase ccpp-off-confirmed (ROJO)
