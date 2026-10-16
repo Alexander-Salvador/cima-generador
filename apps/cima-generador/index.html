@@ -5035,27 +5035,39 @@ function acRender(key) {
     // si su d6 está en districts_with_off (afectación POTENCIAL, sin match
     // exacto de CCPP todavía). Diferenciado de .ac-item-off (rojo, CCPP exacto).
     var zone = false;
+    var d6ForItem = null;
     if (d6ByDistName && d6ByDistName[item] && ZONAS_APAGADAS.districts_with_off.has(d6ByDistName[item])) {
       zone = true;
+      d6ForItem = d6ByDistName[item];
     }
     var cls = 'ac-item';
     var indicatorHtml = '';
     if (off) {
-      // v3.8.0: TRIANGULO + LABEL "APAGADO" en vez de dot. Comunica
-      // visualmente "advertencia" + identifica el item como zona de
-      // apagado Movistar. Color hereda del padre (.ac-item-off = ámbar).
+      // v3.8.0: TRIANGULO + LABEL "APAGADO" para CCPP exacto (avería CONFIRMADA).
+      // El triángulo comunica "advertencia" + el label identifica el item como
+      // zona de apagado Movistar. Color hereda del padre (.ac-item-off = ámbar).
       cls += ' ac-item-off';
       indicatorHtml = '<span class="ac-off-tri" aria-hidden="true"></span>'
                     + '<span class="ac-off-text">' + acEscape(item) + '</span>'
                     + '<span class="ac-off-label" title="Centro poblado exacto en zona de apagado Movistar">APAGADO</span>';
-      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="ccpp_exacto">' + indicatorHtml + '</div>';
+      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="ccpp_exacto" title="' + acEscape(item) + ' — zona de apagado Movistar">' + indicatorHtml + '</div>';
     } else if (zone) {
-      // v3.8.0: distrito en zona potencial. Color ámbar unificado con ccpp.
-      // Sin triángulo/label (es el nombre del distrito, no del CCPP exacto).
+      // v3.8.0 (FIX): distrito en zona potencial. SOLO color ámbar + nombre
+      // del distrito, SIN label "DISTRITO" inline (era redundante: si todos
+      // los dist del dropdown están afectados, todos tenían el mismo label
+      // y el nombre real se ocultaba por flex shrinking). El title nativo
+      // lleva el conteo de CCPPs apagados para información accionable.
       cls += ' ac-item-zone';
-      indicatorHtml = '<span class="ac-off-text">' + acEscape(item) + '</span>'
-                    + '<span class="ac-off-label" title="Este distrito tiene centros poblados en zona de apagado Movistar">DISTRITO</span>';
-      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of">' + indicatorHtml + '</div>';
+      // Contar CCPPs apagados en este distrito (para el title)
+      var ccppCount = 0;
+      if (typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
+        var prefix = d6ForItem + ':';
+        ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+          if (k.indexOf(prefix) === 0) ccppCount++;
+        });
+      }
+      var distTitle = acEscape(item) + ' — distrito con ' + ccppCount + ' CCPP' + (ccppCount === 1 ? '' : 's') + ' en zona de apagado Movistar';
+      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of" title="' + distTitle + '">' + acEscape(item) + '</div>';
     }
     return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + acEscape(item) + '</div>';
   }).join('');
