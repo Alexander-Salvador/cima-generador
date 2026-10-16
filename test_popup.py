@@ -2152,6 +2152,26 @@ def test(html_path):
         if 'data-zone="ccpp_exacto"' in m_render.group(1) and 'data-zone="distrito_of"' in m_render.group(1):
             result.ok('v3.8.0 JS: data-zone attributes (ccpp_exacto / distrito_of)')
 
+    # v3.8.0 (FIX): distrito items NO deben tener label "DISTRITO" inline
+    # (era redundante: si todos los dist están afectados, todos tenían el
+    # mismo label y el nombre real se ocultaba por flex shrinking).
+    if m_render and 'data-zone="distrito_of"' in m_render.group(1):
+        # Buscar el bloque específico del distrito_of
+        dist_block_match = re.search(r"data-zone=\"distrito_of\"[^>]*>.*?</div>", m_render.group(1), re.DOTALL)
+        if dist_block_match:
+            dist_html = dist_block_match.group(0)
+            if '<span class="ac-off-text">' not in dist_html and '>DISTRITO<' not in dist_html:
+                result.ok('v3.8.0 FIX: distrito items SIN label "DISTRITO" inline (nombre visible)')
+            elif 'ac-off-text' in dist_html and '>CHILIQUIN<' in m_render.group(1):
+                # OK si usa ac-off-text con el nombre dinámico
+                result.ok('v3.8.0 FIX: distrito items usan ac-off-text con item dinámico')
+        # Verificar que el render del distrito solo emite el nombre, no label
+        if ">DISTRITO</span>" not in m_render.group(1):
+            result.ok('v3.8.0 FIX: NO label "DISTRITO" hardcoded en render')
+        # Verificar que el title nativo lleva el conteo de CCPPs
+        if "distrito con ' + ccppCount + ' CCPP" in m_render.group(1) or "distrito con " in m_render.group(1) and "ccppCount" in m_render.group(1):
+            result.ok('v3.8.0 FIX: distrito title nativo con conteo de CCPPs apagados')
+
     # JS: auditZonasApagadas function presente
     if 'function auditZonasApagadas' in html:
         result.ok('v3.8.0 JS: auditZonasApagadas() definida')
