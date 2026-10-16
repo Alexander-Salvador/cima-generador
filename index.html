@@ -4612,10 +4612,13 @@ function acUpdatePosition(key) {
   }
 }
 
-// v2.1.7 BOUNDS-AWARE helper: ajusta max-height del dropdown al espacio disponible
-// entre el input y el límite inferior del .grid-block contenedor. Si el espacio
-// es < 100px, FLIP-AWARE: el dropdown aparece arriba del input (en lugar de debajo).
-// Llamada desde acUpdatePosition (scroll/resize) y desde acRender (open inicial).
+// v3.7.6 BOUNDS-AWARE helper (L-059): ajusta max-height del dropdown al espacio
+// disponible entre el input y el límite inferior del .grid-block contenedor.
+// SIEMPRE hacia ABAJO (CEO directive L-059). Sin flip. Antes el CCPP hacía
+// flip-arriba cuando el espacio era < 100px, lo que causaba que el dropdown
+// "saltara al top del container" — mala UX.
+// Si el espacio es muy chico, ajustamos max-height al mínimo usable (80px)
+// con scroll interno. El usuario siempre ve el dropdown pegado al input.
 //
 // @param {HTMLElement} drop - el .ac-dropdown
 // @param {HTMLElement} input - el input que disparó el dropdown
@@ -4632,24 +4635,15 @@ function acFitToGrid(drop, input, inputRect) {
   // (3) Margen de respiración (8px entre dropdown y el límite inferior del grid)
   var MARGIN = 8;
   var available = gridBottom - rect.bottom - MARGIN;
-  // (4) Si el espacio es MUY pequeño (no entra ni 100px del dropdown) → FLIP arriba
-  var FLIP_THRESHOLD = 100;
-  if (available < FLIP_THRESHOLD) {
-    // FLIP-ARRIBA: top = (inputTop - 4 - capHeight), respetando viewport top (8px)
-    // El capHeight para flip debe ser el espacio disponible ARRIBA del input.
-    var aboveAvailable = rect.top - MARGIN - 8; // margen superior 8px
-    var flipCap = Math.max(80, Math.min(220, aboveAvailable));
-    var topAbove = rect.top - 4 - flipCap;
-    drop.style.top = Math.max(8, topAbove) + 'px';
-    drop.style.maxHeight = flipCap + 'px';
-    drop.classList.add('is-flipped');
-  } else {
-    // NORMAL ABAJO: top = inputBottom + 4, maxHeight = cap del espacio disponible
-    var cap = Math.max(80, Math.min(220, available));
-    drop.style.top = (rect.bottom + 4) + 'px';
-    drop.style.maxHeight = cap + 'px';
-    drop.classList.remove('is-flipped');
-  }
+  // (4) v3.7.6: SIEMPRE ABAJO, sin flip (L-059). Antes si available < 100px
+  // hacía flip-arriba — eso causaba que el CCPP dropdown "saltara" al top
+  // del container. Ahora ajustamos max-height al espacio disponible (mínimo
+  // 80px para mostrar al menos 1-2 items) y dejamos que el usuario haga
+  // scroll si hay más.
+  var cap = Math.max(80, Math.min(220, available));
+  drop.style.top = (rect.bottom + 4) + 'px';
+  drop.style.maxHeight = cap + 'px';
+  drop.classList.remove('is-flipped');
 }
 
 function acOptionsFor(key) {
