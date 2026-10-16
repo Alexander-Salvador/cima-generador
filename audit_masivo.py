@@ -30,6 +30,9 @@ def audit(html):
         'districts_with_off_total': 0,
         'districts_with_off_with_ccpp': 0,
         'districts_with_off_preventive': 0,
+        'ipt_districts_total': 0,
+        'ipt_districts_only_no_ccpp': 0,
+        'ipt_districts_with_ccpp_overlap': 0,
         'ubigeo_districts_total': 0,
         'ubigeo_deptos': 0,
     }
@@ -61,6 +64,13 @@ def audit(html):
     if m2:
         districts = set(re.findall(r'"(\d{6})"', m2.group(1)))
         stats['districts_with_off_total'] = len(districts)
+
+    # Extract ipt_districts (COMU-5672) from ZONAS_APAGADAS_INTEL
+    m_ipt = re.search(r'ipt_districts:\s*new Set\(\[([^\]]+)\]', html)
+    ipt_districts = set()
+    if m_ipt:
+        ipt_districts = set(re.findall(r'"(\d{6})"', m_ipt.group(1)))
+        stats['ipt_districts_total'] = len(ipt_districts)
 
     # CCPP_DATA section
     m_ccpp_data = re.search(r'const CCPP_DATA\s*=\s*\{', html)
@@ -109,6 +119,20 @@ def audit(html):
     stats['districts_with_off_with_ccpp'] = len(ccpp_d6s & districts)
     stats['districts_with_off_preventive'] = len(districts) - len(ccpp_d6s & districts)
 
+    # Test 6c: ipt_districts stats
+    if ipt_districts:
+        overlap_ipt_ccpp = ipt_districts & ccpp_d6s
+        stats['ipt_districts_with_ccpp_overlap'] = len(overlap_ipt_ccpp)
+        stats['ipt_districts_only_no_ccpp'] = len(ipt_districts - ccpp_d6s)
+        # ipt_districts should be subset of districts_with_off
+        ipt_not_in_districts = ipt_districts - districts
+        if ipt_not_in_districts:
+            issues.append(f'INTEGRITY: {len(ipt_not_in_districts)} ipt_districts d6 NO en districts_with_off')
+        # all ipt_districts must be in UBIGEO
+        for d6 in ipt_districts:
+            if d6 not in ubigeo_map:
+                issues.append(f'INTEGRITY: ipt_districts d6 {d6} NO en UBIGEO')
+
     # Test 7: every d6 in ccpp_keys must be in districts_with_off (consistency)
     if ccpp_d6s - districts:
         issues.append(f'CRITICAL: {len(ccpp_d6s - districts)} d6 en ccpp_keys NO en districts_with_off')
@@ -118,7 +142,7 @@ def audit(html):
     for d6, _ in ccpp_keys:
         d6_counts[d6] += 1
 
-    return issues, stats, ccpp_keys, districts, ubigeo_map, d6_counts, ccpp_d6s
+    return issues, stats, ccpp_keys, districts, ubigeo_map, d6_counts, ccpp_d6s, ipt_districts
 
 
 def test_per_d6_detection(html, ccpp_keys, districts, ubigeo_map, d6_counts):
@@ -160,7 +184,7 @@ def main():
     print("=" * 70)
     print()
     
-    issues, stats, ccpp_keys, districts, ubigeo_map, d6_counts, ccpp_d6s = audit(html)
+    issues, stats, ccpp_keys, districts, ubigeo_map, d6_counts, ccpp_d6s, ipt_districts = audit(html)
     results, d6_issues = test_per_d6_detection(html, ccpp_keys, districts, ubigeo_map, d6_counts)
     issues.extend(d6_issues)
     
@@ -220,20 +244,52 @@ def main():
              '4 distritos con triángulo: 060801, 060805, 060808, 060812'),
             ('LIMA / LIMA', '1501', None, None, False, 0,
              'LIMA no debe tener triángulos (no es zona apagado)'),
+            # v3.8.0: IPT (COMU-5672) — TODOS los distritos del d4
+            # deben estar en ipt_districts (son distritos rurales 2G completos)
+            ('AMAZONAS / CHACHAPOYAS (IPT)', '0101', None, None, True, 21,
+             'v3.8.0: 21 distritos de CHACHAPOYAS deben estar en ipt_districts (COMU-5672)'),
+            ('CAJAMARCA / CONTUMAZA (IPT)', '0603', None, None, True, 12,
+             'v3.8.0: 12 distritos de CONTUMAZA deben estar en ipt_districts'),
+            ('LIMA / LIMA (IPT)', '1501', None, None, True, 44,
+             'v3.8.0: 44 distritos de LIMA en ipt_districts (datos reales, no es 0)'),
         ]
 
         all_scenarios_pass = True
         for depto_prov, d4, target_d6, target_name, should_have_triangle, expected_tri_count, desc in scenarios:
             print(f"  {depto_prov} (d4={d4}):")
             print(f"    {desc}")
+            # v3.8.0: si la descripción dice "(IPT)", validar ipt_districts
+            if '(IPT)' in depto_prov or 'NO IPT' in depto_prov:
+                # All d6 in this d4 from UBIGEO
+                all_d6_in_d4 = sorted([d for d in ubigeo_map.keys() if d.startswith(d4)])
+                ipt_in_d4 = [d for d in all_d6_in_d4 if d in ipt_districts]
+                if should_have_triangle:
+                    if len(ipt_in_d4) == expected_tri_count:
+                        print(f"    ✅ {len(ipt_in_d4)}/{len(all_d6_in_d4)} distritos en ipt_districts (expected {expected_tri_count})")
+                    else:
+                        print(f"    ❌ {len(ipt_in_d4)}/{len(all_d6_in_d4)} distritos en ipt_districts (expected {expected_tri_count})")
+                        print(f"       Esperados: {all_d6_in_d4}")
+                        print(f"       Encontrados: {ipt_in_d4}")
+                        all_scenarios_pass = False
+                else:
+                    if len(ipt_in_d4) == 0:
+                        print(f"    ✅ 0/{len(all_d6_in_d4)} distritos en ipt_districts (correcto, no es IPT)")
+                    else:
+                        print(f"    ❌ {len(ipt_in_d4)} distritos en ipt_districts (expected 0)")
+                        all_scenarios_pass = False
+                print()
+                continue
+            # Default: ccpp_keys scenario
             # Find all d6 in this d4 that have ccpp_keys
             matching_d6 = [d6 for d6 in sorted(ccpp_d6s) if d6.startswith(d4)]
             print(f"    d6 con CCPPs: {matching_d6}")
             for d6 in matching_d6:
                 dist_name = ubigeo_map.get(d6, '?')
                 count = d6_counts[d6]
+                in_ipt = d6 in ipt_districts
                 marker = "TRI" if d6 in districts else "   "
-                print(f"      [{marker}] {d6} {dist_name:30s} ccpp={count}")
+                ipt_marker = " IPT" if in_ipt else ""
+                print(f"      [{marker}{ipt_marker}] {d6} {dist_name:30s} ccpp={count}")
             if should_have_triangle:
                 if len(matching_d6) == expected_tri_count:
                     print(f"    ✅ Expected {expected_tri_count} districts with triangle, got {len(matching_d6)}")
