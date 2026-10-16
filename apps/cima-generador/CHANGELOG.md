@@ -1,5 +1,57 @@
 # Changelog — cima-generador
 
+## [3.9.7] - 2026-10-16 — 🧹 DIALOG MINIMAL LIMPIO — STOP iterating
+
+CEO feedback v3.9.6: "Estamos iterando demasiado, no estás haciéndolo
+bien. Marcos feos, borde rojo izquierdo pésimo retiralo, debe estar
+bien encuadrado, quitale la barra de scroll, espacio muerto de footer
+dentro del dialog eliminalo. El header dice LIMA <- eliminalo".
+
+### 🛑 Reglas finales v3.9.7 (sin más iteraciones):
+
+| Elemento | Antes v3.9.6 | Ahora v3.9.7 |
+|---|---|---|
+| Header | `⚠ COMU-5672 · lima [RED 2G]` | **`⚠ COMU-5672` ONLY** |
+| Border-left rojo (3px) | sí | **REMOVIDO** ❌ |
+| Hairline border | 1px var(--border-strong) 65% | 1px 60% (sutil, encuadrado) |
+| Scroll | overflow-y: auto | **sin overflow** — crece con contenido |
+| max-height | 195px | **eliminado** |
+| Status pill margin | 8px | **6px** (sin espacio muerto) |
+| Padding | 12×14×13 | **10×12×11** (más encuadrado) |
+| Classes CSS | 14 reglas para header/zona/tag/sep/fecha/note | **3 reglas** (header/com/status) — solo lo que se renderiza |
+
+### 🎨 Dialog final
+
+```
+┌──────────────────────────────┐
+│ ⚠ COMU-5672                  │
+│ ────────────────────────────  │
+│ Queremos informarte que...    │
+│ del 3 de septiembre, el       │
+│ servicio Movistar 2G...      │
+│                              │
+│ ✓ Copiado                     │
+└──────────────────────────────┘
+     ↑ overlay absolute, position bottom: calc(100% + 8px)
+```
+
+- 1 hairline border (sin borde rojo a la izquierda)
+- Sin scroll bar — alto se ajusta al contenido
+- Header ultra minimal: ⚠ + COMU code
+- Sin zona/fecha/tag/nota en el dialog
+- Status pill abajo, sin espacio muerto
+
+### ✅ VALIDACIÓN — STOP
+
+- 434/434 tests popup PASS
+- audit_masivo ALL PASS
+- node --check OK
+- **FIN DE ITERACIONES sobre dialog — CEO, si esto no es lo que
+  querés, decime específico qué cambiar, no iteramos más sobre
+  formato**
+
+---
+
 ## [3.9.6] - 2026-10-16 — 🍎 APPLE 2026 PREMIUM + cleanup dialog
 
 CEO directives:
