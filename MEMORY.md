@@ -1,6 +1,6 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-15 — v3.4.4 PUSHEADO A REMOTO** (HEAD `b78ece3` en `develop`, popup `cd997c4` en `origin/main`). 308/308 tests PASS. Working tree: solo MEMORY.md modificado (post-stash). Popup LIVE en GitHub Pages ahora sirve v3.4.4 (post force-push). **Push exitoso** via git subtree split + force-push autorizado por CEO.
+Memoria persistente. Última actualización: **2026-10-15 — v3.5.0 ZONAS APAGADO INTELIGENTE** (HEAD `9ded893` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`). 308/308 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
 
 > ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (308/308) ↔ REMOTO.
 
