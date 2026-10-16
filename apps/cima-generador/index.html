@@ -497,14 +497,25 @@
     z-index: 1000;
   }
   .ac-dropdown[hidden] { display: none; }
+  /* ═══════════════════════════════════════════════════════════════
+     v3.7.1 DROPDOWN ITEMS — UNIFICADOS para los 4 inputs (depto/prov/dist/ccpp)
+     Misma base visual, con diferenciación sutil para CCPPs en zona apagada.
+     Antes: 4 items con padding 5px 10px, ⚠️ 16px pulse, border-left 4px, font-weight 800.
+            Rompía uniformidad con los otros 3 dropdowns (depto/prov/dist).
+     Ahora: padding 6px 12px, dot indicator 5px (•), sin pulse animation,
+            font-weight 500 (base) o 600 (apagado), border-left 0.5px.
+     ═══════════════════════════════════════════════════════════════ */
   .ac-item {
-    /* Items compactos, transición sutil */
-    padding: 5px 10px;
-    font-size: 10.5px;
+    /* Base IDÉNTICA para los 4 dropdowns */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
     color: var(--text);
     cursor: pointer;
     border-bottom: 1px solid var(--glass-border);
-    line-height: 1.3;
+    line-height: 1.35;
     transition:
       background var(--motion-fast) var(--motion-ease),
       color var(--motion-fast) var(--motion-ease);
@@ -526,47 +537,49 @@
     color: white;
     font-weight: 800;
   }
-  /* v3.5.3: CCPP marcado como apagado en dropdown — ALTO CONTRASTE
-     - background 22% rojo (era 10%, casi invisible)
-     - border-left 4px solid var(--danger) (resaltado al borde izquierdo)
-     - padding-left 14px (espacio para border)
-     - ⚠️ 16px (era 13px)
-     - font-weight 800 (era 700, más bold)
-     - text-shadow sutil para legibilidad
-     Objetivo: el supervisor UBICA el CCPP apagado en <1s escaneando el dropdown. */
+  /* v3.7.1: Indicador dot SUTIL para items en zona apagada.
+     - 5×5 px bullet, posición absoluta al inicio
+     - background: rojo (match exacto) o ámbar (distrito en apagado)
+     - El item mantiene el MISMO padding/font/color base que el resto
+     - Sin pulse animation (era distractor, no funcional)
+     - Sin border-left 4px (rompía el border-radius del dropdown)
+     - Sin ⚠️ 16px (era visualmente jarring) */
+  .ac-item .ac-off-dot {
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
   .ac-item.ac-item-off {
-    background: color-mix(in srgb, var(--danger) 22%, var(--glass-3-bg));
     color: var(--danger);
-    font-weight: 800;
-    padding-left: 14px;
-    border-left: 4px solid var(--danger);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
-    letter-spacing: 0.01em;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--danger) 8%, transparent);
   }
   .ac-item.ac-item-off mark {
-    background: color-mix(in srgb, var(--danger) 36%, transparent);
-    color: #fff;
+    background: color-mix(in srgb, var(--danger) 28%, transparent);
+    color: var(--danger);
     font-weight: 800;
-    padding: 1px 3px;
-    border-radius: 2px;
   }
   .ac-item.ac-item-off:hover,
   .ac-item.ac-item-off.active {
-    background: color-mix(in srgb, var(--danger) 88%, transparent);
-    color: var(--on-accent);
-    text-shadow: none;
+    background: color-mix(in srgb, var(--danger) 22%, var(--glass-3-bg));
+    color: var(--danger);
   }
-  .ac-item .ac-off-icon {
-    display: inline-block;
-    margin-right: 6px;
-    font-size: 16px;
-    line-height: 1;
-    vertical-align: middle;
-    animation: apagadoPulse 1.6s ease-in-out infinite;
+  .ac-item.ac-item-zone-off {
+    color: #b87b0a;
+    font-weight: 500;
+    background: color-mix(in srgb, #f59e0b 6%, transparent);
   }
-  @keyframes apagadoPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.65; transform: scale(1.1); }
+  .ac-item.ac-item-zone-off mark {
+    background: color-mix(in srgb, #f59e0b 18%, transparent);
+    color: #b87b0a;
+    font-weight: 700;
+  }
+  .ac-item.ac-item-zone-off:hover,
+  .ac-item.ac-item-zone-off.active {
+    background: color-mix(in srgb, #f59e0b 18%, var(--glass-3-bg));
   }
 
   .ac-item mark {
@@ -716,19 +729,6 @@
     25%      { transform: translateX(-2px); }
     50%      { transform: translateX(2px); }
     75%      { transform: translateX(-1px); }
-  }
-  /* v3.5.7: marca visual SUTIL para items CCPP en zona de apagado.
-     SOLO fondo + border-bottom tenue. Sin prefijo, sin pulse, sin cambio
-     de texto. El supervisor UBICA los caseríos en zona apagada por color.
-     Diferencia con .ac-item-off (rojo fuerte) que es para match EXACTO. */
-  .ac-item.ac-item-zone-off {
-    background: color-mix(in srgb, #f59e0b 8%, transparent);
-    border-left: 3px solid #f59e0b;
-  }
-  .ac-item.ac-item-zone-off:hover,
-  .ac-item.ac-item-zone-off.active {
-    background: color-mix(in srgb, #f59e0b 22%, transparent);
-    border-left: 3px solid #f59e0b;
   }
 
   .field input::placeholder, .field textarea::placeholder {
@@ -2529,50 +2529,8 @@ font-size: 10px;
       50%      { box-shadow: 0 0 0 6px color-mix(in srgb, #f59e0b 0%, transparent); }
     }
 
-    /* ─── Items del dropdown CCPP con marca de zona ─── */
-    .ac-item.ac-item-off {
-      background: color-mix(in srgb, var(--danger) 22%, var(--glass-3-bg));
-      color: var(--danger);
-      font-weight: 800;
-      padding-left: 14px;
-      border-left: 4px solid var(--danger);
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
-      letter-spacing: 0.01em;
-    }
-    .ac-item.ac-item-off mark {
-      background: color-mix(in srgb, var(--danger) 36%, transparent);
-      color: #fff;
-      font-weight: 800;
-      padding: 1px 3px;
-      border-radius: 2px;
-    }
-    .ac-item.ac-item-off:hover,
-    .ac-item.ac-item-off.active {
-      background: color-mix(in srgb, var(--danger) 88%, transparent);
-      color: var(--on-accent);
-      text-shadow: none;
-    }
-    .ac-item.ac-item-zone-off {
-      background: color-mix(in srgb, #f59e0b 8%, transparent);
-      border-left: 3px solid #f59e0b;
-    }
-    .ac-item.ac-item-zone-off:hover,
-    .ac-item.ac-item-zone-off.active {
-      background: color-mix(in srgb, #f59e0b 22%, transparent);
-      border-left: 3px solid #f59e0b;
-    }
-    .ac-item .ac-off-icon {
-      display: inline-block;
-      margin-right: 6px;
-      font-size: 16px;
-      line-height: 1;
-      vertical-align: middle;
-      animation: apagadoPulse 1.6s ease-in-out infinite;
-    }
-    @keyframes apagadoPulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: 0.65; transform: scale(1.1); }
-    }
+    /* v3.7.1: items de dropdown hereda de la sección principal (líneas 555-585)
+       para mantener UN SOLO source of truth entre popup mode y main mode. */
 
     /* ─── Input CCPP pintado por zona (mayor specificity que .filled) ─── */
     .field input.ccpp-off-confirmed,
@@ -4923,10 +4881,15 @@ function acRender(key) {
     }
     var zoneOff = !off && distritoEnApagadoSinMatch;
     var cls = 'ac-item';
-    if (off) cls += ' ac-item-off';
-    else if (zoneOff) cls += ' ac-item-zone-off';
-    var prefix = off ? '<span class="ac-off-icon" aria-hidden="true" title="CCPP exacto en zona de apagado">⚠️</span>' : '';
-    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + prefix + acHighlight(item, query) + '</div>';
+    var dotHtml = '';
+    if (off) {
+      cls += ' ac-item-off';
+      dotHtml = '<span class="ac-off-dot" aria-hidden="true" title="CCPP exacto en zona de apagado Movistar"></span>';
+    } else if (zoneOff) {
+      cls += ' ac-item-zone-off';
+      dotHtml = '<span class="ac-off-dot" aria-hidden="true" title="Distrito con apagados Movistar"></span>';
+    }
+    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + dotHtml + acHighlight(item, query) + '</div>';
   }).join('');
   var total = allOptions.length;
   if (total > 5 && total > AC_STATE.items.length && AC_STATE.items.length >= 2) {
