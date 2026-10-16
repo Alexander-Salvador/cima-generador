@@ -284,29 +284,27 @@ def test(html_path):
     else:
         result.fail('v2.0.8 schema pattern', 'no match en HTML')
 
-        # 7.6 v2.0.5 Visual layout: coberturaBtn dentro del output-row, compacto
-    print('\n▸ Visual layout v2.0.5 (coberturaBtn compact inside output-row)')
-    # Buscar orden: <div class="output-row"> ... id="coberturaBtn" ... en orden
-    btn_pos = html.find('id="coberturaBtn"')
-    output_rows = [m.start() for m in re.finditer(r'<div class="output-row">', html)]
-    output_ends = [m.end() for m in re.finditer(r'<div class="output-row">[^<]*<div[^>]*>.*?</div>\s*<button[^>]*btn-icon-clear.*?</button>\s*<button[^>]*coberturaBtn.*?</button>\s*</div>', html, re.DOTALL)]
-    if btn_pos > 0:
-        # Verificar que entre el <div class="output-row"> más cercano antes y el </div> después está el coberturaBtn
-        last_row_start = max(p for p in output_rows if p < btn_pos) if output_rows else -1
-        if last_row_start >= 0:
-            # Check that next </div> after coberturaBtn closes the output-row
-            after_btn = html.find('</div>', btn_pos)
-            if after_btn > 0:
-                segment = html[last_row_start:after_btn + 6]
-                if 'btn-icon-clear' in segment and 'coberturaBtn' in segment:
-                    result.ok('coberturaBtn dentro del output-row (después de X clear)')
+        # v3.9.12: NUEVO LAYOUT — coberturaBtn AHORA vive en .row-ref-buttons
+        # junto con REFERENCIA + botón borrar. NO en output-row (que ahora
+        # es solo la fila completa del RESULTADO).
+        print('\n▸ v3.9.12 Layout — coberturaBtn en .row-ref-buttons (NO en output-row)')
+        btn_pos = html.find('id="coberturaBtn"')
+        if btn_pos > 0:
+            # Buscar el .row-ref-buttons que contiene el botón
+            row_ref_pos = html.rfind('class="row-ref-buttons"', 0, btn_pos)
+            row_ref_end_match = re.search(r'</div>\s*<!--\s*v3.9.12.*?Row 4 completa',
+                                         html[row_ref_pos:], re.DOTALL) if row_ref_pos > 0 else None
+            if row_ref_pos > 0:
+                # Verificar que REFERENCIA + btn-clear + coberturaBtn están dentro
+                segment = html[row_ref_pos:btn_pos + 600]
+                if 'id="referencia"' in segment and 'btn-icon-clear' in segment and 'coberturaBtn' in segment:
+                    result.ok('v3.9.12 layout: coberturaBtn en row-ref-buttons (con REFERENCIA + btn-clear)')
                 else:
-                    result.fail('coberturaBtn location', 'no comparte output-row con btn-icon-clear')
+                    result.fail('layout v3.9.12', 'row-ref-buttons no contiene los 3 elementos esperados')
             else:
-                result.fail('output-row end', '</div> no encontrado')
+                result.fail('layout v3.9.12', '.row-ref-buttons no encontrado')
         else:
-            result.fail('output-row antes', 'no encontrado antes del coberturaBtn')
-    else:
+            result.fail('layout v3.9.12', 'id="coberturaBtn" no encontrado')
         result.fail('coberturaBtn element', 'no encontrado en HTML')
 
     # v2.1.4 REVERSIÓN: coberturaBtn SIEMPRE visible (display:inline-flex por default).
@@ -433,9 +431,24 @@ def test(html_path):
     # de manera inteligente, abreviándose").
     # CSS safety net: white-space:nowrap + overflow:hidden + text-overflow:ellipsis.
     # JS compactAddress() aplica abreviaciones ANTES de textContent.
-    css_output_box = re.search(r'\.output-box\s*\{([^}]+)\}', html)
+    # v3.9.12: la regla `.output-row.output-row--full .output-box` existe
+    # como override. El test busca la regla BASE (selector solo `.output-box`).
+    # Buscamos el primer match donde `.output-box {` NO esté precedido por otro
+    # selector (ej. `.output-row` o `.field`).
+    base_output_box = None
+    for m in re.finditer(r'(?:^|[\s,}{])\.output-box\s*\{', html):
+        start = m.start()
+        # look back — si el selector empieza tras } o { o \n, es regla base
+        prev = html[max(0, start-2):start]
+        if prev.strip() in ('}', '{', '') or '\n' in prev:
+            base_output_box = m
+            break
+    css_output_box = base_output_box
     if css_output_box:
-        ob_body = css_output_box.group(1)
+        # Capturar el body completo del bloque
+        body_start = html.find('{', start) + 1
+        body_end = html.find('}', body_start)
+        ob_body = html[body_start:body_end]
         if re.search(r'height:\s*36px', ob_body):
             result.ok('.output-box height: 36px (FIJA, v2.1.7 CEO directriz)')
         else:

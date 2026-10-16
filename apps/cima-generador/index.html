@@ -1675,7 +1675,42 @@
     align-items: stretch;
     margin-top: var(--space-2);
   }
-  /* v2.1.7: output-wrap SIN max-height (igual que v2.1.4). El cap viene del .output-box
+  /* v3.9.12: output-row FULL — fila completa para resultado (definido
+     DESPUÉS de la regla base .output-box para preservar el contrato
+     v2.1.7 — el test busca la primera aparición de .output-box {).
+     Solo override padding y font-size — height y max-height permanecen
+     del base (36px).
+     CEO: "1 row completa para resultado con padding y el contenido
+     se crea desde el medio del input" → align-items:center del base. */
+  .output-row.output-row--full {
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* v3.9.12: Row REFERENCIA + botones (borrar + alerta) — flex mixto.
+     REFERENCIA toma flex:1 (espacio restante); 2 botones mantienen 36px fijo. */
+  .row-ref-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;        /* inputs y buttons alineados por abajo */
+    margin-top: var(--space-2);
+  }
+  .row-ref-buttons .field-ref {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .row-ref-buttons .field-ref input {
+    width: 100%;
+  }
+  /* v3.9.12: wrapper del botón ⚠ — ancla el panel speech que flota ENCIMA */
+  .cobertura-wrap {
+    position: relative;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+  }
+
+/* v2.1.7: output-wrap SIN max-height (igual que v2.1.4). El cap viene del .output-box
      que ahora tiene altura FIJA 36px. El wrap NO debe crecer el contenedor padre. */
   .output-wrap {
     position: relative;
@@ -1747,6 +1782,15 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-size: 10.5px;
+  }
+  /* v3.9.12: override FINAL — padding generoso + font-size un pelín más
+     grande cuando output-box está en la fila completa (output-row--full).
+     height/max-height vienen del base (36px contrato v2.1.7). */
+  .output-row.output-row--full .output-box {
+    padding: 0 18px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
   }
   /* Press feedback iOS */
   .output-box:active:not(.placeholder) {
@@ -1849,11 +1893,14 @@
   .apagado-speech-panel {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 0;
+    /* v3.9.12: anclado al wrapper del botón ⚠ (.cobertura-wrap) — small
+       container ~36px. El panel necesita width EXPLÍCITO + right:0 para
+       extenderse HACIA LA IZQUIERDA del botón (no comprimirse al tamaño
+       del botón). Arriba del botón contextualmente. */
     right: 0;
+    width: 320px;
+    max-width: calc(100vw - 16px);
     box-sizing: border-box;
-    width: 100%;
-    max-width: 100%;
     margin: 0;
     padding: 10px 12px 11px;
     background:
@@ -3126,15 +3173,12 @@ font-size: 10px;
         </div>
       </div>
 
-      <div class="field">
-        <label for="direccion">Dirección</label>
-        <input id="direccion" type="text" placeholder="Calle, Número, zona" autocomplete="off" maxlength="120">
-      </div>
-
+      <!-- v3.9.12: Row 2 — DIRECCIÓN + CCPP / Caserío en 1 row (2 cols).
+           CEO directive: "direccion y caserio en 1 row" -->
       <div class="field-row row-2">
         <div class="field">
-          <label for="referencia">Referencia</label>
-          <input id="referencia" type="text" placeholder="Mercado, paradero" autocomplete="off" maxlength="120">
+          <label for="direccion">Dirección</label>
+          <input id="direccion" type="text" placeholder="Calle, Número, zona" autocomplete="off" maxlength="120">
         </div>
         <div class="field ac-field">
           <label for="ccpp">CCPP / Caserío</label>
@@ -3143,20 +3187,18 @@ font-size: 10px;
                    data-ac="ccpp" aria-autocomplete="list" aria-expanded="false" maxlength="120">
             <div class="ac-dropdown" id="ac-ccpp" role="listbox" hidden></div>
           </div>
-          <!-- D-26: hint-ccpp eliminado — el input se pinta verde (.filled) cuando hay datos, sin texto fuera -->
         </div>
       </div>
 
-      <!-- v3.9.5: WRAPPER output-row con position:relative — ancla para
-           el panel .apagado-speech-panel que flota ENCIMA (no en flujo).
-           El panel usa position:absolute (bottom: calc(100% + 8px)) — no
-           ocupa espacio en el grid BUSQUEDA ADDRESS, evitando estirar
-           la layout cuando se muestra. -->
-      <div class="output-row-wrap">
-        <div class="output-row">
-          <div class="output-wrap">
-            <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">LLENAR DATOS</div>
-          </div>
+      <!-- v3.9.12: Row 3 — REFERENCIA + botones (borrar + alerta ⚠) en 1 row.
+           CEO directive: "referencia y los 2 botones de borrado y zonas
+           alerta en 1 row". REFERENCIA toma el espacio flex; los 2 botones
+           mantienen su tamaño fijo 36×36px. -->
+      <div class="row-ref-buttons">
+        <div class="field field-ref">
+          <label for="referencia">Referencia</label>
+          <input id="referencia" type="text" placeholder="Mercado, paradero" autocomplete="off" maxlength="120">
+        </div>
         <button class="btn-icon btn-icon-clear" onclick="clearAddress()" type="button"
                 aria-label="Borrar todos los campos del formulario"
                 title="Borrar">
@@ -3164,8 +3206,9 @@ font-size: 10px;
             <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
           </svg>
         </button>
-        <!-- v2.1.4: coberturaBtn SIEMPRE visible (idle/warn/off), icono triángulo solamente -->
-        <button id="coberturaBtn" class="cobertura-btn cobertura-btn--idle" type="button"
+        <!-- v3.9.12: WRAPPER para anclar el panel de zonas de apagado al ⚠ -->
+        <div class="cobertura-wrap">
+          <button id="coberturaBtn" class="cobertura-btn cobertura-btn--idle" type="button"
                   aria-label="Estado de zonas de apagado Movistar"
                   aria-pressed="false"
                   title="Sin alertas — cobertura OK">
@@ -3175,14 +3218,25 @@ font-size: 10px;
               <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
             </svg>
           </button>
+          <!-- v3.9.12: panel anclado al wrapper del botón ⚠ (no al
+               output-row como antes). Aparece encima del botón contextual. -->
+          <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
+               aria-label="Speech de zona de apagado" hidden></div>
         </div>
+      </div>
 
-        <!-- v3.9.5: PANEL ANCLADO ENCIMA (position:absolute).
-             Ahora vive DENTRO del wrapper .output-row-wrap — usa bottom:
-             calc(100% + 8px) para flotar arriba del output-row sin estirar
-             el grid BUSQUEDA ADDRESS. No ocupa layout space cuando hidden. -->
-        <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
-             aria-label="Speech de zona de apagado" hidden></div>
+      <!-- v3.9.12: Row 4 completa — RESULTADO con padding, full width.
+           CEO directive: "1 row completa para resultado con padding y
+           el contenido se crea desde el medio del input". El output-box
+           tiene padding generoso y align-items:center (vertical centering)
+           para que el texto LLENAR DATOS / San Isidro, Lima, Peru aparezca
+           en el centro vertical del input, no arriba. -->
+      <div class="output-row-wrap">
+        <div class="output-row output-row--full">
+          <div class="output-wrap">
+            <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">LLENAR DATOS</div>
+          </div>
+        </div>
       </div>
 </div>
   </div>
@@ -3316,7 +3370,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.11</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.12</span>
     </span>
   </footer>
 </div>
@@ -4691,7 +4745,7 @@ function escapeHtmlZa(s) {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.11] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.9.12] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');

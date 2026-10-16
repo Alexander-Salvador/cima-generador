@@ -1,5 +1,77 @@
 # Changelog — cima-generador
 
+## [3.9.12] - 2026-10-16 — 📐 LAYOUT REORGANIZADO — 4 filas coherentes
+
+CEO directives 2026-10-16:
+• "Direccion y caserio en 1 row"
+• "Referencia y los 2 botones de borrado y zonas alerta. 1 row"
+• "1 row completa para resultado con padding y el contenido se crea
+   desde el medio del input"
+
+### 🏗️ LAYOUT REORGANIZADO
+
+```
+ANTES (v3.9.11):
+┌───────────────────────────────────────────┐
+│ [DEPTO] [PROV] [DIST]                      │ Row 1 (3 cols)
+├───────────────────────────────────────────┤
+│ [DIRECCIÓN _________________________________] │ Row 2 (1 col full)
+├───────────────────────────────────────────┤
+│ [REFERENCIA _________] [CCPP ____________] │ Row 3 (2 cols)
+├───────────────────────────────────────────┤
+│ [RESULTADO ____________________] [🗑] [⚠]  │ Row 4 (flex con btns)
+└───────────────────────────────────────────┘
+
+AHORA (v3.9.12):
+┌───────────────────────────────────────────┐
+│ [DEPTO] [PROV] [DIST]                      │ Row 1 (3 cols)
+├───────────────────────────────────────────┤
+│ [DIRECCIÓN ________] [CCPP ____________]    │ Row 2: DIREC + CCPP
+├───────────────────────────────────────────┤
+│ [REFERENCIA _______________________] [🗑][⚠]│ Row 3: REF + btns
+├───────────────────────────────────────────┤
+│ [RESULTADO _________________________________]│ Row 4: full width, centered
+└───────────────────────────────────────────┘
+```
+
+### 🎨 Resultado row (Row 4) con padding generoso
+
+| Antes | Ahora |
+|---|---|
+| padding: 6px 14px | **padding: 0 18px** |
+| font-size: 11px | **font-size: 11.5px** |
+| letter-spacing: 0 | **letter-spacing: 0.005em** (apple-style) |
+| align-items: center | align-items: center (preserved) |
+
+El contenido (LLENAR DATOS / "San Isidro, Lima, Peru") aparece
+verticalmente centrado dentro del input, no pegado al top.
+
+### 🔧 Panel speech reubicado
+
+El panel `apagadoSpeechPanel` ahora vive DENTRO de `.cobertura-wrap`
+(wrapper del botón ⚠) — anclado visualmente al botón contextual,
+no al output-row de abajo.
+
+CSS del panel:
+- `position: absolute` con `right: 0` (alinea derecha con botón)
+- `width: 320px` + `max-width: calc(100vw - 16px)`
+- `bottom: calc(100% + 8px)` para flotar arriba del botón
+
+### ✅ Validación
+
+- 432/432 tests PASS (test actualizado para layout v3.9.12)
+- audit_masivo ALL PASS
+- node --check OK
+
+### 💡 Lección
+
+- **L-088**: "Layout gridded > layout spaghetti". v3.9.11 tenía
+  4 row fragments desbalanceados. v3.9.12 los reorganiza en 4
+  filas simétricas con roles claros (ubicación / direcc+caserío /
+  referencia+actions / resultado).
+
+---
+
 ## [3.9.11] - 2026-10-16 — 📐 DROPDOWN WIDEN (nombres completos) sin overflow
 
 CEO feedback v3.9.10: "se contuvo pero al darle click al input de
