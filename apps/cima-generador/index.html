@@ -1618,6 +1618,94 @@
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
   }
   /* APAGADO MODAL (v3.5.0) — popover inteligente al click en ⚠️ */
+/* APAGADO MODAL COMPACT (v3.5.1) — speech-only popover */
+.apagado-modal-content--compact {
+  max-width: 440px;
+  padding: 18px 20px;
+  font-size: 0.92rem;
+  border-radius: 10px;
+}
+.apagado-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.apagado-modal-icon { font-size: 1.25rem; }
+.apagado-modal-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #b91c1c;
+  padding-right: 24px;
+  flex: 1;
+}
+.apagado-modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+.apagado-modal-com,
+.apagado-modal-fecha,
+.apagado-modal-sms,
+.apagado-modal-zona {
+  white-space: nowrap;
+}
+.apagado-modal-fecha { color: #b91c1c; font-weight: 700; }
+.apagado-modal-speech {
+  background: #fffbeb;
+  border-left: 3px solid #d97706;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin: 0 0 12px 0;
+  font-style: italic;
+  line-height: 1.45;
+  font-size: 0.88rem;
+  color: #1f2937;
+}
+.apagado-modal-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 0;
+}
+.apagado-modal-btn {
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  border: 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+.apagado-modal-btn-primary { background: #2563eb; color: #fff; }
+.apagado-modal-btn-primary:hover { background: #1d4ed8; }
+.apagado-modal-btn-copy { background: #e5e7eb; color: #374151; }
+.apagado-modal-btn-copy:hover { background: #d1d5db; }
+.apagado-modal-copy-feedback { color: #059669; font-size: 0.78rem; font-weight: 600; }
+.apagado-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+  border-radius: 4px;
+}
+.apagado-modal-close:hover { background: rgba(0,0,0,0.06); color: #111827; }
+
+
 .apagado-modal {
   display: none;
   position: fixed;
@@ -3320,23 +3408,31 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   var codes = getUbigeoCodesForAddress(depto, prov, dist);
   if (!codes || !codes.d6) return null;
   var d6 = codes.d6;
+  var hasCcpp = ccpp && ccpp.trim().length > 0;
+  var distritoTieneApagados = ZONAS_APAGADAS.districts_with_off.has(d6);
 
-  // Nivel 1: CCPP exacto (los 4 campos llenos y matchean)
-  if (ccpp && ccpp.trim()) {
+  // Nivel 1: CCPP exacto matchea (4 campos llenos + match estricto)
+  if (hasCcpp) {
     var key = d6 + ':' + normalizeKey(ccpp);
     if (ZONAS_APAGADAS.ccpp_keys.has(key)) {
       return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar' };
     }
-    // CCPP tipeado pero NO matchea exacto → silencio (sin match exacto, no alertar)
-    return null;
   }
 
-  // Nivel 2: 3 campos (distrito lleno) sin CCPP → si distrito tiene apagados, alerta genérica
-  if (codes.d6 && ZONAS_APAGADAS.districts_with_off.has(d6)) {
-    return { nivel: 'distrito_of', code: d6, mensaje: 'Este distrito tiene CCPPs en zona de apagado. Verifica el CCPP exacto.' };
+  // Nivel 2 (BUG 1 fix): distrito con apagados, alertar como distrito_of incluso si
+  //   el CCPP tipeado no matchea exacto. Antes retornaba silencio (alerta se apagaba
+  //   al completar CCPP), ahora mantiene la señal.
+  if (distritoTieneApagados) {
+    return {
+      nivel: 'distrito_of',
+      code: d6,
+      mensaje: 'Este distrito tiene zonas de apagado Movistar. Verifica el CCPP exacto.',
+      ccpp_tipeado: hasCcpp ? normalizeKey(ccpp) : null,
+      ccpp_match_exacto: hasCcpp && ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + normalizeKey(ccpp))
+    };
   }
 
-  // Nivel 3: distrito sin apagados
+  // Distrito sin apagados o datos incompletos → silencio
   return null;
 }
 
@@ -3349,106 +3445,111 @@ function escapeHtml(s) {
 
 // ══════════════════════════════════════════════════════════════════════
 // ═══ APAGADO POPOVER (v3.5.0) — click en ⚠️ → modal inteligente ═══
-function showApagadoPopover(currentCheck) {
+function showApagadoPopover(currentCheck, addrCtx) {
   if (!currentCheck) return;
+  addrCtx = addrCtx || {};
   var modal = document.getElementById('apagadoModal');
   if (!modal) return;
 
-  // Lookup metadata
-  var meta = null;
-  var tipo = currentCheck.nivel;
+  // ═══ Resolución de metadata para el speech ═══
   var zonaLabel = '';
-  var fechaApagado = '';
+  var fechaApagadoIso = '';
+  var fechaSmsIso = '';
   var speechKey = '';
-  var speechTitulo = '';
   var speechCuerpo = '';
-  var comunicadoLabel = '';
-  var extraInfo = '';
+  var comunicadoLabel = 'Apagado de Red Movistar';
+  var comunicadoVersion = '';
 
-  if (tipo === 'ccpp_exacto') {
-    // Buscar en ZONAS_APAGADAS metadata o rebuild manual
-    var code = currentCheck.code;
-    zonaLabel = 'CCPP exacto: ' + code;
+  if (currentCheck.nivel === 'ccpp_exacto') {
+    // COMU-5514: zonas específicas en centros poblados
     speechKey = 'comu5514_postventa_marcaje';
-  } else if (tipo === 'distrito_of') {
-    // distrito_of puede ser COMU-5514 (CCPPs en distrito) o COMU-5672 (IPT)
+    comunicadoLabel = 'COMU-5514 — Apagado Estaciones Base en Centros Poblados';
+    comunicadoVersion = 'v00003';
+    fechaApagadoIso = '2026-09-11';
+    // Para ccpp_exacto, zona = CCPP exacto (más específico que distrito)
+    var ccppLabel = currentCheck.code.split(':')[1] || currentCheck.code;
+    zonaLabel = ccppLabel;
+  } else if (currentCheck.nivel === 'distrito_of') {
     var d6 = currentCheck.code;
-    if (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6)) {
+    // Determinar si es IPT (COMU-5672) o Centros Poblados (COMU-5514)
+    var isIPT = (typeof ZONAS_APAGADAS_INTEL !== 'undefined')
+      && ZONAS_APAGADAS_INTEL.ipt_districts
+      && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6);
+    if (isIPT) {
+      // COMU-5672: Apagado Zonas IPT
       speechKey = 'ipt_postventa_4g';
-      meta = ZONAS_APAGADAS_INTEL.ipt_metadata_by_district[d6] || null;
-      if (meta) {
-        zonaLabel = meta.depto + ' (Zona IPT)';
-        fechaApagado = meta.fecha_apagado;
-        comunicadoLabel = 'COMU-5672 — Apagado Zonas IPT';
-        extraInfo = 'SMS enviado: ' + meta.fecha_sms_inicio + ' · Clientes impactados (depto): ' + (meta.clientes_depto||'?') + ' · Centros poblados (depto): ' + (meta.centros_depto||'?');
-        speechTitulo = 'Apagado Zonas IPT — ' + meta.depto;
+      comunicadoLabel = 'COMU-5672 — Apagado Zonas IPT';
+      comunicadoVersion = 'v00001';
+      var m = ZONAS_APAGADAS_INTEL.ipt_metadata_by_district[d6];
+      if (m) {
+        fechaApagadoIso = m.fecha_apagado || '';
+        fechaSmsIso = m.fecha_sms_inicio || '';
+        // Zona = DEPTO según ejemplo del CEO:
+        //   "...dejará de funcionar en la zona CAJAMARCA"
+        zonaLabel = m.depto;
+      } else {
+        zonaLabel = addrCtx.depto || '';
       }
     } else {
+      // COMU-5514: distrito con apagados, CCPPs exactos definidos en este d6
       speechKey = 'comu5514_postventa_marcaje';
-      zonaLabel = 'Distrito con CCPPs en zonas apagadas (ubigeo: ' + d6 + ')';
       comunicadoLabel = 'COMU-5514 — Apagado Estaciones Base en Centros Poblados';
-      fechaApagado = '2026-09-11';
+      comunicadoVersion = 'v00003';
+      fechaApagadoIso = '2026-09-11';
+      // Para COMU-5514 distrito, zona = CCPP tipeado o distrito
+      zonaLabel = currentCheck.ccpp_tipeado || addrCtx.dist || addrCtx.depto || '';
     }
   }
 
-  // Speech con placeholders reemplazados
-  var speechData = (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.speechs) ? (ZONAS_APAGADAS_INTEL.speechs[speechKey] || {}) : {};
-  var speechBody = speechData.cuerpo || speechData.titulo || 'No hay speech configurado para esta clave.';
-  var ddmmMatch = (fechaApagado || '').match(/(\d{4})-(\d{2})-(\d{2})/);
-  var dd = ddmmMatch ? ddmmMatch[3] : 'dd';
-  var mm = ddmmMatch ? (
-    ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][parseInt(ddmmMatch[2],10)-1] || 'mes'
-  ) : 'mes';
-  var zonaNombre = (meta && meta.depto) || zonaLabel;
-  var speechFilled = speechBody
-    .replace(/\[díad]+(?:\/mm)?\] de \[mes\]/g, dd + ' de ' + mm)
-    .replace(/\[d+\/m+\] de \[mes\]/g, dd + ' de ' + mm)
-    .replace(/\[zona\]/g, zonaNombre)
-    .replace(/\[día\] de \[mes\]/g, dd + ' de ' + mm);
+  // ═══ Resolver speech con placeholders autocompletados ═══
+  var speechData = (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.speechs)
+    ? (ZONAS_APAGADAS_INTEL.speechs[speechKey] || {})
+    : {};
+  var speechRaw = speechData.cuerpo || '';
+  var fechaObj = parseFechaES(fechaApagadoIso);
+  var dd = fechaObj.dd;
+  var mes = fechaObj.mes;
+  var anio = fechaObj.anio;
 
-  speechTitulo = speechTitulo || speechData.titulo || '';
+  // Reemplazos múltiples variantes de placeholder:
+  var speechFinal = speechRaw
+    // "[dd] de [mes]"  | "[día] de [mes]" | "[dd/mm] de [mes]" | "[dd/mm de mes]"
+    .replace(/\[d[\u00edi]a?d?\](?:\/mm)?\s+de\s+\[mes\]/gi, dd + ' de ' + mes)
+    .replace(/\[d[\u00edi]a\]\s+de\s+\[mes\]/gi, dd + ' de ' + mes)
+    // "[día]" suelto
+    .replace(/\[d[\u00edi]a\]/gi, dd)
+    // "[dd]" simple
+    .replace(/\[dd\]/gi, dd)
+    // "[mes]"
+    .replace(/\[mes\]/gi, mes)
+    // "[zona]"
+    .replace(/\[zona\]/gi, zonaLabel)
+    // "[año]" / "[anio]" / "[yyyy]"
+    .replace(/\[a[n\u00f1]o\]|\[yyyy\]/gi, anio);
+  // Si quedó algún [...] sin reemplazar → "—"
+  speechFinal = speechFinal.replace(/\[[^\]]+\]/g, '\u2014');
 
-  // Flujo postventa
-  var flujo = (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.flujos_postventa) ? (ZONAS_APAGADAS_INTEL.flujos_postventa[speechKey.startsWith('ipt')?'COMU-5672':'COMU-5514'] || {}) : {};
-
+  // ═══ HTML compacto ═══
+  var fechaHumana = formatDateES(fechaApagadoIso);
   var html = ''+
     '<div class="apagado-modal-overlay" onclick="closeApagadoPopover(event)">'+
-      '<div class="apagado-modal-content" onclick="event.stopPropagation()">'+
-        '<button class="apagado-modal-close" onclick="closeApagadoPopover(event)" aria-label="Cerrar">×</button>'+
-        '<h2 class="apagado-modal-title">⚠️ Zona de Apagado Movistar</h2>'+
+      '<div class="apagado-modal-content apagado-modal-content--compact" onclick="event.stopPropagation()" role="document">'+
+        '<button class="apagado-modal-close" onclick="closeApagadoPopover(event)" aria-label="Cerrar">\u00d7</button>'+
+        '<div class="apagado-modal-header">'+
+          '<span class="apagado-modal-icon" aria-hidden="true">\u26a0\ufe0f</span>'+
+          '<h2 class="apagado-modal-title">Zona de Apagado</h2>'+
+        '</div>'+
         '<div class="apagado-modal-meta">'+
-          '<p><strong>Comunicado:</strong> ' + escapeHtml_(comunicadoLabel || '—') + '</p>'+
-          '<p><strong>Zona:</strong> ' + escapeHtml_(zonaLabel) + '</p>'+
-          (fechaApagado ? '<p><strong>Fecha de apagado:</strong> <span class="badge badge-danger">' + escapeHtml_(formatDateES(fechaApagado)) + '</span></p>' : '')+
-          (extraInfo ? '<p class="apagado-modal-extra">' + escapeHtml_(extraInfo) + '</p>' : '')+
+          '<span class="apagado-modal-com">' + escapeHtml_(comunicadoLabel) + ' ' + escapeHtml_(comunicadoVersion) + '</span>'+
+          (fechaHumana ? '<span class="apagado-modal-fecha">\ud83d\udcc5 ' + escapeHtml_(fechaHumana) + '</span>' : '')+
+          (fechaSmsIso ? '<span class="apagado-modal-sms">\ud83d\udce9 SMS: ' + escapeHtml_(formatDateES(fechaSmsIso)) + '</span>' : '')+
+          '<span class="apagado-modal-zona">\ud83d\udccd Zona: <strong>' + escapeHtml_(zonaLabel) + '</strong></span>'+
         '</div>'+
-        '<div class="apagado-modal-section">'+
-          '<h3>📢 Speech del comunicado</h3>'+
-          (speechTitulo ? '<p class="apagado-modal-speech-title"><em>' + escapeHtml_(speechTitulo) + '</em></p>' : '')+
-          '<blockquote class="apagado-modal-speech" id="apagadoSpeechText">' + escapeHtml_(speechFilled) + '</blockquote>'+
-          '<button class="apagado-modal-btn apagado-modal-btn-copy" onclick="copyApagadoSpeech()">📋 Copiar speech</button>'+
-          '<span id="apagadoCopyFeedback" class="apagado-modal-copy-feedback"></span>'+
-        '</div>'+
-        (flujo.reclamo_ruta ? '<div class="apagado-modal-section">'+
-          '<h3>🛠️ Si cliente reclama</h3>'+
-          '<ul class="apagado-modal-list">'+
-            '<li><strong>Detalle reclamo:</strong> ' + escapeHtml_(flujo.reclamo_ruta.detalle||'—') + '</li>'+
-            '<li><strong>Motivo:</strong> ' + escapeHtml_(flujo.reclamo_ruta.motivo||'—') + '</li>'+
-            '<li><strong>SubMotivo:</strong> ' + escapeHtml_(flujo.reclamo_ruta.submotivo||'—') + '</li>'+
-            '<li><strong>Tipificación CRM:</strong> ' + escapeHtml_(flujo.tipificacion_crm?(flujo.tipificacion_crm.motivo+' / '+flujo.tipificacion_crm.submotivo):'—') + '</li>'+
-            '<li><strong>Canales Escritos:</strong> <a href="' + escapeHtml_(flujo.reclamo_ruta.canales_escritos_url||'#') + '" target="_blank">Derivar a web</a></li>'+
-          '</ul>'+
-        '</div>' : '')+
-        (flujo.baja_servicio ? '<div class="apagado-modal-section">'+
-          '<h3>📞 Si cliente pide BAJA del servicio</h3>'+
-          '<ul class="apagado-modal-list">'+
-            '<li><strong>Call Center 1ra línea:</strong> ' + escapeHtml_(flujo.baja_servicio.call_center_1ra_linea||'—') + '</li>'+
-            '<li><strong>Tiendas:</strong> ' + escapeHtml_(flujo.baja_servicio.tiendas||'—') + '</li>'+
-            '<li><strong>Canales Escritos:</strong> ' + escapeHtml_(flujo.baja_servicio.canales_escritos||'—') + '</li>'+
-          '</ul>'+
-        '</div>' : '')+
+        '<blockquote class="apagado-modal-speech" id="apagadoSpeechText">' + escapeHtml_(speechFinal) + '</blockquote>'+
         '<div class="apagado-modal-actions">'+
-          '<button class="apagado-modal-btn apagado-modal-btn-primary" onclick="closeApagadoPopover(event)">Cerrar</button>'+
+          '<button class="apagado-modal-btn apagado-modal-btn-copy" onclick="copyApagadoSpeech()">\ud83d\udccb Copiar</button>'+
+          '<span id="apagadoCopyFeedback" class="apagado-modal-copy-feedback"></span>'+
+          '<button class="apagado-modal-btn apagado-modal-btn-primary" onclick="closeApagadoPopover(event)" style="margin-left:auto">Cerrar</button>'+
         '</div>'+
       '</div>'+
     '</div>';
@@ -3456,9 +3557,23 @@ function showApagadoPopover(currentCheck) {
   modal.innerHTML = html;
   modal.classList.add('show');
   modal.setAttribute('aria-hidden', 'false');
-  // Focus trap simple
   var closeBtn = modal.querySelector('.apagado-modal-close');
   if (closeBtn) closeBtn.focus();
+}
+
+// Parsea fecha ISO "2026-08-28" a {dd, mes, anio}
+function parseFechaES(iso) {
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  if (!iso) return { dd: '\u2014', mes: '\u2014', anio: '\u2014' };
+  var m = String(iso).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (!m) return { dd: '\u2014', mes: '\u2014', anio: '\u2014' };
+  var dd = parseInt(m[3], 10);
+  var mm = parseInt(m[2], 10) - 1;
+  return {
+    dd: isNaN(dd) ? '\u2014' : dd,
+    mes: (mm >= 0 && mm < 12) ? meses[mm] : '\u2014',
+    anio: m[1]
+  };
 }
 
 function closeApagadoPopover(event) {
@@ -3507,19 +3622,26 @@ function formatDateES(iso) {
   return parseInt(m[3],10) + ' de ' + meses[parseInt(m[2],10)-1] + ' de ' + m[1];
 }
 
-// Hook: al hacer click en coberturaBtn → mostrar popover si hay alerta
+// Hook (v3.5.1 BUG 2 fix): click en ⚠️ SOLO abre popover si los 4 campos
+//   están completos (depto+prov+dist+ccpp). Antes: abierto siempre. Ahora: silencioso
+//   cuando la ruta es incompleta, conservando el warning visual del botón.
 document.addEventListener('DOMContentLoaded', function() {
   var btn = document.getElementById('coberturaBtn');
   if (!btn) return;
-  btn.addEventListener('click', function() {
-    // Re-check (por si cambió entre selección y click)
+  btn.addEventListener('click', function(evt) {
+    evt.preventDefault();
     var dep = upper('departamento');
     var prov = upper('provincia');
     var dist = upper('distrito');
-    var ccpp_val = (document.getElementById('ccpp') && document.getElementById('ccpp').value || '').trim();
+    var ccpp_el = document.getElementById('ccpp');
+    var ccpp_val = ccpp_el ? (ccpp_el.value || '').trim() : '';
+    // BUG 2 fix: requiere los 4 campos completos
+    if (!dep || !prov || !dist || !ccpp_val) {
+      return;  // sin popover
+    }
     var chk = checkZonaApagada(dep, prov, dist, ccpp_val);
     if (chk && (btn.classList.contains('off') || btn.classList.contains('warn'))) {
-      showApagadoPopover(chk);
+      showApagadoPopover(chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
     }
   });
 });
