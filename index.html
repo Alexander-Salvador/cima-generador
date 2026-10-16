@@ -537,13 +537,13 @@
     color: white;
     font-weight: 800;
   }
-  /* v3.7.1: Indicador dot SUTIL para items en zona apagada.
-     - 5×5 px bullet, posición absoluta al inicio
-     - background: rojo (match exacto) o ámbar (distrito en apagado)
-     - El item mantiene el MISMO padding/font/color base que el resto
-     - Sin pulse animation (era distractor, no funcional)
-     - Sin border-left 4px (rompía el border-radius del dropdown)
-     - Sin ⚠️ 16px (era visualmente jarring) */
+  /* v3.7.4: Indicador dot SUTIL SOLO para items match exacto (L-057).
+     - 6×6 px bullet, color del item (currentColor)
+     - Items normales: sin dot, sin fondo
+     - Items match exacto apagado: dot rojo + fondo 8% danger
+     - Sin pulse animation, sin ⚠️ (jarring), sin border-left
+     - El CCPP dropdown se ve IDÉNTICO a los otros (depto/prov/dist),
+       con la única excepción de los items oficiales apagados (rojo + dot) */
   .ac-item .ac-off-dot {
     flex-shrink: 0;
     width: 6px;
@@ -557,29 +557,10 @@
     font-weight: 600;
     background: color-mix(in srgb, var(--danger) 8%, transparent);
   }
-  .ac-item.ac-item-off mark {
-    background: color-mix(in srgb, var(--danger) 28%, transparent);
-    color: var(--danger);
-    font-weight: 800;
-  }
   .ac-item.ac-item-off:hover,
   .ac-item.ac-item-off.active {
     background: color-mix(in srgb, var(--danger) 22%, var(--glass-3-bg));
     color: var(--danger);
-  }
-  .ac-item.ac-item-zone-off {
-    color: #b87b0a;
-    font-weight: 500;
-    background: color-mix(in srgb, #f59e0b 6%, transparent);
-  }
-  .ac-item.ac-item-zone-off mark {
-    background: color-mix(in srgb, #f59e0b 18%, transparent);
-    color: #b87b0a;
-    font-weight: 700;
-  }
-  .ac-item.ac-item-zone-off:hover,
-  .ac-item.ac-item-zone-off.active {
-    background: color-mix(in srgb, #f59e0b 18%, var(--glass-3-bg));
   }
 
   .ac-item mark {
@@ -4862,11 +4843,11 @@ function acRender(key) {
     input.setAttribute('aria-expanded', 'true');
     return;
   }
-  // v3.5.6: marcado LIMPIO en el dropdown. SOLO 'ac-item-off' rojo fuerte
-  // cuando hay match exacto en ccpp_keys. Sin banners, sin hints sutiles,
-  // sin prefijos ⚠️ en items. El input CCPP se pinta por zona (v3.5.5).
-  // El supervisor UBICA el CCPP exacto apagado por el rojo en el item
-  // y el color en el input.
+  // v3.7.4: marcado SOLO para items match exacto con ccpp_keys (L-057).
+  // Ya NO marcamos TODO el distrito como 'ac-item-zone-off' (ámbar) — eso
+  // hacía que el CCPP dropdown se viera DIFERENTE de depto/prov/dist.
+  // El CCPP ahora se ve IDÉNTICO a los otros 3 dropdowns, con la única
+  // excepción de los items oficiales apagados (rojo + dot).
   var d6ForMark = null;
   if (key === 'ccpp' && ZONAS_APAGADAS_STATE && ZONAS_APAGADAS_STATE.districts_with_off) {
     var d = upper('departamento');
@@ -4875,31 +4856,23 @@ function acRender(key) {
     var codes = getUbigeoCodesForAddress(d, p, di);
     if (codes && codes.d6) d6ForMark = codes.d6;
   }
-  // v3.5.7: marca visual SUTIL sin contaminar el dropdown.
-  // - ccpp_keys match exacto → 'ac-item-off' (rojo fuerte intacto v3.5.3)
-  // - distrito en districts_with_off (sin match exacto) → 'ac-item-zone-off'
-  //   (fondo 12% ámbar + border-bottom tenue, SIN prefijo, SIN pulse).
-  //   El supervisor UBICA los caseríos en zona apagada por color.
-  var distritoEnApagadoSinMatch = false;
-  if (d6ForMark && typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.districts_with_off) {
-    distritoEnApagadoSinMatch = ZONAS_APAGADAS.districts_with_off.has(d6ForMark);
-  }
   var html = AC_STATE.items.map(function (item, i) {
+    // v3.7.4: SOLO se pinta el item si es match EXACTO con ccpp_keys (CEO L-057).
+    // Antes pintaba TODO el distrito como 'ac-item-zone-off' (ámbar) — eso
+    // hacía que el CCPP dropdown se viera DIFERENTE de depto/prov/dist.
+    // Ahora el CCPP se ve IGUAL que los otros dropdowns, con la única
+    // excepción de los items oficiales apagados (rojo + dot).
     var off = false;
     if (d6ForMark && typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
       off = ZONAS_APAGADAS.ccpp_keys.has(d6ForMark + ':' + (item.normalize ? item.normalize('NFC').toUpperCase() : item.toUpperCase()));
     }
-    var zoneOff = !off && distritoEnApagadoSinMatch;
     var cls = 'ac-item';
     var dotHtml = '';
     if (off) {
       cls += ' ac-item-off';
       dotHtml = '<span class="ac-off-dot" aria-hidden="true" title="CCPP exacto en zona de apagado Movistar"></span>';
-    } else if (zoneOff) {
-      cls += ' ac-item-zone-off';
-      dotHtml = '<span class="ac-off-dot" aria-hidden="true" title="Distrito con apagados Movistar"></span>';
     }
-    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + dotHtml + acHighlight(item, query) + '</div>';
+    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + dotHtml + acEscape(item) + '</div>';
   }).join('');
   var total = allOptions.length;
   if (total > 5 && total > AC_STATE.items.length && AC_STATE.items.length >= 2) {
