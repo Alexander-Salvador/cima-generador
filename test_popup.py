@@ -2125,6 +2125,19 @@ def test(html_path):
         result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con color normal (var(--text))')
     else:
         result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color normal')
+    # v3.8.0 (FIX BUG 2.1): distrito items solo se marcan si tienen
+    # CCPPs en ccpp_keys (NO solo en districts_with_off preventivo).
+    # CEO: "solo deben tenerlo los distritos afectados que contienen
+    # las zonas de apagado". Implementación: prefix match en CCPP_KEYS_NORMALIZED.
+    m_render = re.search(r'function acRender\(key\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_render:
+        if "indexOf(prefix) === 0" in m_render.group(1) and 'd6Candidate' in m_render.group(1):
+            result.ok('v3.8.0 (FIX BUG 2.1) JS: distrito marca SOLO si d6 tiene CCPPs en ccpp_keys (prefix match)')
+        else:
+            result.fail('JS distrito prefix', 'distrito case no usa prefix match en ccpp_keys')
+        # Verificar que verifica AMBOS: districts_with_off Y ccpp_keys prefix
+        if "districts_with_off.has(d6Candidate)" in m_render.group(1) and "ccpp_keys" in m_render.group(1).lower() or "CCPP_KEYS_NORMALIZED" in m_render.group(1):
+            result.ok('v3.8.0 (FIX BUG 2.1) JS: distrito marca si districts_with_off AND ccpp_keys prefix match')
 
     # CSS: input classes unificadas a --zone-amber (ccpp-off-confirmed ya no usa --danger)
     # Usamos border-color para evitar matches con comments que mencionan --danger
