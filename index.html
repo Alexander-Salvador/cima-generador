@@ -1827,108 +1827,109 @@
 }
 
 
-/* ═══ v3.9.5 SPEECH PANEL — OVERLAY PREMIUM ═══
-     CEO directives 2026-10-16:
-     • "el dialog debe ir encima para no ocupar espacio" — position:
-        absolute, anclado al wrapper (.output-row-wrap). NO participa en
-        el flujo del grid BUSQUEDA ADDRESS. Cuando hidden, no estira nada.
-     • "mejorar cuadro del dialog mejores efectos premium modernos" —
-        glass blur saturado, gradient border sutil, sombras profundas,
-        border-radius moderno (12px), animaciones suaves.
-     • "reducir el tamaño del texto dentro el speech, más compacto" —
-        font-size 11px, line-height 1.35.
+/* ═══ v3.9.6 SPEECH PANEL — APPLE 2026 PREMIUM ═══
+     CEO directive 2026-10-16: "refinar el dialog, marcos etc diseño
+     premium moderno apple 2026". Eliminado: nota + fecha del header
+     (redundante con el speech). Estilo: radius 16px, hairline gradient
+     border, layered shadow con inset highlight SF-style, soft spring
+     animation, saturate(1.8).
    ───────────────────────────────────────────────────────────────────── */
-  /* Wrapper del output-row: ancla para el panel absolute */
   .output-row-wrap {
     position: relative;
     isolation: isolate;       /* crear stacking context limpio */
   }
 
   .apagado-speech-panel {
-    /* v3.9.5: position absolute — el panel FLOTA encima, no en flujo */
+    /* v3.9.5: position absolute — el panel FLOTA encima */
     position: absolute;
-    bottom: calc(100% + 8px);   /* 8px de gap respecto al output-row */
+    bottom: calc(100% + 9px);
     left: 0;
     right: 0;
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding: 11px 13px 12px;
+    padding: 12px 14px 13px;
+    /* v3.9.6 Apple 2026: glass blur profundo con saturate alto.
+       SF Pro style background — translucido + saturado + sutil gradiente. */
     background:
       linear-gradient(180deg,
-        color-mix(in srgb, var(--surface) 78%, transparent) 0%,
-        color-mix(in srgb, var(--surface) 88%, transparent) 100%);
-    -webkit-backdrop-filter: blur(18px) saturate(1.5);
-    backdrop-filter: blur(18px) saturate(1.5);
+        color-mix(in srgb, var(--surface) 72%, transparent) 0%,
+        color-mix(in srgb, var(--surface) 86%, transparent) 100%);
+    -webkit-backdrop-filter: blur(22px) saturate(1.8);
+    backdrop-filter: blur(22px) saturate(1.8);
     color: var(--text, #f2f0ed);
-    border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+    /* v3.9.6: hairline gradient border (sutil pero definido) + 3px accent
+       left bar. Apple 2026 usa bordes hairline de alta definición. */
+    border: 1px solid color-mix(in srgb, var(--border-strong) 65%, transparent);
     border-left: 3px solid var(--zone-ipt);
-    border-radius: 12px;
+    border-radius: 16px;       /* SF Pro radius moderno */
     box-shadow:
-      0 12px 32px rgba(0,0,0,0.28),
-      0 4px 12px rgba(0,0,0,0.18),
-      inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
-    font-size: 11.5px;
-    line-height: 1.38;
-    max-height: 200px;        /* v3.9.5: un poco más bajo — más compacto */
+      0 18px 40px rgba(0,0,0,0.32),
+      0 6px 16px rgba(0,0,0,0.20),
+      inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, black 12%, transparent);
+    font-size: 11px;
+    line-height: 1.36;
+    max-height: 195px;
     overflow-y: auto;
     z-index: 60;
-    animation: apagadoPanelIn 0.2s var(--motion-spring-soft);
+    animation: apagadoPanelIn 0.24s var(--motion-spring-soft);
     pointer-events: auto;
-    /* Premium scrollbar */
     scrollbar-width: thin;
   }
   .apagado-speech-panel[data-com="COMU-5514"] {
     border-left-color: var(--zone-amber);
   }
-  /* v3.9.5: flecha CSS apuntando abajo hacia el botón ⚠️ */
+  /* Apple 2026: flecha CSS refinada — profundidad con doble sombra */
   .apagado-speech-panel::after {
     content: "";
     position: absolute;
-    bottom: -6px;
-    right: 14px;
-    width: 12px;
-    height: 12px;
+    bottom: -7px;
+    right: 16px;
+    width: 14px;
+    height: 14px;
     background: inherit;
-    border-right: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
-    border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+    border-right: 1px solid color-mix(in srgb, var(--border-strong) 65%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--border-strong) 65%, transparent);
     transform: rotate(45deg);
-    backdrop-filter: blur(0);  /* evitar blur del padre en la flecha */
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.10);
   }
   @keyframes apagadoPanelIn {
-    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .apagado-speech-panel[hidden] { display: none !important; }
 
-  /* HEADER (1 línea, compacto, claro) */
+  /* HEADER Apple 2026 — SF Pro style, hairline separator */
   .apagado-speech-panel .apagado-panel-header {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 7px;
     font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    margin-bottom: 7px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid color-mix(in srgb, var(--border-strong) 30%, transparent);
+    font-weight: 600;
+    letter-spacing: -0.005em;        /* SF Display negative tracking */
+    margin-bottom: 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-strong) 35%, transparent);
     color: var(--text-dim, #9ca3af);
     text-transform: none;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
   }
   .apagado-speech-panel .apagado-panel-com {
     color: var(--zone-ipt);
-    font-weight: 800;
+    font-weight: 700;
     font-size: 11px;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.01em;
     flex-shrink: 0;
+    font-feature-settings: "tnum";   /* tabular nums SF style */
   }
   .apagado-speech-panel[data-com="COMU-5514"] .apagado-panel-com {
     color: var(--zone-amber);
   }
   .apagado-speech-panel .apagado-panel-sep {
-    color: color-mix(in srgb, var(--text-faint) 60%, transparent);
-    margin: 0 1px;
+    color: color-mix(in srgb, var(--text-faint) 50%, transparent);
+    margin: 0 2px;
     flex-shrink: 0;
   }
   .apagado-speech-panel .apagado-panel-zona {
@@ -1939,84 +1940,75 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    letter-spacing: -0.005em;
   }
-  .apagado-speech-panel .apagado-panel-fecha {
-    color: color-mix(in srgb, var(--text) 80%, transparent);
-    font-weight: 500;
-    font-size: 10.5px;
-    flex-shrink: 0;
-  }
-  /* TAG severidad ("RED 2G" para IPT) */
+  /* TAG severidad ("RED 2G" IPT) — sf-symbols style */
   .apagado-speech-panel .apagado-panel-tag {
     flex-shrink: 0;
-    padding: 1px 5px;
-    border-radius: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-size: 8.5px;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
   .apagado-speech-panel .apagado-panel-tag.tag-ipt {
-    background: color-mix(in srgb, var(--zone-amber) 20%, transparent);
+    background: color-mix(in srgb, var(--zone-amber) 22%, transparent);
     color: var(--zone-amber);
-    border: 1px solid color-mix(in srgb, var(--zone-amber) 50%, transparent);
+    border: 1px solid color-mix(in srgb, var(--zone-amber) 55%, transparent);
+    backdrop-filter: blur(4px);
   }
 
-  /* v3.9.5: SPEECH BODY — texto compacto, font-size reducido */
+  /* v3.9.6: SPEECH BODY — SF Pro style typography */
   .apagado-speech-panel .apagado-panel-speech {
     font-size: 11px;
-    line-height: 1.38;
+    line-height: 1.42;
     color: var(--text, #f2f0ed);
     white-space: pre-wrap;
     margin: 0;
     word-wrap: break-word;
-    font-weight: 450;
+    font-weight: 420;
+    letter-spacing: -0.005em;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   }
 
-  /* STATUS PILL — feedback automático post-copy */
+  /* STATUS PILL — pill compacto Apple-style */
   .apagado-speech-panel .apagado-panel-status {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-top: 7px;
-    padding: 2px 7px;
+    margin-top: 8px;
+    padding: 3px 8px;
     font-size: 9.5px;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--green) 18%, transparent);
-    color: var(--green);
-    border: 1px solid color-mix(in srgb, var(--green) 40%, transparent);
+    background: color-mix(in srgb, var(--green) 22%, transparent);
+    color: var(--green-light, #4ade80);
+    border: 1px solid color-mix(in srgb, var(--green) 50%, transparent);
+    backdrop-filter: blur(4px);
     opacity: 0;
     transform: translateY(-2px);
-    transition: opacity 0.2s var(--motion-ease), transform 0.2s var(--motion-ease);
+    transition: opacity 0.22s var(--motion-spring-soft), transform 0.22s var(--motion-spring-soft);
   }
   .apagado-speech-panel .apagado-panel-status.visible {
     opacity: 1;
     transform: translateY(0);
   }
-  /* NOTA pequeña */
-  .apagado-speech-panel .apagado-panel-note {
-    display: block;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid color-mix(in srgb, var(--border-strong) 28%, transparent);
-    font-size: 10px;
-    font-style: italic;
-    color: var(--text-dim, #9ca3af);
-    line-height: 1.32;
-  }
-  /* v3.9.5: legacy DEPRECATED — botones nunca se renderizan */
+  /* v3.9.6: NOTA eliminada del render — CSS huérfano removido */
+  /* v3.9.5 legacy DEPRECATED */
   .apagado-speech-panel .apagado-panel-actions { display: none; }
   .apagado-speech-panel .apagado-panel-btn { display: none; }
   .apagado-speech-panel .apagado-panel-btn-primary { display: none; }
   .apagado-speech-panel .apagado-panel-feedback { display: none; }
   .apagado-speech-panel .apagado-panel-zona-old { display: none; }
-  /* v3.9.5: scrollbar más sutil */
+  .apagado-speech-panel .apagado-panel-fecha { display: none; }
+  .apagado-speech-panel .apagado-panel-note { display: none; }    /* v3.9.6 */
+  /* Apple 2026 scrollbar — hairline sutil */
   .apagado-speech-panel::-webkit-scrollbar { width: 5px; }
   .apagado-speech-panel::-webkit-scrollbar-track { background: transparent; }
   .apagado-speech-panel::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--text-faint) 40%, transparent);
+    background: color-mix(in srgb, var(--text-faint) 35%, transparent);
     border-radius: 999px;
   }
 
@@ -3392,7 +3384,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.5</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.6</span>
     </span>
   </footer>
 </div>
@@ -4572,32 +4564,26 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   var speechDataObj = speechData[speechKey] || {};
   var notaTexto = speechDataObj.nota || '';
 
-  // Etiquetas cortas visuales (sin perder significado)
-  // COMU-5514 → "Estaciones Base" (corto)
-  // COMU-5672 → "Zonas IPT"
-  var comuCorto = comunicadoLabel === 'COMU-5672' ? 'Zonas IPT' :
-                  comunicadoLabel === 'COMU-5514' ? 'Estaciones Base' :
-                  comunicadoLabel;
-
+  // v3.9.6: HEADER simplificado — sin fecha (CEO directive: "le quitamos
+  // la fecha del header, ya que el speech lo dice"). Solo COMU + ZONA
+  // + tag de severidad si aplica. Más limpio, menos ruido visual.
   var html = ''+
-    // ═══ HEADER compacto (1 línea) ═══
+    // ═══ HEADER compacto — 1 línea ═══
     '<div class="apagado-panel-header">'+
       '<span aria-hidden="true">⚠️</span>'+
       '<span class="apagado-panel-com">' + escapeHtml(comunicadoLabel) + '</span>'+
       '<span class="apagado-panel-sep">·</span>'+
-      '<span class="apagado-panel-zona">📍 ' + escapeHtml(zonaLabel || '(zona)') + '</span>'+
-      (fechaCorta ?
-        '<span class="apagado-panel-sep">·</span>'+
-        '<span class="apagado-panel-fecha">📅 ' + escapeHtml(fechaCorta) + '</span>'
-        : '')+
+      '<span class="apagado-panel-zona">' + escapeHtml(zonaLabel || '(zona)') + '</span>'+
       (currentCheck.nivel === 'ipt_distrito' ?
         '<span class="apagado-panel-tag tag-ipt">RED 2G</span>'
         : '')+
     '</div>'+
     // ═══ BODY: speech text (intacto — sin modificar) ═══
     '<p class="apagado-panel-speech" id="apagadoTooltipSpeech">' + escapeHtml(speechFilled) + '</p>'+
-    // ═══ NOTA (solo si existe) ═══
-    (notaTexto ? '<div class="apagado-panel-note">' + escapeHtml(notaTexto) + '</div>' : '')+
+    // v3.9.6: NOTA ELIMINADA del render (CEO directive: "Orientar en
+    // la configuración del equipo en red 4G — REVISAR COMUNICADO ...
+    // <- eliminar"). El speech contiene la info accionable; la nota
+    // era redundante para el usuario final.
     // ═══ STATUS PILL — feedback automático tras copia ═══
     '<div class="apagado-panel-status" id="apagadoPanelStatus">✓ Copiado</div>';
 
@@ -4764,7 +4750,7 @@ function escapeHtmlZa(s) {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.5] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.9.6] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
