@@ -1,5 +1,57 @@
 # Changelog — cima-generador
 
+## [3.9.6] - 2026-10-16 — 🍎 APPLE 2026 PREMIUM + cleanup dialog
+
+CEO directives:
+1. "Eliminamos del contenido del dialog: 'Orientar en la configuración
+    del equipo en red 4G — REVISAR COMUNICADO APAGADOS ZONAS IPT'"
+2. "Debes refinar el dialog, marcos etc diseño premium moderno apple 2026"
+3. "Le quitamos la fecha del header 📅 03/09/2026 — ya que el speech lo dice"
+
+### 🧹 LIMPIEZA de contenido
+
+**Header simplificado** — sin fecha (repetida en el speech):
+```
+Antes:  ⚠ COMU-5514 · 📍 Chachapoyas · 📅 11/09/2026  [RED 2G]
+Ahora:  ⚠ COMU-5514 · Chachapoyas                    [RED 2G]
+```
+
+**Nota eliminada** del dialog:
+- ANTES: bloque inferior con "Orientar en la configuración del equipo
+  en red 4G — REVISAR COMUNICADO APAGADOS ZONAS IPT"
+- AHORA: omitido. El speech ya contiene toda la info accionable.
+- CSS `.apagado-panel-note { display: none }` (limpieza).
+
+### 🍎 Refinamiento Apple 2026
+
+| Elemento | Antes v3.9.5 | Ahora v3.9.6 |
+|---|---|---|
+| Border-radius | 12px | **16px** (SF Pro style) |
+| Backdrop blur | 18px | **22px saturate(1.8)** (SF Liquid Glass) |
+| Box-shadow | 3 layers | **4 layers** (32px + 16px + inset highlight 1px + inset bottom) |
+| Arrow size | 12×12 | **14×14** + box-shadow sutil |
+| Animation | scale 0.98→1 | **scale 0.97→1** + translateY 8px (more spring) |
+| Border | 1px + 22% accent | **1px hairline border-strong** + 3px accent left (más refinado) |
+| Font family | default | **-apple-system SF Pro Display/Text** (cuando exista) |
+| Letter-spacing | 0 | **-0.005em / -0.01em** (SF Display negative) |
+| font-feature | default | **"tnum" tabular nums** (en COMU codes) |
+| Status pill bg | green 18% | **green 22% + backdrop-filter(4px)** |
+| Hairline borders | 30% | **65%** (border-strong) — más definido sin perder glass |
+
+### 📝 Texto INTACTO
+
+El speech body NO se modifica — el agente lee el mismo texto al cliente.
+Solo el chrome visual cambia (más premium).
+
+### ✅ Validación
+
+- 434/434 tests popup PASS
+- audit_masivo ALL PASS
+- node --check OK
+- Speech text preservado
+
+---
+
 ## [3.9.5] - 2026-10-16 — 🎯 OVERLAY PREMIUM — flote ENCIMA sin ocupar espacio
 
 CEO feedback v3.9.4: "Aun roto — mira la posición que se abre, estira el
