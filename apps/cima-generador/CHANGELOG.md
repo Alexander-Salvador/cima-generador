@@ -1,5 +1,67 @@
 # Changelog — cima-generador
 
+## [3.9.11] - 2026-10-16 — 📐 DROPDOWN WIDEN (nombres completos) sin overflow
+
+CEO feedback v3.9.10: "se contuvo pero al darle click al input de
+distrito el dropdown se contiene y sigue mostrando los nombres cortados".
+
+### 🐛 BUG v3.9.10: dropdown contenido PERO angosto
+
+v3.9.10 había constreñido el width a `inputRect.width` (~130px en
+popup mode col-3). Resultado: nombres como "QUINJAHUA", "SAN ISIDRO",
+"CONILA" se cortaban con ellipsis.
+
+### ✅ FIX v3.9.11: widen + contained
+
+Estrategia dual:
+1. **Width**: `min(280px, gridRect.width - margin)` — 280 ideal
+   para nombres largos, capped por el grid para no overflowear.
+2. **Position**: left-anchor al input. Si overflowea derecha del grid,
+   centrar sobre el input. Si aún overflowea, clamp al borde derecho.
+   Última red de seguridad: clamp al borde izquierdo.
+
+```
+Antes v3.9.10 (contained pero angosto):
+┌─ popup-frame ──────────────┐
+│ [DEPTO] [PROV] [DIST]      │
+│       ┌──┐                  │ dropdown = input width (~130px)
+│       │QUI│ cortados...     │
+│       └──┘                  │
+└─────────────────────────────┘
+
+Ahora v3.9.11 (widen + contained):
+┌─ popup-frame ──────────────┐
+│ [DEPTO] [PROV] [DIST]      │
+│   ┌── dropdown 280px ──┐   │ dropdown widened pero siempre
+│   │ QUINJAHUA            │   │ dentro del grid-block
+│   │ SAN ISIDRO           │   │
+│   │ CONILA               │   │
+│   └──────────────────────┘   │
+└─────────────────────────────┘
+```
+
+### 📐 Comportamiento por modo
+
+| Modo | grid | dropdown width | resultado |
+|---|---|---|---|
+| **Popup** | ~480px | min(280, 472) = **280px** | nombres caben sin overflow |
+| **Tablet** | ~520px | min(280, 512) = **280px** | nombres caben |
+| **Desktop** | 600px+ | min(280, 592) = **280px** | nombres caben |
+
+### 💡 Lección
+
+- **L-087**: "Contained sin readable = bug visual". v3.9.10 corrigió
+  el overflow pero creó un nuevo bug de truncar nombres. Container
+  constraints deben permitir **crecer** dentro de los límites, no
+  forzar el width más chico.
+
+### ✅ Validación
+
+- 433/433 tests PASS
+- audit_masivo ALL PASS
+
+---
+
 ## [3.9.10] - 2026-10-16 — 📐 DROPDOWN CONTAINED dentro del grid-block
 
 CEO feedback v3.9.9: "mal diseñado, no se adapta al modo popup, no debe
