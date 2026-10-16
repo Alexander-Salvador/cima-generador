@@ -1,5 +1,55 @@
 # Changelog — cima-generador
 
+## [3.9.9] - 2026-10-16 — 🔧 DROPDOWN DISTRITO — WIDEN + sin background
+
+CEO directives 2026-10-16:
+• "el dropdown sale muy limitado por el icono del triangulo + nombre,
+   esto hace que no se le correctamente los nombres <- arreglalo"
+• "puedes anchar el dropdown"
+• "estilizar mejor los colores no le des background, solo pinta el
+   color del texto y el icono"
+
+### 📐 WIDEN — dropdown ancho mínimo 280px
+
+Antes (v3.9.0): `drop.style.width = inputRect.width + 'px'`
+Ahora (v3.9.9): `Math.max(inputRect.width, 280)` + clamp si overflow viewport
+
+```css
+.ac-dropdown { min-width: 280px; }
+```
+
+Resultado: distrito como "VILCAS HUAMAN" o nombres largos se ven
+completos sin truncar con ellipsis.
+
+### 🎨 Sin background — solo color de texto + icono
+
+| Estado | Antes (con bg fill) | Ahora v3.9.9 |
+|---|---|---|
+| `.ac-item-off` | 🔴 ROJO con bg rojo 8% | 🔴 **solo texto + triángulo rojo** |
+| `.ac-item-ipt` | 🟡 AMARILLO con bg ámbar 8% | 🟡 **solo texto + triángulo ámbar** |
+| `.ac-item-zone` | 🟡 AMARILLO con bg ámbar 8% | 🟡 **solo texto + triángulo ámbar** |
+
+Hover: bg sutil `glass-3-bg 90%` (neutro, sin zone-color).
+
+Triángulo hereda color del padre via `currentColor` — un SOLO cambio
+de `color` afecta texto + icono simultáneamente.
+
+### ✅ Validación
+
+- 433/433 tests PASS (1 test viejo de "bg sutil" actualizado al nuevo spec)
+- audit_masivo ALL PASS
+- node --check OK
+
+### 🆕 Cómo verificar
+
+1. Click en dropdown DISTRITO (ej. CHACHAPOYAS)
+2. Esperado: dropdown más ancho (≥280px)
+3. Items rojos (apagado) o amarillos (IPT) SIN background fill —
+   solo el texto y el triángulo tienen color
+4. Hover sobre item: bg sutil neutro (no rojo/amarillo flood)
+
+---
+
 ## [3.9.8] - 2026-10-16 — 🚫 ELIMINADO footer muerto + 🎨 BOLD info clave
 
 CEO feedback v3.9.7:

@@ -472,13 +472,16 @@
     /* v2.1.6 PORTAL: position:fixed + coords via JS (getBoundingClientRect).
        El dropdown se mueve a document.body al abrir (vía document.body.appendChild)
        para escapar TODO stacking context anidado (section → field → ac-wrap → input).
-       Esto resuelve estructuralmente CRIT-009 — z-index local NO funciona con
-       isolation:isolate en 4 niveles de stacking contexts (CSS painter's algorithm).
 
        v2.1.7 BOUNDS-AWARE: max-height ya NO es estático (220px). JS calcula el
        espacio vertical disponible entre el input y el límite inferior del .grid-block
        contenedor (Búsqueda Address) — evitando invadir visualmente el card Tipificación.
-       Si no entra → scroll interno. Si espacio < 100px → flip-arriba. */
+       Si no entra → scroll interno. Si espacio < 100px → flip-arriba.
+
+       v3.9.9 WIDEN: min-width 280px (CEO directive "el dropdown sale muy
+       limitado por el icono del triangulo + nombre, esto hace que no se
+       le correctamente los nombres"). El JS ya respeta min-width cuando
+       posiciona el panel (clamp a viewport.width). */
     position: fixed;
     background: var(--glass-3-bg);
     -webkit-backdrop-filter: var(--blur-lg);
@@ -490,6 +493,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
+    min-width: 280px;             /* v3.9.9: widen — nombres largos sin truncar */
     /* z-index super-high — body no tiene isolation, no hay stacking contexts competidores */
     z-index: 99999;
     /* v2.1.5 preservado: animación SIN transform (Safari compositor safe).
@@ -608,63 +612,60 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* ═══ v3.9.0 DROPDOWN ITEMS — 2 niveles semánticos ═══
-     CEO directive 2026-10-16: "rojo si apagado, amarillo si IPT 2G delicado".
-     Solo 2 colores marcan el texto del dropdown — sin rotación, sin pulse.
-     Regla: bg ≤ 10% para que el texto mande, no el fondo.
+  /* ═══ v3.9.9 DROPDOWN ITEMS — SOLO COLOR, sin background ═══
+     CEO directive 2026-10-16: "no le des background, solo pinta el
+     color del texto y el icono". Triángulo + texto cambian color
+     (currentColor para triángulo). Hover/active: solo bg sutil de
+     --glass-3-bg (consistente con items normales, sin zone-specific).
+     Resultado: dropdown limpio, sin "bloques" de color de fondo.
      ───────────────────────────────────────────────────────────────────── */
-  /* APAGADO CONFIRMADO — CCPP exacto en ccpp_keys → ROJO */
+  /* APAGADO CONFIRMADO — CCPP exacto en ccpp_keys → ROJO (solo texto + triángulo) */
   .ac-item.ac-item-off {
-    color: var(--zone-ipt);                                     /* rojo firme */
+    color: var(--zone-ipt);
     font-weight: 700;
-    background: color-mix(in srgb, var(--zone-ipt) 8%, transparent);  /* ≤10% */
+    background: transparent;
   }
   .ac-item.ac-item-off:hover,
   .ac-item.ac-item-off.active {
-    background: color-mix(in srgb, var(--zone-ipt) 18%, var(--glass-3-bg));
-    color: var(--zone-ipt-deep);
+    background: color-mix(in srgb, var(--glass-3-bg) 90%, transparent);
+    color: var(--zone-ipt);
   }
-  /* APAGADO IPT 2G — distrito en ipt_districts → AMARILLO (delicado) */
-  /* Sin distinción visual fuerte — color secundario, bg <8%. El usuario
-     diferencia por el data-zone (ccpp_exacto/ipt_distrito) y el title nativo. */
+  /* APAGADO IPT 2G — distrito en ipt_districts → AMARILLO (delicado, solo color) */
   .ac-item.ac-item-ipt {
-    color: var(--zone-amber-deep);
-    background: color-mix(in srgb, var(--zone-amber) 8%, transparent);
+    color: var(--zone-amber);
     font-weight: 600;
+    background: transparent;
   }
   .ac-item.ac-item-ipt:hover,
   .ac-item.ac-item-ipt.active {
-    background: color-mix(in srgb, var(--zone-amber) 16%, var(--glass-3-bg));
-    color: var(--zone-amber-deep);
+    background: color-mix(in srgb, var(--glass-3-bg) 90%, transparent);
+    color: var(--zone-amber);
   }
-  /* v3.9.0: triángulo para AMBOS estados (off=red, ipt=amarillo).
-     El triángulo hereda color (currentColor) del padre. Tamaño único
-     6×6 — sin distinción visual entre niveles (tarea del color + data-zone). */
+  /* Triángulo para AMBOS estados — hereda color (currentColor) del padre */
   .ac-item.ac-item-off .ac-off-tri,
   .ac-item.ac-item-ipt .ac-off-tri {
     border-bottom-width: 6px;
     border-left-width: 4px;
     border-right-width: 4px;
+    opacity: 0.85;
   }
-  /* v3.9.0: .ac-item-zone queda como DEPRECATED pero redirige al estilo IPT
-     (district preventive = mismo nivel visual que IPT 2G) — para que código
-     legacy no rompa. Migración recomendada: usar .ac-item-ipt directamente. */
+  /* .ac-item-zone legacy → mismo tratamiento visual que .ac-item-ipt */
   .ac-item.ac-item-zone {
-    color: var(--zone-amber-deep);
-    background: color-mix(in srgb, var(--zone-amber) 8%, transparent);
+    color: var(--zone-amber);
     font-weight: 600;
+    background: transparent;
   }
   .ac-item.ac-item-zone:hover,
   .ac-item.ac-item-zone.active {
-    background: color-mix(in srgb, var(--zone-amber) 16%, var(--glass-3-bg));
-    color: var(--zone-amber-deep);
+    background: color-mix(in srgb, var(--glass-3-bg) 90%, transparent);
+    color: var(--zone-amber);
   }
   .ac-item.ac-item-zone .ac-off-tri {
     border-bottom-width: 6px;
     border-left-width: 4px;
     border-right-width: 4px;
+    opacity: 0.85;
   }
-  /* (v3.9.0: legacy ipt block eliminado — reglas consolidadas arriba) */
 
   .ac-item mark {
     background: color-mix(in srgb, var(--accent) 30%, transparent);
@@ -3315,7 +3316,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.8</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.9</span>
     </span>
   </footer>
 </div>
@@ -3838,9 +3839,17 @@ function etiquetasFitToBlock(drop, input) {
   var inputRect = input.getBoundingClientRect();
   var blockRect = block.getBoundingClientRect();
 
-  // (a) WIDTH — match exacto del input (alineado horizontalmente con el search)
-  drop.style.width = inputRect.width + 'px';
+  // (a) WIDTH — v3.9.9: max(inputRect.width, 280) para nombres largos
+  // sin truncar. Si rebota viewport, ajusta left. CEO directive
+  // "dropdown sale muy limitado por el icono del triangulo + nombre".
+  var MIN_DROP_WIDTH = 280;
+  var dropWidth = Math.max(inputRect.width, MIN_DROP_WIDTH);
+  drop.style.width = dropWidth + 'px';
   drop.style.left  = inputRect.left + 'px';
+  // Clamp si se sale del viewport
+  if (inputRect.left + dropWidth > window.innerWidth - 8) {
+    drop.style.left = Math.max(8, window.innerWidth - dropWidth - 8) + 'px';
+  }
 
   // (b) HEIGHT — siempre hacia ABAJO. Cap = min(espacio en bloque, viewport).
   var MARGIN = 6;
@@ -3876,7 +3885,14 @@ function renderEtiquetasDropdownPosition() {
     var rect = input.getBoundingClientRect();
     drop.style.top  = (rect.bottom + 4) + 'px';
     drop.style.left = rect.left + 'px';
-    drop.style.width = rect.width + 'px';
+    // v3.9.9: width = max(inputRect.width, 280) para garantizar nombres
+    // largos sin truncar. Si rebota el viewport, ajusta left.
+    var minDropWidth = 280;
+    var dropW = Math.max(rect.width, minDropWidth);
+    drop.style.width = dropW + 'px';
+    if (rect.left + dropW > window.innerWidth - 8) {
+      drop.style.left = Math.max(8, window.innerWidth - dropW - 8) + 'px';
+    }
   }
   drop.style.zIndex = '99999';
 }
@@ -4686,7 +4702,7 @@ function escapeHtmlZa(s) {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.8] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.9.9] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
