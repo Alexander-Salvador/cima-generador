@@ -3175,8 +3175,24 @@ function val(id) {
 function upper(id) {
   var el = $(id);
   if (!el) return '';
-  el.value = (el.value || '').toUpperCase();
-  return el.value.trim();
+  var v = (el.value || '').toUpperCase();
+  // v3.7.0: solo escribir al DOM si el valor realmente cambia.
+  // El upper() anterior MUTABA el input cada vez que se llamaba, lo cual
+  // hacía perder el cursor y provocaba reflows innecesarios en cada
+  // keystroke. Ahora upper() es READ-ONLY salvo que difiera.
+  if (el.value !== v) el.value = v;
+  return v.trim();
+}
+
+// v3.7.0: Normaliza texto para búsqueda accent-insensitive.
+// Misma técnica que en filterEtiquetas (L-048): NFD + remove combining marks.
+// NOTA: NO hace trim() — los espacios SON contenido. "El Carmen " vs "El Carmen"
+// son CCPPs distintos en algunos distritos. El trim se aplica SÓLO al query.
+function normSearch(str) {
+  return (str || '').toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 }
 
 function validarNumero(input) {
@@ -4766,30 +4782,45 @@ function acOptionsFor(key) {
 
 function acFilter(options, query) {
   if (!query) return options.slice(0, 200);
-  var q = query.toLowerCase();
+  // v3.7.0: búsqueda accent-insensitive (L-048 replicado para ADDRESS).
+  // "LIMA" matchea "Lima", "Líme" matchea "Lime", "SAN MIGUEL" matchea
+  // caseríos con tildes que el agente tipea sin tildes por velocidad.
+  var q = normSearch(query.trim());
+  if (!q) return options.slice(0, 200);
   // Priorizar matches que EMPIEZAN con q, luego los que contienen q
   var starts = [];
   var contains = [];
   options.forEach(function (opt) {
-    var lo = opt.toLowerCase();
+    var lo = normSearch(opt);
     if (lo.indexOf(q) === 0) starts.push(opt);
     else if (lo.indexOf(q) > 0) contains.push(opt);
   });
-  // Sin límite estricto: si query es específico, mostrar todo el match.
-  // Si query es vacío, mostrar primeros 200.
-  if (!query) return options.slice(0, 200);
   return starts.concat(contains);
 }
 
 function acHighlight(text, query) {
   if (!query) return acEscape(text);
-  var q = query.toLowerCase();
-  var lo = text.toLowerCase();
+  // v3.7.0: highlight también accent-insensitive (pair con acFilter).
+  var q = normSearch(query.trim());
+  var lo = normSearch(text);
   var idx = lo.indexOf(q);
   if (idx < 0) return acEscape(text);
-  var before = text.slice(0, idx);
-  var match  = text.slice(idx, idx + query.length);
-  var after  = text.slice(idx + query.length);
+  // Reconstruir índices en texto ORIGINAL a partir de normalizado.
+  // Estrategia: recorrer normalizado carácter por carácter hasta idx+len(q),
+  // mapear cada posición normalizada a su posición en el texto original.
+  var before = '';
+  var oi = 0;
+  while (oi < text.length && normSearch(text.slice(0, oi)).length < idx) {
+    before += text[oi];
+    oi++;
+  }
+  var matchStart = oi;
+  var matchEnd = oi;
+  while (matchEnd < text.length && normSearch(text.slice(0, matchEnd)).length < idx + q.length) {
+    matchEnd++;
+  }
+  var match = text.slice(matchStart, matchEnd);
+  var after = text.slice(matchEnd);
   return acEscape(before) + '<mark>' + acEscape(match) + '</mark>' + acEscape(after);
 }
 
@@ -5104,19 +5135,39 @@ function loadUbigeo() {
 
 function onDepChange() {
   var dep = upper('departamento');
-  // Reset provincia + distrito si cambió el departamento
-  $('provincia').value = '';
-  $('distrito').value = '';
-  $('ccpp').value = '';
+  // v3.7.0: cascada inteligente. Solo resetear hijos que ya NO son válidos
+  // para el depto nuevo. Si el usuario sigue teniendo una provincia/distrito
+  // válido para el depto, no los tocamos.
+  var prov = $('provincia').value;
+  var dist = $('distrito').value;
+  var validProv = dep && UBIGEO && UBIGEO[dep] && UBIGEO[dep].provincias && UBIGEO[dep].provincias[prov];
+  if (prov && !validProv) {
+    $('provincia').value = '';
+    $('distrito').value = '';
+    $('ccpp').value = '';
+  } else {
+    var validDist = dist && validProv && UBIGEO[dep].provincias[prov].distritos && UBIGEO[dep].provincias[prov].distritos[dist];
+    if (dist && !validDist) {
+      $('distrito').value = '';
+      $('ccpp').value = '';
+    }
+  }
   updateOutput();
 }
 
 function onProvChange() {
   var dep  = upper('departamento');
   var prov = upper('provincia');
-  // Reset distrito si cambió la provincia
-  $('distrito').value = '';
-  $('ccpp').value = '';
+  // v3.7.0: solo resetear distrito/ccpp si la provincia nueva NO contiene
+  // el distrito actual. Antes reseteaba siempre.
+  var dist = $('distrito').value;
+  var validDist = dist && prov && dep && UBIGEO && UBIGEO[dep] && UBIGEO[dep].provincias
+    && UBIGEO[dep].provincias[prov] && UBIGEO[dep].provincias[prov].distritos
+    && UBIGEO[dep].provincias[prov].distritos[dist];
+  if (dist && !validDist) {
+    $('distrito').value = '';
+    $('ccpp').value = '';
+  }
   updateOutput();
 }
 
