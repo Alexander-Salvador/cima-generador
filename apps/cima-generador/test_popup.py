@@ -2112,15 +2112,19 @@ def test(html_path):
     if re.search(r'\.ac-item\s+\.ac-off-label\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
         result.ok('v3.8.0 CSS: .ac-off-label con text-transform: uppercase')
 
-    # CSS: .ac-item-off + .ac-item-zone con --zone-amber (NO var(--danger) rojo)
+    # CSS: .ac-item-off con --zone-amber (NO var(--danger) rojo).
+    # v3.8.0 (FIX BUG 2): .ac-item-zone YA NO usa --zone-amber para color
+    # (ahora usa var(--text) normal). El indicador visual es el triángulo
+    # ámbar (.ac-off-tri) dentro del item, no el color del texto.
     if re.search(r'\.ac-item\.ac-item-off\s*\{[^}]*--zone-amber', html, re.DOTALL):
         result.ok('v3.8.0 CSS: .ac-item-off usa --zone-amber (unificado, NO rojo)')
     else:
         result.fail('CSS ac-item-off color', '.ac-item-off no usa --zone-amber')
-    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*--zone-amber', html, re.DOTALL):
-        result.ok('v3.8.0 CSS: .ac-item-zone usa --zone-amber (mismo color que .ac-item-off)')
+    # v3.8.0 (FIX BUG 2): .ac-item-zone con color NORMAL (no amber)
+    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*color:\s*var\(--text\)', html, re.DOTALL):
+        result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con color normal (var(--text))')
     else:
-        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa --zone-amber')
+        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color normal')
 
     # CSS: input classes unificadas a --zone-amber (ccpp-off-confirmed ya no usa --danger)
     # Usamos border-color para evitar matches con comments que mencionan --danger
@@ -2209,18 +2213,103 @@ def test(html_path):
     if 'total_zones' in html and 'ccpp_keys.size' in html:
         result.ok('v3.8.0 JS: audit valida consistencia total_zones vs ccpp_keys.size')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.8.0 FIX BUG 1: cascada CCPP clear cuando distrito se vacía
+    # CEO directive 2026-10-16: "cuando elimino distrito no detecta
+    # la secuencia y se queda el texto anterior en CCPP/CASERIO debe
+    # eliminar el contenido de su input todo debe ver secuencial e
+    # inteligente".
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.8.0 FIX BUG 1 — cascada CCPP clear')
+
+    # JS: onDistChange limpia ccpp cuando dist es vacío
+    m_dist = re.search(r'function onDistChange\(\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_dist and "var dist = upper" in m_dist.group(1) and "if (!dist)" in m_dist.group(1):
+        if "ccppEl.value = ''" in m_dist.group(1):
+            result.ok('v3.8.0 JS: onDistChange limpia ccpp cuando dist está vacío')
+        else:
+            result.fail('JS onDistChange clear', 'falta ccppEl.value = ""')
+    else:
+        result.fail('JS onDistChange', 'función no encontrada o falta guard !dist')
+
+    # JS: onDistChange llama updateCcppInputZoneClass para refrescar marca
+    if m_dist and 'updateCcppInputZoneClass' in m_dist.group(1):
+        result.ok('v3.8.0 JS: onDistChange refresca updateCcppInputZoneClass (cascada marca)')
+
+    # JS: acSelect para distrito limpia ccpp
+    m_select = re.search(r'function acSelect\(item\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_select and "AC_STATE.active === 'distrito'" in m_select.group(1) and 'ccppEl2.value' in m_select.group(1):
+        result.ok('v3.8.0 JS: acSelect (distrito) limpia ccpp (cascada dropdown)')
+    else:
+        result.fail('JS acSelect dist clear', 'acSelect no limpia ccpp al seleccionar distrito')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.8.0 FIX BUG 2: distrito dropdown — normal text, normal bg, + triángulo
+    # CEO directive 2026-10-16: "tiene fondo amarillo, letras amarrillas
+    # <- no tiene sentido dejalo normal solo agregale tambien el icono +
+    # nombre para que sea intuitivo si el distrito tiene zonas de apagado".
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.8.0 FIX BUG 2 — distrito dropdown visual')
+
+    # CSS: .ac-item-zone con color normal (NO var(--zone-amber))
+    css_zone = re.search(r'\.ac-item\.ac-item-zone\s*\{([^}]+)\}', html, re.DOTALL)
+    if css_zone:
+        body = css_zone.group(1)
+        if 'var(--zone-amber)' in body and 'color:' in body and 'var(--zone-amber-deep)' not in body:
+            # Si usa zone-amber para color, FALLA
+            result.fail('CSS zone color', '.ac-item-zone aún usa --zone-amber para color (debe ser normal)')
+        else:
+            result.ok('v3.8.0 CSS: .ac-item-zone con color NORMAL (no amber)')
+
+    # CSS: .ac-item-zone background transparent (no amber)
+    if css_zone and 'background: transparent' in body:
+        result.ok('v3.8.0 CSS: .ac-item-zone con background transparent (no amber)')
+
+    # CSS: .ac-item-zone .ac-off-tri con tamaño sutil (border-bottom 6px vs 8px)
+    if re.search(r'\.ac-item\.ac-item-zone\s+\.ac-off-tri\s*\{[^}]*border-bottom-width:\s*6px', html, re.DOTALL):
+        result.ok('v3.8.0 CSS: .ac-item-zone .ac-off-tri con border-bottom-width 6px (sutil)')
+
+    # JS: acRender distrito case incluye triángulo (ac-off-tri) + ac-off-text
+    m_render = re.search(r'function acRender\(key\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_render and 'data-zone="distrito_of"' in m_render.group(1):
+        # Buscar el bloque específico de distrito_of
+        dist_block = re.search(r'data-zone="distrito_of"[^}]*?}\s*\}\)\.join', m_render.group(1), re.DOTALL)
+        # Alternativa: buscar dentro de la zona de distrito_of
+        dist_zone_block = re.search(r"\} else if \(zone\) \{(.*?)(?=return '<div class=\"" + '"' + "'" + r" cls \+ " + '"' + "'" + r"\")", m_render.group(1), re.DOTALL)
+        if not dist_zone_block:
+            # Simpler: check if "ac-off-tri" appears in the context of distrito_of
+            if "ac-off-tri" in m_render.group(1):
+                # Find the distrito_of block manually
+                dist_of_idx = m_render.group(1).find('data-zone="distrito_of"')
+                # Walk backwards to find the start of the dist_of block
+                block_start = m_render.group(1).rfind('else if (zone)', 0, dist_of_idx)
+                block_end = m_render.group(1).find("'.join('')", dist_of_idx)
+                if block_end < 0:
+                    block_end = len(m_render.group(1))
+                block = m_render.group(1)[block_start:block_end]
+                if 'ac-off-tri' in block and 'ac-off-text' in block:
+                    result.ok('v3.8.0 JS: acRender distrito case incluye triángulo + ac-off-text')
+                else:
+                    result.fail('JS distrito tri', 'distrito case no tiene ac-off-tri/ac-off-text')
+
     print('\n▸ v3.7.9 — Marcado end-to-end distrito+ccpp en búsqueda')
 
-    # v3.7.9 + v3.8.0: .ac-item-zone color ámbar (vía var(--zone-amber) o #f59e0b)
-    # v3.8.0: unificado a --zone-amber (#f59e0b)
-    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*(--zone-amber|#f59e0b)', html, re.DOTALL):
-        result.ok('v3.7.9/v3.8.0 CSS: .ac-item-zone con color ámbar (--zone-amber/#f59e0b)')
-    else:
-        result.fail('CSS ac-item-zone', 'falta regla .ac-item-zone con color ámbar')
-    if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*background', html, re.DOTALL):
-        result.ok('v3.7.9 CSS: .ac-item-zone con background (transparente/ámbar)')
-    else:
-        result.fail('CSS ac-item-zone bg', 'falta background en .ac-item-zone')
+    # v3.8.0 (FIX BUG 2): .ac-item-zone color NORMAL (no amber) — CEO feedback.
+    # Antes: amber text + amber background (yellow on yellow, sin sentido).
+    # Ahora: color normal, background transparent, + triángulo ámbar como
+    # indicador visual. El .ac-item-zone sigue diferenciándose de items sin
+    # zona (que NO tienen triángulo) pero con texto y fondo NORMALES.
+    css_zone = re.search(r'\.ac-item\.ac-item-zone\s*\{([^}]+)\}', html, re.DOTALL)
+    if css_zone:
+        body = css_zone.group(1)
+        if 'color: var(--text)' in body or 'color:var(--text)' in body:
+            result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con color NORMAL (var(--text))')
+        else:
+            result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color normal (debería ser var(--text))')
+        if 'background: transparent' in body or 'background:transparent' in body:
+            result.ok('v3.8.0 (FIX BUG 2) CSS: .ac-item-zone con background transparent')
+        else:
+            result.fail('CSS ac-item-zone bg', '.ac-item-zone no tiene background transparent')
     # v3.7.9: SIN pulse en .ac-item-zone (unificado con otros items, sin animación)
     if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*animation', html, re.DOTALL):
         result.fail('CSS ac-item-zone anim', '.ac-item-zone tiene animation (no debe)')
