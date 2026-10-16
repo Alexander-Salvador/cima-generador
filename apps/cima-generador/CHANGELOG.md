@@ -1,5 +1,69 @@
 # Changelog — cima-generador
 
+## [3.9.10] - 2026-10-16 — 📐 DROPDOWN CONTAINED dentro del grid-block
+
+CEO feedback v3.9.9: "mal diseñado, no se adapta al modo popup, no debe
+exceder el tamaño del contenedor grid BUSQUEDA ADDRESS".
+
+### 🐛 BUG: dropdown overflow en popup mode
+
+En `v3.9.9` había añadido `min-width: 280px` al dropdown. Esto causó
+que en **popup mode** (donde `.grid-block#gridAddress` ≈ 480px), el
+dropdown se extendiera **fuera del popup-frame** y se viera sobre el
+botón cerrar (X), como muestra el screenshot del CEO.
+
+### ✅ FIX v3.10.0: constreñir al grid-block padre
+
+`acFitToGrid` ahora:
+1. Mide `grid-block.getBoundingClientRect()` (el contenedor natural)
+2. `dropWidth = min(inputRect.width, gridRect.width - margin)`
+3. `left` clampeado para no salirse del grid-block
+4. `min-width: 280px` eliminado — el width = inputRect.width exacto
+
+```
+ANTES v3.9.9 (overflow fuera del popup):       AHORA v3.9.10 (contained):
+
+┌──────── popup-frame 480px ───────┐         ┌──────── popup-frame 480px ───────┐
+│ [DEPTO] [PROV] [DIST]             │         │ [DEPTO] [PROV] [DIST]             │
+│                  ▼ dropdown 280px │         │                  ▼ dropdown aligned│
+│                  ┌──────────┐     │         │                  ┌──────┐         │
+│                  │ ASUNCION │     │         │                  │ASUNCIÓN         │
+│                  │ BALSAS   │     │         │                  │BALSAS           │
+│                  └──────────┘     │         │                  └──────┘         │
+│                  ←overflow→     │         │                                       │
+│                          [✕] fuera│         │                          [✕] OK     │
+└──────────────────────────────────┘         └──────────────────────────────────────┘
+```
+
+### 📋 Comportamiento por modo
+
+| Modo | grid-block width | dropdown width |
+|---|---|---|
+| **Popup** (`?popup=1`) | ~480px | `inputRect.width` ≈ 130px (≤ 3-col) |
+| **Tablet** (480-720px) | ~520px | ancho del input |
+| **Desktop** (>720px) | 520-600px+ | ancho del input |
+
+El ancho del dropdown SIEMPRE = ancho del input (alineado).
+Si el nombre del distrito es muy largo, `text-overflow: ellipsis`
+lo recorta sin overflow.
+
+### 📝 Lecciones aprendidas
+
+- **L-085**: "Widen sin constraints = bug en modos angostos". v3.9.9
+  añadió `min-width: 280px` pensando solo en desktop mode. En popup
+  mode (480px frame), el dropdown overflow horizontal.
+- **L-086**: "Container-aware sizing". Cualquier dialog/dropdown/tooltip
+  debe medir su contenedor padre (.grid-block, .popup-frame) y
+  clamp ancho/posicion dentro de él. No asumir widths hardcoded.
+
+### ✅ Validación
+
+- 433/433 tests PASS
+- audit_masivo ALL CHECKS + SCENARIOS PASSED
+- node --check OK
+
+---
+
 ## [3.9.9] - 2026-10-16 — 🔧 DROPDOWN DISTRITO — WIDEN + sin background
 
 CEO directives 2026-10-16:
