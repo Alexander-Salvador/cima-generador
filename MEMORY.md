@@ -56,7 +56,18 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-16 — v3.7.8 DROPDOWN ITEMS MAYÚSCULAS** (HEAD `38f20b2` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`, 23 commits ahead con v3.5.0→v3.7.8). 370/370 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
+Memoria persistente. Última actualización: **2026-10-16 — v3.9.3 CHECKPOINT botón ⚠️ inteligente documentado** (HEAD `7c86470` v3.9.2 fix function hoisting en rama `develop`). 434/434 tests PASS. Working tree: clean. Commit `7c86470` v3.9.2 — ROOT FIX: doble declaración `showApagadoTooltip` por hoisting, footer version badge `v3.9.2`, meta no-cache, console.log diagnostic.
+
+✅ **Sesión v3.9.0 → v3.9.3 (popup rediseñado coherente — `7c86470`):**
+- **v3.9.0**: tokens semánticos, swap colores (rojo=apagado, amarillo=IPT 2G), botón ⚠️ siempre responde
+- **v3.9.1**: FIX colores invertidos (duplicado CSS popup-mode en líneas 2860-2913 que ganaba por cascade)
+- **v3.9.2**: FIX crítico function hoisting bug (2 showApagadoTooltip, segunda gana → legacy roto)
+- **v3.9.3** (este checkpoint): Documentación completa del botón ⚠️ inteligente + pendientes
+
+🆕 **Pendientes declarados CEO (no resueltos en v3.9.2):**
+1. Toast positioning en viewport chico (clamp con `window.innerHeight`)
+2. Panel inline auto-OPEN al detectar match (sin click) — spec v3.9.0 no implementado
+3. CSS responsive desktop mode para ⚠️ button (mobile/tablet/desktop unificados)
 
 > ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (370/370 feat branch) ↔ REMOTO.
 
