@@ -604,15 +604,29 @@
     background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-3-bg));
     color: var(--zone-amber);
   }
-  /* v3.8.0: DISTRITO en districts_with_off — mismo ámbar unificado */
+  /* v3.8.0 (FIX BUG 2): DISTRITO en districts_with_off — visual SUTIL.
+     Antes: amber text + amber background (yellow on yellow = parecía
+     active state, sin sentido). CEO directive 2026-10-16: "dejalo normal
+     solo agregale tambien el icono + nombre para que sea intuitivo si
+     el distrito tiene zonas de apagado". Ahora: texto y background
+     NORMALES (igual que items sin zona), solo el triángulo ámbar +
+     un fondo sutil ámbar para indicar visualmente que está en zona. */
   .ac-item.ac-item-zone {
-    color: var(--zone-amber);
-    background: color-mix(in srgb, var(--zone-amber) 12%, transparent);
+    color: var(--text);
+    background: transparent;
   }
   .ac-item.ac-item-zone:hover,
   .ac-item.ac-item-zone.active {
-    background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-3-bg));
-    color: var(--zone-amber);
+    background: color-mix(in srgb, var(--accent) 92%, transparent);
+    color: var(--on-accent);
+  }
+  /* v3.8.0: triángulo sutil para distrito en zona — ámbar pero más
+     pequeño que el de CCPP (que es 8px). El distrito es "potencial",
+     el CCPP es "confirmado" — el tamaño comunica el nivel de certeza. */
+  .ac-item.ac-item-zone .ac-off-tri {
+    border-bottom-width: 6px;
+    border-left-width: 4px;
+    border-right-width: 4px;
   }
 
   .ac-item mark {
@@ -5040,11 +5054,11 @@ function acRender(key) {
                     + '<span class="ac-off-text">' + acEscape(item) + '</span>';
       return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="ccpp_exacto" title="' + acEscape(item) + ' — zona de apagado Movistar">' + indicatorHtml + '</div>';
     } else if (zone) {
-      // v3.8.0 (FIX): distrito en zona potencial. SOLO color ámbar + nombre
-      // del distrito, SIN label "DISTRITO" inline (era redundante: si todos
-      // los dist del dropdown están afectados, todos tenían el mismo label
-      // y el nombre real se ocultaba por flex shrinking). El title nativo
-      // lleva el conteo de CCPPs apagados para información accionable.
+      // v3.8.0 (FIX BUG 2): distrito en zona potencial. Texto NORMAL
+      // (no ámbar) + TRIANGULO ámbar sutil como indicador. Antes: amber
+      // text + amber background (yellow on yellow, sin sentido). Ahora:
+      // visualmente normal pero con un triángulo que indica "este distrito
+      // tiene zonas de apagado" — el conteo va en el title nativo.
       cls += ' ac-item-zone';
       // Contar CCPPs apagados en este distrito (para el title)
       var ccppCount = 0;
@@ -5055,7 +5069,10 @@ function acRender(key) {
         });
       }
       var distTitle = acEscape(item) + ' — distrito con ' + ccppCount + ' CCPP' + (ccppCount === 1 ? '' : 's') + ' en zona de apagado Movistar';
-      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of" title="' + distTitle + '">' + acEscape(item) + '</div>';
+      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of" title="' + distTitle + '">'
+        + '<span class="ac-off-tri" aria-hidden="true"></span>'
+        + '<span class="ac-off-text">' + acEscape(item) + '</span>'
+        + '</div>';
     }
     return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + acEscape(item) + '</div>';
   }).join('');
@@ -5245,6 +5262,15 @@ function acSelect(item) {
   // ve inmediatamente si tiene afectación potencial (sin match exacto
   // todavía).
   if (AC_STATE.active === 'distrito') {
+    // v3.8.0 (FIX BUG 1): cascada CCPP al cambiar de distrito via dropdown.
+    // El CCPP anterior puede NO aplicar al nuevo distrito (d6 distinto),
+    // por lo que limpiamos el input + sus clases de zona. Antes: el CCPP
+    // mantenía su valor con datos huérfanos del distrito anterior.
+    var ccppEl2 = $('ccpp');
+    if (ccppEl2) {
+      ccppEl2.value = '';
+      ccppEl2.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt');
+    }
     updateDistInputZoneClass();
   }
   acClose();
@@ -5391,6 +5417,19 @@ function updateCcppHint(distritoNombre) {
 
 function onDistChange() {
   var dist = upper('distrito');
+  // v3.8.0 (FIX BUG 1): cascada CCPP cuando distrito se vacía.
+  // Si el usuario borró el distrito (manual delete, X, o cambio
+  // a valor inválido), el CCPP anterior ya no aplica. Limpiamos
+  // el CCPP + removemos las clases de zona para mantener state
+  // consistente. Antes: el CCPP mantenía su valor aunque el
+  // distrito estuviera vacío, generando datos huérfanos.
+  if (!dist) {
+    var ccppEl = $('ccpp');
+    if (ccppEl) {
+      ccppEl.value = '';
+      ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt');
+    }
+  }
   if (CCPP_DATA) {
     updateCcppHint(dist);
   } else if (!CCPP_LOADING) {
@@ -5401,6 +5440,12 @@ function onDistChange() {
   // manual donde el usuario cambia el nombre del distrito y debemos
   // refrescar si la zona sigue aplicando.
   updateDistInputZoneClass();
+  // v3.8.0 (FIX BUG 1): refrescar también la marca del CCPP, porque
+  // puede haber cambiado (distrito nuevo = CCPP anterior puede no
+  // ser match exacto bajo el nuevo d6).
+  if (typeof updateCcppInputZoneClass === 'function') {
+    updateCcppInputZoneClass();
+  }
   syncDirHint();
   updateOutput();
 }
