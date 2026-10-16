@@ -5034,13 +5034,41 @@ function acRender(key) {
       }
     }
     // v3.7.9: en el dropdown de DISTRITO, marcar el item como .ac-item-zone
-    // si su d6 está en districts_with_off (afectación POTENCIAL, sin match
-    // exacto de CCPP todavía). Diferenciado de .ac-item-off (rojo, CCPP exacto).
+    // si su d6 tiene al menos 1 CCPP confirmado en ccpp_keys.
+    // v3.8.0 (FIX BUG 2.1): CEO feedback 2026-10-16 — "todos los distritos
+    // me salen con el icono del triangulo, solo deben tenerlo los distritos
+    // afectados que contienen las zonas de apagado". Antes: cualquier
+    // distrito en districts_with_off (1821) mostraba el triángulo, pero
+    // SOLO 191 distritos tienen CCPPs confirmados en ccpp_keys. Ahora:
+    // el triángulo aparece SOLO si el distrito tiene al menos 1 CCPP en
+    // ccpp_keys (avería CONFIRMADA, no solo preventiva).
     var zone = false;
     var d6ForItem = null;
-    if (d6ByDistName && d6ByDistName[item] && ZONAS_APAGADAS.districts_with_off.has(d6ByDistName[item])) {
-      zone = true;
-      d6ForItem = d6ByDistName[item];
+    if (d6ByDistName && d6ByDistName[item]) {
+      var d6Candidate = d6ByDistName[item];
+      if (ZONAS_APAGADAS.districts_with_off.has(d6Candidate)) {
+        // Verificar que el distrito tenga AL MENOS 1 CCPP en ccpp_keys
+        // (no solo preventivo). Prefix lookup: ccpp_keys tiene formato
+        // "d6:NAME", así que un prefix match cuenta CCPPs para ese d6.
+        if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
+          var prefix = d6Candidate + ':';
+          // CCPP_KEYS_NORMALIZED es Set, no tiene filter — usamos for...of
+          CCPP_KEYS_NORMALIZED.forEach(function (k) {
+            if (k.indexOf(prefix) === 0) {
+              zone = true;
+              d6ForItem = d6Candidate;
+            }
+          });
+        } else {
+          // Fallback al set original
+          ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+            if (k.indexOf(prefix) === 0) {
+              zone = true;
+              d6ForItem = d6Candidate;
+            }
+          });
+        }
+      }
     }
     var cls = 'ac-item';
     var indicatorHtml = '';
