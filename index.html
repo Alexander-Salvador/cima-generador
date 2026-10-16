@@ -478,10 +478,11 @@
        contenedor (Búsqueda Address) — evitando invadir visualmente el card Tipificación.
        Si no entra → scroll interno. Si espacio < 100px → flip-arriba.
 
-       v3.9.9 WIDEN: min-width 280px (CEO directive "el dropdown sale muy
-       limitado por el icono del triangulo + nombre, esto hace que no se
-       le correctamente los nombres"). El JS ya respeta min-width cuando
-       posiciona el panel (clamp a viewport.width). */
+       v3.10.0: NO min-width fijo. CEO directive "no debe exceder el tamaño
+       del contenedor grid" — el JS (acFitToGrid) ahora constrain la width
+       al grid-block padre (popup frame en popup mode, ancho del grid en
+       desktop mode). Dropdown width = inputRect.width (alineado exacto).
+       Si el nombre es largo, ellipsis natural lo recorta (overflow:hidden). */
     position: fixed;
     background: var(--glass-3-bg);
     -webkit-backdrop-filter: var(--blur-lg);
@@ -489,11 +490,10 @@
     border: 1px solid var(--glass-border-strong);
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-tier-3);
-    max-height: 220px;             /* v2.1.7: cap superior; JS puede reducirlo */
+    max-height: 220px;
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
-    min-width: 280px;             /* v3.9.9: widen — nombres largos sin truncar */
     /* z-index super-high — body no tiene isolation, no hay stacking contexts competidores */
     z-index: 99999;
     /* v2.1.5 preservado: animación SIN transform (Safari compositor safe).
@@ -3316,7 +3316,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.9</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.10</span>
     </span>
   </footer>
 </div>
@@ -3839,17 +3839,11 @@ function etiquetasFitToBlock(drop, input) {
   var inputRect = input.getBoundingClientRect();
   var blockRect = block.getBoundingClientRect();
 
-  // (a) WIDTH — v3.9.9: max(inputRect.width, 280) para nombres largos
-  // sin truncar. Si rebota viewport, ajusta left. CEO directive
-  // "dropdown sale muy limitado por el icono del triangulo + nombre".
-  var MIN_DROP_WIDTH = 280;
-  var dropWidth = Math.max(inputRect.width, MIN_DROP_WIDTH);
-  drop.style.width = dropWidth + 'px';
+  // (a) WIDTH — v3.10.0: dropdown width = inputRect.width (alineado exacto).
+  // El grid-block constraints se aplican vía acFitToGrid (caller).
+  // MIN_DROP_WIDTH eliminado en v3.10.0 (causaba overflow en popup mode).
+  drop.style.width = inputRect.width + 'px';
   drop.style.left  = inputRect.left + 'px';
-  // Clamp si se sale del viewport
-  if (inputRect.left + dropWidth > window.innerWidth - 8) {
-    drop.style.left = Math.max(8, window.innerWidth - dropWidth - 8) + 'px';
-  }
 
   // (b) HEIGHT — siempre hacia ABAJO. Cap = min(espacio en bloque, viewport).
   var MARGIN = 6;
@@ -3876,7 +3870,9 @@ function renderEtiquetasDropdownPosition() {
   }
   drop.style.position = 'fixed';
   // v3.2: bound al .etiquetas-block (no al viewport) para contención visual.
-  // Fallback a acFitToGrid si la nueva función no está disponible (defensivo).
+  // v3.10.0: clamp del dropdown al grid-block contenedor (CEO directive
+  // "no debe exceder el tamaño del contenedor grid"). Si no hay función
+  // de fitting, fallback con rect directo.
   if (typeof etiquetasFitToBlock === 'function') {
     etiquetasFitToBlock(drop, input);
   } else if (typeof acFitToGrid === 'function') {
@@ -3885,14 +3881,7 @@ function renderEtiquetasDropdownPosition() {
     var rect = input.getBoundingClientRect();
     drop.style.top  = (rect.bottom + 4) + 'px';
     drop.style.left = rect.left + 'px';
-    // v3.9.9: width = max(inputRect.width, 280) para garantizar nombres
-    // largos sin truncar. Si rebota el viewport, ajusta left.
-    var minDropWidth = 280;
-    var dropW = Math.max(rect.width, minDropWidth);
-    drop.style.width = dropW + 'px';
-    if (rect.left + dropW > window.innerWidth - 8) {
-      drop.style.left = Math.max(8, window.innerWidth - dropW - 8) + 'px';
-    }
+    drop.style.width = rect.width + 'px';
   }
   drop.style.zIndex = '99999';
 }
@@ -4702,7 +4691,7 @@ function escapeHtmlZa(s) {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.9] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.9.10] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -5354,26 +5343,50 @@ function acUpdatePosition(key) {
 // @param {HTMLElement} input - el input que disparó el dropdown
 // @param {DOMRect} [inputRect] - rect precalculado (perf: evita 2ª llamada a getBoundingClientRect)
 function acFitToGrid(drop, input, inputRect) {
-  if (!drop || !input) return;
-  // (1) Rect del input (reusar si ya está)
-  var rect = inputRect || input.getBoundingClientRect();
-  // (2) Encontrar el .grid-block contenedor — es el límite visual "natural" para
-  //     el dropdown (no debe invadir el siguiente card, ej. Tipificación).
-  //     Fallback: usar el viewport (window.innerHeight) si no hay grid.
-  var grid = input.closest('.grid-block');
-  var gridBottom = grid ? grid.getBoundingClientRect().bottom : window.innerHeight;
-  // (3) Margen de respiración (8px entre dropdown y el límite inferior del grid)
-  var MARGIN = 8;
-  var available = gridBottom - rect.bottom - MARGIN;
-  // (4) v3.7.6: SIEMPRE ABAJO, sin flip (L-059). Antes si available < 100px
-  // hacía flip-arriba — eso causaba que el CCPP dropdown "saltara" al top
-  // del container. Ahora ajustamos max-height al espacio disponible (mínimo
-  // 80px para mostrar al menos 1-2 items) y dejamos que el usuario haga
-  // scroll si hay más.
-  var cap = Math.max(80, Math.min(220, available));
-  drop.style.top = (rect.bottom + 4) + 'px';
-  drop.style.maxHeight = cap + 'px';
-  drop.classList.remove('is-flipped');
+   if (!drop || !input) return;
+   // (1) Rect del input (reusar si ya está)
+   var rect = inputRect || input.getBoundingClientRect();
+   // (2) Encontrar el .grid-block contenedor — es el límite visual "natural" para
+   //     el dropdown (no debe invadir el siguiente card, ej. Tipificación).
+   var grid = input.closest('.grid-block');
+   var gridRect = grid ? grid.getBoundingClientRect() : null;
+   // (3) v3.10.0: WIDTH BOUNDED a grid-block.
+   //     - En popup mode, el grid-block es angosto (~480px) — antes el
+   //       MIN_DROP_WIDTH=280 hacía overflow fuera del frame del popup.
+   //     - En desktop mode, el grid-block es ancho (~800px+) — el dropdown
+   //       se expande hasta cubrir el grid completo sin perder alineación.
+   //     Regla: dropdown width = min(inputRect.width, gridRect.width - margin).
+   var SIDE_MARGIN = 4;
+   var maxAllowedW = gridRect
+     ? Math.max(rect.width, gridRect.width - 2 * SIDE_MARGIN)
+     : (window.innerWidth - 16);
+   var dropWidth = Math.min(rect.width, maxAllowedW);
+   // Si quisiéramos WIDEN más allá del input (estirar dropdown), se centraría
+   // sobre el input. v3.10.0: deshabilitado — CEO directive "no debe exceder
+   // el tamaño del contenedor grid". Dropdown width = input width por
+   // defecto. Si el nombre no entra, ellipsis lo recorta (overflow:hidden).
+   drop.style.width = dropWidth + 'px';
+   drop.style.left = rect.left + 'px';
+   // Clamp left dentro del grid-block
+   if (gridRect) {
+     if (rect.left + dropWidth > gridRect.right - SIDE_MARGIN) {
+       drop.style.left = Math.max(gridRect.left + SIDE_MARGIN,
+                                  gridRect.right - dropWidth - SIDE_MARGIN) + 'px';
+     }
+     if (rect.left < gridRect.left + SIDE_MARGIN) {
+       drop.style.left = (gridRect.left + SIDE_MARGIN) + 'px';
+     }
+   }
+   // (4) Margen de respiración (8px entre dropdown y el límite inferior del grid)
+   var MARGIN = 8;
+   var gridBottom = gridRect ? gridRect.bottom : window.innerHeight;
+   var available = gridBottom - rect.bottom - MARGIN;
+   // (5) v3.7.6: SIEMPRE ABAJO, sin flip (L-059). Ajustamos max-height al
+   //     espacio disponible (mínimo 80px para mostrar al menos 1-2 items).
+   var cap = Math.max(80, Math.min(220, available));
+   drop.style.top = (rect.bottom + 4) + 'px';
+   drop.style.maxHeight = cap + 'px';
+   drop.classList.remove('is-flipped');
 }
 
 function acOptionsFor(key) {
