@@ -1333,3 +1333,148 @@ curl -sI "https://alexander-salvador.github.io/cima-generador/" | head -1
 ```
 
 Próximo chat: leer esta sección de handover primero. Si CEO pide cambios al popup, trabajar en `apps/cima-generador/` y pipeline de deploy documentado arriba.
+
+---
+
+## 📚 RECURSOS CIMA — BASE DE CONOCIMIENTO: ZONAS DE APAGADO (2026-10-15)
+
+> **Análisis end-to-end de los 5 PDFs únicos en `/Recursos CIMA/`** (8 archivos son duplicados por SHA256). Material oficial Movistar/genio para supervisores y asesores call center técnico MOVIL. Los PDFs IPT y COMU-5514 incluyen **speech de visor completo** para postventa.
+
+### 📁 Inventario único (5 PDFs)
+
+| Hash | Archivo | Tema | Código |
+|---|---|---|---|
+| `2b2b6b…828a56` | `Apagado Zonas IPT.pdf` (×7 copias idénticas) | Apagado 2G zonas rurales IPT | COMU-5672 |
+| `ade0d3…1d3bb53` | `COMU-5514 Apagado Estaciones Base.pdf` (×3 copias idénticas) | Apagado estaciones base en centros poblados | COMU-5514 |
+| `6fce46…89f8d5` | `Bases y Zonas de Apagado/APAGADO.pdf` | Centros Poblados Grupo 1 | — |
+| `e29d48…520f2` | `Bases y Zonas de Apagado/APAGADO2.pdf` (3 páginas) | Centros Poblados Grupo 2 | — |
+| `00578b…e8dfc` | `Bases y Zonas de Apagado/APAGADP1.pdf` | Centros Poblados Grupo 3 | — |
+
+Más `Etiquetas de Transferencia.xlsx` (3.18MB) en `Recursos CIMA/Etiquetas de Transferencia/`.
+
+---
+
+### 🔥 COMU-5672 — APAGADO ZONAS IPT (Residencial Postpago)
+
+- **Inicio:** 28 de agosto / **Versión:** 00001
+- **Q clientes impactados:** 39.5K
+- **Comunicación SMS inicio:** 17 de agosto (mayoría) o 18 de agosto (algunos)
+- **Aplica:** Postpago + prepago con señal Movistar 2G en zonas rurales; clientes sin red 2G (llamadas, mensajes de texto u WhatsApp) desde 28/08
+- **Pide configurar equipo 4G** a partir del apagado (grupo 1) / **sugerir renovación** (grupo 2 sin 4G)
+
+#### Tabla departamentos IPT (21)
+
+| Dep | Fecha prog. | SMS inicio | Clientes | Centros |
+|---|---|---|---|---|
+| Amazonas | 28/08 | 17/08 | 1,985 | 9 |
+| Ancash | 28/08 | 17/08 | 657 | 3 |
+| Apurímac | 28/08 | 17/08 | 6,419 | 33 |
+| Arequipa | 03/09 | 18/08 | 1,032 | 5 |
+| Ayacucho | 03/09 | 18/08 | 6,052 | 38 |
+| Cajamarca | 03/09 | 18/08 | 772 | 7 |
+| Cusco | 28/08 | 17/08 | 8,335 | 40 |
+| Huancavelica | 03/09 | 18/08 | 7,709 | 50 |
+| Huanuco | 28/08 | 17/08 | 1,183 | 7 |
+| Ica | 28/08 | 17/08 | 126 | 2 |
+| Junín | 03/09 | 18/08 | 15 | 2 |
+| La Libertad | 03/09 | 18/08 | 1,306 | 6 |
+| Lambayeque | 28/08 | 17/08 | 221 | 2 |
+| Lima | 03/09 | 18/08 | 790 | 8 |
+| Madre de Dios | 28/08 | 17/08 | 131 | 6 |
+| Moquegua | 03/09 | 18/08 | 393 | 3 |
+| Pasco | 03/09 | 18/08 | 36 | 2 |
+| Piura | 03/09 | 18/08 | 2,592 | 18 |
+| Puno | 28/08 | 17/08 | 2,051 | 11 |
+| San Martín | 03/09 | 18/08 | 1,677 | 8 |
+| Tacna | 28/08 | 17/08 | 246 | 3 |
+
+#### Speech visor completo IPT
+
+**Grupo 1 (equipo 4G — CONFIGURACIÓN):**
+> APAGADOS ZONAS IPT: Clientes con equipo 4G (CONFIGURACIÓN DE EQUIPO): Queremos informarte que, a partir del [dd] de [mes], el servicio Movistar 2G dejará de funcionar en la zona [nombre de la zona]. Estamos implementando mejoras en la tecnología 4G para brindarte una mejor experiencia en tu navegación, por lo que es necesario que tu equipo esté configurado adecuadamente para soportar esta nueva red. ¡No permitas quedarte sin servicio! Configura tu equipo y sigue navegando con normalidad.
+>
+> NOTA: [Orientar en la configuración del equipo en red 4G – REVISAR COMUNICADO APAGADOS ZONAS IPT]
+
+**Grupo 2 (SIN equipo 4G — no podrá navegar):**
+> APAGADOS ZONAS IPT: Clientes SIN equipo 4G (SUGERIR RENOVACIÓN DE EQUIPO): Queremos informarte que, a partir del [dd/m] de [mes], el servicio Movistar 2G dejará de funcionar en la zona [nombre de la zona], por lo que ya no podrás contar con equipo 4G compatible con esta red. A partir de la fecha mencionada, tu servicio de datos de Movistar quedará limitado a la velocidad de la tecnología 2G. Si aún no dispones de un equipo 4G, te invitamos a adquirirlo en nuestros puntos de venta Movistar para seguir disfrutando de los beneficios de nuestra red.
+>
+> NOTA: [REVISAR COMUNICADO APAGADOS ZONAS IPT]
+
+#### Flujos postventa IPT
+
+| Escenario | Validación | Acción |
+|---|---|---|
+| Equipo 4G (marcaje visor (4.1)) | Identificar 4.1 | Speech (4.1) "Configuración equipo 4G" |
+| Sin 4G (marcaje visor (4.2)) | Identificar 4.2 | Speech (4.2) "Sugerir renovación / venta pta" |
+| Cliente con equipo NO 4G y sin señal | — | Atender flujo regular: VOZ → CEE → DATOS |
+
+**Tipificación:** Motivo: Internet No Navega · SubMotivo: Configuración equipo Datos 2G/3G / No datos · Móviles No APN: Movistar.pe
+
+**Reclamos:** Color en observaciones en seguimientos (no se trata cliente afectado por apagado de zona rural).
+- Call Center 1ra línea / Tiendas: Detalle reclamo "Otros Reclamos Soluciones Móvil" → Motivo "Calidad" → SubMotivo "Problemas de cobertura y señal".
+- Canales Escritos: https://www.movistar.com.pe/atencion-al-cliente/reclamos
+
+**Baja servicio:** Call Center 1ra línea transfiere a Pool Retenciones / Tiendas flujo regular / Canales Escritos derivar al 104 o tienda.
+
+---
+
+### 🔥 COMU-5514 — APAGADO ESTACIONES BASE EN CENTROS POBLADOS (Residencial Postpago)
+
+- **Inicio:** 11 de septiembre del 2026 / **Última actualización:** 18/09/26 / **Versión:** 00003
+- **Aplica:** Clientes móvil (postpago + prepago) en centros poblados donde se ejecutará apagado de estaciones base
+- **Grupos:**
+  - **Grupo 1:** 1.7K clientes (Q ver grupo)
+  - **Grupo 2:** 15K clientes
+  - **Grupo 3 (NUEVO):** 1.7K clientes
+
+#### Speech visor único (todos los grupos)
+
+> APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS: Queremos informarte que, a partir del [día] de [mes], el servicio Movistar dejará de funcionar en la zona [nombre de la zona]. En otras zonas, el servicio seguirá disponible con normalidad. Lamentamos las molestias y agradecemos tu comprensión.
+>
+> NOTA: [REVISAR COMUNICADO APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS]
+
+#### SMS enviados por grupo
+
+| Grupo | SMS tipo |
+|---|---|
+| 1 (celdas activas) | **SMS 1**: Informar que desde [dd/mm] proveedor estación Movistar 2G deja de prestar servicio. Disculpa molestias. |
+| 1 (recordatorio) | **SMS 2**: A partir [dd/mm] no contarás con señal Movistar [localidad]. Otras localidades servicio normal. |
+| 2 y 3 | Idéntico SMS 1 |
+
+#### Preguntas frecuentes COMU-5514
+
+1. ¿No señal en mi línea? En la zona informada no tendrás señal Movistar, pero sí puedes tenerla en zonas con cobertura.
+2. ¿Puedo navegar con WiFi? Sí, con opción WiFi puedes navegar por WiFi.
+
+#### Postventa COMU-5514
+
+| Escenario | Acción |
+|---|---|
+| Consulta por comunicación recibida | Identificar marcaje en visor → Speech único (con marcaje: speech visor (4.1) + speech (4.2)) |
+| Consulta sin señal / no contacta con señal en zona | Sin marcaje → atender según flujo regular (Call Center: VOZ → CEE → DATOS) |
+
+**Reclamos / Baja servicio:** igual ruta que COMU-5672 (Call Center 1ra línea + Tiendas, Canales Escritos).
+
+---
+
+### 🗺️ Centros Poblados — Departamentos por grupo
+
+| Doc | Departamentos | Total aproximado |
+|---|---|---|
+| `APAGADO.pdf` (Grupo 1) | Cajamarca, Cusco, Junín, Lambayeque, Lima, Piura | 18+ centros |
+| `APAGADO2.pdf` (Grupo 2) | Amazonas, Ancash, Apurímac, Arequipa, Ayacucho, Cajamarca, Cusco, Huancavelica, Huánuco, Ica, Junín, La Libertad, Lambayeque, Lima, Loreto, Madre de Dios, Moquegua, Pasco, Piura, Puno, San Martín, Tacna, Ucayali | 200+ centros |
+| `APAGADP1.pdf` (Grupo 3) | Apurímac, Ayacucho, Cusco, Huancavelica, Huánuco | ~28 centros |
+
+**Detalle completo por DEPARTAMENTO/PROVINCIA/DISTRITO/CENTRO POBLADO** guardado en los PDFs fuente. Tabla master se puede extraer a `data/apagados_centros_poblados.yaml` si CEO lo solicita.
+
+---
+
+### 🎯 Reglas de uso en CIMA (call center técnico MOVIL)
+
+1. **Identificar grupo del cliente** (Grupo 1 / Grupo 2 / Grupo 3 de COMU-5514; Grupos 1 / 2 de COMU-5672) → speech visor correcto.
+2. **Si cliente está en zona IPT y tiene 4G** → orientar configuración APN/equipo 4G.
+3. **Si cliente está en zona IPT y NO tiene 4G** → sugerir renovación de equipo (venta pta).
+4. **Si cliente consulta por comunicado** → leer speech completo incluyendo "Lamentamos las molestias y agradecemos tu comprensión".
+5. **Toda queja/reclamo:** agregar **color en observaciones** + ruta Call Center (1ra línea → Pool Retenciones) o Canales Escritos (104/tienda).
+6. **Tipificación CRM:** Motivo "Internet No Navega" + SubMotivo "Configuración equipo Datos 2G/3G / No datos" + Móviles/No APN "Movistar.pe".
+7. **Baja servicio siempre** con speech "desear viajar…" + CEE + delivery si no acepta.

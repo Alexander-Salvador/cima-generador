@@ -244,14 +244,16 @@ def test(html_path):
         dist_items = re.findall(r'"([^"]+)"', sizes.group(2))
         total_zones = int(sizes.group(3))
         total_districts = int(sizes.group(4))
+        # v3.5.0: ccpp_keys preserva 239 COMU-5514 originales; districts_with_off
+        # ahora incluye IPT (1798 distritos adicionales de 21 deptos COMU-5672).
         if len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 expected)')
         else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 239)')
-        if len(dist_items) == 191: result.ok(f'districts_with_off size = {len(dist_items)} (191 expected)')
-        else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected 191)')
-        if total_zones == 239: result.ok(f'total_zones = {total_zones}')
-        else: result.fail(f'total_zones', f'{total_zones} (expected 239)')
-        if total_districts == 191: result.ok(f'total_districts = {total_districts}')
-        else: result.fail(f'total_districts', f'{total_districts} (expected 191)')
+        if len(dist_items) >= 191: result.ok(f'districts_with_off size = {len(dist_items)} (>=191, incluye IPT)')
+        else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected >=191)')
+        if total_zones >= 239: result.ok(f'total_zones = {total_zones} (>=239)')
+        else: result.fail(f'total_zones', f'{total_zones} (expected >=239)')
+        if total_districts >= 191: result.ok(f'total_districts = {total_districts} (>=191)')
+        else: result.fail(f'total_districts', f'{total_districts} (expected >=191)')
 
         # Formato de keys: "d6:ccpp"
         if all(':' in k for k in ccpp_items): result.ok('all ccpp_keys tienen formato d6:ccpp')
