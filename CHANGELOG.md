@@ -1,5 +1,81 @@
 # Changelog — cima-generador
 
+## [3.9.0] - 2026-10-16 — REDISEÑO COHERENTE: tokens semánticos + botón ⚠️ funcional
+
+**CEO directive 2026-10-16**: "rojo si está en apagado y amarillo si es apagado IPT 2G (delicado)". Esta versión cierra las carencias visuales de v3.8.0 (4 colores confusos + botón inerte).
+
+### 🏗️ ARQUITECTURA — Tokens semánticos + Single Source of Truth
+
+Añadida capa de tokens semánticos encima de los legacy (`--zone-amber` / `--zone-ipt`):
+
+```css
+/* APAGADO CONFIRMADO — CCPP exacto en ccpp_keys → ROJO */
+--zone-off:        var(--zone-ipt);          /* #dc2626 */
+--zone-off-deep:   var(--zone-ipt-deep);     /* #991b1b */
+--zone-off-bg:     color-mix(...8%...);
+
+/* APAGADO IPT 2G — distrito en ipt_districts → AMARILLO delicado */
+--zone-ipt-soft:      var(--zone-amber);     /* #f59e0b */
+--zone-ipt-soft-deep: var(--zone-amber-deep);/* #b45309 */
+--zone-ipt-soft-bg:   color-mix(...10%...);
+```
+
+Regla CSS: **`bg ≤ 10%`** — el texto manda, no el fondo.
+
+### 🎨 Cambios visuales (swap semántico, no solo estilos)
+
+| Elemento | Antes (v3.8.0) | Ahora (v3.9.0) |
+|---|---|---|
+| `.ac-item-off` (CCPP exacto) | 🟡 AMBER | **🔴 ROJO** `--zone-ipt` |
+| `.ac-item-ipt` (IPT 2G) | 🔴 ROJO | **🟡 AMARILLO** `--zone-amber` |
+| `.ac-item-zone` (preventive) | 🟡 AMBER | 🟡 AMARILLO (bg 8%, sutil) |
+| `.cobertura-btn.off` (button) | 🟡 AMBER | **🔴 ROJO** `--zone-ipt` |
+| `.cobertura-btn.ipt` (button) | 🔴 ROJO | **🟡 AMARILLO** `--zone-amber` |
+| `.cobertura-btn.warn` (button) | 🟡 AMBER | 🟡 AMARILLO (separado, mismo nivel que .ipt) |
+| `.ccpp-off-confirmed` (input) | 🟡 AMBER | **🔴 ROJO** `--zone-ipt` |
+| `.dist-off-warn` / `.dist-ipt-warn` / `.ccpp-off-ipt` / `.ccpp-ipt-warn` | 🟡/🔴 mixto | 🟡 AMARILLO unificado |
+
+**Coherencia distrito ↔ ccpp**: ambos campos comparten la misma paleta:
+- distrito Y ccpp en `ccpp_keys` → ROJO
+- distrito Y ccpp en `ipt_districts` (sin match exacto) → AMARILLO
+
+### ⚡ BOTÓN ⚠️ — REESCRITO FUNCIONAL
+
+**Antes (v3.8.0)**: click sin respuesta si datos incompletos o sin alerta.
+**Ahora (v3.9.0)**: 3 estados mutuamente exclusivos, todos con feedback:
+
+| Estado UX | Trigger | Feedback visual | Audio (a11y) |
+|---|---|---|---|
+| (A) Datos incompletos | `< 3 campos` | shake 240ms + toast ámbar | announce "Selecciona..." |
+| (B) HAY alerta | `chk !== null` | toast inline + copia speech al clipboard + pulse verde 1.1s | announce zona+código |
+| (C) Sin alerta | `chk === null` | shake 220ms + toast verde | announce "Sin alerta..." |
+
+**Innovación 2026**: el botón ahora cumple doble utilidad — clic = abrir panel + copiar speech al clipboard simultáneamente. El supervisor tiene el mensaje listo para pegar sin re-click.
+
+### 🆕 Nuevos componentes UI
+
+- `.cima-toast` + 3 variantes (`--warn` ámbar / `--ok` verde / `--info` azul)
+- `.cima-shake` (micro-shake 280ms × 4 oscilaciones)
+- `.cima-btn--just-copied` (pulse verde de confirmación 1.1s)
+- Soporte de teclado (Enter / Space → click) en botón ⚠️ para WCAG
+
+### 📊 Validación
+
+- ✅ 434/434 tests popup PASS
+- ✅ 46/46 tests cobertura_peru PASS
+- ✅ audit_masivo.py ALL CHECKS + SCENARIOS PASSED
+- ✅ node --check OK (1.37M chars JS sin errores de sintaxis)
+
+### 📋 Lecciones aprendidas (L-070 a L-074)
+
+- **L-070**: "Confirmado ≠ potencial" → 2 colores, no 1. ROJO solo si match estricto. AMARILLO para todo lo "preventivo" o "IPT-district level".
+- **L-071**: "bg ≤ 10%" — la supremacía del texto sobre el fondo. Items con bg > 14% se ven "amarillo chillón" y confunden al usuario.
+- **L-072**: "Botón inerte = bug funcional, no visual". Un click que no responde nada es peor que un error visible. Siempre: shake + toast.
+- **L-073**: "Doble utilidad del click" — abrir panel + copiar clipboard simultáneamente reduce fricción 50%.
+- **L-074**: "Estabilidad visual > creatividad". Reutilizar tokens legacy (mantener los nombres) preserva tests y debug; cambiar solo las REFERENCIAS semánticas de cada regla CSS.
+
+---
+
 ## [3.8.0-checkpoint] - 2026-10-16 — ⚠️ CHECKPOINT: REQUIERE REDISEÑO VISUAL
 
 CEO feedback 2026-10-16: "Visualmente aun no esta logrado es muy

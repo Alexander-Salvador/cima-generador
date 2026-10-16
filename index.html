@@ -30,17 +30,28 @@
     --accent-2: #ea580c;
     --green: #22c55e;
     --green-light: #16a34a;
-    --danger: #ef4444;
-    /* v3.8.0: zone-amber = color único para TODO lo que esté en zona
-       de apagado Movistar (dropdown items, inputs, coberturaBtn).
-       Single source of truth — cambiar aquí cambia todos los elementos. */
-    --zone-amber: #f59e0b;
-    --zone-amber-deep: #b45309;
-    /* v3.8.0: zone-ipt = color para distritos en COMU-5672 (Apagado Zonas IPT).
-       Red porque afecta TODA la red 2G del distrito (39.5K clientes), más
-       severo que COMU-5514 (CCPP específico). Single source of truth. */
-    --zone-ipt: #dc2626;
-    --zone-ipt-deep: #991b1b;
+--danger: #ef4444;
+    /* ═══ v3.9.0 SEMANTIC TOKENS — single source of truth ═══
+       CEO directive 2026-10-16: "rojo si apagado, amarillo si IPT 2G (delicado)".
+       Esta capa de tokens mantiene los nombres legacy pero AÑADE aliases
+       semánticos para que el código nuevo use la intención del color
+       (no el color crudo). Cambiar aquí propaga a TODOS los elementos.
+       ─────────────────────────────────────────────────────────────────────
+       Mapeo semántico:
+       • APAGADO CONFIRMADO (CCPP exacto en ccpp_keys)  → ROJO  (severidad alta)
+       • APAGADO IPT 2G (distrito en ipt_districts)     → AMARILLO (delicado)
+       ───────────────────────────────────────────────────────────────────── */
+     --zone-amber: #f59e0b;            /* amarillo/ámbar — IPTa 2G (delicado) */
+     --zone-amber-deep: #b45309;
+     --zone-ipt: #dc2626;               /* rojo firme — APAGADO CONFIRMADO */
+     --zone-ipt-deep: #991b1b;
+     /* v3.9.0: aliases semánticos para uso en código nuevo */
+     --zone-off:      var(--zone-ipt);          /* APAGADO confirmado → rojo */
+     --zone-off-deep: var(--zone-ipt-deep);
+     --zone-off-bg:   color-mix(in srgb, var(--zone-ipt) 8%, transparent);
+     --zone-ipt-soft: var(--zone-amber);        /* IPT 2G delicado → amarillo */
+     --zone-ipt-soft-deep: var(--zone-amber-deep);
+     --zone-ipt-soft-bg: color-mix(in srgb, var(--zone-amber) 10%, transparent);
     --soft-gray: #3a3a44;
     --on-accent: #ffffff;
 
@@ -592,71 +603,63 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* v3.8.0: COLOR ÚNICO ÁMBAR para items en zona de apagado.
-     v3.7.4 usaba var(--danger) rojo para CCPP exacto y #f59e0b ámbar
-     para distrito. CEO directive 2026-10-16: "todo lo que este en zona
-     de apagado se puede pintar en amarillo un solo color uniforme".
-     Unificamos a --zone-amber (#f59e0b) en ambos niveles. La distinción
-     entre CONFIRMADO (CCPP exacto) y POTENCIAL (distrito) se mantiene
-     en el data-attribute y el title, pero visualmente son iguales. */
+  /* ═══ v3.9.0 DROPDOWN ITEMS — 2 niveles semánticos ═══
+     CEO directive 2026-10-16: "rojo si apagado, amarillo si IPT 2G delicado".
+     Solo 2 colores marcan el texto del dropdown — sin rotación, sin pulse.
+     Regla: bg ≤ 10% para que el texto mande, no el fondo.
+     ───────────────────────────────────────────────────────────────────── */
+  /* APAGADO CONFIRMADO — CCPP exacto en ccpp_keys → ROJO */
   .ac-item.ac-item-off {
-    color: var(--zone-amber);
+    color: var(--zone-ipt);                                     /* rojo firme */
     font-weight: 700;
-    background: color-mix(in srgb, var(--zone-amber) 12%, transparent);
+    background: color-mix(in srgb, var(--zone-ipt) 8%, transparent);  /* ≤10% */
   }
   .ac-item.ac-item-off:hover,
   .ac-item.ac-item-off.active {
-    background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-3-bg));
-    color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-ipt) 18%, var(--glass-3-bg));
+    color: var(--zone-ipt-deep);
   }
-  /* v3.8.0 (FIX BUG 2): DISTRITO en districts_with_off — visual SUTIL.
-     Antes: amber text + amber background (yellow on yellow = parecía
-     active state, sin sentido). CEO directive 2026-10-16: "dejalo normal
-     solo agregale tambien el icono + nombre para que sea intuitivo si
-     el distrito tiene zonas de apagado". Ahora: texto y background
-     NORMALES (igual que items sin zona), solo el triángulo ámbar +
-     un fondo sutil ámbar para indicar visualmente que está en zona. */
-   .ac-item.ac-item-zone {
-    /* v3.8.0 (FIX 3): CEO feedback "No se diferencia las zonas de
-       apagado" — el blanco original no diferenciaba de items sin
-       zona. Ahora: texto amber-deep + fondo amber 14% para que el
-       usuario DISTINGA VISUALMENTE items en zona (ccpp_keys). */
+  /* APAGADO IPT 2G — distrito en ipt_districts → AMARILLO (delicado) */
+  /* Sin distinción visual fuerte — color secundario, bg <8%. El usuario
+     diferencia por el data-zone (ccpp_exacto/ipt_distrito) y el title nativo. */
+  .ac-item.ac-item-ipt {
     color: var(--zone-amber-deep);
-    background: color-mix(in srgb, var(--zone-amber) 14%, transparent);
+    background: color-mix(in srgb, var(--zone-amber) 8%, transparent);
+    font-weight: 600;
+  }
+  .ac-item.ac-item-ipt:hover,
+  .ac-item.ac-item-ipt.active {
+    background: color-mix(in srgb, var(--zone-amber) 16%, var(--glass-3-bg));
+    color: var(--zone-amber-deep);
+  }
+  /* v3.9.0: triángulo para AMBOS estados (off=red, ipt=amarillo).
+     El triángulo hereda color (currentColor) del padre. Tamaño único
+     6×6 — sin distinción visual entre niveles (tarea del color + data-zone). */
+  .ac-item.ac-item-off .ac-off-tri,
+  .ac-item.ac-item-ipt .ac-off-tri {
+    border-bottom-width: 6px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+  }
+  /* v3.9.0: .ac-item-zone queda como DEPRECATED pero redirige al estilo IPT
+     (district preventive = mismo nivel visual que IPT 2G) — para que código
+     legacy no rompa. Migración recomendada: usar .ac-item-ipt directamente. */
+  .ac-item.ac-item-zone {
+    color: var(--zone-amber-deep);
+    background: color-mix(in srgb, var(--zone-amber) 8%, transparent);
     font-weight: 600;
   }
   .ac-item.ac-item-zone:hover,
   .ac-item.ac-item-zone.active {
-    background: color-mix(in srgb, var(--zone-amber) 28%, var(--glass-3-bg));
+    background: color-mix(in srgb, var(--zone-amber) 16%, var(--glass-3-bg));
     color: var(--zone-amber-deep);
   }
-  /* v3.8.0: triángulo sutil para distrito en zona — ámbar pero más
-     pequeño que el de CCPP (que es 8px). El distrito es "potencial",
-     el CCPP es "confirmado" — el tamaño comunica el nivel de certeza. */
   .ac-item.ac-item-zone .ac-off-tri {
     border-bottom-width: 6px;
     border-left-width: 4px;
     border-right-width: 4px;
   }
-  /* v3.8.0: DISTRITO en ipt_districts (COMU-5672) — ROJO. Color más
-     intenso que .ac-item-zone (amber) porque ipt afecta TODA la red
-     2G del distrito (severidad mayor que ccpp_keys preventivo). */
-  .ac-item.ac-item-ipt {
-    color: var(--zone-ipt-deep);
-    background: color-mix(in srgb, var(--zone-ipt) 14%, transparent);
-    font-weight: 600;
-  }
-  .ac-item.ac-item-ipt:hover,
-  .ac-item.ac-item-ipt.active {
-    background: color-mix(in srgb, var(--zone-ipt) 28%, var(--glass-3-bg));
-    color: var(--zone-ipt-deep);
-  }
-  .ac-item.ac-item-ipt .ac-off-tri {
-    border-bottom-color: currentColor;
-    border-bottom-width: 7px;  /* intermedio entre CCPP (8) y zone (6) */
-    border-left-width: 4.5px;
-    border-right-width: 4.5px;
-  }
+  /* (v3.9.0: legacy ipt block eliminado — reglas consolidadas arriba) */
 
   .ac-item mark {
     background: color-mix(in srgb, var(--accent) 30%, transparent);
@@ -757,89 +760,91 @@
      dos clases + elemento) gana sobre .filled (una clase + elemento).
      El supervisor UBICA inmediatamente si el caserío está en zona
      de apagado. */
-  /* v3.8.0: COLOR ÚNICO ÁMBAR para inputs en zona de apagado.
-     ccpp-off-confirmed (CCPP exacto) ahora usa --zone-amber en vez de
-     var(--danger) rojo. ccpp-off-ipt y dist-off-warn ya usaban ámbar.
-     Unificación: las 3 clases usan --zone-amber / --zone-amber-deep. */
+  /* ═══ v3.9.0 INPUTS ZONA APAGADO — coherencia con dropdown items ═══
+     CEO directive 2026-10-16: "rojo si apagado, amarillo si IPT 2G (delicado)".
+     • ccpp-off-confirmed (CCPP exacto en ccpp_keys)  → ROJO  (apagado confirmado)
+     • ccpp-off-ipt / dist-off-warn / dist-ipt-warn / ccpp-ipt-warn → AMARILLO
+       (todos los niveles "preventivos" o "IPT district-level" comparten el
+        mismo amarillo delicado). */
   .field input.ccpp-off-confirmed,
   .field input.ccpp-off-confirmed.filled {
-    border-color: var(--zone-amber);
-    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
-    color: var(--zone-amber-deep);
+    /* v3.9.0: ROJO confirmado — semánticamente "este CCPP está apagado". */
+    border-color: var(--zone-ipt);
+    background: color-mix(in srgb, var(--zone-ipt) 14%, var(--glass-1-bg));
+    color: var(--zone-ipt-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 16%, transparent);
     text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-    /* v3.7.7: text-transform explícito (CEO L-060). Aunque .field input tiene
-       text-transform: uppercase, algunas clases dinámicas podrían pisar. Esta
-       regla DEFENSIVA garantiza MAYÚSCULAS en el input CCPP. */
     text-transform: uppercase;
   }
   .field input.ccpp-off-confirmed:hover:not(:focus),
   .field input.ccpp-off-confirmed.filled:hover:not(:focus) {
-    background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
   }
   .field input.ccpp-off-ipt,
   .field input.ccpp-off-ipt.filled {
+    /* v3.9.0: AMARILLO — nivel IPT 2G (delicado) */
     border-color: var(--zone-amber);
-    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
     color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
-    /* v3.7.7: text-transform explícito (CEO L-060). */
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
     text-transform: uppercase;
   }
   .field input.ccpp-off-ipt:hover:not(:focus),
   .field input.ccpp-off-ipt.filled:hover:not(:focus) {
-    background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 20%, var(--glass-1-bg));
   }
-  /* v3.7.9 / v3.8.0: DISTRITO en districts_with_off pinta el input ÁMBAR
-     (afectación POTENCIAL). Unificado a --zone-amber. */
+  /* v3.9.0: DISTRITO en districts_with_off pinta el input AMARILLO
+     (afectación POTENCIAL — mismo nivel que IPT 2G). */
   .field input.dist-off-warn,
   .field input.dist-off-warn.filled {
     border-color: var(--zone-amber);
-    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
     color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
     text-transform: uppercase;
   }
   .field input.dist-off-warn:hover:not(:focus),
   .field input.dist-off-warn.filled:hover:not(:focus) {
-    background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 20%, var(--glass-1-bg));
   }
   /* v3.8.0: DISTRITO en ipt_districts (COMU-5672) pinta el input ROJO.
      Más severo que el ámbar preventive porque afecta TODA la red 2G
      del distrito rural (39.5K clientes). El speech cambia a ipt_visor_4g
      o ipt_visor_sin_4g según el equipo del cliente. */
+  /* v3.9.0: DISTRITO en ipt_districts pinta el input AMARILLO (no rojo).
+     Cambio semántico per CEO directive: rojo reservado para apagado CONFIRMADO.
+     El distrito-en-IPT es nivel "delicado" (mismo que ccpp-off-ipt). */
   .field input.dist-ipt-warn,
   .field input.dist-ipt-warn.filled {
-    border-color: var(--zone-ipt);
-    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
-    color: var(--zone-ipt-deep);
+    border-color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
+    color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
     text-transform: uppercase;
   }
   .field input.dist-ipt-warn:hover:not(:focus),
   .field input.dist-ipt-warn.filled:hover:not(:focus) {
-    background: color-mix(in srgb, var(--zone-ipt) 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 20%, var(--glass-1-bg));
   }
-  /* v3.8.0: CCPP en ipt_districts (sin match exacto en ccpp_keys) — RED.
-     El distrito está en COMU-5672 (red 2G apagada), pero el CCPP
-     específico no está listado. El agente sabe que el distrito es
-     IPT y debe verificar 4G del cliente. */
+  /* v3.9.0: CCPP en ipt_districts (sin match exacto en ccpp_keys) → AMARILLO.
+     El distrito es IPT pero el CCPP específico NO está confirmado como apagado.
+     El supervisor sabe "verificar 4G del cliente en este CCPP". */
   .field input.ccpp-ipt-warn,
   .field input.ccpp-ipt-warn.filled {
-    border-color: var(--zone-ipt);
-    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
-    color: var(--zone-ipt-deep);
+    border-color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
+    color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
     text-transform: uppercase;
   }
   .field input.ccpp-ipt-warn:hover:not(:focus),
   .field input.ccpp-ipt-warn.filled:hover:not(:focus) {
-    background: color-mix(in srgb, var(--zone-ipt) 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 20%, var(--glass-1-bg));
   }
   .field input[aria-invalid="true"], .field textarea[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--danger) 85%, transparent);
@@ -2323,43 +2328,58 @@
   /* v2.1.4: .cobertura-btn-label ELIMINADO (botón icon-only).
      El label se preserva solo como aria-label + title en el HTML
      para accesibilidad WCAG (lectores de pantalla anuncian el botón). */
-  /* v3.8.0: COLOR ÚNICO ÁMBAR para coberturaBtn "affected" (unifica off + warn).
-     v2.0.8 usaba 2 estados con colores distintos (rojo para ccpp exacto,
-     ámbar para distrito). CEO directive 2026-10-16: "todo lo que este en
-     zona de apagado se puede pintar en amarillo un solo color uniforme
-     incluido el boton de alerta". Ahora .off y .warn son visualmente
-     IGUALES (ámbar) — la diferencia entre CCPP exacto y distrito se
-     mantiene solo en el title (tooltip nativo) y el aria-label. */
-  .cobertura-btn.off,
-  .cobertura-btn.warn {
-    background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-2-bg));
+/* v3.9.0: COBERTURA BTN — coherente con dropdown items
+     CEO directive 2026-10-16: "rojo si apagado, amarillo si IPT 2G".
+     • .off  = CCPP exacto CONFIRMADO → ROJO (pulseDanger)
+     • .warn = distrito preventivo    → AMARILLO (pulseWarn)
+     • .ipt  = distrito IPT 2G         → AMARILLO (pulseWarn, mismo nivel que warn)
+     Diferencia entre CCPP confirmado vs IPT 2G se mantiene solo en:
+       (a) color del icono (rojo vs amarillo)
+       (b) title nativo del botón
+       (c) aria-label
+     (sin pulse sincrónico — el pulse comunica "atención", no "severidad"). */
+   .cobertura-btn.off {
+    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-2-bg));
+    border-color: var(--zone-ipt);
+    color: var(--zone-ipt);
+    animation: pulseDanger 2.8s var(--motion-ease) infinite;
+  }
+   .cobertura-btn.off:hover,
+   .cobertura-btn.off:focus-visible {
+    background: color-mix(in srgb, var(--zone-ipt) 34%, var(--glass-2-bg));
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--zone-ipt) 26%, transparent),
+      var(--ring-hairline);
+  }
+  /* .warn = preventive district (still amarillo, mismo nivel que .ipt) */
+   .cobertura-btn.warn {
+    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-2-bg));
     border-color: var(--zone-amber);
     color: var(--zone-amber);
     animation: pulseWarn 2.8s var(--motion-ease) infinite;
   }
-  .cobertura-btn.off:hover,
-  .cobertura-btn.off:focus-visible,
-  .cobertura-btn.warn:hover,
-  .cobertura-btn.warn:focus-visible {
-    background: color-mix(in srgb, var(--zone-amber) 36%, var(--glass-2-bg));
+   .cobertura-btn.warn:hover,
+   .cobertura-btn.warn:focus-visible {
+    background: color-mix(in srgb, var(--zone-amber) 34%, var(--glass-2-bg));
     box-shadow:
-      0 0 0 3px color-mix(in srgb, var(--zone-amber) 28%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--zone-amber) 26%, transparent),
       var(--ring-hairline);
   }
-  /* v3.8.0: coberturaBtn en ipt_distrito (COMU-5672) — ROJO.
-     Más severo que COMU-5514 (toda la red 2G rural apagada).
-     Usa pulseDanger (más intenso que pulseWarn) para comunicar urgencia. */
-  .cobertura-btn.ipt {
-    background: color-mix(in srgb, var(--zone-ipt) 24%, var(--glass-2-bg));
-    border-color: var(--zone-ipt);
-    color: var(--zone-ipt);
-    animation: pulseDanger 2.4s var(--motion-ease) infinite;
+  /* v3.9.0: .ipt = distrito IPT 2G → AMARILLO (delicado)
+     Antes (v3.8.0) usaba ROJO — invertido per CEO directive.
+     El distrito-en-IPT no es "apagado confirmado" — es "afectación potencial
+     de toda la red 2G rural". Mismo amarillo que .warn. */
+   .cobertura-btn.ipt {
+    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-2-bg));
+    border-color: var(--zone-amber);
+    color: var(--zone-amber);
+    animation: pulseWarn 2.8s var(--motion-ease) infinite;
   }
-  .cobertura-btn.ipt:hover,
-  .cobertura-btn.ipt:focus-visible {
-    background: color-mix(in srgb, var(--zone-ipt) 36%, var(--glass-2-bg));
+   .cobertura-btn.ipt:hover,
+   .cobertura-btn.ipt:focus-visible {
+    background: color-mix(in srgb, var(--zone-amber) 34%, var(--glass-2-bg));
     box-shadow:
-      0 0 0 3px color-mix(in srgb, var(--zone-ipt) 28%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--zone-amber) 26%, transparent),
       var(--ring-hairline);
   }
   .cobertura-btn:focus-visible {
@@ -2398,6 +2418,80 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .cobertura-btn.off { animation: none; }
+  }
+  /* ═══ v3.9.0 FEEDBACK CLICK — siempre respuesta (CEO directive) ═══
+     El botón ⚠️ responde a TODOS los clicks (no más "no muestra nada"):
+     • Sin alerta    → micro-shake (240ms × 4 oscilaciones)
+     • Con alerta    → pulse verde "just-copied" (1100ms × 1 ciclo)
+     • Toast inline  → mensaje que se desvanece (2.2s, fade 320ms)
+     Diseño: feedback VISUAL sin tocar color/bg del estado base. */
+  .cobertura-btn.cima-shake {
+    animation: cimaShake 0.28s ease !important;
+  }
+  @keyframes cimaShake {
+    0%, 100% { transform: translateX(0); }
+    15%      { transform: translateX(-3px); }
+    40%      { transform: translateX(3px); }
+    65%      { transform: translateX(-2px); }
+    85%      { transform: translateX(2px); }
+  }
+  .cobertura-btn.cima-btn--just-copied {
+    background: color-mix(in srgb, var(--green) 32%, var(--glass-2-bg)) !important;
+    border-color: var(--green) !important;
+    color: var(--green) !important;
+    animation: pulseCopied 0.5s ease !important;
+  }
+  @keyframes pulseCopied {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  /* Toast inline anclado al botón ⚠️ (portal pattern, position:fixed) */
+  .cima-toast {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    pointer-events: none;
+    animation: cimaToastIn 0.22s var(--motion-ease);
+    max-width: 220px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .cima-toast--warn {
+    background: color-mix(in srgb, var(--zone-amber) 14%, rgba(255,255,255,0.92));
+    color: var(--zone-amber-deep);
+    border-color: color-mix(in srgb, var(--zone-amber) 38%, transparent);
+  }
+  .cima-toast--ok {
+    background: color-mix(in srgb, var(--green) 14%, rgba(255,255,255,0.92));
+    color: #065f46;
+    border-color: color-mix(in srgb, var(--green) 40%, transparent);
+  }
+  .cima-toast--info {
+    background: color-mix(in srgb, var(--accent) 14%, rgba(255,255,255,0.92));
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  }
+  .cima-toast--fade {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.32s var(--motion-ease), transform 0.32s var(--motion-ease);
+  }
+  @keyframes cimaToastIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cobertura-btn.cima-shake,
+    .cobertura-btn.cima-btn--just-copied,
+    .cima-toast { animation: none !important; transition: opacity 0.3s ease !important; }
   }
   /* v2.1.3 CRIT-009: feedback inline SUTIL cuando output está vacío.
      SOLO micro-shake (translateX ±2px × 2 oscilaciones, 240ms).
@@ -4335,6 +4429,11 @@ function showApagadoTooltip(btn, currentCheck, addrCtx) {
     .replace(/\[a[n\u00f1]o\]|\[yyyy\]/gi, f.anio);
   speechFilled = speechFilled.replace(/\[[^\]]+\]/g, '—');
 
+  // v3.9.0: exponer el speech resuelto como dataset del botón.
+  // El nuevo onClickCobertura lo usa para copiar al clipboard automáticamente
+  // sin necesidad de abrir el panel. El panel sigue mostrándolo visualmente.
+  if (btn && btn.dataset) btn.dataset.lastSpeech = speechFilled;
+
   // Fecha corta
   var fechaCorta = '';
   if (fechaApagadoIso) {
@@ -4476,30 +4575,132 @@ function escapeHtmlZa(s) {
   });
 }
 
-// ─── 9. LISTENER PRINCIPAL: click en ⚠️ ───
+// ─── 9. LISTENER PRINCIPAL: click en ⚠️ (v3.9.0 always-functional) ───
 (function() {
+  // Helper local: shake animation (CSS class)
+  function shakeBtn(btn, ms) {
+    if (!btn) return;
+    btn.classList.add('cima-shake');
+    if (typeof announce === 'function') {
+      var prev = btn.getAttribute('aria-label') || '';
+      btn.setAttribute('aria-label', prev); // no-op (placeholder)
+    }
+    setTimeout(function() { btn.classList.remove('cima-shake'); }, ms || 220);
+  }
+
+  // Helper local: toast inline anclado al botón (posición adyacente)
+  function showToast(btn, msg, kind) {
+    // Limpiar toast anterior
+    var existing = document.getElementById('cimaZoneToast');
+    if (existing) existing.remove();
+
+    var toast = document.createElement('div');
+    toast.id = 'cimaZoneToast';
+    toast.className = 'cima-toast cima-toast--' + (kind || 'info');
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.textContent = msg || '';
+
+    if (btn) {
+      var rect = btn.getBoundingClientRect();
+      // Portal pattern: position:fixed + coords desde el botón
+      toast.style.position = 'fixed';
+      toast.style.left = (rect.left - 160) + 'px';
+      toast.style.top = (rect.top - 28 + window.scrollY) + 'px';
+      toast.style.zIndex = '99999';
+    }
+
+    document.body.appendChild(toast);
+
+    // Auto-dismiss a los 2.2s con fade-out
+    setTimeout(function() {
+      toast.classList.add('cima-toast--fade');
+      setTimeout(function() { toast.remove(); }, 320);
+    }, 2200);
+  }
+
   function onClickCobertura(evt) {
     evt.preventDefault();
+    var btn = this;
     var dep = upper('departamento');
     var prov = upper('provincia');
     var dist = upper('distrito');
     var ccpp_el = $('ccpp');
     var ccpp_val = ccpp_el ? (ccpp_el.value || '').trim() : '';
-    // v3.8.0 (FIX 3): CEO directive "si en el distrito entero se apago
-    // el 2G el boton de zona de apagado debe funcionar". IPT requiere
-    // solo 3 campos (depto+prov+dist), no 4. CCPP exacto sigue
-    // requiriendo los 4.
-    if (!dep || !prov || !dist) return; // al menos 3 campos
+
+    // v3.9.0 REWRITE — siempre responde al click (CEO feedback "no muestra nada")
+    // Tres estados mutuamente exclusivos:
+    //   (A) campos mínimos no seleccionados → shake + toast "Selecciona…"
+    //   (B) hay alerta (chk !== null)         → abrir panel + copiar speech
+    //   (C) no hay alerta para esta dirección → shake + toast "Sin alerta…"
+
+    // ─── (A) datos incompletos ───
+    if (!dep || !prov || !dist) {
+      shakeBtn(btn, 240);
+      showToast(btn, 'Selecciona depto + provincia + distrito', 'warn');
+      return;
+    }
+
     var chk = checkZonaApagada(dep, prov, dist, ccpp_val);
-    if (chk && (this.classList.contains('off') || this.classList.contains('warn') || this.classList.contains('ipt'))) {
-      showApagadoTooltip(this, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
+
+    // ─── (C) sin alerta en esta dirección ───
+    if (!chk) {
+      shakeBtn(btn, 220);
+      showToast(btn, 'Sin alerta de apagado en esta dirección', 'ok');
+      return;
+    }
+
+    // ─── (B) HAY alerta: abrir panel + copiar ───
+    // El panel (showApagadoTooltip) ya computa el speech final con fechas
+    // resueltas y lo almacena en btn.dataset.lastSpeech. Si no, lo extraemos.
+    showApagadoTooltip(btn, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
+
+    // v3.9.0: copiar el speech final al clipboard inmediatamente
+    // (doble utilidad: panel visual + clipboard disponible para pegado)
+    var speechText = btn.dataset && btn.dataset.lastSpeech;
+    if (!speechText || !speechText.trim()) {
+      // fallback: speech del objeto chk si el panel no lo proveyó
+      speechText = chk.mensaje || '';
+    }
+    if (speechText && speechText.trim() && typeof copyText === 'function') {
+      try {
+        copyText(speechText, btn);
+      } catch (e) {
+        // copyText puede fallar en file://; no rompemos el flujo
+        console.warn('[CIMA v3.9.0] copyText falló:', e);
+      }
+    }
+    // Pulse verde breve para confirmar la copia (independiente del pulse del estado)
+    btn.classList.add('cima-btn--just-copied');
+    setTimeout(function() { btn.classList.remove('cima-btn--just-copied'); }, 1100);
+  }
+
+  // Init: registrar listener una sola vez al cargar DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('coberturaBtn');
+      if (!btn) return;
+      btn.addEventListener('click', onClickCobertura);
+      // v3.9.0: añadir soporte de teclado (Enter / Space) para accesibilidad WCAG
+      btn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClickCobertura.call(btn, e);
+        }
+      });
+    });
+  } else {
+    var btn = document.getElementById('coberturaBtn');
+    if (btn) {
+      btn.addEventListener('click', onClickCobertura);
+      btn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClickCobertura.call(btn, e);
+        }
+      });
     }
   }
-  document.addEventListener('DOMContentLoaded', function() {
-    var btn = document.getElementById('coberturaBtn');
-    if (!btn) return;
-    btn.addEventListener('click', onClickCobertura);
-  });
 })();
 
 // ─── 10. EXPORTAR al scope global para uso en render dropdown / listeners legacy ───

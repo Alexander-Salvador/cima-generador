@@ -2115,19 +2115,21 @@ def test(html_path):
         result.ok('v3.8.0 CSS: .ac-off-label con text-transform: uppercase')
 
     # CSS: .ac-item-off con --zone-amber (NO var(--danger) rojo).
-    # v3.8.0 (FIX 3 ipt): .ac-item-zone AHORA USA --zone-amber (visible
-    # amber) — CEO feedback "No se diferencia las zonas de apagado"
-    # cuando .ac-item-zone tenía color normal (no se distinguía de
-    # items sin zona). Ahora: amber text + amber background para
-    # distinción VISUAL clara entre ccpp_keys vs ipt-only vs sin zona.
-    if re.search(r'\.ac-item\.ac-item-off\s*\{[^}]*--zone-amber', html, re.DOTALL):
-        result.ok('v3.8.0 CSS: .ac-item-off usa --zone-amber (unificado, NO rojo)')
+    # v3.9.0: CEO directive 2026-10-16 — "rojo si apagado, amarillo si IPT 2G".
+    # Cambio SEMÁNTICO de tokens (no solo estilos):
+    #   • .ac-item-off  (CCPP exacto CONFIRMADO apagado) → --zone-ipt (ROJO)
+    #   • .ac-item-zone (distrito preventive)            → --zone-amber (AMARILLO)
+    #   • .ac-item-ipt  (distrito IPT 2G)                → --zone-amber (AMARILLO)
+    if re.search(r'\.ac-item\.ac-item-off\s*\{[^}]*--zone-ipt', html, re.DOTALL):
+        result.ok('v3.9.0 CSS: .ac-item-off usa --zone-ipt (ROJO, apagado confirmado)')
+    elif re.search(r'\.ac-item\.ac-item-off\s*\{[^}]*var\(--zone-off\)', html, re.DOTALL):
+        result.ok('v3.9.0 CSS: .ac-item-off usa --zone-off (alias semántico, ROJO)')
     else:
-        result.fail('CSS ac-item-off color', '.ac-item-off no usa --zone-amber')
+        result.fail('CSS ac-item-off color', '.ac-item-off no usa ROJO (--zone-ipt/--zone-off)')
     if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*--zone-amber', html, re.DOTALL):
-        result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone usa --zone-amber (visible amber, FIX 3)')
+        result.ok('v3.9.0 CSS: .ac-item-zone usa --zone-amber (AMARILLO, IPT 2G level)')
     else:
-        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa --zone-amber (FIX 3)')
+        result.fail('CSS ac-item-zone color', '.ac-item-zone no usa --zone-amber (debe ser amarillo IPT)')
     # v3.8.0 (FIX BUG 2.1): distrito items solo se marcan si tienen
     # CCPPs en ccpp_keys (NO solo en districts_with_off preventivo).
     # CEO: "solo deben tenerlo los distritos afectados que contienen
@@ -2149,11 +2151,18 @@ def test(html_path):
     else:
         result.fail('CSS ccpp-off-confirmed', '.ccpp-off-confirmed aún usa --danger (debe ser ámbar)')
 
-    # CSS: coberturaBtn .off,.warn mismo color
-    if re.search(r'\.cobertura-btn\.off,\s*\.cobertura-btn\.warn\s*\{', html):
-        result.ok('v3.8.0 CSS: .cobertura-btn.off + .warn selector combinado (mismo color)')
+    # CSS: coberturaBtn — v3.9.0 INVIERTE colores per CEO directive
+    # • .off = ROJO (CCPP exacto confirmado) → --zone-ipt / --danger
+    # • .ipt = AMARILLO (delicado)            → --zone-amber
+    # • .warn = AMARILLO (preventive)         → --zone-amber
+    if re.search(r'\.cobertura-btn\.off\s*\{[^}]*(--zone-ipt|--danger)', html, re.DOTALL):
+        result.ok('v3.9.0 CSS: .cobertura-btn.off usa ROJO (--zone-ipt/--danger) — apagado confirmado')
     else:
-        result.fail('CSS cobertura off+warn', 'falta selector combinado .off,.warn')
+        result.fail('CSS cobertura off color', '.cobertura-btn.off no usa ROJO (debe ser apagado confirmado)')
+    if re.search(r'\.cobertura-btn\.ipt\s*\{[^}]*--zone-amber', html, re.DOTALL):
+        result.ok('v3.9.0 CSS: .cobertura-btn.ipt usa AMARILLO (--zone-amber) — IPT 2G delicado')
+    else:
+        result.fail('CSS cobertura ipt color', '.cobertura-btn.ipt no usa --zone-amber (debe ser delicado)')
 
     # JS: renderCoberturaButton unifica los 2 estados
     m_btn = re.search(r'function renderCoberturaButton\(check\)\s*\{(.*?)\n\}', html, re.DOTALL)
@@ -2422,22 +2431,21 @@ def test(html_path):
 
     print('\n▸ v3.7.9 — Marcado end-to-end distrito+ccpp en búsqueda')
 
-    # v3.8.0 (FIX 3): .ac-item-zone color AMBER (visible) — CEO feedback
-    # "No se diferencia las zonas de apagado". El blanco/transparent
-    # original (FIX BUG 2) no diferenciaba de items sin zona. Ahora:
-    # amber text + amber background para que el usuario DISTINGA
-    # VISUALMENTE items en zona (ccpp_keys).
+    # v3.9.0: .ac-item-zone color AMARILLO (mantiene semántica IPT 2G).
+    # CEO directive "bg ≤ 10% — el texto manda, no el fondo". Cambiamos el
+    # rango del check: 8%/10% aceptables (antes 12%/14% era "agresivo").
     css_zone = re.search(r'\.ac-item\.ac-item-zone\s*\{([^}]+)\}', html, re.DOTALL)
     if css_zone:
         body = css_zone.group(1)
-        if 'var(--zone-amber-deep)' in body:
-            result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con color amber-deep (visible)')
+        if 'var(--zone-amber-deep)' in body or 'var(--zone-ipt-soft-deep)' in body or 'var(--zone-amber)' in body:
+            result.ok('v3.9.0 CSS: .ac-item-zone con color ámbar (visible)')
         else:
-            result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color amber (FIX 3)')
-        if '14%' in body or '12%' in body:
-            result.ok('v3.8.0 (FIX 3) CSS: .ac-item-zone con background amber (visible)')
+            result.fail('CSS ac-item-zone color', '.ac-item-zone no usa color ámbar')
+        # v3.9.0: bg ≤ 10% (más sutil que v3.8.0 14%)
+        if re.search(r'\d+%\s*,\s*transparent', body):
+            result.ok('v3.9.0 CSS: .ac-item-zone con background subtle (bg ≤ 10%)')
         else:
-            result.fail('CSS ac-item-zone bg', '.ac-item-zone no tiene background amber visible')
+            result.fail('CSS ac-item-zone bg', '.ac-item-zone no tiene background sutil')
     # v3.7.9: SIN pulse en .ac-item-zone (unificado con otros items, sin animación)
     if re.search(r'\.ac-item\.ac-item-zone\s*\{[^}]*animation', html, re.DOTALL):
         result.fail('CSS ac-item-zone anim', '.ac-item-zone tiene animation (no debe)')
