@@ -587,18 +587,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .ac-item .ac-off-label {
-    flex: 0 0 auto;
-    margin-left: 6px;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 8.5px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    background: color-mix(in srgb, currentColor 18%, transparent);
-    color: inherit;
-    text-transform: uppercase;
-  }
   /* v3.8.0: COLOR ÚNICO ÁMBAR para items en zona de apagado.
      v3.7.4 usaba var(--danger) rojo para CCPP exacto y #f59e0b ámbar
      para distrito. CEO directive 2026-10-16: "todo lo que este en zona
@@ -5043,13 +5031,13 @@ function acRender(key) {
     var cls = 'ac-item';
     var indicatorHtml = '';
     if (off) {
-      // v3.8.0: TRIANGULO + LABEL "APAGADO" para CCPP exacto (avería CONFIRMADA).
-      // El triángulo comunica "advertencia" + el label identifica el item como
-      // zona de apagado Movistar. Color hereda del padre (.ac-item-off = ámbar).
+      // v3.8.0: TRIANGULO + ZONA (solo icono + nombre). CEO directive
+      // 2026-10-16: "le quitaremos el texto APAGADO solo sera ICONO + ZONA".
+      // El triángulo comunica "advertencia/avería" + el nombre del CCPP.
+      // Sin label inline "APAGADO" — el title nativo lleva la metadata.
       cls += ' ac-item-off';
       indicatorHtml = '<span class="ac-off-tri" aria-hidden="true"></span>'
-                    + '<span class="ac-off-text">' + acEscape(item) + '</span>'
-                    + '<span class="ac-off-label" title="Centro poblado exacto en zona de apagado Movistar">APAGADO</span>';
+                    + '<span class="ac-off-text">' + acEscape(item) + '</span>';
       return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="ccpp_exacto" title="' + acEscape(item) + ' — zona de apagado Movistar">' + indicatorHtml + '</div>';
     } else if (zone) {
       // v3.8.0 (FIX): distrito en zona potencial. SOLO color ámbar + nombre

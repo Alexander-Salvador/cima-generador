@@ -2142,13 +2142,19 @@ def test(html_path):
     else:
         result.fail('JS renderCoberturaButton labels', 'labels CCPP/distrito no presentes')
 
-    # JS: acRender emite triángulo + label para items ccpp apagados
+    # JS: acRender emite triángulo para items ccpp apagados (sin label inline)
+    # v3.8.0 (FIX 2): CEO removió el texto "APAGADO" — solo ICONO + ZONA
     m_render = re.search(r'function acRender\(key\)\s*\{(.*?)\nfunction', html, re.DOTALL)
     if m_render:
-        if 'ac-off-tri' in m_render.group(1) and 'ac-off-label' in m_render.group(1):
-            result.ok('v3.8.0 JS: acRender emite triángulo + label para items ccpp apagados')
+        if 'ac-off-tri' in m_render.group(1):
+            result.ok('v3.8.0 JS: acRender emite triángulo para items ccpp apagados (icono solo)')
         else:
-            result.fail('JS acRender triangle', 'acRender no emite triángulo/label')
+            result.fail('JS acRender triangle', 'acRender no emite triángulo')
+        # Verificar que NO emite el label "APAGADO" inline (CEO directive)
+        if '>APAGADO</span>' not in m_render.group(1):
+            result.ok('v3.8.0 JS: NO label "APAGADO" inline (CEO: solo ICONO + ZONA)')
+        else:
+            result.fail('JS APAGADO label', 'label "APAGADO" aún presente en render')
         if 'data-zone="ccpp_exacto"' in m_render.group(1) and 'data-zone="distrito_of"' in m_render.group(1):
             result.ok('v3.8.0 JS: data-zone attributes (ccpp_exacto / distrito_of)')
 
