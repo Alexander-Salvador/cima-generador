@@ -1651,9 +1651,12 @@ def test(html_path):
     else:
         result.fail('BUG 4 copy fn', 'falta copyApagadoTooltipSpeech')
 
-    # Compatibilidad: checkZonaApagada + click handler BUG 2 (v3.5.1) siguen presentes
-    if 'BUG 1 fix: alternar' not in html or 'BUG 2 fix' not in html:
-        result.fail('regresión v3.5.1', 'algun fix v3.5.1 se perdió')
+    # v3.9.0: BUG 1 fix preservado en renderCoberturaButton; BUG 2 fix consolidado
+    # en el nuevo onClickCobertura (siempre responde con shake + toast o panel).
+    if 'BUG 1 fix: alternar' not in html:
+        result.fail('regresión v3.5.2 BUG 1', 'BUG 1 fix (alternar idle vs off/warn/ipt) perdido')
+    if 'onClickCobertura' not in html or 'cima-shake' not in html:
+        result.fail('regresión v3.9.0', 'nuevo onClickCobertura o feedback shake perdido')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.5.3 — MARCADO VISUAL ROJO CCPP DROPDOWN (CEO directive 2026-10-15 21:30)

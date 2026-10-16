@@ -2859,56 +2859,52 @@ font-size: 10px;
     /* v3.7.1: items de dropdown hereda de la sección principal (líneas 555-585)
        para mantener UN SOLO source of truth entre popup mode y main mode. */
 
-    /* v3.8.0: COLOR ÚNICO ÁMBAR (popup mode) — unificado a --zone-amber. */
+    /* ═══ v3.9.0 INPUTS POPUP MODE — coherencia con spec semántica ═══
+       (Estas reglas duplicaban las del main mode con mapeo v3.8.0 invertido.
+        Ahora consolidado a la spec CEO: rojo=apagado, amarillo=IPT 2G.) */
     .field input.ccpp-off-confirmed,
     .field input.ccpp-off-confirmed.filled {
-      border-color: var(--zone-amber);
-      background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
-      color: var(--zone-amber-deep);
+      border-color: var(--zone-ipt);                    /* ROJO confirmado */
+      background: color-mix(in srgb, var(--zone-ipt) 14%, var(--glass-1-bg));
+      color: var(--zone-ipt-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
-      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-      /* v3.7.7: text-transform explícito (CEO L-060). */
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 16%, transparent);
       text-transform: uppercase;
     }
     .field input.ccpp-off-ipt,
     .field input.ccpp-off-ipt.filled {
-      border-color: var(--zone-amber);
-      background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+      border-color: var(--zone-amber);                  /* AMARILLO IPT 2G */
+      background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
       color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
-      /* v3.7.7: text-transform explícito (CEO L-060). */
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
       text-transform: uppercase;
     }
-    /* v3.8.0: DISTRITO en districts_with_off (popup mode) — --zone-amber. */
     .field input.dist-off-warn,
     .field input.dist-off-warn.filled {
-      border-color: var(--zone-amber);
-      background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+      border-color: var(--zone-amber);                  /* AMARILLO preventive */
+      background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
       color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
       text-transform: uppercase;
     }
-    /* v3.8.0: DISTRITO en ipt_districts (popup mode) — --zone-ipt RED. */
     .field input.dist-ipt-warn,
     .field input.dist-ipt-warn.filled {
-      border-color: var(--zone-ipt);
-      background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
-      color: var(--zone-ipt-deep);
+      border-color: var(--zone-amber);                  /* AMARILLO IPT 2G */
+      background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
+      color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
       text-transform: uppercase;
     }
-    /* v3.8.0: CCPP en ipt_districts (popup mode) — --zone-ipt RED. */
     .field input.ccpp-ipt-warn,
     .field input.ccpp-ipt-warn.filled {
-      border-color: var(--zone-ipt);
-      background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-1-bg));
-      color: var(--zone-ipt-deep);
+      border-color: var(--zone-amber);                  /* AMARILLO */
+      background: color-mix(in srgb, var(--zone-amber) 12%, var(--glass-1-bg));
+      color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-ipt) 24%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 14%, transparent);
       text-transform: uppercase;
     }
 
@@ -5066,32 +5062,10 @@ function formatDateES(iso) {
   return parseInt(m[3],10) + ' de ' + meses[parseInt(m[2],10)-1] + ' de ' + m[1];
 }
 
-// Hook (v3.5.1 BUG 2 fix): click en ⚠️ SOLO abre popover si los 4 campos
-//   están completos (depto+prov+dist+ccpp). Antes: abierto siempre. Ahora: silencioso
-//   cuando la ruta es incompleta, conservando el warning visual del botón.
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.getElementById('coberturaBtn');
-  if (!btn) return;
-  btn.addEventListener('click', function(evt) {
-    evt.preventDefault();
-    var dep = upper('departamento');
-    var prov = upper('provincia');
-    var dist = upper('distrito');
-    var ccpp_el = document.getElementById('ccpp');
-    var ccpp_val = ccpp_el ? (ccpp_el.value || '').trim() : '';
-    // v3.8.0 (FIX 3): CEO "si en el distrito entero se apago el 2G
-    // el boton de zona de apagado debe funcionar". IPT requiere solo
-    // 3 campos (depto+prov+dist), no 4. CCPP exacto sigue requiriendo
-    // los 4.
-    if (!dep || !prov || !dist) {
-      return;  // sin popover — al menos 3 campos requeridos
-    }
-    var chk = checkZonaApagada(dep, prov, dist, ccpp_val);
-    if (chk && (btn.classList.contains('off') || btn.classList.contains('warn') || btn.classList.contains('ipt'))) {
-      showApagadoTooltip(btn, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
-    }
-  });
-});
+// (v3.9.0: handler obsoleto eliminado — consolidado en el nuevo onClickCobertura
+//  registrado antes en el script. Esta versión legacy causaba que el botón no
+//  respondiera a clicks cuando faltaban datos o no había alerta — el nuevo
+//  siempre responde con shake + toast o panel + copia.)
 
 
 // COBERTURA BUTTON (v2.0.8) — 3 estados según nivel de alerta
