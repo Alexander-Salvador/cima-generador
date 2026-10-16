@@ -1681,32 +1681,72 @@ def test(html_path):
         else:
             result.fail('CSS pulse', 'falta animation pulse')
 
-    # CSS .ac-item-off-ipt nuevo (para IPT — distrito entero apagado)
-    if '.ac-item.ac-item-off-ipt' in html:
-        result.ok('v3.5.3 CSS: regla .ac-item.ac-item-off-ipt para IPT presente')
-    else:
-        result.fail('CSS off-ipt', 'falta regla .ac-item-off-ipt')
+    # CSS .ac-item-off-ipt (naranja fuerte) — REMOVIDO en v3.5.4 (descontaminación)
+    # (test obsoleto eliminado)
     if '@keyframes apagadoPulse' in html:
         result.ok('v3.5.3 CSS: @keyframes apagadoPulse presente')
     else:
         result.fail('CSS keyframes', 'falta @keyframes apagadoPulse')
 
-    # JS: marcar offIpt (buscar contexto más amplio)
+    # JS: marcar iptHint sutil (buscar contexto más amplio)
     js_render_match = re.search(r"var d6ForMark = null;.*?\}\)\.join", html, re.DOTALL)
     if js_render_match:
         body = js_render_match.group(0)
         if 'districts_with_off.has(d6ForMark)' in body:
-            result.ok('v3.5.3 JS: offIpt marcado con districts_with_off (IPT)')
+            result.ok('v3.5.3 JS: distritoEnApagado vía districts_with_off (IPT)')
         else:
-            result.fail('JS offIpt', 'falta districts_with_off.has check')
-        if 'ac-item-off-ipt' in body:
-            result.ok('v3.5.3 JS: aplica clase ac-item-off-ipt')
+            result.fail('JS distritoEnApagado', 'falta districts_with_off.has check')
+        # v3.5.4: usa ac-item-ipt-hint (sutil) en lugar de ac-item-off-ipt
+        if "ac-item-ipt-hint" in body:
+            result.ok('v3.5.4 JS: aplica clase ipt-hint (sutil)')
         else:
-            result.fail('JS class off-ipt', 'falta clase ac-item-off-ipt')
-        if 'ac-off-icon-ipt' in body:
-            result.ok('v3.5.3 JS: prefijo ⚠️ con clase ac-off-icon-ipt')
-        else:
-            result.fail('JS prefix off-ipt', 'falta prefijo ⚠️ con clase ipt')
+            result.fail('JS class ipt-hint', 'falta clase ac-item-ipt-hint')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.4 — DESCONTAMINACIÓN IPT (CEO directive 2026-10-15 21:55)
+    # Bug: v3.5.3 marcó TODOS los CCPPs del distrito IPT como naranja fuerte
+    #      (`ac-item-off-ipt`), CONTAMINANDO la vista.
+    # Fix: marca sutil `ac-item-ipt-hint` (sin fondo, solo ⚠ pequeño) +
+    #      banner contextual `.ac-ipt-banner` arriba del dropdown.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.4 — Descontaminación IPT')
+
+    # El naranja fuerte `ac-item-off-ipt` debe NO existir (revertido)
+    if '.ac-item.ac-item-off-ipt {' in html:
+        result.fail('regresión v3.5.3 contaminante', 'ac-item-off-ipt aún presente')
+    else:
+        result.ok('v3.5.4 regresión: ac-item-off-ipt NARANJA FUERTE removido')
+
+    # Nueva clase sutil `ac-item-ipt-hint`
+    if '.ac-item.ac-item-ipt-hint {' in html:
+        result.ok('v3.5.4 CSS: clase sutil .ac-item-ipt-hint presente')
+    else:
+        result.fail('CSS ipt-hint', 'falta clase sutil')
+    # Banda del banner
+    if '.ac-ipt-banner' in html:
+        result.ok('v3.5.4 CSS: banner contextual .ac-ipt-banner presente')
+    else:
+        result.fail('CSS banner', 'falta banner')
+
+    # JS usa iptHint (no offIpt)
+    if 'var iptHint = !off && distritoEnApagado;' in html:
+        result.ok('v3.5.4 JS: usa iptHint sutil en vez de offIpt naranja')
+    else:
+        result.fail('JS iptHint', 'no usa iptHint sutil')
+    if '\'ac-item-ipt-hint\'' in html:
+        result.ok('v3.5.4 JS: clase "ac-item-ipt-hint" aplicada')
+    else:
+        result.fail('JS class hint', 'no aplica ipt-hint')
+    if 'ac-ipt-banner' in html and 'distrito en zona de apagado' in html.lower():
+        result.ok('v3.5.4 JS: banner contextual inyectado')
+    else:
+        result.fail('JS banner', 'banner no inyectado')
+
+    # Prefijo ⚠ sutil — clase ac-ipt-icon (no ac-off-icon-ipt)
+    if 'class="ac-ipt-icon"' in html:
+        result.ok('v3.5.4 JS: prefijo ⚠ sutil (clase ac-ipt-icon)')
+    else:
+        result.fail('JS icon sutil', 'falta prefijo ⚠ sutil')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
