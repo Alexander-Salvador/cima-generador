@@ -4740,26 +4740,54 @@ function acOptionsFor(key) {
 
 function acFilter(options, query) {
   if (!query) return options.slice(0, 200);
-  // v3.7.0: búsqueda accent-insensitive (L-048 replicado para ADDRESS).
-  // "LIMA" matchea "Lima", "Líme" matchea "Lime", "SAN MIGUEL" matchea
-  // caseríos con tildes que el agente tipea sin tildes por velocidad.
+  // v3.7.2: búsqueda por SIMILITUD (L-055) — no solo substring exacto.
+  // 3 niveles de prioridad, todos accent-insensitive (L-048 aplicado a ADDRESS):
+  //   1. startsWith — items que EMPIEZAN con el query
+  //   2. contains   — items que CONTIENEN el query como substring
+  //   3. fuzzy/subsequence — todos los chars del query aparecen EN ORDEN
+  //      en el item (tolera typos: "JSE" matchea "San José")
+  // query=1 char: solo contains (fuzzy con 1 char matchea casi todo)
+  // query>=2 chars: los 3 niveles
   var q = normSearch(query.trim());
   if (!q) return options.slice(0, 200);
-  // Priorizar matches que EMPIEZAN con q, luego los que contienen q
-  var starts = [];
-  var contains = [];
+  var starts = [], contains = [], fuzzy = [];
   options.forEach(function (opt) {
     var lo = normSearch(opt);
-    if (lo.indexOf(q) === 0) starts.push(opt);
-    else if (lo.indexOf(q) > 0) contains.push(opt);
+    if (lo.indexOf(q) === 0) {
+      starts.push(opt);
+    } else if (lo.indexOf(q) > 0) {
+      contains.push(opt);
+    } else if (q.length >= 2 && subsequenceMatch(q, lo)) {
+      // subsequence: todos los chars del query aparecen en orden en el item
+      // ej: query="JSE" → lo="san jose" → J,S,E en orden → match
+      //     query="SNT" → lo="santa" → S,T en orden, falta N → no match
+      fuzzy.push(opt);
+    }
   });
-  return starts.concat(contains);
+  return starts.concat(contains).concat(fuzzy);
+}
+
+// v3.7.2: subsequence match (L-055) — todos los chars del query aparecen en orden.
+// Usado como fallback de acFilter cuando no hay startsWith ni contains.
+// Tolera typos: "JSE" → "San José" (J, S, E en orden en el item).
+function subsequenceMatch(query, text) {
+  var qi = 0;
+  for (var ti = 0; ti < text.length && qi < query.length; ti++) {
+    if (text[ti] === query[qi]) qi++;
+  }
+  return qi === query.length;
 }
 
 function acHighlight(text, query) {
   if (!query) return acEscape(text);
-  // v3.7.0: highlight también accent-insensitive (pair con acFilter).
   var q = normSearch(query.trim());
+  if (!q) return acEscape(text);
+  // v3.7.2: NO highlight si query es muy corto (1 char) — partir el texto
+  // con <mark>1char</mark>resto es visualmente feo y poco útil
+  // (L-055: feedback CEO "C se remarca la C y separa lo demás").
+  // El usuario ve el item completo, el match por prefijo ya es suficiente.
+  if (q.length < 2) return acEscape(text);
+  // v3.7.0: highlight accent-insensitive (pair con acFilter).
   var lo = normSearch(text);
   var idx = lo.indexOf(q);
   if (idx < 0) return acEscape(text);
