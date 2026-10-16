@@ -577,20 +577,8 @@
     text-align: center;
     font-style: italic;
   }
-  .ac-meta {
-    font-size: 8.5px;
-    color: var(--text-dim);
-    padding: 4px 10px;
-    background: color-mix(in srgb, var(--bg-deep) 70%, transparent);
-    border-top: 1px solid var(--glass-border);
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 600;
-    position: sticky;
-    bottom: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  }
+  /* v3.7.5: .ac-meta ELIMINADA — CEO feedback L-058. Era el footer
+     "X de Y" que aparecía al filtrar. Ya no se genera, ya no se necesita. */
   /* Scrollbar custom para dropdowns — más visible */
   .ac-dropdown::-webkit-scrollbar { width: 8px; }
   .ac-dropdown::-webkit-scrollbar-track { background: transparent; }
@@ -4874,10 +4862,10 @@ function acRender(key) {
     }
     return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + dotHtml + acEscape(item) + '</div>';
   }).join('');
-  var total = allOptions.length;
-  if (total > 5 && total > AC_STATE.items.length && AC_STATE.items.length >= 2) {
-    html += '<div class="ac-meta">' + AC_STATE.items.length + ' de ' + total + '</div>';
-  }
+  // v3.7.5: ELIMINADO el footer "X de Y" (ac-meta) — CEO feedback L-058.
+  // El supervisor no necesita ver el conteo — solo los items relevantes.
+  // Antes: cuando filtraba, salía "7 de 15" abajo del dropdown.
+  // Ahora: dropdown limpio, solo items, sin footer de conteo.
   drop.innerHTML = html;
   drop.hidden = false;
   input.setAttribute('aria-expanded', 'true');
