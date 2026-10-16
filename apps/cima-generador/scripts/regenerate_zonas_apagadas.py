@@ -247,7 +247,11 @@ def main():
         new_z['speech_key'] = 'comu5514_visor_unico'
         new_z['postventa_speech_key'] = 'comu5514_postventa_marcaje'
         new_z['zona_nombre'] = f"{z['dist']}, {z['prov']}, {z['depto']}"
-        pdf_map = {1: 'APAGADO.pdf', 2: 'APAGADO2.pdf', 3: 'APAGADP1.pdf'}
+        # v3.6.0+L-051: Mapeo PDF→Grupo corregido.
+        # APAGADO.pdf (3 pág texto) = Grupo 2 (23 deptos, 200+ CCPPs).
+        # APAGADP1.pdf (1 pág imagen) = Grupo 1 (6 deptos, 16 CCPPs).
+        # APAGADO2.pdf (1 pág imagen) = Grupo 3 (5 deptos, 21 CCPPs).
+        pdf_map = {1: 'APAGADP1.pdf', 2: 'APAGADO.pdf', 3: 'APAGADO2.pdf'}
         new_z['origen_pdf'] = pdf_map.get(z.get('grupo'), 'desconocido')
         zones_enriq.append(new_z)
 

@@ -1,6 +1,62 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-15 — v3.5.0 ZONAS APAGADO INTELIGENTE** (HEAD `9ded893` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`). 308/308 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
+## 🆔 IDENTIDAD DEL PROYECTO (no perder contexto)
+
+| | |
+|---|---|
+| **Qué es** | Frontend HTML/JS standalone (popup para Google Sites) |
+| **Nombre** | CIMA = Call Center Intelligent Management & Analytics |
+| **Operación** | Call center técnico campaña MOVIL (operadora móvil) |
+| **Función del popup** | Generador de plantillas para call center: Address (ubigeo + CCPP) + Tipificación (RESET/APN/CASO) + Etiquetas de transferencia + Zonas de apagado |
+| **Marca interna** | Grupo WhatsApp "CIMA" |
+| **Repo público GitHub** | https://github.com/Alexander-Salvador/cima-generador |
+| **URL LIVE GitHub Pages** | https://alexander-salvador.github.io/cima-generador/ |
+| **Servidor local dev** | `python3 -m http.server 8765` (puerto 8765, NO 8000) |
+| **URL local popup mode** | http://127.0.0.1:8765/index.html?popup=1 |
+| **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) |
+| **Branch de trabajo** | `feat/apagado-inteligente` (HEAD `dc297fc` v3.6.0, base `a05780f` en `develop`) |
+| **Versión LIVE (Pages)** | v3.4.4 en `cd997c4` (sin pushear v3.5.x/3.6.0) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` con 50+ entradas (v1.0 → v3.6.0) |
+| **Working dir del popup** | `apps/cima-generador/` |
+| **Tests** | 308/308 PASS (`apps/cima-generador/test_popup.py`) |
+
+### Arquitectura (1-archivo monolítico)
+
+```
+apps/cima-generador/
+├── index.html         ← 1.4 MB / 5,744 líneas — HTML+CSS+JS+DATOS TODO INLINE
+├── launcher.html      ← menú de acceso (link → ?popup=1)
+├── CHANGELOG.md       ← 50+ releases v1.0 → v3.6.0
+├── README.md / VERSION / LICENSE
+├── data/              ← JSONs backup para regenerar el inline (CCPP, UBIGEO, ZONAS_APAGADAS)
+├── docs/              ← AUDIT.md, SOURCES.md, INTEGRATION.md
+├── scripts/           ← regeneradores Python (pdfplumber + OCR visual del modelo)
+└── test_popup.py      ← 308 tests
+```
+
+### Datos inlineados en `index.html` (sin fetch externo)
+
+| Variable inline | Contenido | Tamaño |
+|---|---|---|
+| `const UBIGEO` | 25 deptos × 196 prov × 1,892 dist (Perú completo) | ~94KB |
+| `const CCPP_DATA` | 43,491 caseríos en 1,851 distritos | ~571KB |
+| `const ZONAS_APAGADAS` | 2,037 entries (239 CCPP exactos COMU-5514 + 1,798 IPT) | ~1.4MB JSON |
+| `const ZONAS_APAGADAS_INTEL` | comunicados, speechs, flujos postventa | nested |
+| `const ETIQUETAS_DATA` | 26 etiquetas de transferencia (POSTPAGO/MTOTAL/STANDALONE) | inline JS |
+
+### Lo que NO es este proyecto
+
+| NO es | Por qué |
+|---|---|
+| ❌ OVAV ni sheets bridge | viven en `go-runtime/` y rama `main` (legacy pre-migración) |
+| ❌ Citrix RRHH | vive en `go-runtime/cmd/citrix_upload/` |
+| ❌ El agregado "CIMA standalone" completo | CIMA repo global solo es wrapper, el trabajo real es el popup |
+| ❌ Una dependencia de CDN | Todo inline, sin fetch externo (politica CSP del popup) |
+| ❌ Una web pública con login | Es un popup standalone HTML |
+
+---
+
+Memoria persistente. Última actualización: **2026-10-15 — v3.6.0 REBUILD LIMPIO ZONAS APAGADO** (HEAD `dc297fc` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`). 308/308 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
 
 > ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (308/308) ↔ REMOTO.
 
@@ -1289,6 +1345,8 @@ curl -sI "https://alexander-salvador.github.io/cima-generador/" | head -5
 | L-047 | Para cada SK_CV verificar si DP_CV existe antes de asignar tx_directo |
 | L-048 | Accent normalization (NFD) es crítica para UX en español |
 | L-049 | "Duplicados" con mismo skill pero diferente categoría NO son duplicados |
+| L-050 | CEO corrigió estilo de respuesta — **máx 150 palabras, sin relleno, sin emojis decorativos, sin repetir el reporte largo cuando el contexto ya está dado**. Antes: respuestas exhaustivas con secciones 📊📍🧠❓. Ahora: result_first compacto, opción múltiple si decisional. |
+| L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
 
 ### Bugs CEO reportados esta sesión (todos corregidos)
 
@@ -1340,27 +1398,31 @@ Próximo chat: leer esta sección de handover primero. Si CEO pide cambios al po
 
 > **Análisis end-to-end de los 5 PDFs únicos en `/Recursos CIMA/`** (8 archivos son duplicados por SHA256). Material oficial Movistar/genio para supervisores y asesores call center técnico MOVIL. Los PDFs IPT y COMU-5514 incluyen **speech de visor completo** para postventa.
 
-### 📁 Inventario único (5 PDFs)
+### 📁 Inventario único (5 PDFs) — código y grupo OFICIALES (post auditoría L-051)
 
-| Hash | Archivo | Tema | Código |
-|---|---|---|---|
-| `2b2b6b…828a56` | `Apagado Zonas IPT.pdf` (×7 copias idénticas) | Apagado 2G zonas rurales IPT | COMU-5672 |
-| `ade0d3…1d3bb53` | `COMU-5514 Apagado Estaciones Base.pdf` (×3 copias idénticas) | Apagado estaciones base en centros poblados | COMU-5514 |
-| `6fce46…89f8d5` | `Bases y Zonas de Apagado/APAGADO.pdf` | Centros Poblados Grupo 1 | — |
-| `e29d48…520f2` | `Bases y Zonas de Apagado/APAGADO2.pdf` (3 páginas) | Centros Poblados Grupo 2 | — |
-| `00578b…e8dfc` | `Bases y Zonas de Apagado/APAGADP1.pdf` | Centros Poblados Grupo 3 | — |
+| Hash | Archivo | Tema | Código | Grupo |
+|---|---|---|---|---|
+| `0ac2961d…` | `Apagado Zonas IPT.pdf` (×7 copias idénticas, MD5: `0ac2961d1db0ca371f5b62ce8af9abb6`) | Apagado 2G zonas rurales IPT | **COMU-5472** | IPT |
+| `35fe6399…` | `COMU-5514_Apagado de Estaciones Base en Centros Poblados.pdf` (×3 copias idénticas, MD5: `35fe63996ede63af85700854b99be827`) | Apagado estaciones base en CCPP | **COMU-5514** v00003 | G1+G2+G3 |
+| `83cda202…` | `Bases y Zonas de Apagado/APAGADO.pdf` (texto extraíble, 3 páginas) | Centros Poblados — **Grupo 2** | COMU-5514 | **2** |
+| `a9f231a5…` | `Bases y Zonas de Apagado/APAGADO2.pdf` (imagen escaneada, 1 página) | Centros Poblados — **Grupo 3** | COMU-5514 | **3** |
+| `73559872…` | `Bases y Zonas de Apagado/APAGADP1.pdf` (imagen escaneada, 1 página) | Centros Poblados — **Grupo 1** | COMU-5514 | **1** |
+
+> ⚠️ **NOTA IMPORTANTE sobre COMU:** El código visible en el PDF de IPT dice **`COMU-5472`** (no 5672 como figuraba antes). Histórico del sistema: `data/zonas_apagadas.json` mantiene `COMU-5672` por compatibilidad interna (las 1,798 entries IPT están etiquetadas así). Si se regenera desde cero, usar **5472**. Para más detalle ver lección L-051.
 
 Más `Etiquetas de Transferencia.xlsx` (3.18MB) en `Recursos CIMA/Etiquetas de Transferencia/`.
 
 ---
 
-### 🔥 COMU-5672 — APAGADO ZONAS IPT (Residencial Postpago)
+### 🔥 COMU-5472 — APAGADO ZONAS IPT (Residencial Postpago)
+**(código oficial del PDF; en el JSON histórico figura como `COMU-5672` por compatibilidad — ver L-051)**
 
 - **Inicio:** 28 de agosto / **Versión:** 00001
 - **Q clientes impactados:** 39.5K
 - **Comunicación SMS inicio:** 17 de agosto (mayoría) o 18 de agosto (algunos)
 - **Aplica:** Postpago + prepago con señal Movistar 2G en zonas rurales; clientes sin red 2G (llamadas, mensajes de texto u WhatsApp) desde 28/08
-- **Pide configurar equipo 4G** a partir del apagado (grupo 1) / **sugerir renovación** (grupo 2 sin 4G)
+- **Pide configurar equipo 4G** a partir del apagado (Grupo 1 IPT — equipo 4G) / **sugerir renovación** (Grupo 2 IPT — sin 4G)
+- **261 centros específicos** en 21 deptos (no marca TODOS los distritos del depto — solo 261 CCPPs puntuales). El sistema actual los expande a TODOS los distritos del depto para alerta preventiva.
 
 #### Tabla departamentos IPT (21)
 
@@ -1453,17 +1515,20 @@ Más `Etiquetas de Transferencia.xlsx` (3.18MB) en `Recursos CIMA/Etiquetas de T
 | Consulta por comunicación recibida | Identificar marcaje en visor → Speech único (con marcaje: speech visor (4.1) + speech (4.2)) |
 | Consulta sin señal / no contacta con señal en zona | Sin marcaje → atender según flujo regular (Call Center: VOZ → CEE → DATOS) |
 
-**Reclamos / Baja servicio:** igual ruta que COMU-5672 (Call Center 1ra línea + Tiendas, Canales Escritos).
+**Reclamos / Baja servicio:** igual ruta que COMU-5472 (Call Center 1ra línea + Tiendas, Canales Escritos).
 
 ---
 
-### 🗺️ Centros Poblados — Departamentos por grupo
+### 🗺️ Centros Poblados COMU-5514 — Departamentos por grupo (post-auditoría L-051)
 
-| Doc | Departamentos | Total aproximado |
-|---|---|---|
-| `APAGADO.pdf` (Grupo 1) | Cajamarca, Cusco, Junín, Lambayeque, Lima, Piura | 18+ centros |
-| `APAGADO2.pdf` (Grupo 2) | Amazonas, Ancash, Apurímac, Arequipa, Ayacucho, Cajamarca, Cusco, Huancavelica, Huánuco, Ica, Junín, La Libertad, Lambayeque, Lima, Loreto, Madre de Dios, Moquegua, Pasco, Piura, Puno, San Martín, Tacna, Ucayali | 200+ centros |
-| `APAGADP1.pdf` (Grupo 3) | Apurímac, Ayacucho, Cusco, Huancavelica, Huánuco | ~28 centros |
+| Doc oficial | Grupo | Departamentos | CCPPs |
+|---|---|---|---|
+| `APAGADP1.pdf` (1 pág, imagen) | **Grupo 1** | Cajamarca, Cusco, Junín, Lambayeque, Lima, Piura | 16 centros |
+| `APAGADO.pdf` (3 pág, texto) | **Grupo 2** | 23 deptos: Amazonas, Ancash, Apurímac, Arequipa, Ayacucho, Cajamarca, Cusco, Huancavelica, Huánuco, Ica, Junín, La Libertad, Lambayeque, Lima, Loreto, Madre de Dios, Moquegua, Pasco, Piura, Puno, San Martín, Tacna, Ucayali | 175 absorbidos / ~206 esperados |
+| `APAGADO2.pdf` (1 pág, imagen) | **Grupo 3** | Apurímac, Ayacucho, Cusco, Huancavelica, Huánuco | 21 centros |
+
+**Total absorbido (COMU-5514):** 239 CCPPs (175 + 26 + 38) en `data/zonas_apagadas.json`.
+**Gap conocido:** ~30 CCPPs faltantes del Grupo 2 (parser parcial histórico, requiere re-OCR de APAGADO.pdf completo).
 
 **Detalle completo por DEPARTAMENTO/PROVINCIA/DISTRITO/CENTRO POBLADO** guardado en los PDFs fuente. Tabla master se puede extraer a `data/apagados_centros_poblados.yaml` si CEO lo solicita.
 
@@ -1471,7 +1536,7 @@ Más `Etiquetas de Transferencia.xlsx` (3.18MB) en `Recursos CIMA/Etiquetas de T
 
 ### 🎯 Reglas de uso en CIMA (call center técnico MOVIL)
 
-1. **Identificar grupo del cliente** (Grupo 1 / Grupo 2 / Grupo 3 de COMU-5514; Grupos 1 / 2 de COMU-5672) → speech visor correcto.
+1. **Identificar grupo del cliente** (Grupo 1 / Grupo 2 / Grupo 3 de COMU-5514; Grupo 1 (con 4G) / Grupo 2 (sin 4G) de COMU-5472 [IPT]) → speech visor correcto.
 2. **Si cliente está en zona IPT y tiene 4G** → orientar configuración APN/equipo 4G.
 3. **Si cliente está en zona IPT y NO tiene 4G** → sugerir renovación de equipo (venta pta).
 4. **Si cliente consulta por comunicado** → leer speech completo incluyendo "Lamentamos las molestias y agradecemos tu comprensión".
