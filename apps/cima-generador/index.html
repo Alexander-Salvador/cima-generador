@@ -504,6 +504,11 @@
             Rompía uniformidad con los otros 3 dropdowns (depto/prov/dist).
      Ahora: padding 6px 12px, dot indicator 5px (•), sin pulse animation,
             font-weight 500 (base) o 600 (apagado), border-left 0.5px.
+
+     v3.7.8 (L-061): text-transform: uppercase EXPLÍCITO. El CCPP_DATA inline
+     tiene 99.9% de items en minúsculas/case mixto (ej. "Bellavista", "Buena Vista").
+     Sin esta regla, los items del dropdown se ven en minúsculas. El CEO quiere
+     que TODO el dropdown esté en MAYÚSCULAS, sin importar el case del data.
      ═══════════════════════════════════════════════════════════════ */
   .ac-item {
     /* Base IDÉNTICA para los 4 dropdowns */
@@ -523,6 +528,7 @@
     font-weight: 500;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter var", "Inter", system-ui, sans-serif;
     letter-spacing: 0.005em;
+    text-transform: uppercase;
   }
   .ac-item:last-child { border-bottom: none; }
   .ac-item:hover,
@@ -576,6 +582,7 @@
     color: var(--text-dim);
     text-align: center;
     font-style: italic;
+    text-transform: uppercase;
   }
   /* v3.7.5: .ac-meta ELIMINADA — CEO feedback L-058. Era el footer
      "X de Y" que aparecía al filtrar. Ya no se genera, ya no se necesita. */
