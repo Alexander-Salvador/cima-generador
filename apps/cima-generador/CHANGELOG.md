@@ -1,5 +1,30 @@
 # Changelog — cima-generador
 
+## [3.9.1] - 2026-10-16 — FIX colores invertidos (duplicado CSS popup)
+
+CEO feedback v3.9.0: "colores dispares a pesar que es la ruta que tu me diste. tambien se detecta que boton no funciona al darle click es estatico".
+
+**ROOT CAUSE**:
+1. Había un bloque CSS POPUP-MODE DUPLICADO (líneas 2860-2913) con mapeo v3.8.0 INVERTIDO. Venía DESPUÉS de mis reglas actualizadas, ganaba por orden de cascada.
+2. Handler de click legacy v3.5.1 BUG 2 seguía registrado. Bloqueaba silenciosamente los clicks (return temprano si faltaban campos o sin alerta).
+
+**FIX**:
+- Duplicado popup-mode consolidado a la spec CEO coherente:
+  - `.ccpp-off-confirmed` → ROJO (--zone-ipt)
+  - `.dist-ipt-warn` / `.dist-off-warn` / `.ccpp-off-ipt` / `.ccpp-ipt-warn` → AMARILLO
+- Handler legacy ELIMINADO — solo el nuevo `onClickCobertura` (siempre funcional).
+
+**RESULTADO para AMAZONAS/CHACHAPOYAS/CHILIQUIN + VITUYA**:
+| Elemento | Antes v3.9.0 | Ahora v3.9.1 |
+|---|---|---|
+| VITUYA input | 🟡 AMARILLO ❌ | **🔴 ROJO** ✅ (CCPP exacto apagado) |
+| CHILIQUIN input | 🔴 ROJO ❌ | **🟡 AMARILLO** ✅ (IPT 2G district) |
+| Click ⚠️ | Estático ❌ | **Panel + copy + pulse** ✅ |
+
+Tests: **434/434 PASS** · audit_masivo: ALL CHECKS PASSED · node --check OK.
+
+---
+
 ## [3.9.0] - 2026-10-16 — REDISEÑO COHERENTE: tokens semánticos + botón ⚠️ funcional
 
 **CEO directive 2026-10-16**: "rojo si está en apagado y amarillo si es apagado IPT 2G (delicado)". Esta versión cierra las carencias visuales de v3.8.0 (4 colores confusos + botón inerte).
