@@ -1552,6 +1552,88 @@ def test(html_path):
     else:
         result.fail('filterEtiquetasByCat empty', 'aún usa hideEtiquetaPreview() en vez de show(null)')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.1 — ZONAS APAGADO Bug Fixes (CEO directive 2026-10-15)
+    # Bug 1: Alerta CCPP se apagaba al completar caserío (silencio erróneo)
+    # Bug 2: Click en ⚠️ antes de completar la ruta
+    # Bug 3: Popover mostraba secciones extra → debe ser compacto y solo speech
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.1 — BUG FIXES Zonas Apagado')
+
+    # BUG 1: checkZonaApagada — verifica que el silencio erróneo fue removido
+    m_check = re.search(r'function checkZonaApagada.*?\n\}', html, re.DOTALL)
+    if m_check:
+        check_fn = m_check.group(0)
+        if 'var hasCcpp = ' in check_fn and 'var distritoTieneApagados' in check_fn:
+            result.ok('BUG 1 checkZonaApagada: tiene vars hasCcpp + distritoTieneApagados')
+        else:
+            result.fail('BUG 1 vars', 'faltan vars hasCcpp o distritoTieneApagados')
+        # El comentario "// CCPP tipeado pero NO matchea exacto → silencio" debe NO existir
+        if 'silencio (sin match exacto, no alertar)' not in check_fn:
+            result.ok('BUG 1 checkZonaApagada: silencio erróneo removido')
+        else:
+            result.fail('BUG 1 silencio erróneo', 'aún retorna silencio si CCPP no matchea')
+        # Debe alertar como distrito_of incluso con CCPP no-match
+        if 'BUG 1 fix' in check_fn and 'nivel: \'distrito_of\'' in check_fn:
+            result.ok('BUG 1 checkZonaApagada: fallback a distrito_of (no silencio)')
+        else:
+            result.fail('BUG 1 fallback', 'no tiene fallback a distrito_of con CCPP no-match')
+    else:
+        result.fail('BUG 1 checkZonaApagada', 'función no encontrada')
+
+    # BUG 2: click handler requiere 4 campos completos
+    if 'BUG 2 fix' in html:
+        result.ok('BUG 2 click handler: BUG 2 fix marker presente')
+        # Verificar validación de los 4 campos
+        idx_bug2 = html.find('BUG 2 fix')
+        slice_bug2 = html[idx_bug2:idx_bug2 + 1500]
+        if 'if (!dep || !prov || !dist || !ccpp_val)' in slice_bug2:
+            result.ok('BUG 2 click handler: valida 4 campos (dep+prov+dist+ccpp_val)')
+        else:
+            result.fail('BUG 2 validación 4 campos', 'falta el if de validación')
+        if 'return;' in slice_bug2 and 'sin popover' in slice_bug2:
+            result.ok('BUG 2 click handler: return temprano sin popover')
+        else:
+            result.fail('BUG 2 return temprano', 'falta return temprano')
+    else:
+        result.fail('BUG 2 click handler', 'BUG 2 fix marker no encontrado')
+
+    # BUG 3: popover compacto (solo speech + zona + fecha)
+    if 'function showApagadoPopover' in html:
+        result.ok('BUG 3 showApagadoPopover: función presente')
+    else:
+        result.fail('BUG 3 showApagadoPopover', 'función no encontrada')
+    if 'apagado-modal-content--compact' in html:
+        result.ok('BUG 3 modal: clase compacto aplicada')
+    else:
+        result.fail('BUG 3 compacto className', 'falta clase apagado-modal-content--compact')
+    if 'function parseFechaES(' in html:
+        result.ok('BUG 3 modal: helper parseFechaES presente')
+    else:
+        result.fail('BUG 3 parseFechaES', 'helper no encontrado')
+    # El popover compacto NO debe tener las secciones largas de reclamo y baja
+    m_pop = re.search(r'function showApagadoPopover.*?function parseFechaES', html, re.DOTALL)
+    if m_pop:
+        pop_body = m_pop.group(0)
+        if '<h3>🛠️ Si cliente reclama</h3>' not in pop_body:
+            result.ok('BUG 3 modal: NO muestra "Si cliente reclama" (compacto)')
+        else:
+            result.fail('BUG 3 modal', 'aún muestra sección de reclamo — debe ser compacto')
+        if '<h3>📞 Si cliente pide BAJA' not in pop_body:
+            result.ok('BUG 3 modal: NO muestra "Si pide BAJA" (compacto)')
+        else:
+            result.fail('BUG 3 modal baja', 'aún muestra sección de baja — debe ser compacto')
+        # Debe reemplazar [zona] con el depto (no distrito)
+        if 'zonaLabel = m.depto' in pop_body:
+            result.ok('BUG 3 zona: para IPT, zona = depto (no distrito)')
+        else:
+            result.fail('BUG 3 zona IPT', 'zona no se asigna al depto')
+        # Debe reemplazar placeholders [dd], [mes], [zona], [año]
+        if 'replace(/\\[d' in pop_body and 'replace(/\\[zona\\]' in pop_body and 'replace(/\\[mes\\]' in pop_body:
+            result.ok('BUG 3 modal: reemplaza placeholders [dd] [mes] [zona]')
+        else:
+            result.fail('BUG 3 placeholders', 'falta reemplazo de algún placeholder')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
