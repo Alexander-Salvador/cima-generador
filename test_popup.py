@@ -1689,64 +1689,62 @@ def test(html_path):
         result.fail('CSS keyframes', 'falta @keyframes apagadoPulse')
 
     # JS: marcar iptHint sutil (buscar contexto más amplio)
-    js_render_match = re.search(r"var d6ForMark = null;.*?\}\)\.join", html, re.DOTALL)
+    # v3.5.6: el render del dropdown debe estar LIMPIO (no iptHint en items)
+    # Buscamos el bloque de render. v3.5.6 introduce marker "v3.5.6: marcado LIMPIO".
+    js_render_match = re.search(r"// v3\.5\.6: marcado LIMPIO.*?\}\)\.join", html, re.DOTALL)
     if js_render_match:
         body = js_render_match.group(0)
-        if 'districts_with_off.has(d6ForMark)' in body:
-            result.ok('v3.5.3 JS: distritoEnApagado vía districts_with_off (IPT)')
-        else:
-            result.fail('JS distritoEnApagado', 'falta districts_with_off.has check')
-        # v3.5.4: usa ac-item-ipt-hint (sutil) en lugar de ac-item-off-ipt
         if "ac-item-ipt-hint" in body:
-            result.ok('v3.5.4 JS: aplica clase ipt-hint (sutil)')
+            result.fail('v3.5.6 regresión', 'ac-item-ipt-hint aún en render limpio')
         else:
-            result.fail('JS class ipt-hint', 'falta clase ac-item-ipt-hint')
+            result.ok('v3.5.6 JS: render LIMPIO (sin ipt-hint en items)')
+        if 'districts_with_off.has' in body:
+            result.fail('v3.5.6 regresión', 'render limpio NO debe consultar districts_with_off')
+        else:
+            result.ok('v3.5.6 JS: render limpio NO consulta districts_with_off')
+    # districts_with_off.has debe seguir existiendo en updateCcppInputZoneClass
+    if 'function updateCcppInputZoneClass' in html and 'districts_with_off.has(d6)' in html:
+        result.ok('v3.5.5 JS: helper updateCcppInputZoneClass usa districts_with_off (v3.5.5 intacto)')
+    else:
+        result.fail('JS helper', 'helper updateCcppInputZoneClass perdido')
 
     # ══════════════════════════════════════════════════════════════════════
-    # v3.5.4 — DESCONTAMINACIÓN IPT (CEO directive 2026-10-15 21:55)
-    # Bug: v3.5.3 marcó TODOS los CCPPs del distrito IPT como naranja fuerte
-    #      (`ac-item-off-ipt`), CONTAMINANDO la vista.
-    # Fix: marca sutil `ac-item-ipt-hint` (sin fondo, solo ⚠ pequeño) +
-    #      banner contextual `.ac-ipt-banner` arriba del dropdown.
+    # v3.5.6 — DROPDOWN LIMPIO (CEO directive 2026-10-15 22:30)
+    # REVERTIR contaminación visual del v3.5.4:
+    #   - QUITAR banner naranja grande (.ac-ipt-banner)
+    #   - QUITAR marca sutil 'ac-item-ipt-hint' en items
+    # MANTENER:
+    #   - 'ac-item-off' ROJO fuerte SOLO para match exacto
+    #   - v3.5.5: input CCPP pintado por zona
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.5.4 — Descontaminación IPT')
+    print('\n▸ v3.5.6 — Dropdown limpio (revierte v3.5.4)')
 
-    # El naranja fuerte `ac-item-off-ipt` debe NO existir (revertido)
-    if '.ac-item.ac-item-off-ipt {' in html:
-        result.fail('regresión v3.5.3 contaminante', 'ac-item-off-ipt aún presente')
+    # CSS: NO debe existir .ac-item-ipt-hint (revertido)
+    if '.ac-item.ac-item-ipt-hint' in html:
+        result.fail('v3.5.6 regresión', 'ac-item-ipt-hint aún presente (debe estar limpio)')
     else:
-        result.ok('v3.5.4 regresión: ac-item-off-ipt NARANJA FUERTE removido')
-
-    # Nueva clase sutil `ac-item-ipt-hint`
-    if '.ac-item.ac-item-ipt-hint {' in html:
-        result.ok('v3.5.4 CSS: clase sutil .ac-item-ipt-hint presente')
-    else:
-        result.fail('CSS ipt-hint', 'falta clase sutil')
-    # Banda del banner
+        result.ok('v3.5.6 CSS: .ac-item-ipt-hint REMOVIDO (limpio)')
+    # CSS: NO debe existir .ac-ipt-banner (revertido)
     if '.ac-ipt-banner' in html:
-        result.ok('v3.5.4 CSS: banner contextual .ac-ipt-banner presente')
+        result.fail('v3.5.6 regresión', 'ac-ipt-banner aún presente (debe estar limpio)')
     else:
-        result.fail('CSS banner', 'falta banner')
+        result.ok('v3.5.6 CSS: .ac-ipt-banner REMOVIDO (sin banners)')
+    # CSS: SÍ debe existir .ac-item-off (intacto)
+    if '.ac-item.ac-item-off {' in html:
+        result.ok('v3.5.6 CSS: .ac-item-off (rojo fuerte) INTACTO')
+    else:
+        result.fail('CSS off', 'falta regla ac-item-off')
 
-    # JS usa iptHint (no offIpt)
+    # JS: render del dropdown debe estar LIMPIO (v3.5.6 marker)
+    if 'v3.5.6: marcado LIMPIO' in html:
+        result.ok('v3.5.6 JS: render dropdown limpio marker presente')
+    else:
+        result.fail('JS render clean', 'falta marker v3.5.6 limpio')
+    # JS: ya NO debe haber 'var iptHint' (revertido)
     if 'var iptHint = !off && distritoEnApagado;' in html:
-        result.ok('v3.5.4 JS: usa iptHint sutil en vez de offIpt naranja')
+        result.fail('JS revertido', 'iptHint aún presente (debe estar revertido)')
     else:
-        result.fail('JS iptHint', 'no usa iptHint sutil')
-    if '\'ac-item-ipt-hint\'' in html:
-        result.ok('v3.5.4 JS: clase "ac-item-ipt-hint" aplicada')
-    else:
-        result.fail('JS class hint', 'no aplica ipt-hint')
-    if 'ac-ipt-banner' in html and 'distrito en zona de apagado' in html.lower():
-        result.ok('v3.5.4 JS: banner contextual inyectado')
-    else:
-        result.fail('JS banner', 'banner no inyectado')
-
-    # Prefijo ⚠ sutil — clase ac-ipt-icon (no ac-off-icon-ipt)
-    if 'class="ac-ipt-icon"' in html:
-        result.ok('v3.5.4 JS: prefijo ⚠ sutil (clase ac-ipt-icon)')
-    else:
-        result.fail('JS icon sutil', 'falta prefijo ⚠ sutil')
+        result.ok('v3.5.6 JS: iptHint REMOVIDO (sin hints sutiles)')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.5.5 — INPUT CCPP PINTADO POR ZONA (CEO directive 2026-10-15 22:00)
