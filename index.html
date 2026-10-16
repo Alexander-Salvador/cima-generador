@@ -4740,31 +4740,36 @@ function acOptionsFor(key) {
 
 function acFilter(options, query) {
   if (!query) return options.slice(0, 200);
-  // v3.7.2: búsqueda por SIMILITUD (L-055) — no solo substring exacto.
-  // 3 niveles de prioridad, todos accent-insensitive (L-048 aplicado a ADDRESS):
-  //   1. startsWith — items que EMPIEZAN con el query
-  //   2. contains   — items que CONTIENEN el query como substring
-  //   3. fuzzy/subsequence — todos los chars del query aparecen EN ORDEN
-  //      en el item (tolera typos: "JSE" matchea "San José")
-  // query=1 char: solo contains (fuzzy con 1 char matchea casi todo)
-  // query>=2 chars: los 3 niveles
+  // v3.7.3: búsqueda INTELIGENTE con SCORING por similitud (L-056).
+  // Cada item recibe un score 0-1 basado en:
+  //   1.0  exact match (item == query)
+  //   0.95 startsWith (item empieza con query)
+  //   0.80 contains   (item contiene query como substring)
+  //   0.60 subsequence (todos los chars del query en orden — tolera typos)
+  //   0    no match
+  // Threshold: >= 0.4 (incluye subsequence pero no desecha matches).
+  // Orden: por score DESC, luego alfabético ASC (estabilidad).
+  // Sin highlight que parta el texto (CEO feedback L-056).
   var q = normSearch(query.trim());
   if (!q) return options.slice(0, 200);
-  var starts = [], contains = [], fuzzy = [];
-  options.forEach(function (opt) {
+  var scored = [];
+  for (var i = 0; i < options.length; i++) {
+    var opt = options[i];
     var lo = normSearch(opt);
-    if (lo.indexOf(q) === 0) {
-      starts.push(opt);
-    } else if (lo.indexOf(q) > 0) {
-      contains.push(opt);
-    } else if (q.length >= 2 && subsequenceMatch(q, lo)) {
-      // subsequence: todos los chars del query aparecen en orden en el item
-      // ej: query="JSE" → lo="san jose" → J,S,E en orden → match
-      //     query="SNT" → lo="santa" → S,T en orden, falta N → no match
-      fuzzy.push(opt);
+    var score = 0;
+    if (lo === q) score = 1.0;
+    else if (lo.indexOf(q) === 0) score = 0.95;
+    else if (lo.indexOf(q) > 0) score = 0.8;
+    else if (q.length >= 2 && subsequenceMatch(q, lo)) score = 0.6;
+    if (score >= 0.4) {
+      scored.push({ opt: opt, score: score, idx: i });
     }
+  }
+  scored.sort(function (a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.idx - b.idx;  // estabilidad: orden original para empates
   });
-  return starts.concat(contains).concat(fuzzy);
+  return scored.map(function (x) { return x.opt; });
 }
 
 // v3.7.2: subsequence match (L-055) — todos los chars del query aparecen en orden.
@@ -4779,35 +4784,12 @@ function subsequenceMatch(query, text) {
 }
 
 function acHighlight(text, query) {
-  if (!query) return acEscape(text);
-  var q = normSearch(query.trim());
-  if (!q) return acEscape(text);
-  // v3.7.2: NO highlight si query es muy corto (1 char) — partir el texto
-  // con <mark>1char</mark>resto es visualmente feo y poco útil
-  // (L-055: feedback CEO "C se remarca la C y separa lo demás").
-  // El usuario ve el item completo, el match por prefijo ya es suficiente.
-  if (q.length < 2) return acEscape(text);
-  // v3.7.0: highlight accent-insensitive (pair con acFilter).
-  var lo = normSearch(text);
-  var idx = lo.indexOf(q);
-  if (idx < 0) return acEscape(text);
-  // Reconstruir índices en texto ORIGINAL a partir de normalizado.
-  // Estrategia: recorrer normalizado carácter por carácter hasta idx+len(q),
-  // mapear cada posición normalizada a su posición en el texto original.
-  var before = '';
-  var oi = 0;
-  while (oi < text.length && normSearch(text.slice(0, oi)).length < idx) {
-    before += text[oi];
-    oi++;
-  }
-  var matchStart = oi;
-  var matchEnd = oi;
-  while (matchEnd < text.length && normSearch(text.slice(0, matchEnd)).length < idx + q.length) {
-    matchEnd++;
-  }
-  var match = text.slice(matchStart, matchEnd);
-  var after = text.slice(matchEnd);
-  return acEscape(before) + '<mark>' + acEscape(match) + '</mark>' + acEscape(after);
+  // v3.7.3: NO highlight que parta el texto (CEO feedback L-056).
+  // Antes: <mark>prefijo</mark>resto partía el item visualmente.
+  // Ahora: el item se ve COMPLETO. El orden por similitud (vía scoring
+  // en acFilter) ya indica cuáles items son relevantes.
+  // El usuario escanea la lista, no necesita marcas en el texto.
+  return acEscape(text);
 }
 
 function acEscape(s) {
