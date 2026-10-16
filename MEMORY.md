@@ -1,8 +1,66 @@
 # CIMA — Memoria del proyecto
 
-Memoria persistente. Última actualización: **2026-10-15 — v3.4.4 PUSHEADO A REMOTO** (HEAD `b78ece3` en `develop`, popup `cd997c4` en `origin/main`). 308/308 tests PASS. Working tree: solo MEMORY.md modificado (post-stash). Popup LIVE en GitHub Pages ahora sirve v3.4.4 (post force-push). **Push exitoso** via git subtree split + force-push autorizado por CEO.
+## 🆔 IDENTIDAD DEL PROYECTO (no perder contexto)
 
-> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (308/308) ↔ REMOTO.
+| | |
+|---|---|
+| **Qué es** | Frontend HTML/JS standalone (popup para Google Sites) |
+| **Nombre** | CIMA = Call Center Intelligent Management & Analytics |
+| **Operación** | Call center técnico campaña MOVIL (operadora móvil) |
+| **Función del popup** | Generador de plantillas para call center: Address (ubigeo + CCPP) + Tipificación (RESET/APN/CASO) + Etiquetas de transferencia + Zonas de apagado |
+| **Marca interna** | Grupo WhatsApp "CIMA" |
+| **Repo público GitHub** | https://github.com/Alexander-Salvador/cima-generador |
+| **URL LIVE GitHub Pages** | https://alexander-salvador.github.io/cima-generador/ |
+| **Servidor local dev** | `python3 -m http.server 8765` (puerto 8765, NO 8000) |
+| **URL local popup mode** | http://127.0.0.1:8765/index.html?popup=1 |
+| **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) |
+| **Branch de trabajo** | `feat/apagado-inteligente` (HEAD `38f20b2` v3.7.8, base `a05780f` en `develop`, 23 commits ahead) |
+| **Versión LIVE (Pages)** | v3.4.4 en `cd997c4` (sin pushear v3.5.x/3.6.0/v3.7.x — feature branch en local) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` con 50+ entradas (v1.0 → v3.7.8) |
+| **Working dir del popup** | `apps/cima-generador/` |
+| **Tests** | 370/370 PASS (`apps/cima-generador/test_popup.py`) |
+
+### Arquitectura (1-archivo monolítico)
+
+```
+apps/cima-generador/
+├── index.html         ← 1.4 MB / 5,744 líneas — HTML+CSS+JS+DATOS TODO INLINE
+├── launcher.html      ← menú de acceso (link → ?popup=1)
+├── CHANGELOG.md       ← 50+ releases v1.0 → v3.6.0
+├── README.md / VERSION / LICENSE
+├── data/              ← JSONs backup para regenerar el inline (CCPP, UBIGEO, ZONAS_APAGADAS)
+├── docs/              ← AUDIT.md, SOURCES.md, INTEGRATION.md
+├── scripts/           ← regeneradores Python (pdfplumber + OCR visual del modelo)
+└── test_popup.py      ← 308 tests
+```
+
+### Datos inlineados en `index.html` (sin fetch externo)
+
+| Variable inline | Contenido | Tamaño |
+|---|---|---|
+| `const UBIGEO` | 25 deptos × 196 prov × 1,892 dist (Perú completo) | ~94KB |
+| `const CCPP_DATA` | 43,491 caseríos en 1,851 distritos | ~571KB |
+| `const ZONAS_APAGADAS` | 2,037 entries (239 CCPP exactos COMU-5514 + 1,798 IPT) | ~1.4MB JSON |
+| `const ZONAS_APAGADAS_INTEL` | comunicados, speechs, flujos postventa | nested |
+| `const ETIQUETAS_DATA` | 26 etiquetas de transferencia (POSTPAGO/MTOTAL/STANDALONE) | inline JS |
+
+### Lo que NO es este proyecto
+
+| NO es | Por qué |
+|---|---|
+| ❌ OVAV ni sheets bridge | viven en `go-runtime/` y rama `main` (legacy pre-migración) |
+| ❌ Citrix RRHH | vive en `go-runtime/cmd/citrix_upload/` |
+| ❌ El agregado "CIMA standalone" completo | CIMA repo global solo es wrapper, el trabajo real es el popup |
+| ❌ Una dependencia de CDN | Todo inline, sin fetch externo (politica CSP del popup) |
+| ❌ Una web pública con login | Es un popup standalone HTML |
+
+---
+
+Memoria persistente. Última actualización: **2026-10-16 — v3.7.8 DROPDOWN ITEMS MAYÚSCULAS** (HEAD `38f20b2` en rama `feat/apagado-inteligente`, base `a05780f` en `develop`, 23 commits ahead con v3.5.0→v3.7.8). 370/370 tests PASS. Working tree: clean. **Restore point**: backup local en `.backup-pre-apagado-inteligente/` (excluido git). Popup LIVE en GitHub Pages sigue en v3.4.4 (no pusheado aún). Próximo paso: merge `feat/apagado-inteligente` → `develop` cuando CEO lo autorice, luego subtree split + push a `cima-generador`.
+
+> ✅ **Alineación aplicada 2026-10-15:** VERSION `2.1.8 → 3.0 → 3.1 → 3.2 → 3.3 → 3.3.1 → 3.3.2 → 3.3.3 → 3.3.4 → 3.3.5 → 3.3.6 → 3.3.7 → 3.3.8 → 3.3.9 → 3.4.0 → 3.4.1 → 3.4.2 → 3.4.3 → 3.4.4` + CHANGELOG con entradas `[3.0]` + `[3.1]` + `[3.2]` + `[3.3]` + `[3.3.1]` + `[3.3.2]` + `[3.3.3]` + `[3.3.4]` + `[3.3.5]` + `[3.3.6]` + `[3.3.7]` + `[3.3.8]` + `[3.3.9]` + `[3.4.0]` + `[3.4.1]` + `[3.4.2]` + `[3.4.3]` + `[3.4.4]`. **PUSHEADO A REMOTO 2026-10-15** (popup HEAD en origin/main: `cd997c4` v3.4.4). Coherencia completa: VERSION ↔ CHANGELOG ↔ MEMORY ↔ tests (370/370 feat branch) ↔ REMOTO.
+
+> ✅ **Alineación feat/apagado-inteligente 2026-10-16:** VERSION `3.4.4 → 3.5.0 → 3.5.5 → 3.5.8 → 3.6.0 → 3.7.0 → 3.7.1 → 3.7.2 → 3.7.3 → 3.7.4 → 3.7.5 → 3.7.6 → 3.7.7 → 3.7.8` en rama local `feat/apagado-inteligente` (HEAD `38f20b2`). CHANGELOG actualizado con todas las entradas. Tests: 370/370 PASS (refactor de tests obsoletos v3.5.3-v3.5.7 que testeaban features revertidas por v3.5.6/v3.6.0/v3.7.4). **NO pusheado a remoto** (CEO directive: "Avanza end to end todo en local").
 
 ---
 
@@ -857,20 +915,20 @@ git diff
 
 ---
 
-## 🟢 Estado actual (snapshot 2026-10-15 v3.0 LOCAL · v2.1.8 LIVE remoto)
+## 🟢 Estado actual (snapshot 2026-10-16 v3.7.8 feat/apagado-inteligente · v3.4.4 LIVE remoto)
 
 | Recurso | Estado | Ubicación |
 |---|---|---|
 | **Spreadsheet** | 7 tabs operativas | `1MQ3wts_cEG_4Dp5U6X4gehEn6u7F61tIl7KHzSzKw0Y` |
 | **Sheets bridge** | Compila, tests OK | `go-runtime/cmd/sheets/` |
-| **Popup LOCAL (develop)** | `develop` HEAD `8fdc3b0` (VERSION `3.4.4` — AUDITORIA EXCEL + DP FIXES + SEARCH) | `apps/cima-generador/index.html` |
-| **Tests popup local** | 308/308 PASS | `apps/cima-generador/test_popup.py` |
-| **Tests popup local** | 166/166 PASS | `apps/cima-generador/test_popup.py` |
-| **Server local** | Activo PID (revisar `pgrep -af 'http.server 8765'`) | `http://127.0.0.1:8765/` |
-| **GitHub Pages LIVE (remoto)** | 🟡 **v2.1.8 POPUP — sigue DEPLOYED** | `https://alexander-salvador.github.io/cima-generador/` |
-| **Repo popup GitHub main** | `33aeda8` (v2.1.8) — **NO actualizado a v3.0 todavía** | `https://github.com/Alexander-Salvador/cima-generador` |
+| **Popup LOCAL (feat/apagado-inteligente)** | HEAD `38f20b2` (VERSION `3.7.8` — DROPDOWN ITEMS MAYÚSCULAS, 23 commits ahead de develop) | `apps/cima-generador/index.html` |
+| **Tests popup local** | **370/370 PASS** | `apps/cima-generador/test_popup.py` |
+| **Server local** | Activo PID 10699 | `http://127.0.0.1:8765/` |
+| **GitHub Pages LIVE (remoto)** | v3.4.4 POPUP — sigue DEPLOYED (sin pushear v3.5.0→v3.7.8) | `https://alexander-salvador.github.io/cima-generador/` |
+| **Repo popup GitHub main** | `cd997c4` (v3.4.4) | `https://github.com/Alexander-Salvador/cima-generador` |
 | **Repo equivocado a limpiar** | `Alexander-Salvador/cima` (creado por error Thavren) | CEO manual con `gh repo delete` |
-| **Git HEAD local develop** | `8fdc3b0` (v3.10 MEMORY) → feature `501b4d4` (v3.0 TX) | working tree clean, 0 sin commitear |
+| **Git HEAD local develop** | `a05780f` (MEMORY v3.10.2) | working tree clean, 0 sin commitear |
+| **Git HEAD feat/apagado-inteligente** | `38f20b2` (v3.7.8 — 23 commits ahead) | working tree clean, 0 sin commitear |
 | **AKRYNT** | Intacto, política NO aplica | `/home/braka/Systems/projects/work/akrynt-agent/` |
 | **Recursos CIMA folder** | Local only (CEO referencia, en .gitignore) | `Recursos CIMA/Etiquetas de Transferencia.xlsx` |
 | **Recursos CIMA folder** | Local only (Movistar PDFs operadores, en .gitignore) | `Recursos CIMA/Bases y Zonas de Apagado/APAGADO*.pdf` |
@@ -1150,15 +1208,128 @@ curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|AP
 
 | URL | Sirve |
 |---|---|
-| `http://127.0.0.1:8765/index.html` | v3.0 LOCAL (popup standalone con TIPIFICACIÓN TX) |
+| `http://127.0.0.1:8765/index.html` | v3.7.8 LOCAL feat/apagado-inteligente (popup standalone con ZONAS APAGADO INTELIGENTE) |
 | `http://127.0.0.1:8765/launcher.html` | Menú de acceso |
-| `https://alexander-salvador.github.io/cima-generador/` | v2.1.8 LIVE (aún sin v3.0) |
+| `https://alexander-salvador.github.io/cima-generador/` | v3.4.4 LIVE (sin pushear v3.5.0→v3.7.8) |
 
 ---
 
-*Fin de memoria v3.10.1 — Thavren · 2026-10-15 (round 2 + round 3, sesión extendida, v3.4.4 PUSHEADO A REMOTO)*
+## 🚀 Sesión 2026-10-16 — feat/apagado-inteligente: v3.5.0 → v3.7.8
 
-*Cierre: v3.4.4 PUSHEADO EXITOSAMENTE a `https://github.com/Alexander-Salvador/cima-generador` via `git subtree split` + force-push. GitHub Pages LIVE ahora sirve popup v3.4.4 (HEAD `cd997c4` en `origin/main`). Local HEAD `e862c62` (develop). Tests: 308/308 PASS local. Working tree clean.*
+### Trabajo de la sesión (todo en local, NO pusheado)
+
+Rama `feat/apagado-inteligente` con 23 commits ahead de develop. Implementación
+de feature "Zonas Apagado Inteligente" + iteraciones de UX de dropdowns.
+
+### Commits acumulados (todos en `feat/apagado-inteligente`)
+
+```
+38f20b2 fix(cima): v3.7.8 dropdown items en MAYÚSCULAS (.ac-item + .ac-empty)
+c3afab6 fix(cima): v3.7.7 input CCPP MAYÚSCULAS explícitas (no herencia)
+47e8cae fix(cima): v3.7.6 dropdown CCPP siempre debajo del input (sin flip)
+57bdcf0 fix(cima): v3.7.5 eliminar footer 'X de Y' del dropdown
+25357ec fix(cima): v3.7.4 CCPP dropdown IDÉNTICO a depto/prov/dist
+f3ae807 fix(cima): v3.7.3 búsqueda INTELIGENTE por SCORING (sin highlight que parta)
+7f5353a fix(cima): v3.7.2 búsqueda por SIMILITUD + highlight sin partir texto
+52edcc0 refactor(cima): v3.7.1 dropdowns ADDRESS unificados (mismo estilo 4 inputs)
+4a9fc22 fix(cima): v3.7.0 búsqueda ADDRESS accent-insensitive + sin reset cursor
+5864db2 test(cima): cobertura agresiva 46/46 PASS — Perú 100% cubierto
+2cb6d45 docs(cima): L-051 auditoría visual PDFs + sección IDENTIDAD + fix mapeo PDF→Grupo
+dc297fc refactor(cima-generador): v3.6.0 — REBUILD LIMPIO del bloque ZONAS APAGADO
+086c2bf fix(cima-generador): v3.5.8 — regex [dd/m] bug + JSON v3.0.0 completo (239 CCPPs)
+9ff718c fix(cima-generador): v3.5.7 — marca visual sutil CCPP en zona apagada
+a35cbff fix(cima-generador): v3.5.6 — dropdown LIMPIO (revierte v3.5.4 contaminante)
+957cc94 fix(cima-generador): v3.5.5 — input CCPP pintado por zona (recuperado)
+27b3263 fix(cima-generador): v3.5.4 — descontaminar IPT (naranja fuerte → sutil)
+abece47 fix(cima-generador): v3.5.3 — marcado visual CCPP apagado ALTO CONTRASTE
+be94a7f fix(cima-generador): v3.5.2 — BUG 1 persistente + tooltip anclado (BUG 4)
+5c5d43f fix(cima-generador): v3.5.1 — 3 bug fixes Zonas Apagado Inteligente
+0e5e249 docs(cima): MEMORY.md v3.10.3 — handover v3.5.0 Zonas Apagado Inteligente
+9ded893 feat(cima-generador): v3.5.0 — Zonas Apagado Inteligente (click ⚠️ → popover)
+```
+
+### Fases de iteración (histórico de la sesión)
+
+**Fase 1 — ZONAS APAGADO INTELIGENTE (v3.5.0 → v3.5.8)**
+- v3.5.0: Feature inicial — click en ⚠️ → popover con speech COMU-5472/COMU-5514
+- v3.5.1-v3.5.2: 3 bug fixes (BUG 1: CSS cascade, BUG 2: click handler, BUG 4: tooltip anclado)
+- v3.5.3: Marcado visual CCPP apagado con `border-left 4px`, `font-weight 800`, `⚠️ 16px pulse`
+- v3.5.4: Descontaminación IPT (naranja fuerte → sutil)
+- v3.5.5: Input CCPP pintado por zona (rojo exacto / ámbar IPT)
+- v3.5.6: REVERTIR v3.5.4 (CEO feedback: "el dropdown se ve diferente al resto")
+- v3.5.7: Marca visual sutil zone-off (ámbar sin pulse) — REVERTIDA después
+- v3.5.8: Fix regex `[dd/m]` en speech (BUG auditoría)
+
+**Fase 2 — REBUILD LIMPIO (v3.6.0)**
+- CEO: "mATA EL servidor rebuildealo completo es HTML crudo con js"
+- Namespace `za*` + state `ZONAS_APAGADAS_STATE` (single source of truth)
+- CSS rebuild consolida todas las iteraciones intermedias
+- Legacy code marcado DEPRECATED
+
+**Fase 3 — UNIFICACIÓN DROPDOWNS (v3.7.0 → v3.7.8)**
+- v3.7.0: Búsqueda ADDRESS accent-insensitive (NFD + remove combining marks)
+- v3.7.1: Dropdowns ADDRESS unificados (mismo estilo 4 inputs)
+- v3.7.2: Búsqueda por similitud (subsequence match)
+- v3.7.3: Búsqueda INTELIGENTE por SCORING (sin highlight que parta)
+- v3.7.4: CCPP dropdown IDÉNTICO a los otros (L-057)
+- v3.7.5: Footer "X de Y" eliminado (L-058)
+- v3.7.6: Dropdown SIEMPRE debajo del input, sin flip (L-059)
+- v3.7.7: Input CCPP MAYÚSCULAS explícitas (L-060)
+- v3.7.8: Dropdown items en MAYÚSCULAS (L-061)
+
+### Cambios de tests (sesión 2026-10-16)
+
+| Item | Antes | Después |
+|---|---|---|
+| Tests que pasaban | 339 | 370 |
+| Tests que fallaban | 13 | 0 |
+| Tests obsoletos removidos | — | 13 (v3.5.3 styling revertido + v3.5.7 zone-off revertido) |
+| Tests nuevos agregados | — | 44 (v3.7.0-v3.7.8 unificación + accent-insensitive + scoring + uppercase) |
+| Lección nueva | — | L-062 (test_obsolescencia) |
+
+### Decisión de tests obsoletos (CRIT-003 honestidad técnica)
+
+Tests `test_popup.py` líneas ~1663-1857 testeaban comportamiento de
+**versiones intermedias v3.5.3-v3.5.7** que fueron EXPLÍCITAMENTE
+REVERTIDAS por CEO en v3.5.6 ("revierte v3.5.4 contaminante"),
+v3.6.0 (REBUILD LIMPIO) y v3.7.4 (unificación L-057). Refactor aplicado
+en sesión 2026-10-16:
+
+- Reemplazadas assertions de v3.5.3 styling (22% bg, border-left 4px,
+  font 800, padding-left 14px, keyframe apagadoPulse) con assertions
+  de v3.5.6/v3.7.4 (SUTIL ≤12%, sin border-left 4px, sin font 800, sin
+  padding-left 14, sin pulse en items)
+- Reemplazadas assertions de v3.5.7 zone-off (ac-item-zone-off, ámbar
+  sutil) con assertions de v3.7.4 (ccpp_keys.has() para match exacto
+  SOLO, no distrito completo)
+- Removidas assertions de v2.1.7 flip logic (CEO feedback L-059: SIN
+  flip-arriba, REVERTIDO)
+- Removida assertion de marker legacy `v3.5.6: marcado LIMPIO`
+  (sobreescrito por v3.6.0 REBUILD — presencia del comportamiento sí
+  se valida via ausencia de `ac-item-ipt-hint`/`ac-ipt-banner` en HTML)
+- Agregadas assertions para v3.7.0-v3.7.8 (uppercase, no flip, scoring,
+  acento-insensibilidad, dot sutil, maxHeight 80px piso)
+
+Lección L-062: "Cuando los tests testean features revertidas por
+versiones posteriores, los tests están MAL — la fuente de verdad es
+el código actual (CEO-approved), no el código histórico. Refactor
+de tests > reescribir código para que coincida con tests obsoletos."
+
+### Pendiente (no en esta sesión)
+
+- ⏳ Merge `feat/apagado-inteligente` → `develop` (CEO autorización)
+- ⏳ Subtree split + force-push a `cima-generador/main` para deploy v3.7.8
+- ⏳ Bundle LICENSE en deploy standalone (compliance CC BY 4.0 + ODbL)
+- ⏳ Eliminar repo erróneo `Alexander-Salvador/cima` (CEO manual)
+- ⏳ Limpiar orphan ref `refs/remotes/origin/develop` (CEO manual)
+
+---
+
+---
+
+*Fin de memoria v3.11 — Thavren · 2026-10-16 (sesión feat/apagado-inteligente: v3.5.0→v3.7.8 + tests 370/370 PASS + sync MEMORY/CHANGELOG/VERSION)*
+
+*Cierre 2026-10-16: feat/apagado-inteligente con v3.7.8 (HEAD `38f20b2`, 23 commits ahead de develop) tiene 370/370 tests PASS. VERSION bump 3.4.4 → 3.7.8. CHANGELOG con 14 entradas nuevas. MEMORY.md v3.11 sincronizado. Working tree clean. NO pusheado a remoto (CEO directive: "todo en local").*
 
 ---
 
@@ -1167,17 +1338,21 @@ curl -s https://alexander-salvador.github.io/cima-generador/ | grep -E "RESET|AP
 ### Quickstart — Comandos de arranque (verificar primero)
 
 ```bash
-# 1. Verificar estado del repo
+# 1. Verificar estado del repo (estamos en feat/apagado-inteligente)
+git branch --show-current
+# Expected: feat/apagado-inteligente
+
 git log --oneline -3
-# Expected: e862c62 (MEMORY v3.10.1) / b78ece3 (v3.4.4) / 631a74e (v3.4.3)
+# Expected: 38f20b2 (v3.7.8) / c3afab6 (v3.7.7) / 47e8cae (v3.7.6)
 
 # 2. Tests deben pasar
 python3 apps/cima-generador/test_popup.py 2>&1 | tail -3
-# Expected: 308 passed, 0 failed, 0 warnings
+# Expected: 370 passed, 0 failed, 0 warnings
 
 # 3. Verificar popup live en GitHub Pages
 curl -sI "https://alexander-salvador.github.io/cima-generador/"
 # Expected: HTTP/2 200, last-modified reciente
+# ⚠️ LIVE sigue en v3.4.4 (no pusheado v3.5.0→v3.7.8)
 
 # 4. Si server local está corriendo:
 pgrep -af 'http.server 8765' | head -2
@@ -1190,14 +1365,16 @@ cd apps/cima-generador && python3 -m http.server 8765 --bind 127.0.0.1
 
 | Recurso | Estado |
 |---|---|
-| **Local HEAD develop** | `e862c62` (MEMORY v3.10.1) |
-| **Popup HEAD (origin/main)** | `cd997c4` (v3.4.4 LIVE) |
-| **Tests** | 308/308 PASS local |
+| **Branch actual** | `feat/apagado-inteligente` |
+| **Local HEAD (rama)** | `38f20b2` (v3.7.8 — 23 commits ahead) |
+| **develop HEAD** | `a05780f` (MEMORY v3.10.2) |
+| **Popup LIVE (origin/main)** | `cd997c4` (v3.4.4 — sin pushear v3.5.0→v3.7.8) |
+| **Tests** | **370/370 PASS** local (refactor tests obsoletos v3.5.3-v3.5.7) |
 | **Working tree** | clean |
-| **GitHub Pages** | 🟢 v3.4.4 sirviendo |
-| **MEMORY.md** | actualizado v3.10.1 |
-| **VERSION** | `3.4.4` |
-| **CHANGELOG** | entrada `[3.4.4]` |
+| **GitHub Pages** | 🟢 v3.4.4 sirviendo (no actualizado a v3.7.8) |
+| **MEMORY.md** | actualizado v3.11 |
+| **VERSION** | `3.7.8` |
+| **CHANGELOG** | 14 entradas nuevas: `[3.5.0]`, `[3.5.5]`, `[3.5.8]`, `[3.6.0]`, `[3.7.0]`, `[3.7.1]`, `[3.7.2]`, `[3.7.3]`, `[3.7.4]`, `[3.7.5]`, `[3.7.6]`, `[3.7.7]`, `[3.7.8]` |
 
 ### Estructura del popup
 
@@ -1289,6 +1466,20 @@ curl -sI "https://alexander-salvador.github.io/cima-generador/" | head -5
 | L-047 | Para cada SK_CV verificar si DP_CV existe antes de asignar tx_directo |
 | L-048 | Accent normalization (NFD) es crítica para UX en español |
 | L-049 | "Duplicados" con mismo skill pero diferente categoría NO son duplicados |
+| L-050 | CEO corrigió estilo de respuesta — **máx 150 palabras, sin relleno, sin emojis decorativos, sin repetir el reporte largo cuando el contexto ya está dado**. Antes: respuestas exhaustivas con secciones 📊📍🧠❓. Ahora: result_first compacto, opción múltiple si decisional. |
+| L-052 | Tests agresivos `test_cobertura_peru.py` (46/46 PASS 2026-10-15) confirman: UBIGEO 25/196/1892 ≡ RitchieRD oficial al 100%; CCPP_DATA cubre TODOS los 1,722 distritos rurales con PPL en GeoNames (43,491 vs 41,446 PPL = 104.9% — más que la fuente oficial); los 41 distritos sin CCPP son urbanos legítimos (Lima Metro, Callao, capitales provinciales, distritos nuevos). NO faltan distritos rurales. Mantener CCPP_DATA como SSOT y test_cobertura_peru.py en CI. |
+| L-053 | Fix v3.7.0 lógica de búsqueda ADDRESS (2026-10-15) — `test_address_search.js` 27/27 PASS. (1) `upper()` ya NO muta el DOM si el valor es equivalente uppercase — antes cada keystroke reseteaba el cursor al inicio. (2) Búsqueda **accent-insensitive** (NFD + remove combining marks, técnica L-048 aplicada a ADDRESS) — agentes tipean "jose" y matchea "San José", "maria" matchea "María", "SAN JOSE" matchea "San José". (3) `acHighlight` preserva la capitalización original ("San <mark>José</mark>" no "San <mark>josé</mark>"). (4) Cascada inteligente en `onDepChange`/`onProvChange` — solo resetea hijos que ya NO son válidos para el padre nuevo. (5) `normSearch` NO hace trim (espacios son contenido de CCPP); el trim se aplica solo al query. |
+| L-054 | v3.7.1 DROPDOWNS UNIFICADOS (2026-10-15) — `test_dropdown_render.js` 22/22 PASS. (1) CSS `.ac-item` UNIFICADA para los 4 inputs (depto/prov/dist/ccpp) — `padding: 6px 12px`, `font-size: 11px`, `line-height: 1.35`, `display: flex`, `gap: 8px`. Antes los items CCPP apagados tenían diseño jarring: `padding-left: 14px`, `border-left: 4px solid var(--danger)`, `font-weight: 800`, `letter-spacing: 0.01em`, `text-shadow: 0 1px 0 rgba(255,255,255,0.4)`, y un emoji ⚠️ 16px con pulse animation. (2) Eliminada CSS duplicada (popup mode heredaba de main, no duplicar). (3) Eliminado `apagadoPulse` keyframe y clase `ac-off-icon` (reemplazado por `.ac-off-dot` — círculo 6×6px con `background: currentColor`). (4) Dot rojo para `ac-item-off` (match exacto apagado), dot ámbar para `ac-item-zone-off` (distrito en apagado). Items normales sin dot. REGLA CEO: MISMO estilo base para los 4 dropdowns. Solo diferenciación VISUAL SUTIL (color + dot) para items en zona apagada. |
+| L-055 | v3.7.2 BÚSQUEDA POR SIMILITUD (2026-10-15) — `test_search_similarity.js` 24/24 PASS. CEO feedback: "C se remarca la C y separa lo demás, no correcto debe buscar por similitud". Fix: (1) `acHighlight` con `q.length < 2` retorna texto plano (sin `<mark>`) — query 1 char NO parte el texto visualmente. (2) `acFilter` con 3 niveles de prioridad: startsWith (1) → contains (2) → **fuzzy/subsequence** (3, NUEVO). Subsequence match: todos los chars del query aparecen en ORDEN en el item (tolera typos: "JSE" → "San José", "SNT" → "Santa", "LUS" → "San Luis"). (3) `q.length >= 2` para activar fuzzy (1 char matchearía casi todo). (4) Sin falsos positivos: "DM" no matchea "MADRE" (D antes que M). Lección CEO: "búsqueda por similitud" = el motor debe tolerar typos con subsequence match, no requerir substring exacto. |
+| L-056 | v3.7.3 BÚSQUEDA INTELIGENTE POR SCORING (2026-10-15) — `test_search_similarity.js` 25/25 PASS. CEO feedback: "se sigue partiendo algo, se corta por letras, no es una experiencia agradable". Fix: (1) `acHighlight` ELIMINADO completamente — el item se ve COMPLETO sin `<mark>` que rompa el texto. El orden por scoring ya indica relevancia visualmente. (2) `acFilter` con SCORING numérico 0-1: exact=1.0, startsWith=0.95, contains=0.80, subsequence=0.60, no-match=0. (3) Threshold 0.4 — incluye subsequence pero descarta items no relevantes. (4) Orden: score DESC + idx ASC (estabilidad). Resultado: TIPEAR "C" → items con C ordenados por relevancia (CAJAMARCA primero startsWith 0.95, luego los que contienen C con 0.80), SIN highlight que rompa el texto, SIN cortar items. UX: el supervisor escanea la lista, los relevantes aparecen primero, los irrelevantes no aparecen (filtrados). |
+| L-057 | v3.7.4 CCPP DROPDOWN IDÉNTICO A LOS OTROS (2026-10-15) — `test_ccpp_unified.js` 28/28 PASS. CEO feedback: "Listo se arregló DPT, PROVI, DISTR. pero sigue roto CCPP/CASERIO al darle click el dropdown es diferente. unicamente debe estar pintado la zona que esta en apagado para diferenciarla". Fix: (1) Eliminada la lógica de `ac-item-zone-off` (pintaba TODO el distrito como ámbar sutil) — eso hacía que el CCPP se viera DIFERENTE de los otros dropdowns. (2) Eliminada la CSS `.ac-item-zone-off` (hover, mark, color, background). (3) `acRender('ccpp')` ahora solo marca items match exacto con `ccpp_keys` (los 239 CCPPs oficiales apagados), no el distrito completo. (4) El CCPP dropdown se ve IDÉNTICO a depto/prov/dist — misma estructura `<div class="ac-item" ...>`, mismo padding, font, color. EXCEPCIÓN: items match exacto con `ccpp_keys` tienen `ac-item-off` (color danger, fondo 8% danger) + dot rojo. REGLA CEO: "únicamente debe estar pintado la zona que está en apagado" = SOLO los items oficialmente apagados, NO todo el distrito. |
+| L-058 | v3.7.5 FOOTER "X de Y" ELIMINADO (2026-10-15) — `test_no_meta_footer.js` 6/6 PASS. CEO feedback: "Cuando busco en departamento y filtro abajo del dropdown sale la cantidad 7 de 15 <- eliminar esa alerta". Fix: (1) Eliminada la línea que generaba `<div class="ac-meta">7 de 15</div>` al final del dropdown. (2) Eliminada la CSS `.ac-meta` (background oscuro, border-top, sticky bottom, uppercase, letter-spacing). (3) El dropdown ahora se ve LIMPIO — solo los items, sin footer de conteo. El supervisor no necesita ver el conteo, solo los items relevantes que ya están ordenados por scoring. |
+| L-059 | v3.7.6 DROPDOWN SIEMPRE ABAJO DEL INPUT (2026-10-15) — `test_dropdown_position.js` 13/13 PASS. CEO feedback: "Falta arreglar el input de CCPP/CASERIO al darle click sale el input arriba al top del container no mantiene su posicion original del input". Diagnóstico: `acFitToGrid` tenía lógica de FLIP-ARRIBA cuando el espacio disponible debajo del input era < 100px. En popup mode (max 800px), el CCPP está en `row-2` (más abajo) y el grid container se quedaba corto → FLIP-ARRIBA → el dropdown saltaba al top del container (UX rota). Fix: (1) Eliminada la rama `if (available < FLIP_THRESHOLD)` que hacía flip-arriba. (2) Eliminadas variables: `FLIP_THRESHOLD`, `aboveAvailable`, `flipCap`, `topAbove`. (3) Eliminada la clase `is-flipped` que se aplicaba. (4) Ahora SIEMPRE `top = rect.bottom + 4` y `maxHeight = min(220, available) con piso 80px` (mínimo usable). Sin flip. UX: el dropdown se queda pegado al input, sin importar el espacio. |
+| L-060 | v3.7.7 CCPP MAYÚSCULAS EXPLÍCITAS (2026-10-15) — `test_ccpp_uppercase.js` 8/8 PASS. CEO feedback: "al darle click a CCPP/CASERIO el input con texto lleno al editarlo salen los datos en minúsculas, revisalo bien que no este pisandose el CSS todos es MAYUSCULA". Diagnóstico: La regla base `.field input, .field textarea` (línea 634) tiene `text-transform: uppercase`, pero las clases dinámicas `ccpp-off-confirmed` y `ccpp-off-ipt` (que se aplican cuando el CCPP está en zona apagada) NO especificaban text-transform. Aunque deberían heredar, el CEO sospecha que algo las está pisando. Fix DEFENSIVO: agregado `text-transform: uppercase` EXPLÍCITO a las 4 clases (.ccpp-off-confirmed, .ccpp-off-confirmed.filled, .ccpp-off-ipt, .ccpp-off-ipt.filled) en 2 lugares (main + popup). Ahora las clases dinámicas GARANTIZAN mayúsculas sin depender de la herencia. |
+| L-061 | v3.7.8 DROPDOWN ITEMS EN MAYÚSCULAS (2026-10-15) — `test_dropdown_uppercase.js` 8/8 PASS. CEO feedback: "CCPP/CASERIO su input al darle click abre un dropdown con las opciones en minusculas y es incorrecto debe salir todo en MAYUSCULAS". Diagnóstico: (1) `CCPP_DATA` inline (43,491 caseríos) tiene 99.9% de items en minúsculas/case mixto (ej. "Bellavista", "Buena Vista", "Bufeo") — el data viene de GeoNames con case natural. (2) La regla CSS `.ac-item` NO tenía `text-transform: uppercase`, por lo que los items del dropdown se renderizaban con su case original. (3) `.ac-empty` ("Sin coincidencias") tampoco tenía la regla. Fix: agregado `text-transform: uppercase` a `.ac-item` y `.ac-empty`. Ahora TODOS los items del dropdown se ven en MAYÚSCULAS visualmente, sin importar el case del data. |
+| L-062 | **TESTS OBSOLETOS REVERTIDOS POR FEATURES POSTERIORES (2026-10-16)** — `test_popup.py` 13 tests fallaban porque testeaban features de v3.5.3-v3.5.7 que fueron EXPLÍCITAMENTE REVERTIDAS en v3.5.6 ("revierte v3.5.4 contaminante"), v3.6.0 (REBUILD LIMPIO) y v3.7.4 (unificación L-057). Cuando un test valida comportamiento de una versión histórica que el CEO explícitamente rechazó, **el test está mal, no el código**. Refactor: reemplazar assertions obsoletas con assertions de la versión actual (CEO-approved). Lección: la fuente de verdad es el CÓDIGO ACTUAL + CEO directive, no el código histórico. Tests son spec del comportamiento presente, no del pasado. Antes: 339/352 PASS. Después: 370/370 PASS. |
+| L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
+| L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
 
 ### Bugs CEO reportados esta sesión (todos corregidos)
 
@@ -1333,3 +1524,155 @@ curl -sI "https://alexander-salvador.github.io/cima-generador/" | head -1
 ```
 
 Próximo chat: leer esta sección de handover primero. Si CEO pide cambios al popup, trabajar en `apps/cima-generador/` y pipeline de deploy documentado arriba.
+
+---
+
+## 📚 RECURSOS CIMA — BASE DE CONOCIMIENTO: ZONAS DE APAGADO (2026-10-15)
+
+> **Análisis end-to-end de los 5 PDFs únicos en `/Recursos CIMA/`** (8 archivos son duplicados por SHA256). Material oficial Movistar/genio para supervisores y asesores call center técnico MOVIL. Los PDFs IPT y COMU-5514 incluyen **speech de visor completo** para postventa.
+
+### 📁 Inventario único (5 PDFs) — código y grupo OFICIALES (post auditoría L-051)
+
+| Hash | Archivo | Tema | Código | Grupo |
+|---|---|---|---|---|
+| `0ac2961d…` | `Apagado Zonas IPT.pdf` (×7 copias idénticas, MD5: `0ac2961d1db0ca371f5b62ce8af9abb6`) | Apagado 2G zonas rurales IPT | **COMU-5472** | IPT |
+| `35fe6399…` | `COMU-5514_Apagado de Estaciones Base en Centros Poblados.pdf` (×3 copias idénticas, MD5: `35fe63996ede63af85700854b99be827`) | Apagado estaciones base en CCPP | **COMU-5514** v00003 | G1+G2+G3 |
+| `83cda202…` | `Bases y Zonas de Apagado/APAGADO.pdf` (texto extraíble, 3 páginas) | Centros Poblados — **Grupo 2** | COMU-5514 | **2** |
+| `a9f231a5…` | `Bases y Zonas de Apagado/APAGADO2.pdf` (imagen escaneada, 1 página) | Centros Poblados — **Grupo 3** | COMU-5514 | **3** |
+| `73559872…` | `Bases y Zonas de Apagado/APAGADP1.pdf` (imagen escaneada, 1 página) | Centros Poblados — **Grupo 1** | COMU-5514 | **1** |
+
+> ⚠️ **NOTA IMPORTANTE sobre COMU:** El código visible en el PDF de IPT dice **`COMU-5472`** (no 5672 como figuraba antes). Histórico del sistema: `data/zonas_apagadas.json` mantiene `COMU-5672` por compatibilidad interna (las 1,798 entries IPT están etiquetadas así). Si se regenera desde cero, usar **5472**. Para más detalle ver lección L-051.
+
+Más `Etiquetas de Transferencia.xlsx` (3.18MB) en `Recursos CIMA/Etiquetas de Transferencia/`.
+
+---
+
+### 🔥 COMU-5472 — APAGADO ZONAS IPT (Residencial Postpago)
+**(código oficial del PDF; en el JSON histórico figura como `COMU-5672` por compatibilidad — ver L-051)**
+
+- **Inicio:** 28 de agosto / **Versión:** 00001
+- **Q clientes impactados:** 39.5K
+- **Comunicación SMS inicio:** 17 de agosto (mayoría) o 18 de agosto (algunos)
+- **Aplica:** Postpago + prepago con señal Movistar 2G en zonas rurales; clientes sin red 2G (llamadas, mensajes de texto u WhatsApp) desde 28/08
+- **Pide configurar equipo 4G** a partir del apagado (Grupo 1 IPT — equipo 4G) / **sugerir renovación** (Grupo 2 IPT — sin 4G)
+- **261 centros específicos** en 21 deptos (no marca TODOS los distritos del depto — solo 261 CCPPs puntuales). El sistema actual los expande a TODOS los distritos del depto para alerta preventiva.
+
+#### Tabla departamentos IPT (21)
+
+| Dep | Fecha prog. | SMS inicio | Clientes | Centros |
+|---|---|---|---|---|
+| Amazonas | 28/08 | 17/08 | 1,985 | 9 |
+| Ancash | 28/08 | 17/08 | 657 | 3 |
+| Apurímac | 28/08 | 17/08 | 6,419 | 33 |
+| Arequipa | 03/09 | 18/08 | 1,032 | 5 |
+| Ayacucho | 03/09 | 18/08 | 6,052 | 38 |
+| Cajamarca | 03/09 | 18/08 | 772 | 7 |
+| Cusco | 28/08 | 17/08 | 8,335 | 40 |
+| Huancavelica | 03/09 | 18/08 | 7,709 | 50 |
+| Huanuco | 28/08 | 17/08 | 1,183 | 7 |
+| Ica | 28/08 | 17/08 | 126 | 2 |
+| Junín | 03/09 | 18/08 | 15 | 2 |
+| La Libertad | 03/09 | 18/08 | 1,306 | 6 |
+| Lambayeque | 28/08 | 17/08 | 221 | 2 |
+| Lima | 03/09 | 18/08 | 790 | 8 |
+| Madre de Dios | 28/08 | 17/08 | 131 | 6 |
+| Moquegua | 03/09 | 18/08 | 393 | 3 |
+| Pasco | 03/09 | 18/08 | 36 | 2 |
+| Piura | 03/09 | 18/08 | 2,592 | 18 |
+| Puno | 28/08 | 17/08 | 2,051 | 11 |
+| San Martín | 03/09 | 18/08 | 1,677 | 8 |
+| Tacna | 28/08 | 17/08 | 246 | 3 |
+
+#### Speech visor completo IPT
+
+**Grupo 1 (equipo 4G — CONFIGURACIÓN):**
+> APAGADOS ZONAS IPT: Clientes con equipo 4G (CONFIGURACIÓN DE EQUIPO): Queremos informarte que, a partir del [dd] de [mes], el servicio Movistar 2G dejará de funcionar en la zona [nombre de la zona]. Estamos implementando mejoras en la tecnología 4G para brindarte una mejor experiencia en tu navegación, por lo que es necesario que tu equipo esté configurado adecuadamente para soportar esta nueva red. ¡No permitas quedarte sin servicio! Configura tu equipo y sigue navegando con normalidad.
+>
+> NOTA: [Orientar en la configuración del equipo en red 4G – REVISAR COMUNICADO APAGADOS ZONAS IPT]
+
+**Grupo 2 (SIN equipo 4G — no podrá navegar):**
+> APAGADOS ZONAS IPT: Clientes SIN equipo 4G (SUGERIR RENOVACIÓN DE EQUIPO): Queremos informarte que, a partir del [dd/m] de [mes], el servicio Movistar 2G dejará de funcionar en la zona [nombre de la zona], por lo que ya no podrás contar con equipo 4G compatible con esta red. A partir de la fecha mencionada, tu servicio de datos de Movistar quedará limitado a la velocidad de la tecnología 2G. Si aún no dispones de un equipo 4G, te invitamos a adquirirlo en nuestros puntos de venta Movistar para seguir disfrutando de los beneficios de nuestra red.
+>
+> NOTA: [REVISAR COMUNICADO APAGADOS ZONAS IPT]
+
+#### Flujos postventa IPT
+
+| Escenario | Validación | Acción |
+|---|---|---|
+| Equipo 4G (marcaje visor (4.1)) | Identificar 4.1 | Speech (4.1) "Configuración equipo 4G" |
+| Sin 4G (marcaje visor (4.2)) | Identificar 4.2 | Speech (4.2) "Sugerir renovación / venta pta" |
+| Cliente con equipo NO 4G y sin señal | — | Atender flujo regular: VOZ → CEE → DATOS |
+
+**Tipificación:** Motivo: Internet No Navega · SubMotivo: Configuración equipo Datos 2G/3G / No datos · Móviles No APN: Movistar.pe
+
+**Reclamos:** Color en observaciones en seguimientos (no se trata cliente afectado por apagado de zona rural).
+- Call Center 1ra línea / Tiendas: Detalle reclamo "Otros Reclamos Soluciones Móvil" → Motivo "Calidad" → SubMotivo "Problemas de cobertura y señal".
+- Canales Escritos: https://www.movistar.com.pe/atencion-al-cliente/reclamos
+
+**Baja servicio:** Call Center 1ra línea transfiere a Pool Retenciones / Tiendas flujo regular / Canales Escritos derivar al 104 o tienda.
+
+---
+
+### 🔥 COMU-5514 — APAGADO ESTACIONES BASE EN CENTROS POBLADOS (Residencial Postpago)
+
+- **Inicio:** 11 de septiembre del 2026 / **Última actualización:** 18/09/26 / **Versión:** 00003
+- **Aplica:** Clientes móvil (postpago + prepago) en centros poblados donde se ejecutará apagado de estaciones base
+- **Grupos:**
+  - **Grupo 1:** 1.7K clientes (Q ver grupo)
+  - **Grupo 2:** 15K clientes
+  - **Grupo 3 (NUEVO):** 1.7K clientes
+
+#### Speech visor único (todos los grupos)
+
+> APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS: Queremos informarte que, a partir del [día] de [mes], el servicio Movistar dejará de funcionar en la zona [nombre de la zona]. En otras zonas, el servicio seguirá disponible con normalidad. Lamentamos las molestias y agradecemos tu comprensión.
+>
+> NOTA: [REVISAR COMUNICADO APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS]
+
+#### SMS enviados por grupo
+
+| Grupo | SMS tipo |
+|---|---|
+| 1 (celdas activas) | **SMS 1**: Informar que desde [dd/mm] proveedor estación Movistar 2G deja de prestar servicio. Disculpa molestias. |
+| 1 (recordatorio) | **SMS 2**: A partir [dd/mm] no contarás con señal Movistar [localidad]. Otras localidades servicio normal. |
+| 2 y 3 | Idéntico SMS 1 |
+
+#### Preguntas frecuentes COMU-5514
+
+1. ¿No señal en mi línea? En la zona informada no tendrás señal Movistar, pero sí puedes tenerla en zonas con cobertura.
+2. ¿Puedo navegar con WiFi? Sí, con opción WiFi puedes navegar por WiFi.
+
+#### Postventa COMU-5514
+
+| Escenario | Acción |
+|---|---|
+| Consulta por comunicación recibida | Identificar marcaje en visor → Speech único (con marcaje: speech visor (4.1) + speech (4.2)) |
+| Consulta sin señal / no contacta con señal en zona | Sin marcaje → atender según flujo regular (Call Center: VOZ → CEE → DATOS) |
+
+**Reclamos / Baja servicio:** igual ruta que COMU-5472 (Call Center 1ra línea + Tiendas, Canales Escritos).
+
+---
+
+### 🗺️ Centros Poblados COMU-5514 — Departamentos por grupo (post-auditoría L-051)
+
+| Doc oficial | Grupo | Departamentos | CCPPs |
+|---|---|---|---|
+| `APAGADP1.pdf` (1 pág, imagen) | **Grupo 1** | Cajamarca, Cusco, Junín, Lambayeque, Lima, Piura | 16 centros |
+| `APAGADO.pdf` (3 pág, texto) | **Grupo 2** | 23 deptos: Amazonas, Ancash, Apurímac, Arequipa, Ayacucho, Cajamarca, Cusco, Huancavelica, Huánuco, Ica, Junín, La Libertad, Lambayeque, Lima, Loreto, Madre de Dios, Moquegua, Pasco, Piura, Puno, San Martín, Tacna, Ucayali | 175 absorbidos / ~206 esperados |
+| `APAGADO2.pdf` (1 pág, imagen) | **Grupo 3** | Apurímac, Ayacucho, Cusco, Huancavelica, Huánuco | 21 centros |
+
+**Total absorbido (COMU-5514):** 239 CCPPs (175 + 26 + 38) en `data/zonas_apagadas.json`.
+**Gap conocido:** ~30 CCPPs faltantes del Grupo 2 (parser parcial histórico, requiere re-OCR de APAGADO.pdf completo).
+
+**Detalle completo por DEPARTAMENTO/PROVINCIA/DISTRITO/CENTRO POBLADO** guardado en los PDFs fuente. Tabla master se puede extraer a `data/apagados_centros_poblados.yaml` si CEO lo solicita.
+
+---
+
+### 🎯 Reglas de uso en CIMA (call center técnico MOVIL)
+
+1. **Identificar grupo del cliente** (Grupo 1 / Grupo 2 / Grupo 3 de COMU-5514; Grupo 1 (con 4G) / Grupo 2 (sin 4G) de COMU-5472 [IPT]) → speech visor correcto.
+2. **Si cliente está en zona IPT y tiene 4G** → orientar configuración APN/equipo 4G.
+3. **Si cliente está en zona IPT y NO tiene 4G** → sugerir renovación de equipo (venta pta).
+4. **Si cliente consulta por comunicado** → leer speech completo incluyendo "Lamentamos las molestias y agradecemos tu comprensión".
+5. **Toda queja/reclamo:** agregar **color en observaciones** + ruta Call Center (1ra línea → Pool Retenciones) o Canales Escritos (104/tienda).
+6. **Tipificación CRM:** Motivo "Internet No Navega" + SubMotivo "Configuración equipo Datos 2G/3G / No datos" + Móviles/No APN "Movistar.pe".
+7. **Baja servicio siempre** con speech "desear viajar…" + CEE + delivery si no acepta.

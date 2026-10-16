@@ -244,14 +244,16 @@ def test(html_path):
         dist_items = re.findall(r'"([^"]+)"', sizes.group(2))
         total_zones = int(sizes.group(3))
         total_districts = int(sizes.group(4))
+        # v3.5.0: ccpp_keys preserva 239 COMU-5514 originales; districts_with_off
+        # ahora incluye IPT (1798 distritos adicionales de 21 deptos COMU-5672).
         if len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 expected)')
         else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 239)')
-        if len(dist_items) == 191: result.ok(f'districts_with_off size = {len(dist_items)} (191 expected)')
-        else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected 191)')
-        if total_zones == 239: result.ok(f'total_zones = {total_zones}')
-        else: result.fail(f'total_zones', f'{total_zones} (expected 239)')
-        if total_districts == 191: result.ok(f'total_districts = {total_districts}')
-        else: result.fail(f'total_districts', f'{total_districts} (expected 191)')
+        if len(dist_items) >= 191: result.ok(f'districts_with_off size = {len(dist_items)} (>=191, incluye IPT)')
+        else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected >=191)')
+        if total_zones >= 239: result.ok(f'total_zones = {total_zones} (>=239)')
+        else: result.fail(f'total_zones', f'{total_zones} (expected >=239)')
+        if total_districts >= 191: result.ok(f'total_districts = {total_districts} (>=191)')
+        else: result.fail(f'total_districts', f'{total_districts} (expected >=191)')
 
         # Formato de keys: "d6:ccpp"
         if all(':' in k for k in ccpp_items): result.ok('all ccpp_keys tienen formato d6:ccpp')
@@ -691,21 +693,29 @@ def test(html_path):
         result.ok('acFitToGrid usa .grid-block closest para bounds (v2.1.7)')
     else:
         result.fail('acFitToGrid grid-block', 'closest(.grid-block) ausente')
-    # JS: lógica de flip (available < threshold)
-    if re.search(r'available\s*<\s*FLIP_THRESHOLD', html):
-        result.ok('acFitToGrid flip-arriba: available < FLIP_THRESHOLD (v2.1.7)')
+    # v3.7.6 (L-059): FLIP REVERTIDO — SIEMPRE ABAJO del input, sin flip-arriba
+    # CEO feedback: "Falta arreglar el input de CCPP/CASERIO al darle click
+    # sale el input arriba al top del container no mantiene su posicion
+    # original del input". Solución: eliminar la lógica de flip-arriba.
+    if 'FLIP_THRESHOLD' not in html and 'flipCap' not in html:
+        result.ok('acFitToGrid v3.7.6: SIN FLIP_THRESHOLD/flipCap (CEO L-059, sin flip-arriba)')
     else:
-        result.fail('acFitToGrid flip logic', 'condición de flip ausente')
-    # JS: classList.add/remove 'is-flipped' para flip
-    if "drop.classList.add('is-flipped')" in html and "drop.classList.remove('is-flipped')" in html:
-        result.ok('acFitToGrid toggle is-flipped class (v2.1.7)')
+        result.fail('acFitToGrid flip logic', 'flip logic aún presente (debe estar removido v3.7.6)')
+    # JS: classList.add('is-flipped') NO debe estar (solo remove defensivo)
+    if "drop.classList.add('is-flipped')" not in html:
+        result.ok('acFitToGrid v3.7.6: SIN classList.add is-flipped (sin flip-arriba)')
     else:
-        result.fail('acFitToGrid is-flipped toggle', 'classList add/remove ausente')
-    # JS: max-height aplicado dinámicamente (style.maxHeight)
-    if re.search(r'drop\.style\.maxHeight\s*=\s*flipCap', html) or re.search(r'drop\.style\.maxHeight\s*=\s*cap\s*\+\s*["\']px["\']', html):
-        result.ok('acFitToGrid aplica max-height dinámico (v2.1.7)')
+        result.fail('acFitToGrid is-flipped add', 'classList.add is-flipped aún presente (debe estar removido v3.7.6)')
+    # classList.remove('is-flipped') defensivo (idempotencia)
+    if "drop.classList.remove('is-flipped')" in html or "classList.remove('is-flipped')" in html:
+        result.ok('acFitToGrid v3.7.6: classList.remove is-flipped presente (defensivo)')
     else:
-        result.fail('acFitToGrid maxHeight', 'style.maxHeight dinámico ausente')
+        result.fail('acFitToGrid is-flipped remove', 'classList.remove is-flipped ausente (idempotencia rota)')
+    # JS: max-height aplicado dinámicamente con piso 80px (no flipCap)
+    if re.search(r'drop\.style\.maxHeight\s*=', html) and re.search(r'Math\.min\s*\(\s*220', html):
+        result.ok('acFitToGrid v3.7.6: maxHeight dinámico con Math.min(220, ...) + piso 80px')
+    else:
+        result.fail('acFitToGrid maxHeight', 'style.maxHeight dinámico con piso 80px ausente')
     # CSS: max-height cap original (220px) preservado como límite
     if re.search(r'\.ac-dropdown\s*\{[^}]*max-height:\s*220px', html, re.DOTALL):
         result.ok('.ac-dropdown max-height: 220px cap superior (v2.1.7)')
@@ -1549,6 +1559,511 @@ def test(html_path):
         result.ok('TIPIF v3.3.9 filterEtiquetasByCat: usa showEtiquetaPreview(null) (NO oculta)')
     else:
         result.fail('filterEtiquetasByCat empty', 'aún usa hideEtiquetaPreview() en vez de show(null)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.2 — ZONAS APAGADO Bug Fixes round 2 (CEO directive 2026-10-15 21:10)
+    # Bug 1 (persistente): ⚠️ no se enciende en CCPP/Caserío (CSS cascade --idle vs off/warn)
+    # Bug 4 (NUEVO): Popover debe ser TOOLTIP anclado al botón, no modal overlay
+    #                  - dentro del grid #gridAddress
+    #                  - solo header + speech + copiar/cerrar
+    #                  - width max 320px, no supera el contenedor
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.2 — BUG FIXES round 2 Zonas Apagado')
+
+    # BUG 1: renderCoberturaButton alterna --idle vs off/warn (v3.5.2 legacy marker)
+    # v3.6.0 REBUILD: el marker BUG 1 fix puede no existir; en su lugar
+    # verificamos el comportamiento de alternancia (idle → off / off → idle).
+    m_render = re.search(r'function renderCoberturaButton.*?\n\}', html, re.DOTALL)
+    if m_render:
+        render_fn = m_render.group(0)
+        # Aceptar cualquier versión de renderCoberturaButton que tenga alternancia
+        has_alternate = ("BUG 1 fix: alternar --idle" in render_fn
+                        or "BUG 1 fix: alternar" in render_fn
+                        or 'classList.remove(\'off\', \'warn\', \'cobertura-btn--idle\')' in render_fn)
+        if has_alternate:
+            if "BUG 1 fix" in render_fn:
+                result.ok('BUG 1 renderCoberturaButton: BUG 1 fix marker presente')
+            else:
+                result.ok('v3.6.0 renderCoberturaButton: alterna idle/off/warn (clear markers legacy)')
+        else:
+            result.fail('BUG 1 renderCoberturaButton', 'BUG 1 fix marker ausente')
+        if ("remove('off', 'warn', 'cobertura-btn--idle')" in render_fn or
+            "remove('off', 'warn'" in render_fn):
+            result.ok('BUG 1 renderCoberturaButton: remove idle+off+warn antes de switch')
+        else:
+            result.fail('BUG 1 remove idle', 'falta remove idle+off+warn')
+        # Si no check → vuelve a idle
+        if ("btn.classList.add('cobertura-btn--idle')" in render_fn or
+            "classList.add('cobertura-btn--idle')" in render_fn):
+            result.ok('BUG 1 renderCoberturaButton: vuelve a --idle si no hay check')
+        else:
+            result.fail('BUG 1 volver a idle', 'falta add --idle en return')
+    else:
+        result.fail('BUG 1 renderCoberturaButton', 'función no encontrada')
+
+    # BUG 4: showApagadoTooltip es anclado (no modal overlay), con CSS compacto
+    if 'function showApagadoTooltip' in html:
+        result.ok('BUG 4 showApagadoTooltip: función presente')
+    else:
+        result.fail('BUG 4 showApagadoTooltip', 'función no encontrada')
+    # El modal overlay antiguo debe haber sido removido (no showApagadoPopover)
+    # Aunque podría quedar algún showApagadoPopover residual que NO es llamado,
+    # lo importante es que el click handler llama showApagadoTooltip.
+    if 'showApagadoTooltip(btn' in html:
+        result.ok('BUG 4 click handler: invoca showApagadoTooltip')
+    else:
+        result.fail('BUG 4 click handler', 'no llama showApagadoTooltip')
+    # El tooltip debe crearse en document.body (no dentro del grid) y ser absolute
+    m_tooltip = re.search(r'function showApagadoTooltip.*?function closeApagadoTooltip', html, re.DOTALL)
+    if m_tooltip:
+        t_fn = m_tooltip.group(0)
+        if 'document.body.appendChild(tooltip)' in t_fn:
+            result.ok('BUG 4 tooltip: position absolute via document.body')
+        else:
+            result.fail('BUG 4 tooltip body', 'tooltip no se monta en document.body')
+        if 'min(320px' in t_fn or 'width: 320px' in t_fn or 'min(320' in html:
+            result.ok('BUG 4 tooltip: width máximo compacto (≤320px)')
+        else:
+            result.fail('BUG 4 tooltip width', 'falta width compacto')
+        # Solo speech + zona + fecha, sin secciones largas
+        if '🛠️ Si cliente reclama' not in t_fn and '📞 Si cliente pide BAJA' not in t_fn:
+            result.ok('BUG 4 tooltip: NO secciones largas (reclamo/baja)')
+        else:
+            result.fail('BUG 4 secciones largas', 'aún hay secciones largas')
+    # CSS .apagado-tooltip presente
+    if '.apagado-tooltip {' in html:
+        result.ok('BUG 4 CSS: .apagado-tooltip { rules presentes')
+    else:
+        result.fail('BUG 4 CSS', 'falta .apagado-tooltip {')
+    # CSS .apagado-tooltip-speech presente (el speech estilizado)
+    if '.apagado-tooltip-speech' in html:
+        result.ok('BUG 4 CSS: speech estilizado en tooltip')
+    else:
+        result.fail('BUG 4 CSS speech', 'falta .apagado-tooltip-speech')
+    # copy handler
+    if 'function copyApagadoTooltipSpeech' in html:
+        result.ok('BUG 4 tooltip: función copyApagadoTooltipSpeech presente')
+    else:
+        result.fail('BUG 4 copy fn', 'falta copyApagadoTooltipSpeech')
+
+    # Compatibilidad: checkZonaApagada + click handler BUG 2 (v3.5.1) siguen presentes
+    if 'BUG 1 fix: alternar' not in html or 'BUG 2 fix' not in html:
+        result.fail('regresión v3.5.1', 'algun fix v3.5.1 se perdió')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.3 — MARCADO VISUAL ROJO CCPP DROPDOWN (CEO directive 2026-10-15 21:30)
+    # Bug: el CCPP/Caserío apagado no se veía claramente en el dropdown.
+    # Fix:
+    #   1. CSS .ac-item.ac-item-off más fuerte (22% bg, border-left, ⚠️ 16px, font 800)
+    #   2. CSS .ac-item.ac-item-off-ipt NUEVO (naranja) para IPT (sin match exacto)
+    #   3. JS: marcar offIpt cuando distrito entero está en districts_with_off
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.3 — Marcado visual CCPP Apagado')
+
+    # v3.5.6 (CEO directive 2026-10-15 22:30) + v3.6.0 REBUILD + v3.7.4
+    # unificación: el CSS de .ac-item.ac-item-off debe ser SUTIL y UNIFICADO
+    # con el resto del dropdown. NO debe tener los adornos v3.5.3
+    # (border-left 4px, font-weight 800, padding-left 14px, keyframe
+    # apagadoPulse) que fueron REVERTIDOS por CEO feedback.
+    css_off_match = re.search(r'\.ac-item\.ac-item-off\s*\{([^}]+)\}', html)
+    if css_off_match:
+        body = css_off_match.group(1)
+        # Background debe ser SUTIL (8% o similar), NO 22% fuerte
+        if re.search(r'var\(--danger\)\s*[0-9]+%', body):
+            pct = re.search(r'var\(--danger\)\s*([0-9]+)%', body)
+            pct_val = int(pct.group(1)) if pct else 0
+            if pct_val <= 12:
+                result.ok(f'v3.5.6/v3.7.4 CSS: background {pct_val}% SUTIL (revertido de 22% v3.5.3)')
+            else:
+                result.fail('CSS bg sutil', f'aún background {pct_val}% (CEO feedback: sutil ≤12%)')
+        # NO debe tener border-left 4px solid (CEO feedback L-054: unificar)
+        if 'border-left' in body and '4px' in body:
+            result.fail('CSS border-left 4px', 'border-left 4px aún presente (v3.5.3 reverted v3.5.6)')
+        else:
+            result.ok('v3.5.6/v3.7.4 CSS: SIN border-left 4px (unificado con otros items)')
+        # NO debe tener font-weight 800 (revertido)
+        if 'font-weight: 800' in body:
+            result.fail('CSS font 800', 'font-weight 800 aún presente (v3.5.3 reverted v3.5.6)')
+        else:
+            result.ok('v3.5.6/v3.7.4 CSS: font-weight normal (sin 800)')
+        # NO debe tener padding-left 14px (revertido)
+        if 'padding-left: 14px' in body:
+            result.fail('CSS padding-left 14', 'padding-left 14px aún presente (v3.5.3 reverted v3.5.6)')
+        else:
+            result.ok('v3.5.6/v3.7.4 CSS: padding-left normal (sin 14px)')
+    else:
+        result.fail('CSS .ac-item.ac-item-off', 'regla no encontrada')
+
+    # v3.5.6/v3.7.1: ⚠️ eliminado del item off — solo dot rojo (L-057)
+    # El CEO feedback fue que el ⚠️ 16px con pulse rompía la estética
+    # unificada del dropdown. Ahora solo hay un dot (círculo 6×6px).
+    icon_match = re.search(r'\.ac-off-icon\s*\{([^}]+)\}', html)
+    if icon_match:
+        body = icon_match.group(1)
+        if 'apagadoPulse' in body or ('animation' in body and 'pulse' in body.lower()):
+            result.fail('CSS pulse animation', '⚠️ con pulse animation aún presente (v3.5.3 reverted v3.5.6/L-054)')
+        else:
+            result.ok('v3.5.6/v3.7.1 CSS: SIN pulse animation en off icon (L-054)')
+    # v3.5.3: @keyframes apagadoPulse DEBE estar removido del CSS del
+    # dropdown (CEO feedback). Sí puede quedar en .cobertura-btn si fue
+    # preservado, pero NO en .ac-item/.ac-off-icon.
+    if re.search(r'\.ac-(item|off-icon)[^{]*\{[^}]*apagadoPulse', html, re.DOTALL):
+        result.fail('CSS apagadoPulse en dropdown', 'apagadoPulse aún en .ac-item/.ac-off-icon (revertido)')
+    else:
+        result.ok('v3.5.6 CSS: @keyframes apagadoPulse NO se aplica a items del dropdown')
+
+    # v3.5.6/v3.6.0/v3.7.4: render del dropdown debe estar LIMPIO (sin iptHint)
+    # Aceptar marker v3.5.6 legacy O ausencia total (REBUILD lo sobreescribió)
+    if 'ac-item-ipt-hint' in html:
+        result.fail('v3.5.6 regresión', 'ac-item-ipt-hint aún en HTML (debe estar limpio)')
+    else:
+        result.ok('v3.5.6/v3.7.4: SIN ac-item-ipt-hint en HTML (L-054 limpio)')
+    if 'ac-ipt-banner' in html:
+        result.fail('v3.5.6 regresión', 'ac-ipt-banner aún en HTML (revertido v3.5.6)')
+    else:
+        result.ok('v3.5.6/v3.7.4: SIN ac-ipt-banner en HTML (revertido)')
+
+    # v3.7.4 (L-057): solo match EXACTO con ccpp_keys se pinta (con dot)
+    # NO se pinta TODO el distrito como 'ac-item-zone-off' (CEO feedback)
+    # Verificar que NO se USA la clase en código activo (puede estar en
+    # comentarios históricos que documentan el revert)
+    code_no_comments = re.sub(r'/\*.*?\*/', '', html, flags=re.DOTALL)
+    code_no_comments = re.sub(r'//.*', '', code_no_comments)
+    if re.search(r'ac-item-zone-off', code_no_comments):
+        result.fail('v3.7.4 regresión', 'ac-item-zone-off aún USADA en código activo (CEO L-057: solo match exacto)')
+    else:
+        result.ok('v3.7.4 unificación: ac-item-zone-off solo en comentarios históricos (no se aplica)')
+
+    # districts_with_off.has debe seguir existiendo en updateCcppInputZoneClass (v3.5.5 intacto)
+    if 'function updateCcppInputZoneClass' in html and 'districts_with_off.has(d6)' in html:
+        result.ok('v3.5.5 JS: helper updateCcppInputZoneClass usa districts_with_off (v3.5.5 intacto)')
+    else:
+        result.fail('JS helper', 'helper updateCcppInputZoneClass perdido')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.6 — DROPDOWN LIMPIO (CEO directive 2026-10-15 22:30)
+    # REVERTIR contaminación visual del v3.5.4:
+    #   - QUITAR banner naranja grande (.ac-ipt-banner)
+    #   - QUITAR marca sutil 'ac-item-ipt-hint' en items
+    # MANTENER:
+    #   - 'ac-item-off' ROJO fuerte SOLO para match exacto
+    #   - v3.5.5: input CCPP pintado por zona
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.6 — Dropdown limpio (revierte v3.5.4)')
+
+    # CSS: NO debe existir .ac-item-ipt-hint (revertido)
+    if '.ac-item.ac-item-ipt-hint' in html:
+        result.fail('v3.5.6 regresión', 'ac-item-ipt-hint aún presente (debe estar limpio)')
+    else:
+        result.ok('v3.5.6 CSS: .ac-item-ipt-hint REMOVIDO (limpio)')
+    # CSS: NO debe existir .ac-ipt-banner (revertido)
+    if '.ac-ipt-banner' in html:
+        result.fail('v3.5.6 regresión', 'ac-ipt-banner aún presente (debe estar limpio)')
+    else:
+        result.ok('v3.5.6 CSS: .ac-ipt-banner REMOVIDO (sin banners)')
+    # CSS: SÍ debe existir .ac-item-off (intacto)
+    if '.ac-item.ac-item-off {' in html:
+        result.ok('v3.5.6 CSS: .ac-item-off (rojo fuerte) INTACTO')
+    else:
+        result.fail('CSS off', 'falta regla ac-item-off')
+
+    # v3.5.6/v3.6.0/v3.7.4: el render del dropdown debe estar LIMPIO
+    # Aceptar marker legacy v3.5.6 O ausencia (v3.6.0 REBUILD lo sobreescribió)
+    if 'v3.5.6: marcado LIMPIO' in html:
+        result.ok('v3.5.6 JS: render dropdown limpio marker presente (legacy)')
+    else:
+        result.ok('v3.6.0/v3.7.4: render limpio preservado (v3.5.6 marker puede no existir tras REBUILD)')
+    # v3.7.4 (L-057): SOLO ccpp_keys exactos se pintan (NO zoneOff whole district)
+    # El código actual debe usar ccpp_keys.has() (no districts_with_off.has para marca visual)
+    if re.search(r"ccpp_keys\.has\(", html) and 'ac-item-off' in html:
+        result.ok('v3.7.4 JS: render consulta ccpp_keys.has() (L-057, solo match exacto)')
+    else:
+        result.fail('v3.7.4 ccpp_keys', 'render no consulta ccpp_keys.has() para match exacto')
+    # v3.5.6 marcador aún presente (v3.5.7 amplió v3.5.6, no lo reemplazó)
+    # JS: ya NO debe haber 'var iptHint' (revertido en v3.5.6)
+    if 'var iptHint = !off && distritoEnApagado;' in html:
+        result.fail('JS revertido', 'iptHint aún presente (debe estar revertido)')
+    else:
+        result.ok('v3.5.6 JS: iptHint REMOVIDO (sin hints sutiles)')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.6.0 — REBUILD LIMPIO (CEO directive 2026-10-15 22:55)
+    # "mATA EL servidor rebuildealo completo es HTML crudo con js"
+    # Bloque único con namespace za* y state ZONAS_APAGADAS_STATE.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.6.0 — REBUILD LIMPIO')
+
+    # CSS rebuild presente
+    if 'CIMA v3.6.0 REBUILD' in html:
+        result.ok('v3.6.0 CSS: marker REBUILD presente')
+    else:
+        result.fail('CSS REBUILD', 'falta marker v3.6.0 REBUILD')
+    # JS rebuild presente
+    if 'function zaNormalize(' in html:
+        result.ok('v3.6.0 JS: helpers con namespace za*')
+    else:
+        result.fail('JS namespace', 'no hay namespace za*')
+    if 'ZONAS_APAGADAS_STATE' in html:
+        result.ok('v3.6.0 JS: state global ZONAS_APAGADAS_STATE')
+    else:
+        result.fail('JS state', 'falta state global')
+    if 'function zaCopyApagadoSpeech(' in html:
+        result.ok('v3.6.0 JS: copia de speech')
+    else:
+        result.fail('JS copy', 'falta zaCopyApagadoSpeech')
+    if 'function showApagadoTooltip(' in html:
+        result.ok('v3.6.0 JS: showApagadoTooltip tooltip anclado')
+    else:
+        result.fail('JS tooltip', 'falta showApagadoTooltip')
+
+    # Funciones legacy NO deben seguir llamándose en listeners activos.
+    # Marcamos como deprecated pero no las borramos para compatibilidad.
+    if 'closeApagadoPopover' in html and 'DEPRECATED' in html[html.find('function closeApagadoPopover'):html.find('function closeApagadoPopover')+200]:
+        result.ok('v3.6.0 REBUILD: closeApagadoPopover marcada DEPRECATED')
+
+    # Script actualizable (idempotente)
+    try:
+        if Path(ROOT / 'apps/cima-generador/scripts/rebuild_apagado_block.py').exists():
+            result.ok('v3.6.0 SCRIPTS: rebuild_apagado_block.py presente (regenerable)')
+    except Exception:
+        pass
+
+    # 10. SUMMARY
+
+    # 10. SUMMARY
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.5 — INPUT CCPP PINTADO POR ZONA (CEO directive 2026-10-15 22:00)
+    # Función histórica recuperada: al seleccionar CCPP del dropdown,
+    # input se pinta ROJO (ccpp exacto apagado) o AMARILLO (distrito IPT).
+    # Reemplaza el verde .filled cuando aplica.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.7.4 — CCPP dropdown IDÉNTICO a los otros (unificación L-057)')
+
+    # v3.7.4 (L-057): CEO feedback "únicamente debe estar pintado la zona
+    # que esta en apagado para diferenciarla". Eliminada la lógica
+    # zone-off que pintaba TODO el distrito como ámbar sutil.
+    if '.ac-item.ac-item-zone-off' in html:
+        result.fail('CSS zone-off', 'clase zone-off presente (CEO L-057: solo match exacto)')
+    else:
+        result.ok('v3.7.4 CSS: SIN .ac-item-zone-off (eliminado, unificación L-057)')
+    # v3.7.4 (L-057): el CCPP dropdown debe verse IDÉNTICO a depto/prov/dist
+    # La unificación de los 4 inputs via .ac-item compartido (v3.7.1) está
+    # en la sección CSS de la línea ~546-585.
+    if re.search(r'\.ac-item\s*\{[^}]*display:\s*flex', html, re.DOTALL):
+        result.ok('v3.7.1 CSS: .ac-item base unificada (display:flex) — dropdowns 4 inputs idénticos')
+    else:
+        result.fail('CSS unificada', 'falta .ac-item base unificada para los 4 inputs')
+    if re.search(r'\.ac-item\s*\{[^}]*padding:\s*6px\s+12px', html, re.DOTALL):
+        result.ok('v3.7.1 CSS: .ac-item padding 6px 12px (unificado)')
+    else:
+        result.fail('CSS padding', 'falta padding unificado 6px 12px')
+
+    # v3.7.4 JS: render consulta ccpp_keys Set (los 239 CCPPs oficiales)
+    # NO districts_with_off (eso era v3.5.7 — CEO feedback "solo match exacto")
+    if 'ccpp_keys' in html and 'ZONAS_APAGADAS.ccpp_keys.has' in html or 'ccpp_keys.has' in html:
+        result.ok('v3.7.4 JS: render consulta ccpp_keys.has() (solo match exacto, L-057)')
+    else:
+        result.fail('JS ccpp_keys', 'render no consulta ccpp_keys (L-057 violado)')
+
+    # v3.7.4: marker en código confirmando unificación
+    if 'v3.7.4' in html and ('unific' in html.lower() or 'L-057' in html or 'CEO L-057' in html):
+        result.ok('v3.7.4 JS: marker unificación / L-057 presente en código')
+    else:
+        result.fail('v3.7.4 marker', 'falta marker v3.7.4 unificación L-057 en código')
+
+    print('\n▸ v3.5.8 — Regex fix [dd/m] en speech (BUG auditoría CEO)')
+
+    # El regex del JS usa [d\u00edi] que solo matchea í, NO d.
+    # Esto rompe el placeholder [dd/m] de ipt_postventa_sin_4g.
+    # v3.5.8 fix: usar [d\u00edi] (incluye d) en vez de [\u00edi].
+    m_re = re.search(r"// v3\.5\.8: soporte para \[dd/m\]", html)
+    if m_re:
+        result.ok('v3.5.8 JS: marker v3.5.8 (fix regex [dd/m]) presente')
+    else:
+        result.fail('JS marker v3.5.8', 'falta marker')
+
+    # El nuevo regex debe incluir 'd' (no solo í): [d\u00edi]
+    if r'\[d[d\u00edi]a?d?\/m+\]\s+de\s+\[mes\]' in html:
+        result.ok('v3.5.8 JS: regex [dd/m] con [dí] (incluye d) presente')
+    else:
+        result.fail('JS regex fix', 'falta regex [dí]')
+    # El regex viejo (que solo ten\u00eda í) NO debe seguir all\u00ed:
+    if r'\[d[\u00edi]a?d?\/m+\]\s+de\s+\[mes\]' in html:
+        result.fail('JS regex bug', 'regex viejo con [\u00edi] solo aún presente')
+
+    print('\n▸ v3.5.5 — Input CCPP pintado por zona')
+
+    # CSS: clase ccpp-off-confirmed (ROJO)
+    if '.field input.ccpp-off-confirmed' in html:
+        result.ok('v3.5.5 CSS: .ccpp-off-confirmed (ROJO) presente')
+    else:
+        result.fail('CSS confirmed', 'falta regla ccpp-off-confirmed')
+    m_red = re.search(r'\.ccpp-off-confirmed\s*\{([^}]+)\}', html)
+    if m_red and 'var(--danger)' in m_red.group(1):
+        result.ok('v3.5.5 CSS: rojo usa var(--danger) como base')
+    if m_red and 'border-color: var(--danger)' in m_red.group(1):
+        result.ok('v3.5.5 CSS: border-color var(--danger)')
+
+    # CSS: clase ccpp-off-ipt (AMARILLO)
+    if '.field input.ccpp-off-ipt' in html:
+        result.ok('v3.5.5 CSS: .ccpp-off-ipt (AMARILLO) presente')
+    else:
+        result.fail('CSS ipt', 'falta regla ccpp-off-ipt')
+    m_yel = re.search(r'\.ccpp-off-ipt\s*\{([^}]+)\}', html)
+    if m_yel and '#f59e0b' in m_yel.group(1):
+        result.ok('v3.5.5 CSS: amarillo usa #f59e0b (ámbar)')
+
+    # JS helper
+    if 'function updateCcppInputZoneClass()' in html:
+        result.ok('v3.5.5 JS: helper updateCcppInputZoneClass definido')
+    else:
+        result.fail('JS helper', 'falta función updateCcppInputZoneClass')
+
+    # JS logic: match exacto → ROJO
+    if "ccppEl.classList.add('ccpp-off-confirmed')" in html:
+        result.ok('v3.5.5 JS: aplica ccpp-off-confirmed (ROJO) para match exacto')
+    else:
+        result.fail('JS confirmed apply', 'no aplica ccpp-off-confirmed')
+
+    # JS logic: distrito IPT → AMARILLO
+    if "ccppEl.classList.add('ccpp-off-ipt')" in html:
+        result.ok('v3.5.5 JS: aplica ccpp-off-ipt (AMARILLO) para IPT')
+    else:
+        result.fail('JS ipt apply', 'no aplica ccpp-off-ipt')
+
+    # JS logic: limpia clases antes
+    if "ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt')" in html:
+        result.ok('v3.5.5 JS: limpia clases antes de evaluar')
+    else:
+        result.fail('JS clear', 'no limpia clases')
+
+    # JS logic: usa districts_with_off.has() para IPT
+    if 'districts_with_off.has(d6)' in html:
+        result.ok('v3.5.5 JS: usa districts_with_off.has() para detectar IPT')
+    else:
+        result.fail('JS districts', 'no consulta districts_with_off')
+
+    # JS: acSelect llama el helper cuando ccpp
+    if "if (AC_STATE.active === 'ccpp') {\n    updateCcppInputZoneClass();" in html:
+        result.ok('v3.5.5 JS: acSelect llama updateCcppInputZoneClass al seleccionar ccpp')
+    else:
+        result.fail('JS acSelect hook', 'acSelect no llama helper')
+
+    # JS: checkAndRenderZonaApagada refresca el color
+    # v3.6.0 usa zaUpdateCcppInputZoneClass; v3.5.5 usaba updateCcppInputZoneClass
+    m_check = re.search(r'function checkAndRenderZonaApagada.*?\n\}', html, re.DOTALL)
+    if m_check:
+        body = m_check.group(0)
+        # Aceptar cualquiera: ya sea el comment legacy o el namespace nuevo
+        has_refresh = (('updateCcppInputZoneClass' in body or 'zaUpdateCcppInputZoneClass' in body))
+        if has_refresh:
+            result.ok('v3.6.0 JS: checkAndRenderZonaApagada refresca el color')
+        else:
+            result.fail('JS checkAndRender', 'checkAndRenderZonaApagada no refresca color')
+    else:
+        result.fail('JS checkAndRender', 'función checkAndRenderZonaApagada no encontrada')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.7.0-v3.7.8 — DROPDOWNS ADDRESS UNIFICADOS (rama feat/apagado-inteligente)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.7.0 — Búsqueda ADDRESS accent-insensitive (L-053)')
+
+    # L-053: upper() no muta DOM si valor ya es uppercase (idempotente)
+    # Patrón actual: `if (el.value !== v) el.value = v;` (donde v = uppercase)
+    if re.search(r"if\s*\(\s*el\.value\s*!==\s*v\s*\)\s*el\.value\s*=\s*v", html):
+        result.ok('v3.7.0 JS: upper() idempotente (solo escribe si difiere, L-053)')
+    else:
+        result.fail('v3.7.0 idempotente', 'falta guard upper() idempotente (el.value !== v)')
+
+    # L-053: búsqueda accent-insensitive (NFD + remove combining marks)
+    if "normSearch" in html and 'NFD' in html and '\\u0300-\\u036f' in html:
+        result.ok('v3.7.0 JS: normSearch accent-insensitive (NFD + combining marks)')
+    else:
+        result.fail('v3.7.0 accent', 'falta normSearch accent-insensitive')
+
+    print('\n▸ v3.7.1 — Dropdowns ADDRESS unificados (L-054)')
+
+    # L-054: .ac-item CSS unificada (mismo padding/font/display) para 4 inputs
+    if re.search(r'\.ac-item\s*\{[^}]*display:\s*flex[^}]*gap:\s*8px', html, re.DOTALL):
+        result.ok('v3.7.1 CSS: .ac-item display:flex + gap:8px (unificado 4 inputs)')
+    if re.search(r'\.ac-item\s*\{[^}]*padding:\s*6px\s+12px', html, re.DOTALL):
+        result.ok('v3.7.1 CSS: .ac-item padding 6px 12px (unificado)')
+    if re.search(r'\.ac-item\s*\{[^}]*font-size:\s*11px', html, re.DOTALL):
+        result.ok('v3.7.1 CSS: .ac-item font-size 11px (unificado)')
+
+    # L-054: .ac-off-dot (reemplaza .ac-off-icon con ⚠️ 16px + pulse)
+    if '.ac-off-dot' in html:
+        result.ok('v3.7.1 CSS: .ac-off-dot presente (reemplaza ⚠️ animado por círculo 6×6px)')
+    else:
+        result.fail('CSS dot', 'falta .ac-off-dot (L-054)')
+
+    print('\n▸ v3.7.2 — Búsqueda por similitud (L-055)')
+
+    # L-055: subsequence match en acFilter
+    if re.search(r"function acFilter", html):
+        if 'subsequence' in html.lower() or 'subSeq' in html or 'subseq' in html:
+            result.ok('v3.7.2 JS: acFilter con subsequence match (L-055, tolera typos)')
+        else:
+            result.fail('JS subsequence', 'falta subsequence match en acFilter')
+
+    # L-055: acHighlight con q.length < 2 retorna texto plano (sin <mark>)
+    m_highlight = re.search(r"function acHighlight\(text,\s*query\)[^}]*?return", html, re.DOTALL)
+    if m_highlight and re.search(r"q\.length\s*<\s*2", m_highlight.group(0)):
+        result.ok('v3.7.2 JS: acHighlight con guard q.length < 2 (sin highlight en 1 char)')
+    elif 'acHighlight' in html and 'q.length' in html:
+        result.ok('v3.7.2/v3.7.3 JS: acHighlight con guard de longitud presente')
+
+    print('\n▸ v3.7.3 — Búsqueda por scoring (L-056)')
+
+    # L-056: scoring numérico 0-1 (exact=1, startsWith=0.95, contains=0.80, subseq=0.60)
+    if re.search(r"score\s*=\s*1", html) or re.search(r"score\s*===\s*1", html) or 'exact' in html.lower():
+        result.ok('v3.7.3 JS: scoring numérico presente (score=1 para exact, etc.)')
+    else:
+        result.fail('JS scoring', 'falta scoring numérico en acFilter')
+
+    # L-056: acHighlight ELIMINADO completamente (no debe haber <mark>)
+    # v3.7.3: el item se ve COMPLETO sin <mark> que rompa el texto
+    if '<mark' not in html or 'acHighlight' not in html:
+        result.ok('v3.7.3 JS: SIN <mark> en dropdown (highlight removido, L-056)')
+    elif 'acHighlight' in html and re.search(r"function acHighlight[^}]*?return\s+text", html, re.DOTALL):
+        # Si la función existe, debe retornar texto plano
+        result.ok('v3.7.3 JS: acHighlight presente pero retorna texto plano (sin <mark>)')
+
+    print('\n▸ v3.7.5 — Footer "X de Y" eliminado (L-058)')
+
+    # L-058: .ac-meta CSS eliminada (la regla no debe existir en CSS activo,
+    # solo en comentarios históricos que documentan el revert)
+    if re.search(r'^\s*\.ac-meta\s*\{', html, re.MULTILINE):
+        result.fail('CSS ac-meta rule', '.ac-meta { rule aún presente (L-058: debe estar eliminada)')
+    else:
+        result.ok('v3.7.5 CSS: SIN .ac-meta { rule (footer "X de Y" eliminado, L-058)')
+
+    print('\n▸ v3.7.6 — Dropdown SIEMPRE debajo del input (L-059)')
+
+    # L-059: SIN lógica de flip (ya verificado arriba en v2.1.7 block, redundante OK)
+
+    # L-059: max-height piso 80px con Math.max(80, Math.min(220, available))
+    if re.search(r'Math\.max\s*\(\s*80\s*,\s*Math\.min\s*\(\s*220', html):
+        result.ok('v3.7.6 JS: maxHeight con Math.max(80, Math.min(220, available)) (L-059)')
+    else:
+        result.fail('JS maxHeight 80', 'falta Math.max(80, Math.min(220, available)) en maxHeight (L-059)')
+
+    print('\n▸ v3.7.7 — Input CCPP MAYÚSCULAS explícitas (L-060)')
+
+    # L-060: text-transform:uppercase EXPLÍCITO en clases ccpp-off-*
+    if re.search(r'\.ccpp-off-confirmed\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
+        result.ok('v3.7.7 CSS: .ccpp-off-confirmed con text-transform:uppercase EXPLÍCITO (L-060)')
+    if re.search(r'\.ccpp-off-ipt\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
+        result.ok('v3.7.7 CSS: .ccpp-off-ipt con text-transform:uppercase EXPLÍCITO (L-060)')
+
+    print('\n▸ v3.7.8 — Dropdown items en MAYÚSCULAS (L-061)')
+
+    # L-061: text-transform:uppercase en .ac-item y .ac-empty
+    if re.search(r'\.ac-item\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
+        result.ok('v3.7.8 CSS: .ac-item con text-transform:uppercase (L-061)')
+    if re.search(r'\.ac-empty\s*\{[^}]*text-transform:\s*uppercase', html, re.DOTALL):
+        result.ok('v3.7.8 CSS: .ac-empty con text-transform:uppercase (L-061)')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

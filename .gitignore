@@ -70,3 +70,8 @@ apps/cima-generador/.regenerate_state.json
 apps/cima-generador/data/zonas_apagadas.json
 data/zonas_apagadas.json
 **/zonas_apagadas.json
+# Pre-feature backups (transient)
+.backup-*/
+
+# Recursos CIMA (PDFs del cliente, no parte del repo)
+Recursos CIMA/
