@@ -246,8 +246,9 @@ def test(html_path):
         total_districts = int(sizes.group(4))
         # v3.5.0: ccpp_keys preserva 239 COMU-5514 originales; districts_with_off
         # ahora incluye IPT (1798 distritos adicionales de 21 deptos COMU-5672).
-        if len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 expected)')
-        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 239)')
+        if len(ccpp_items) == 200: result.ok(f'ccpp_keys size = {len(ccpp_items)} (200 expected, cleaned v3.8.0)')
+        elif len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 legacy, NOT cleaned)')
+        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 200 cleaned or 239 legacy)')
         if len(dist_items) >= 191: result.ok(f'districts_with_off size = {len(dist_items)} (>=191, incluye IPT)')
         else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected >=191)')
         if total_zones >= 239: result.ok(f'total_zones = {total_zones} (>=239)')
