@@ -1,5 +1,51 @@
 # Changelog — cima-generador
 
+## [3.9.8] - 2026-10-16 — 🚫 ELIMINADO footer muerto + 🎨 BOLD info clave
+
+CEO feedback v3.9.7:
+• "el dialog aun tiene un footer vacio es un espacio muerto eliminalo"
+• "al abrir el dialog sale un mensaje de 'COPIADO' <- eliminar ese
+   texto no se debe copiar automaticamente es solo para leer"
+• "vamos a remarcar mejor las fechas en el speech le pones negritas
+   los textos clave para que resalten al leerse"
+
+### 🛑 Eliminados
+
+| Elemento | Estado |
+|---|---|
+| Status pill `✓ Copiado` | **ELIMINADO** — ya no se renderiza |
+| Lógica `copyText()` en click | **ELIMINADO** — dialog READ-ONLY |
+| Espacio muerto footer (debajo del speech) | **ELIMINADO** — padding bottom: 11px |
+
+### 🎨 BOLD en info clave del speech
+
+Función `highlightKeyText()` envuelve en `<strong>` los patrones clave:
+- Fechas: `11 de septiembre`, `3 de septiembre` (meses en español)
+- Fechas numéricas: `11/09/2026`, `03/09`
+- Tecnología: `2G`, `4G` (palabras enteras)
+
+CSS del strong: `font-weight: 700` + color `zone-ipt 88%` (rojo sutil).
+
+### 📝 Speech transformado (ejemplo)
+
+```
+ANTES (liso):
+"a partir del 3 de septiembre, el servicio Movistar 2G dejará de
+ funcionar en la zona lima. ... configurar tu equipo ... red 4G..."
+
+AHORA (con bold en info clave):
+"a partir del [3 de septiembre], el servicio Movistar [2G] dejará de
+ funcionar en la zona lima. ... configurar tu equipo ... red [4G]..."
+```
+
+### ✅ Validación
+
+- 434/434 tests popup PASS
+- audit_masivo ALL PASS
+- node --check OK
+
+---
+
 ## [3.9.7] - 2026-10-16 — 🧹 DIALOG MINIMAL LIMPIO — STOP iterating
 
 CEO feedback v3.9.6: "Estamos iterando demasiado, no estás haciéndolo

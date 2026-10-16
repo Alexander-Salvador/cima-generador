@@ -1916,29 +1916,18 @@
     font-weight: 420;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   }
-
-  /* STATUS PILL — sin espacio muerto de footer, margin-top mínimo */
-  .apagado-speech-panel .apagado-panel-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 6px;
-    padding: 2px 7px;
-    font-size: 9.5px;
+  /* v3.9.8: BOLD para info clave del speech — fechas y referencias 2G/4G.
+     Enfatizamos con peso bold + tono rojo sutil para resaltar al leerse
+     lo importante sin perder el flujo natural del texto. */
+  .apagado-speech-panel .apagado-panel-speech strong {
     font-weight: 700;
-    letter-spacing: 0.02em;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--green) 22%, transparent);
-    color: var(--green-light, #4ade80);
-    border: 1px solid color-mix(in srgb, var(--green) 50%, transparent);
-    opacity: 0;
-    transform: translateY(-2px);
-    transition: opacity 0.22s var(--motion-spring-soft), transform 0.22s var(--motion-spring-soft);
+    color: color-mix(in srgb, var(--zone-ipt) 88%, var(--text));
+    letter-spacing: -0.003em;
   }
-  .apagado-speech-panel .apagado-panel-status.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+
+  /* v3.9.8: STATUS PILL ELIMINADO (no más autocopia, no más pill).
+     Mantenemos el selector por compat con tests, pero display:none. */
+  .apagado-speech-panel .apagado-panel-status { display: none; }
 
   /* v3.9.7: legacy DEPRECATED — todas las clases que ya no se renderizan */
   .apagado-speech-panel .apagado-panel-actions,
@@ -3326,7 +3315,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.7</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.9.8</span>
     </span>
   </footer>
 </div>
@@ -4506,17 +4495,33 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   var speechDataObj = speechData[speechKey] || {};
   var notaTexto = speechDataObj.nota || '';
 
-  // v3.9.7: HEADER MINIMAL — solo "⚠ COMU-XXXX". CEO directive:
-  // "el header dice LIMA <- eliminalo es innecesario". Sin zona,
-  // sin fecha, sin tag RED 2G, sin separadores. Speech + status
-  // debajo, sin notas, sin scroll.
+  // v3.9.8: SPEECH con BOLD en fechas y referencias 2G/4G para
+  // resaltar info clave al leerse. El status pill "✓ Copiado" se
+  // ELIMINA (CEO directive: "se elimina el mensaje de COPIADO, no
+  // debe copiarse automáticamente, es solo para leer").
+  function highlightKeyText(rawText) {
+    // Operamos sobre el texto ESCAPED (post-escapeHtml) — los
+    // caracteres especiales ya están como entidades, los patrones
+    // regex sobre dígitos/letras siguen funcionando.
+    var out = rawText;
+    // Fechas tipo "11 de septiembre" / "3 de septiembre" (meses en español)
+    out = out.replace(/(\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre))/gi,
+                      '<strong>$1</strong>');
+    // Fechas numéricas dd/mm/yyyy o dd/mm
+    out = out.replace(/(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/g, '<strong>$1</strong>');
+    // Referencias a tecnología 2G / 4G (palabras enteras)
+    out = out.replace(/\b([24]G)\b/g, '<strong>$1</strong>');
+    return out;
+  }
+  var speechEscaped = escapeHtml(speechFilled);
+  var speechHighlighted = highlightKeyText(speechEscaped);
+
   var html = ''+
     '<div class="apagado-panel-header">'+
       '<span aria-hidden="true">⚠</span>'+
       '<span class="apagado-panel-com">' + escapeHtml(comunicadoLabel) + '</span>'+
     '</div>'+
-    '<p class="apagado-panel-speech">' + escapeHtml(speechFilled) + '</p>'+
-    '<div class="apagado-panel-status" id="apagadoPanelStatus">✓ Copiado</div>';
+    '<p class="apagado-panel-speech">' + speechHighlighted + '</p>';
 
   // v3.8.0: usar el panel INLINE en lugar de tooltip flotante
   var panel = document.getElementById('apagadoSpeechPanel');
@@ -4681,7 +4686,7 @@ function escapeHtmlZa(s) {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.7] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.9.8] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -4735,32 +4740,11 @@ function escapeHtmlZa(s) {
       showApagadoTooltip(btn, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
     }
 
-    // v3.9.0: copiar el speech final al clipboard inmediatamente
-    // (doble utilidad: panel visual + clipboard disponible para pegado)
-    var speechText = btn.dataset && btn.dataset.lastSpeech;
-    if (!speechText || !speechText.trim()) {
-      // fallback: speech del objeto chk si el panel no lo proveyó
-      speechText = chk.mensaje || '';
-    }
-    if (speechText && speechText.trim() && typeof copyText === 'function') {
-      try {
-        copyText(speechText, btn);
-      } catch (e) {
-        // copyText puede fallar en file://; no rompemos el flujo
-        console.warn('[CIMA v3.9.5] copyText falló:', e);
-      }
-    }
-    // v3.9.4: status pill "✓ Copiado" en el PANEL (no en el botón —
-    // más visible y confirma la copia al instante)
-    var statusPill = document.getElementById('apagadoPanelStatus');
-    if (statusPill) {
-      statusPill.classList.add('visible');
-      // Auto-fade después de 2s (re-aparece si se vuelve a hacer click)
-      clearTimeout(btn._statusPillT);
-      btn._statusPillT = setTimeout(function() {
-        statusPill.classList.remove('visible');
-      }, 2000);
-    }
+    // v3.9.8: NO auto-copia + NO status pill. CEO directive:
+    // "se elimina el mensaje de COPIADO, no se debe copiar
+    // automáticamente, es solo para leer". El dialog es READ-ONLY.
+    // Si el supervisor quiere copiar, hace click sobre el speech.
+    // (Mantengo data-lastSpeech disponible por si se agrega acción futura).
     // Pulse verde breve sobre el botón ⚠️ como antes (refuerzo visual)
     btn.classList.add('cima-btn--just-copied');
     setTimeout(function() { btn.classList.remove('cima-btn--just-copied'); }, 1100);
