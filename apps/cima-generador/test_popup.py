@@ -2184,10 +2184,10 @@ def test(html_path):
 
     # JS: renderCoberturaButton unifica los 2 estados
     m_btn = re.search(r'function renderCoberturaButton\(check\)\s*\{(.*?)\n\}', html, re.DOTALL)
-    if m_btn and 'ZONA DE APAGADO (CCPP exacto)' in m_btn.group(1) and 'ZONA DE APAGADO (distrito)' in m_btn.group(1):
-        result.ok('v3.8.0 JS: renderCoberturaButton usa labels distintos pero mismo color')
+    if m_btn and 'ESTACIÓN BASE DESACTIVADA' in m_btn.group(1) and 'ZONA DE APAGADO (distrito preventivo)' in m_btn.group(1):
+        result.ok('v3.9.15 JS: renderCoberturaButton usa labels específicos por COMU (estaciones vs distrito)')
     else:
-        result.fail('JS renderCoberturaButton labels', 'labels CCPP/distrito no presentes')
+        result.fail('JS renderCoberturaButton labels', 'labels específicos COMU-5514/5672 no presentes')
 
     # JS: acRender emite triángulo para items ccpp apagados (sin label inline)
     # v3.8.0 (FIX 2): CEO removió el texto "APAGADO" — solo ICONO + ZONA

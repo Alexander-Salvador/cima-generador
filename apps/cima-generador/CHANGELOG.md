@@ -1,5 +1,69 @@
 # Changelog — cima-generador
 
+## [3.9.15] - 2026-10-16 — 🎯 ALINEACIÓN INTELIGENCIA — COMU-5514 vs COMU-5672
+
+CEO feedback post-v3.9.14: "la base ya no está dando data correcta, las
+zonas de 2G se mezcló, ya no hay speech de detección de apagado de
+estaciones. CORRECCIÓN END TO END correcta, alinea la inteligencia
+del sistema".
+
+### 🐛 Bugs encontrados en auditoría end-to-end
+
+1. **`comu5514_postventa_marcaje` tenía copy de IPT (mezclado)** — su
+   speech decía "el servicio de Movistar 2G dejara de funcionar"
+   (esto es copy de `ipt_visor_4g`). COMU-5514 es APAGADO DE
+   ESTACIONES BASE, no de tecnología 2G. Fix: speech restaurado con
+   copy correcto sobre "estación base desactivada".
+
+2. **`renderCoberturaButton` titles usaban 🔴 para IPT (yellow)** —
+   emoji rojo en title para algo visualmente amarillo (clase `.ipt`).
+   Fix: 🔴 → 🟡 + agregar "ESTACIÓN BASE" para distinguir COMU-5514.
+
+3. **`ipt_visor_sin_4g` usaba sintaxis legacy `[dd/m]`** — inconsistente
+   con los demás speeches (ahora todos usan `{placeholders}`).
+
+### ✍️ Speeches alineados correctamente
+
+| Speech | COMU | Tema del copy |
+|---|---|---|
+| `comu5514_visor_unico` | 5514 | Estaciones Base (genérico) — preservado |
+| `comu5514_postventa_marcaje` | 5514 | **Estación Base DESACTIVADA** (FIX) |
+| `ipt_visor_4g` | 5672 | Tecnología 2G + alternativa 4G (correcto) |
+| `ipt_visor_sin_4g` | 5672 | **Tecnología 2G + renovación tienda** (FIX sintaxis) |
+| `ipt_postventa_4g` | 5672 | 2G + 4G (postventa) |
+| `ipt_postventa_sin_4g` | 5672 | 2G + renovación tienda (postventa) |
+
+### 🆕 Check 7 — speech integrity (auditZonasApagadas)
+
+Nueva validación de coherencia:
+- speech 5514 NO debe mencionar "2G" (es estaciones)
+- speech 5672 SÍ debe mencionar "2G" (es tech)
+- cuerpo no vacío
+
+Si falla, console.warn con detalle. Previene que el copy de un COMU
+se mezcle con el de otro en futuras actualizaciones.
+
+### 🎨 renderCoberturaButton — titles específicos por COMU
+
+```
+ccpp_exacto (COMU-5514):
+  🔴 ESTACIÓN BASE DESACTIVADA (CCPP exacto): 010105:VITUYA — ...
+
+ipt_distrito (COMU-5672):
+  🟡 COMU-5672 (RED 2G IPT): 150131 — ...
+
+distrito_of (preventivo):
+  ⚠️ ZONA DE APAGADO (distrito preventivo): 150131 — ...
+```
+
+### ✅ Validación
+
+- 432/432 tests PASS (test actualizado para nuevas labels)
+- audit_masivo ALL CHECKS + SCENARIOS PASSED
+- node --check OK
+
+---
+
 ## [3.9.14] - 2026-10-16 — ✂️ IPT SPEECHES ACORTADOS — mismo template
 
 CEO feedback v3.9.13: "sigue siendo muy extenso utiliza demasiado
