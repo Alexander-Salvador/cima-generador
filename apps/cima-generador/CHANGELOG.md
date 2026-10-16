@@ -1,5 +1,84 @@
 # Changelog — cima-generador
 
+## [3.9.5] - 2026-10-16 — 🎯 OVERLAY PREMIUM — flote ENCIMA sin ocupar espacio
+
+CEO feedback v3.9.4: "Aun roto — mira la posición que se abre, estira el
+contenido. el dialog debe ir encima para no ocupar espacio y mejorar
+cuadro del dialog mejores efectos premium modernos, mejorar el tamaño
+del texto dentro el speech reducelo mas compacto".
+
+### 🚀 CAMBIO ARQUITECTÓNICO: panel → OVERLAY
+
+Antes (v3.9.4): panel `position: relative` en flujo DOM → estiraba la
+altura del grid BUSQUEDA ADDRESS cuando se mostraba.
+
+Ahora (v3.9.5): panel `position: absolute` anclado a un wrapper
+`.output-row-wrap` (relativo). El panel FLOTA ENCIMA del output-row
+**sin participar en el flujo** — cuando está hidden, no ocupa espacio
+alguno.
+
+```
+  Antes (relative, en flujo):          Ahora (absolute, overlay):
+  ┌──────────────────────────┐         ┌──────────────────────────┐
+  │  speech-panel (en flujo) │         │ ╔══════════════════════╗ │
+  │  [ocupa 200px de altura] │         │ ║ speech-panel (overlay)║│
+  ├──────────────────────────┤         │ ║ position:absolute    ║│
+  │ output-row              │         │ ║ ↓ 8px gap            ║│
+  │ [output][x][⚠]          │         │ ╚══════════════════════╝│
+  └──────────────────────────┘         │ output-row               │
+                                       │ [output][x][⚠]            │
+                                       └──────────────────────────┘
+```
+
+### ✨ Mejoras premium del dialog
+
+| Elemento | Antes v3.9.4 | Ahora v3.9.5 |
+|---|---|---|
+| Background | Solid surface 78% | **Gradient lineal 0→100%** + saturate(1.5) |
+| Border-radius | 9px | **12px** (más moderno) |
+| Shadow | 1 layer (12px + 2px) | **3 layers** (32px + 12px + inset highlight) |
+| Backdrop blur | 14px | **18px saturate 1.5** (más profundo) |
+| Inset highlight | none | **1px sutil white 8%** (glass top edge) |
+| Animation | translateY -4px | **translateY + scale(0.98→1)** (spring) |
+| Arrow | 10×10px | **12×12px** (más visible) |
+| Scrollbar | default | **5px sutil + thumb gris** |
+
+### 📝 Texto del speech más compacto
+
+| Elemento | Antes | Ahora |
+|---|---|---|
+| `.apagado-panel-speech` font-size | 12.5px | **11px** |
+| `.apagado-panel-speech` line-height | 1.5 | **1.38** |
+| `.apagado-panel-header` font-size | 11.5px | **10.5px** |
+| `.apagado-panel-zona` font-size | 11.5px | **11px** |
+| `.apagado-panel-fecha` font-size | 11px | **10.5px** |
+| max-height panel | 220px | **200px** (un poco más bajo) |
+
+Speech text sigue INTACTO — solo se reduce el chrome visual alrededor.
+
+### 🎯 Validación
+
+- 434/434 tests popup PASS
+- audit_masivo ALL CHECKS + SCENARIOS PASSED
+- node --check OK
+
+### 📋 Cómo verificar
+
+```bash
+# Refrescar con cache-bust
+Ctrl + Shift + R
+
+# Probar con un caso IPT (panel más grande por texto largo)
+LIMA / LIMA / SAN ISIDRO  +  click ⚠️
+# Esperado:
+#   • Panel aparece ENCIMA del botón (no estira grid)
+#   • Glass blur visible + gradient border sutil
+#   • Speech más compacto (11px en vez de 12.5px)
+#   • Flecha apuntando al botón ⚠️
+```
+
+---
+
 ## [3.9.4] - 2026-10-16 — 🎯 REDISEÑO PANEL INTELIGENTE + botón estilizado
 
 CEO directives 2026-10-16:
