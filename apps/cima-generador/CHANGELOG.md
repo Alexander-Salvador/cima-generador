@@ -1,5 +1,73 @@
 # Changelog — cima-generador
 
+## [3.8.0-checkpoint] - 2026-10-16 — ⚠️ CHECKPOINT: REQUIERE REDISEÑO VISUAL
+
+CEO feedback 2026-10-16: "Visualmente aun no esta logrado es muy
+confuso: commitea todo hasta este punto y aclara las carencias:
+falta mejorar el frontend visual los colores que agregaste, las
+funcionales, el boton de zonas de apago no es funcional. actualia
+nuestra memoria y dej todo listo guardado para un nuevo chat".
+
+**Carencias visuales conocidas (no resueltas en v3.8.0):**
+
+1. **4 colores compiten** (ámbar, rojo, default, plus hover states):
+   - CCPP exacto: AMBER (color + bg 14% + triángulo 8px)
+   - IPT distrito: RED (color + bg 14% + triángulo 7px)
+   - Distrito preventive: AMBER (color + bg 14% + triángulo 6px)
+   - Sin zona: DEFAULT (sin color)
+   - El supervisor no distingue al primer vistazo.
+
+2. **El botón ⚠️ no comunica activabilidad**:
+   - Tiene 3 estados (idle gray, off amber pulse, warn amber pulse, ipt red pulse)
+   - El pulse no es suficiente para indicar "hay algo para ver"
+   - El usuario no sabe cuándo hace falta hacer click
+
+3. **El popover inline es demasiado largo**:
+   - max-height 240px + scrollable
+   - Speech COMU-5672 con placeholders [zona], [dd], [mes]
+   - Si el agente no edita placeholders, lee el texto literal
+
+4. **CSS classes proliferaron**:
+   - 6+ clases nuevas: `.ac-item-zone`, `.ac-item-ipt`, `.dist-off-warn`,
+     `.dist-ipt-warn`, `.ccpp-off-confirmed`, `.ccpp-ipt-warn`,
+     `.cobertura-btn.off`, `.cobertura-btn.warn`, `.cobertura-btn.ipt`
+   - Cada una con duplicado en popup mode (~2x el código CSS)
+
+**Lo que SÍ funciona (datos y backend):**
+
+- ✅ `ccpp_keys` limpio: 200 CCPPs (era 239 con 39 contamination)
+- ✅ `ipt_districts` validado: subset de `districts_with_off` (1798/1821)
+- ✅ `CCPP_KEYS_NORMALIZED` pre-normalizado al startup (O(1) lookup)
+- ✅ `auditZonasApagadas` valida integridad al startup
+- ✅ Cascada de inputs: borrar distrito limpia CCPP
+- ✅ Precedencia: ccpp_exacto > ipt_distrito > distrito_of
+- ✅ Audit masivo: 21/21 CHACHAPOYAS, 12/12 CONTUMAZA, 44/44 LIMA
+- ✅ 436/436 tests PASS
+- ✅ audit_masivo.py: ALL CHECKS + SCENARIOS PASSED
+
+**Recomendación para el siguiente chat:**
+
+1. **NO seguir agregando features.** El problema es de DISEÑO.
+2. **Hacer un sketch / wireframe** de QUÉ debe ver el supervisor
+   con 1 distrito seleccionado, ANTES de tocar código.
+3. **Reducir a 2 colores máximo** (default + warning). NO 3+.
+4. **Testear con el supervisor real** (call center) antes de
+   implementar la siguiente versión.
+
+**Commits preservados (v3.8.0 histórico):**
+- e712abc: checkpoint (este)
+- d6f7cba: v3.8.0 (FIX 3) — IPT button 3 campos + panel inline
+- bb26928: v3.8.0-ipt — flujo IPT (COMU-5672) con color ROJO
+- f2a7103: v3.8.0 (BUG 2.2) — limpiar ccpp_keys contamination + audit masivo
+- 76c6de9: v3.8.0 (BUG 2.1) — triángulo solo si distrito tiene CCPPs
+- 09e565f: v3.8.0 (BUG 1+2) — cascada ccpp + distrito dropdown visual
+- c6ce08a: v3.8.0 — quitar label 'APAGADO' inline
+- 8251575: v3.8.0 distrito items — quitar label 'DISTRITO' inline
+- e82b37a: v3.8.0 — Advanced 2026: triangle+label+uniform amber+audit
+- d53b4d0: v3.7.9 — marcado end-to-end distrito+ccpp en búsqueda
+
+---
+
 ## [3.8.0] - 2026-10-16 — ADVANCED 2026: TRIÁNGULO + LABEL + COLOR ÚNICO ÁMBAR
 
 CEO directive 2026-10-16:

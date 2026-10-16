@@ -1335,41 +1335,99 @@ de tests > reescribir código para que coincida con tests obsoletos."
 
 ## 🚀 HANDOVER PARA PRÓXIMO CHAT (abrir nuevo chat con este contexto)
 
-### Quickstart — Comandos de arranque (verificar primero)
+> **CHECKPOINT 2026-10-16 (v3.8.0)**: Estado actual preservado en commit
+> `e712abc`. CEO directive: "Visualmente aun no esta logrado es muy
+> confuso: commitea todo hasta este punto y aclara las carencias:
+> falta mejorar el frontend visual los colores que agregaste, las
+> funcionales, el boton de zonas de apago no es funcional. actualia
+> nuestra memoria y dej todo listo guardado para un nuevo chat".
 
-```bash
-# 1. Verificar estado del repo (estamos en feat/apagado-inteligente)
-git branch --show-current
-# Expected: feat/apagado-inteligente
+### Carencias del diseño visual actual (CRIT-003 honestidad técnica)
 
-git log --oneline -3
-# Expected: 38f20b2 (v3.7.8) / c3afab6 (v3.7.7) / 47e8cae (v3.7.6)
+CEO feedback 2026-10-16 después de probar v3.8.0 con datos reales
+(CAJAMARCA/CONTUMAZA): **"Visualmente aun no esta logrado es muy confuso"**.
 
-# 2. Tests deben pasar
-python3 apps/cima-generador/test_popup.py 2>&1 | tail -3
-# Expected: 370 passed, 0 failed, 0 warnings
+**Lo que NO funciona visualmente:**
 
-# 3. Verificar popup live en GitHub Pages
-curl -sI "https://alexander-salvador.github.io/cima-generador/"
-# Expected: HTTP/2 200, last-modified reciente
-# ⚠️ LIVE sigue en v3.4.4 (no pusheado v3.5.0→v3.7.8)
+1. **Demasiados colores y estados** — el popup ahora tiene:
+   - CCPP exacto: color AMBER + triángulo + título ámbar
+   - IPT distrito: color RED + triángulo + título rojo
+   - distrito preventive: similar al CCPP pero más sutil
+   - Sin zona: color default
+   - Hover states, pulse animations, badges "RED 2G", etc.
+   - El supervisor ve 3-4 colores diferentes y no entiende cuál
+     es cuál sin estudiar la documentación.
 
-# 4. Si server local está corriendo:
-pgrep -af 'http.server 8765' | head -2
-# Si NO, levantar:
-cd apps/cima-generador && python3 -m http.server 8765 --bind 127.0.0.1
-# Open: http://127.0.0.1:8765/?popup=1
-```
+2. **El botón ⚠️ no es funcional en la práctica** — aunque el código
+   está correcto, el supervisor no sabe:
+   - Cuándo el botón está "activado" (idle vs ipt/off)
+   - Qué hace el botón cuando hace click
+   - Por qué a veces muestra el speech y a veces no
+   - La diferencia entre 3 campos (IPT) y 4 campos (CCPP exacto)
+
+3. **El speech tiene placeholders confusos** — `[zona]`, `[dd] de [mes]`,
+   etc. Si el agente no edita los placeholders, lee el texto literal
+   al cliente (quejándose del formato).
+
+4. **El panel inline está bien posicionado pero el contenido es
+   demasiado largo** — el speech COMU-5672 ipt_visor_4g es un
+   párrafo de 5 líneas. En el panel de 240px máximo se ve scrollable
+   pero el agente tiene que scrollear.
+
+5. **El popover flotante legacy sigue en el código CSS** —
+   `.apagado-tooltip` y `.apagado-modal` están como DEPRECATED pero
+   ocupan espacio y confunden al lector del código.
+
+**Lo que SÍ funciona (datos y backend):**
+
+- ✅ 436/436 tests PASS
+- ✅ audit_masivo.py: ALL CHECKS + SCENARIOS PASSED
+- ✅ `ccpp_keys` limpio (200 CCPPs verificados, 0 contamination)
+- ✅ `ipt_districts` validado (subset de `districts_with_off`)
+- ✅ `CCPP_KEYS_NORMALIZED` pre-normalizado al startup (O(1) lookup)
+- ✅ `auditZonasApagadas` valida integridad al startup
+- ✅ Cascada de inputs: borrar distrito limpia CCPP
+- ✅ Precedencia: ccpp_exacto > ipt_distrito > distrito_of
+- ✅ Audit masivo: 21/21 CHACHAPOYAS, 12/12 CONTUMAZA, 44/44 LIMA
+
+**Recomendación para el siguiente chat (LEER PRIMERO):**
+
+1. **NO seguir agregando features visuales.** El problema es de
+   diseño, no de implementación.
+2. **Hacer un sketch / wireframe** de QUÉ debe ver el supervisor con
+   1 distrito seleccionado, ANTES de tocar código.
+3. **Preguntar al CEO qué debe pasar cuando:**
+   - El distrito es IPT (toda la red 2G apagada)
+   - El distrito tiene CCPPs específicos confirmados
+   - El distrito está "preventivo" (en zones pero sin CCPPs específicos)
+   - El CCPP tipeado matchea exacto
+4. **Reducir a 2 colores máximo** (default + warning). NO 3.
+5. **Testear con el supervisor real** (call center) antes de
+   implementar la siguiente versión.
 
 ### Estado actual del repo (snapshot)
 
 | Recurso | Estado |
 |---|---|
-| **Branch actual** | `feat/apagado-inteligente` |
+| **Branch actual** | `develop` |
+| **develop HEAD** | `e712abc` (checkpoint v3.8.0 antes de rediseño) |
+| **Popup local** | v3.8.0 con ZONAS APAGADO + audit masivo (⚠️ visual confuso) |
+| **Tests** | 436/436 PASS |
+| **audit_masivo.py** | ALL CHECKS + SCENARIOS PASSED |
+| **Server local** | PID 66684 activo en :8765 |
+| **GitHub Pages LIVE** | v3.4.4 (`cd997c4` en origin/main) — sin pushear v3.5.0→v3.8.0 |
+| **MEMORY.md** | v3.11 con TODO el contexto + carencias |
+| **CHANGELOG** | 15 entradas v3.5.0→v3.8.0-checkpoint |
+
+### Estado previo (v3.7.8 — referencia histórica)
+
+| Recurso | Estado |
+|---|---|
+| **Branch anterior** | `feat/apagado-inteligente` (merged a develop) |
 | **Local HEAD (rama)** | `38f20b2` (v3.7.8 — 23 commits ahead) |
 | **develop HEAD** | `a05780f` (MEMORY v3.10.2) |
 | **Popup LIVE (origin/main)** | `cd997c4` (v3.4.4 — sin pushear v3.5.0→v3.7.8) |
-| **Tests** | **370/370 PASS** local (refactor tests obsoletos v3.5.3-v3.5.7) |
+| **Tests** | 370/370 PASS local (refactor tests obsoletos v3.5.3-v3.5.7) |
 | **Working tree** | clean |
 | **GitHub Pages** | 🟢 v3.4.4 sirviendo (no actualizado a v3.7.8) |
 | **MEMORY.md** | actualizado v3.11 |
@@ -1482,6 +1540,9 @@ curl -sI "https://alexander-salvador.github.io/cima-generador/" | head -5
 | L-064 | **CASCADA DE INPUT CLASSES REQUIERE 4 HOOKS (2026-10-16 v3.7.9)** — Para mantener un class de input sincronizado con el state, hay 4 caminos de cambio que necesitan hook: (1) `acSelect` — selección desde dropdown, (2) `onProvChange` — cambio de provincia invalida el dist actual, (3) `onDepChange` — cambio de depto limpia todo, (4) `onDistChange` — typing manual sin pasar por dropdown. Olvidar UNO de estos 4 = estado inconsistente donde el class persiste con datos viejos. Implementación: cada hook llama la función `updateXxxClass()` que SIEMPRE remueve la clase antes de evaluar, y la re-agrega solo si aplica. |
 | L-065 | **SINGLE COLOR = SINGLE SOURCE OF TRUTH (2026-10-16 v3.8.0)** — Cuando 2 colores significan "lo mismo" (zona afectada, confirmada o potencial), el supervisor pierde la información de certeza. Un SOLO color ámbar + label semántico (APAGADO / DISTRITO) es más claro que 2 colores que se confunden. v3.8.0 unifica TODA la zona de apagado a `--zone-amber: #f59e0b` (single CSS variable). La distinción entre CONFIRMADO y POTENCIAL se mantiene en el `data-zone` attribute y el `title` (tooltip nativo) — visualmente unificado. Single source of truth: cambiar la variable cambia TODOS los elementos. |
 | L-066 | **PRE-NORMALIZACIÓN AL STARTUP = O(1) LOOKUP + CONSISTENCIA (2026-10-16 v3.8.0)** — Si 4 lugares del código hacen `.normalize('NFC').toUpperCase()` cada uno con su propia variante (algunos con trim, otros con replace(/\s+/g), otros sin nada), el lookup es FRÁGIL y LENTO. Solución: pre-normalizar 1 vez al startup en `CCPP_KEYS_NORMALIZED` Set, y compartir entre `checkZonaApagada`, `updateCcppInputZoneClass`, `acRender`, `zaUpdateCcppInputZoneClass`. Lookup O(1) sin re-normalizar en runtime. Si dos lugares normalizan diferente, un CCPP que matchea en uno NO matchea en el otro — bug silencioso. Pre-normalización única elimina este riesgo. |
+| L-067 | **NO AGREGAR FEATURES VISUALES SIN DISEÑO PREVIO (2026-10-16 v3.8.0)**: CEO feedback "Visualmente aun no esta logrado es muy confuso". Lección: implementar features visuales sin un wireframe/sketch previo lleva a acumular colores/estados/animaciones que confunden al usuario final. El supervisor no distingue 3 colores (ámbar/rojo/default) ni 3 niveles de triángulo (6/7/8px). Regla: ANTES de tocar CSS, hacer un sketch ASCII o mockup que muestre QUÉ ve el supervisor en CADA escenario (CCPP exacto, IPT, sin zona). Si el sketch no se puede dibujar en 1 minuto, el diseño es demasiado complejo. Después del sketch, máximo 2 colores (default + warning) y 1 indicador visual. v3.8.0 implementó 4 colores, 6 clases CSS, 3 tipos de triángulo, 2 animaciones pulse — el CEO reportó confusión después de 1 minuto de uso. |
+| L-068 | **LA COMPLEJIDAD VISUAL ESCALA PEOR QUE LA FUNCIONAL (2026-10-16 v3.8.0)**: agregar 1 feature visual (IPT color rojo) requirió 6 nuevos archivos CSS classes (`.ac-item-ipt`, `.dist-ipt-warn`, `.ccpp-ipt-warn`, `.cobertura-btn.ipt`, `.ac-item-ipt .ac-off-tri`, más sus duplicados en popup mode). Cada uno agregó un branch de lógica (precedencia ccpp > ipt > distrito, 3 hooks, etc.). El usuario ve 3 colores pero el código tiene 6 paths visuales. Lección: para el popup de call center, la complejidad técnica debe ser LINEAL con la complejidad visual. Si añades 1 color al UI, máximo 1 archivo CSS y 1 branch de JS. Si requiere 6 archivos, es señal de que el modelo está mal — el problema no es de implementación, es de DISEÑO. |
+| L-069 | **HACER USER TESTING CON USUARIO REAL ANTES DE IMPLEMENTAR (2026-10-16 v3.8.0)**: implementé v3.7.5 → v3.7.8 → v3.7.9 → v3.8.0 → v3.8.0-ipt → v3.8.0 FIX 1+2 → v3.8.0 FIX 3 (7 versiones incrementales, +1,200 líneas de código, 1,575 líneas en test_popup.py) en 4 horas de sesión. El CEO probó 1 vez al final y reportó confusión. Lección: la velocidad de iteración sin feedback del usuario final lleva a acumular deuda técnica. Cada cambio "pequeño" se siente correcto en aislamiento, pero la suma es caótica. Regla: cada 2-3 cambios, pedir al usuario que pruebe el flujo end-to-end y reporte qué ve ANTES de seguir. La inversión de tiempo en user testing temprano es MENOR que rehacer después. v3.8.0 tiene +1,200 líneas que probablemente necesitan reescribirse por un rediseño visual desde cero. |
 | L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
 | L-051 | **CRÍTICO** Auditoría visual end-to-end de PDFs (2026-10-15) descubrió 2 errores en MEMORY.md: (1) MEMORY decía código `COMU-5672` para IPT pero el PDF dice `**COMU-5472**` (5472 es el código oficial); (2) MEMORY tenía mapeo PDF→Grupo INVERTIDO — la realidad confirmada por imágenes y por `regenerate_data.py` + `CHANGELOG.md`: `APAGADO.pdf` (3 páginas, texto) = **Grupo 2** (23 deptos, 200+ CCPPs); `APAGADO2.pdf` (1 página, imagen) = **Grupo 3** (5 deptos, 21 CCPPs); `APAGADP1.pdf` (1 página, imagen) = **Grupo 1** (6 deptos, 16 CCPPs). REGLA: cuando MEMORY contradice evidencia visual directa (PDF/imagen/JSON), **MEMORY está mal**; corregir inmediatamente. Nunca asumir nombres de archivo al pie de la letra — verificar visualmente. |
 
