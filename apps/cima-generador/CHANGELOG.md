@@ -1,5 +1,107 @@
 # Changelog — cima-generador
 
+## [3.8.0] - 2026-10-16 — ADVANCED 2026: TRIÁNGULO + LABEL + COLOR ÚNICO ÁMBAR
+
+CEO directive 2026-10-16:
+1. "Al seleccionar el distrito afectado que dentro tiene las zonas
+   especificas que han sido apagadas aparecen con un punto y deberian
+   tener un 'triangulo' + nommbre de la zona"
+2. "la seleccion inteligente debe tener el mismo color para no confundir
+   la vista, todo lo que este en zona de apagado se puede pintar en
+   amarillo un solo color uniforme incluido el boton de alerta de
+   deteccion inteligente"
+3. "verifica que todas las zonas de apagado funcionen al 100% y que
+   no exista la dispariedad si se pinta es por que si contiene
+   apagado end to end"
+
+### Changed — Color único ámbar (unificación total)
+
+| Elemento | v3.7.9 (2 colores) | v3.8.0 (1 color) |
+|---|---|---|
+| Dropdown CCPP match exacto | 🔴 RED `.ac-item-off` | 🟠 AMBER `.ac-item-off` (--zone-amber) |
+| Dropdown DISTRITO afectado | 🟠 AMBER `.ac-item-zone` | 🟠 AMBER `.ac-item-zone` (--zone-amber) |
+| Input CCPP exacto | 🔴 RED `.ccpp-off-confirmed` | 🟠 AMBER `.ccpp-off-confirmed` |
+| Input CCPP dist affected | 🟠 AMBER `.ccpp-off-ipt` | 🟠 AMBER `.ccpp-off-ipt` |
+| Input DIST affected | 🟠 AMBER `.dist-off-warn` | 🟠 AMBER `.dist-off-warn` |
+| CoberturaBtn (CCPP exacto) | 🔴 RED `.off` + pulseDanger | 🟠 AMBER `.off` + pulseWarn |
+| CoberturaBtn (distrito) | 🟠 AMBER `.warn` + pulseWarn | 🟠 AMBER `.warn` + pulseWarn (mismo) |
+
+**Single source of truth:** CSS variable `--zone-amber: #f59e0b` +
+`--zone-amber-deep: #b45309`. Cambiar la variable → cambia TODOS los
+elementos en zona de apagado.
+
+### Added — Triángulo + label en items ccpp apagados (BUG 1)
+
+Reemplaza el dot 6×6px por:
+
+```html
+<div class="ac-item ac-item-off" data-zone="ccpp_exacto">
+  <span class="ac-off-tri"></span>          ← triángulo CSS (border trick)
+  <span class="ac-off-text">PLAYA AZUL</span> ← nombre CCPP
+  <span class="ac-off-label">APAGADO</span>   ← label inline identificador
+</div>
+```
+
+Para DISTRITO afectado:
+
+```html
+<div class="ac-item ac-item-zone" data-zone="distrito_of">
+  <span class="ac-off-text">CHILIQUIN</span>  ← nombre distrito
+  <span class="ac-off-label">DISTRITO</span>    ← label inline
+</div>
+```
+
+Diferenciación semántica preservada en `data-zone` (ccpp_exacto vs
+distrito_of) y `title` (tooltip nativo) — visualmente unificado.
+
+### Added — Auditoría de integridad al startup (BUG 3)
+
+`auditZonasApagadas()` corre en DOMContentLoaded y verifica:
+1. Formato `d6:NAME` en ccpp_keys (debe matchear `^\d{6}:.+$`)
+2. Consistencia: ccpp_keys d6 ⊆ districts_with_off
+3. districts_with_off no vacío
+4. `total_zones` === `ccpp_keys.size`
+
+Loguea issues a `console.warn` sin romper la app.
+
+**Resultados del audit 2026-10-16:**
+- ✅ 239/239 ccpp_keys formato válido
+- ✅ 239/239 ccpp_keys d6 ∈ districts_with_off
+- ✅ 1821 districts_with_off
+- ✅ total_zones (2037) === ccpp_keys.size (239 — incluye IPT metadata)
+- ✅ 146/239 CCPPs en CCPP_DATA (GeoNames oficiales)
+- ✅ 93/239 CCPPs solo en ccpp_keys (aparece via union logic)
+
+### Added — CCPP_KEYS_NORMALIZED pre-normalizado (O(1) lookup)
+
+Al startup, construye un `Set<d6:NORMALIZED_NAME>` con cada entry
+normalizada a NFC + upper + single-space + trim. Antes cada lookup
+hacía `.normalize('NFC').toUpperCase()` en runtime — ahora O(1).
+
+`checkZonaApagada`, `updateCcppInputZoneClass`, `acRender` ahora
+usan `CCPP_KEYS_NORMALIZED.has(key)` con fallback al set original.
+
+### Tests
+
+| Versión | Tests | Estado |
+|---|---|---|
+| v3.7.9 | 383 | baseline |
+| v3.8.0 | **403** | +20 nuevos (audit, normalized, triangle, color) |
+
+### Lecciones (L-065, L-066)
+
+- **L-065**: Single color = single source of truth. Cuando 2 colores
+  significan "lo mismo" (zona afectada, confirmada o potencial), el
+  supervisor pierde la información de certeza. Un SOLO color ámbar +
+  label semántico (APAGADO / DISTRITO) es más claro que 2 colores
+  que se confunden.
+- **L-066**: Pre-normalización al startup = O(1) lookup + consistencia.
+  Si 4 lugares del código hacen `.normalize('NFC').toUpperCase()` cada
+  uno con su propia variante, el lookup es frágil. Pre-normalizar 1 vez
+  al startup y compartir el Set es más rápido Y más confiable.
+
+---
+
 ## [3.7.9] - 2026-10-16 — MARCADO END-TO-END DISTRITO+CCPP EN BÚSQUEDA
 
 CEO directive 2026-10-16: "Si hago una busqueda debe pintarse el

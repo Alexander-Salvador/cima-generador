@@ -31,6 +31,11 @@
     --green: #22c55e;
     --green-light: #16a34a;
     --danger: #ef4444;
+    /* v3.8.0: zone-amber = color único para TODO lo que esté en zona
+       de apagado Movistar (dropdown items, inputs, coberturaBtn).
+       Single source of truth — cambiar aquí cambia todos los elementos. */
+    --zone-amber: #f59e0b;
+    --zone-amber-deep: #b45309;
     --soft-gray: #3a3a44;
     --on-accent: #ffffff;
 
@@ -550,7 +555,7 @@
      - Sin pulse animation, sin ⚠️ (jarring), sin border-left
      - El CCPP dropdown se ve IDÉNTICO a los otros (depto/prov/dist),
        con la única excepción de los items oficiales apagados (rojo + dot) */
-  .ac-item .ac-off-dot {
+   .ac-item .ac-off-dot {
     flex-shrink: 0;
     width: 6px;
     height: 6px;
@@ -558,29 +563,68 @@
     background: currentColor;
     opacity: 0.85;
   }
+  /* v3.8.0: TRIÁNGULO + LABEL "APAGADO" en items ccpp_keys.
+     Reemplaza el dot por un triángulo CSS (border trick) más expresivo
+     que comunica "advertencia/atención" + un label inline que identifica
+     el item como zona de apagado Movistar. El triángulo hereda color
+     (currentColor) del padre .ac-item-off. */
+  .ac-item .ac-off-tri {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 8px solid currentColor;
+    flex-shrink: 0;
+    margin-right: 2px;
+    position: relative;
+    top: 1px;
+  }
+  .ac-item .ac-off-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ac-item .ac-off-label {
+    flex: 0 0 auto;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: color-mix(in srgb, currentColor 18%, transparent);
+    color: inherit;
+    text-transform: uppercase;
+  }
+  /* v3.8.0: COLOR ÚNICO ÁMBAR para items en zona de apagado.
+     v3.7.4 usaba var(--danger) rojo para CCPP exacto y #f59e0b ámbar
+     para distrito. CEO directive 2026-10-16: "todo lo que este en zona
+     de apagado se puede pintar en amarillo un solo color uniforme".
+     Unificamos a --zone-amber (#f59e0b) en ambos niveles. La distinción
+     entre CONFIRMADO (CCPP exacto) y POTENCIAL (distrito) se mantiene
+     en el data-attribute y el title, pero visualmente son iguales. */
   .ac-item.ac-item-off {
-    color: var(--danger);
-    font-weight: 600;
-    background: color-mix(in srgb, var(--danger) 8%, transparent);
+    color: var(--zone-amber);
+    font-weight: 700;
+    background: color-mix(in srgb, var(--zone-amber) 12%, transparent);
   }
   .ac-item.ac-item-off:hover,
   .ac-item.ac-item-off.active {
-    background: color-mix(in srgb, var(--danger) 22%, var(--glass-3-bg));
-    color: var(--danger);
+    background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-3-bg));
+    color: var(--zone-amber);
   }
-  /* v3.7.9: DISTRITO en districts_with_off pinta el item del dropdown
-     con ÁMBAR sutil (afectación POTENCIAL, no confirmada). Diferenciado
-     visualmente del rojo .ac-item-off (CCPP exacto confirmado) y del
-     verde .filled (default). Sin pulse, sin border-left — el dot rojo
-     .ac-off-dot NO aplica (solo ccpp exactos usan dot). */
+  /* v3.8.0: DISTRITO en districts_with_off — mismo ámbar unificado */
   .ac-item.ac-item-zone {
-    color: #b45309;
-    background: color-mix(in srgb, #f59e0b 10%, transparent);
+    color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-amber) 12%, transparent);
   }
   .ac-item.ac-item-zone:hover,
   .ac-item.ac-item-zone.active {
-    background: color-mix(in srgb, #f59e0b 22%, var(--glass-3-bg));
-    color: #b45309;
+    background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-3-bg));
+    color: var(--zone-amber);
   }
 
   .ac-item mark {
@@ -682,13 +726,17 @@
      dos clases + elemento) gana sobre .filled (una clase + elemento).
      El supervisor UBICA inmediatamente si el caserío está en zona
      de apagado. */
+  /* v3.8.0: COLOR ÚNICO ÁMBAR para inputs en zona de apagado.
+     ccpp-off-confirmed (CCPP exacto) ahora usa --zone-amber en vez de
+     var(--danger) rojo. ccpp-off-ipt y dist-off-warn ya usaban ámbar.
+     Unificación: las 3 clases usan --zone-amber / --zone-amber-deep. */
   .field input.ccpp-off-confirmed,
   .field input.ccpp-off-confirmed.filled {
-    border-color: var(--danger);
-    background: color-mix(in srgb, var(--danger) 22%, var(--glass-1-bg));
-    color: var(--danger);
+    border-color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+    color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
     text-shadow: 0 1px 0 rgba(255,255,255,0.5);
     /* v3.7.7: text-transform explícito (CEO L-060). Aunque .field input tiene
        text-transform: uppercase, algunas clases dinámicas podrían pisar. Esta
@@ -697,38 +745,36 @@
   }
   .field input.ccpp-off-confirmed:hover:not(:focus),
   .field input.ccpp-off-confirmed.filled:hover:not(:focus) {
-    background: color-mix(in srgb, var(--danger) 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
   }
   .field input.ccpp-off-ipt,
   .field input.ccpp-off-ipt.filled {
-    border-color: #f59e0b;
-    background: color-mix(in srgb, #f59e0b 22%, var(--glass-1-bg));
-    color: #b45309;
+    border-color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+    color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
     /* v3.7.7: text-transform explícito (CEO L-060). */
     text-transform: uppercase;
   }
   .field input.ccpp-off-ipt:hover:not(:focus),
   .field input.ccpp-off-ipt.filled:hover:not(:focus) {
-    background: color-mix(in srgb, #f59e0b 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
   }
-  /* v3.7.9: DISTRITO en districts_with_off pinta el input ÁMBAR (afectación
-     POTENCIAL). Mismo lenguaje visual que .ccpp-off-ipt pero específico
-     para el campo distrito. El supervisor ve el distrito seleccionado
-     marcado en ámbar y sabe que cualquier CCPP de ahí puede estar afectado. */
+  /* v3.7.9 / v3.8.0: DISTRITO en districts_with_off pinta el input ÁMBAR
+     (afectación POTENCIAL). Unificado a --zone-amber. */
   .field input.dist-off-warn,
   .field input.dist-off-warn.filled {
-    border-color: #f59e0b;
-    background: color-mix(in srgb, #f59e0b 22%, var(--glass-1-bg));
-    color: #b45309;
+    border-color: var(--zone-amber);
+    background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+    color: var(--zone-amber-deep);
     font-weight: 700;
-    box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 24%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
     text-transform: uppercase;
   }
   .field input.dist-off-warn:hover:not(:focus),
   .field input.dist-off-warn.filled:hover:not(:focus) {
-    background: color-mix(in srgb, #f59e0b 30%, var(--glass-1-bg));
+    background: color-mix(in srgb, var(--zone-amber) 30%, var(--glass-1-bg));
   }
   .field input[aria-invalid="true"], .field textarea[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--danger) 85%, transparent);
@@ -2114,32 +2160,27 @@
   /* v2.1.4: .cobertura-btn-label ELIMINADO (botón icon-only).
      El label se preserva solo como aria-label + title en el HTML
      para accesibilidad WCAG (lectores de pantalla anuncian el botón). */
-  /* v2.1.3 CRIT-009: estado .off gana visibilidad sobre .idle */
-  .cobertura-btn.off {
-    background: color-mix(in srgb, var(--danger) 22%, var(--glass-2-bg));
-    border-color: var(--danger);
-    color: var(--danger);
-    animation: pulseDanger 2.4s var(--motion-ease) infinite;
-  }
-  .cobertura-btn.off:hover,
-  .cobertura-btn.off:focus-visible {
-    background: color-mix(in srgb, var(--danger) 32%, var(--glass-2-bg));
-    box-shadow:
-      0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent),
-      var(--ring-hairline);
-  }
-  /* v2.0.8: estado .warn = distrito con apagados (preventivo, no exacto) */
+  /* v3.8.0: COLOR ÚNICO ÁMBAR para coberturaBtn "affected" (unifica off + warn).
+     v2.0.8 usaba 2 estados con colores distintos (rojo para ccpp exacto,
+     ámbar para distrito). CEO directive 2026-10-16: "todo lo que este en
+     zona de apagado se puede pintar en amarillo un solo color uniforme
+     incluido el boton de alerta". Ahora .off y .warn son visualmente
+     IGUALES (ámbar) — la diferencia entre CCPP exacto y distrito se
+     mantiene solo en el title (tooltip nativo) y el aria-label. */
+  .cobertura-btn.off,
   .cobertura-btn.warn {
-    background: color-mix(in srgb, #f59e0b 24%, var(--glass-2-bg));
-    border-color: #f59e0b;
-    color: #f59e0b;
+    background: color-mix(in srgb, var(--zone-amber) 24%, var(--glass-2-bg));
+    border-color: var(--zone-amber);
+    color: var(--zone-amber);
     animation: pulseWarn 2.8s var(--motion-ease) infinite;
   }
+  .cobertura-btn.off:hover,
+  .cobertura-btn.off:focus-visible,
   .cobertura-btn.warn:hover,
   .cobertura-btn.warn:focus-visible {
-    background: color-mix(in srgb, #f59e0b 36%, var(--glass-2-bg));
+    background: color-mix(in srgb, var(--zone-amber) 36%, var(--glass-2-bg));
     box-shadow:
-      0 0 0 3px color-mix(in srgb, #f59e0b 28%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--zone-amber) 28%, transparent),
       var(--ring-hairline);
   }
   .cobertura-btn:focus-visible {
@@ -2545,37 +2586,36 @@ font-size: 10px;
     /* v3.7.1: items de dropdown hereda de la sección principal (líneas 555-585)
        para mantener UN SOLO source of truth entre popup mode y main mode. */
 
-    /* ─── Input CCPP pintado por zona (mayor specificity que .filled) ─── */
+    /* v3.8.0: COLOR ÚNICO ÁMBAR (popup mode) — unificado a --zone-amber. */
     .field input.ccpp-off-confirmed,
     .field input.ccpp-off-confirmed.filled {
-      border-color: var(--danger);
-      background: color-mix(in srgb, var(--danger) 22%, var(--glass-1-bg));
-      color: var(--danger);
+      border-color: var(--zone-amber);
+      background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+      color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 24%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
       text-shadow: 0 1px 0 rgba(255,255,255,0.5);
       /* v3.7.7: text-transform explícito (CEO L-060). */
       text-transform: uppercase;
     }
     .field input.ccpp-off-ipt,
     .field input.ccpp-off-ipt.filled {
-      border-color: #f59e0b;
-      background: color-mix(in srgb, #f59e0b 22%, var(--glass-1-bg));
-      color: #b45309;
+      border-color: var(--zone-amber);
+      background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+      color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 24%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
       /* v3.7.7: text-transform explícito (CEO L-060). */
       text-transform: uppercase;
     }
-    /* v3.7.9: DISTRITO en districts_with_off pinta el input ÁMBAR (popup mode).
-       Mismo lenguaje visual que .ccpp-off-ipt pero específico para distrito. */
+    /* v3.8.0: DISTRITO en districts_with_off (popup mode) — --zone-amber. */
     .field input.dist-off-warn,
     .field input.dist-off-warn.filled {
-      border-color: #f59e0b;
-      background: color-mix(in srgb, #f59e0b 22%, var(--glass-1-bg));
-      color: #b45309;
+      border-color: var(--zone-amber);
+      background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-1-bg));
+      color: var(--zone-amber-deep);
       font-weight: 700;
-      box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 24%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone-amber) 24%, transparent);
       text-transform: uppercase;
     }
 
@@ -3870,10 +3910,18 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   var d6 = codes.d6;
   var hasCcpp = ccpp && String(ccpp).trim().length > 0;
 
+  // v3.8.0: lookup en CCPP_KEYS_NORMALIZED (pre-normalizado) si está disponible.
+  function lookupCcpp(key) {
+    if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
+      return CCPP_KEYS_NORMALIZED.has(key);
+    }
+    return ZONAS_APAGADAS_STATE.ccpp_keys.has(key);
+  }
+
   // Nivel 1: ccpp exacto
   if (hasCcpp) {
     var key = d6 + ':' + zaNormalize(ccpp);
-    if (ZONAS_APAGADAS_STATE.ccpp_keys.has(key)) {
+    if (lookupCcpp(key)) {
       return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar' };
     }
   }
@@ -3899,14 +3947,18 @@ function renderCoberturaButton(check) {
     btn.classList.add('cobertura-btn--idle');
     return;
   }
+  // v3.8.0: visualmente .off y .warn son IGUALES (ámbar unificado, CSS).
+  // Labels distintos en title (tooltip nativo) para diferenciar nivel.
   if (check.nivel === 'ccpp_exacto') {
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = '⚠️ CCPP exacto apagado Movistar: ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Centro poblado exacto en zona de apagado Movistar — click para ver speech');
+    btn.title = '⚠️ ZONA DE APAGADO (CCPP exacto): ' + check.code + ' — ' + check.mensaje;
   } else if (check.nivel === 'distrito_of') {
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = '⚠️ Distrito con apagados Movistar: ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Distrito con zonas de apagado Movistar — click para ver speech');
+    btn.title = '⚠️ ZONA DE APAGADO (distrito): ' + check.code + ' — ' + check.mensaje;
   }
 }
 
@@ -3935,10 +3987,15 @@ function zaUpdateCcppInputZoneClass() {
   var codes = zaGetCodes(upper('departamento'), upper('provincia'), upper('distrito'));
   if (!codes || !codes.d6) return;
   var d6 = codes.d6;
-  if (ZONAS_APAGADAS_STATE.ccpp_keys.has(d6 + ':' + zaNormalize(ccppVal))) {
-    ccppEl.classList.add('ccpp-off-confirmed'); // ROJO
+  // v3.8.0: usar pre-normalized set (CCPP_KEYS_NORMALIZED) si está disponible.
+  var itemKey = d6 + ':' + zaNormalize(ccppVal);
+  var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
+    ? CCPP_KEYS_NORMALIZED.has(itemKey)
+    : ZONAS_APAGADAS_STATE.ccpp_keys.has(itemKey);
+  if (hasMatch) {
+    ccppEl.classList.add('ccpp-off-confirmed'); // ÁMBAR (v3.8.0 unificado)
   } else if (ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
-    ccppEl.classList.add('ccpp-off-ipt');        // AMARILLO
+    ccppEl.classList.add('ccpp-off-ipt');        // ÁMBAR
   }
 }
 
@@ -4223,10 +4280,20 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   var hasCcpp = ccpp && ccpp.trim().length > 0;
   var distritoTieneApagados = ZONAS_APAGADAS.districts_with_off.has(d6);
 
+  // v3.8.0: lookup en CCPP_KEYS_NORMALIZED (pre-normalizado al startup)
+  // para O(1) sin re-normalizar en cada check. Si no está disponible
+  // (data corruption), fallback al set original con normalización inline.
+  function lookupCcpp(key) {
+    if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
+      return CCPP_KEYS_NORMALIZED.has(key);
+    }
+    return ZONAS_APAGADAS.ccpp_keys.has(key);
+  }
+
   // Nivel 1: CCPP exacto matchea (4 campos llenos + match estricto)
   if (hasCcpp) {
     var key = d6 + ':' + normalizeKey(ccpp);
-    if (ZONAS_APAGADAS.ccpp_keys.has(key)) {
+    if (lookupCcpp(key)) {
       return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar' };
     }
   }
@@ -4240,7 +4307,7 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
       code: d6,
       mensaje: 'Este distrito tiene zonas de apagado Movistar. Verifica el CCPP exacto.',
       ccpp_tipeado: hasCcpp ? normalizeKey(ccpp) : null,
-      ccpp_match_exacto: hasCcpp && ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + normalizeKey(ccpp))
+      ccpp_match_exacto: hasCcpp && lookupCcpp(d6 + ':' + normalizeKey(ccpp))
     };
   }
 
@@ -4541,6 +4608,9 @@ function renderCoberturaButton(check) {
   // v3.5.2 BUG 1 fix: alternar --idle vs off/warn para que el CSS cascade
   // funcione inequívocamente (antes el botón conservaba --idle junto con
   // off/warn, creando competencia entre selectores same-specificity).
+  // v3.8.0: visualmente .off y .warn son IGUALES (ámbar unificado). La
+  // distinción entre ccpp_exacto y distrito_of se mantiene solo en el
+  // title (tooltip nativo) y el aria-label, no en el color.
   btn.classList.remove('off', 'warn', 'cobertura-btn--idle');
   btn.setAttribute('aria-pressed', 'false');
   if (!check) {
@@ -4552,11 +4622,13 @@ function renderCoberturaButton(check) {
   if (check.nivel === 'ccpp_exacto') {
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = '⚠️ CCPP exacto apagado Movistar: ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Centro poblado exacto en zona de apagado Movistar — click para ver speech');
+    btn.title = '⚠️ ZONA DE APAGADO (CCPP exacto): ' + check.code + ' — ' + check.mensaje;
   } else if (check.nivel === 'distrito_of') {
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
-    btn.title = '⚠️ Distrito con apagados Movistar: ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Distrito con zonas de apagado Movistar — click para ver speech');
+    btn.title = '⚠️ ZONA DE APAGADO (distrito): ' + check.code + ' — ' + check.mensaje;
   }
 }
 
@@ -4949,7 +5021,15 @@ function acRender(key) {
     // excepción de los items oficiales apagados (rojo + dot).
     var off = false;
     if (d6ForMark && typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
-      off = ZONAS_APAGADAS.ccpp_keys.has(d6ForMark + ':' + (item.normalize ? item.normalize('NFC').toUpperCase() : item.toUpperCase()));
+      // v3.8.0: lookup en CCPP_KEYS_NORMALIZED (pre-normalizado) o fallback
+      // al set original. La normalización debe ser EXACTAMENTE la misma
+      // que la usada en CCPP_KEYS_NORMALIZED al startup.
+      var itemKey = d6ForMark + ':' + (item.normalize ? item.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : item.toUpperCase().replace(/\s+/g, ' ').trim());
+      if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
+        off = CCPP_KEYS_NORMALIZED.has(itemKey);
+      } else {
+        off = ZONAS_APAGADAS.ccpp_keys.has(itemKey);
+      }
     }
     // v3.7.9: en el dropdown de DISTRITO, marcar el item como .ac-item-zone
     // si su d6 está en districts_with_off (afectación POTENCIAL, sin match
@@ -4959,16 +5039,25 @@ function acRender(key) {
       zone = true;
     }
     var cls = 'ac-item';
-    var dotHtml = '';
+    var indicatorHtml = '';
     if (off) {
+      // v3.8.0: TRIANGULO + LABEL "APAGADO" en vez de dot. Comunica
+      // visualmente "advertencia" + identifica el item como zona de
+      // apagado Movistar. Color hereda del padre (.ac-item-off = ámbar).
       cls += ' ac-item-off';
-      dotHtml = '<span class="ac-off-dot" aria-hidden="true" title="CCPP exacto en zona de apagado Movistar"></span>';
+      indicatorHtml = '<span class="ac-off-tri" aria-hidden="true"></span>'
+                    + '<span class="ac-off-text">' + acEscape(item) + '</span>'
+                    + '<span class="ac-off-label" title="Centro poblado exacto en zona de apagado Movistar">APAGADO</span>';
+      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="ccpp_exacto">' + indicatorHtml + '</div>';
     } else if (zone) {
-      // v3.7.9: distrito en zona potencial. Sin dot (solo ccpp usa dot),
-      // sin border-left (unificado con otros items), color ámbar sutil.
+      // v3.8.0: distrito en zona potencial. Color ámbar unificado con ccpp.
+      // Sin triángulo/label (es el nombre del distrito, no del CCPP exacto).
       cls += ' ac-item-zone';
+      indicatorHtml = '<span class="ac-off-text">' + acEscape(item) + '</span>'
+                    + '<span class="ac-off-label" title="Este distrito tiene centros poblados en zona de apagado Movistar">DISTRITO</span>';
+      return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of">' + indicatorHtml + '</div>';
     }
-    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + dotHtml + acEscape(item) + '</div>';
+    return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '">' + acEscape(item) + '</div>';
   }).join('');
   // v3.7.5: ELIMINADO el footer "X de Y" (ac-meta) — CEO feedback L-058.
   // El supervisor no necesita ver el conteo — solo los items relevantes.
@@ -5101,13 +5190,17 @@ function updateCcppInputZoneClass() {
   var codes = getUbigeoCodesForAddress(d, p, di);
   if (!codes || !codes.d6) return;
   var d6 = codes.d6;
-  // Match exacto en ccpp_keys → ROJO CONFIRMADO
-  var itemKey = ccppVal.normalize ? ccppVal.normalize('NFC').toUpperCase() : ccppVal.toUpperCase();
-  if (ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + itemKey)) {
+  // v3.8.0: usar pre-normalized set (CCPP_KEYS_NORMALIZED) si está disponible.
+  // Misma normalización que en auditZonasApagadas al startup.
+  var itemKey = ccppVal.normalize ? ccppVal.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : ccppVal.toUpperCase().replace(/\s+/g, ' ').trim();
+  var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
+    ? CCPP_KEYS_NORMALIZED.has(d6 + ':' + itemKey)
+    : ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + itemKey);
+  if (hasMatch) {
     ccppEl.classList.add('ccpp-off-confirmed');
     return;
   }
-  // Distrito en districts_with_off pero CCPP sin match exacto → AMARILLO
+  // Distrito en districts_with_off pero CCPP sin match exacto → AMARILLO (input)
   if (ZONAS_APAGADAS.districts_with_off.has(d6)) {
     ccppEl.classList.add('ccpp-off-ipt');
   }
@@ -5842,7 +5935,86 @@ document.addEventListener('DOMContentLoaded', function () {
   var tipifList = $('tipifList');
   if (tipifList) tipifList.addEventListener('click', tipifListHandler);
   if (tipifList) tipifList.addEventListener('input', tipifListHandler);
+
+  // v3.8.0: AUDITORÍA DE INTEGRIDAD ZONAS_APAGADAS al startup.
+  // Verifica que toda la data esté consistente end-to-end:
+  // (1) ccpp_keys con formato d6:NAME válido
+  // (2) todos los d6 de ccpp_keys existen en districts_with_off
+  // (3) districts_with_off tiene al menos los d6 que tienen ccpp_keys
+  // (4) sets no están vacíos
+  // Si encuentra issues, los loguea a console (no rompe la app).
+  if (typeof ZONAS_APAGADAS !== 'undefined') {
+    auditZonasApagadas();
+  }
+
+  // v3.8.0: Pre-normalizar ccpp_keys a NFC + upper para O(1) lookup.
+  // Antes hacíamos .normalize('NFC').toUpperCase() en cada lookup, ahora
+  // una sola vez al startup. Mismas keys en ZONAS_APAGADAS.ccpp_keys
+  // (originales) y CCPP_KEYS_NORMALIZED (pre-normalizadas).
+  if (typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
+    CCPP_KEYS_NORMALIZED = new Set();
+    ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+      // El formato es d6:NAME — preservamos d6 y normalizamos solo el NAME
+      var idx = k.indexOf(':');
+      if (idx < 0) return;
+      var d6 = k.substring(0, idx);
+      var name = k.substring(idx + 1);
+      var normalized = name.normalize ? name.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : name.toUpperCase().replace(/\s+/g, ' ').trim();
+      CCPP_KEYS_NORMALIZED.add(d6 + ':' + normalized);
+    });
+  }
 });
+
+// v3.8.0: Set pre-normalizado para lookup O(1) de CCPP apagados.
+var CCPP_KEYS_NORMALIZED = null;
+
+// v3.8.0: AUDITORÍA DE INTEGRIDAD — verifica ZONAS_APAGADAS end-to-end.
+// Loguea issues a console.warn. No rompe la app.
+function auditZonasApagadas() {
+  if (typeof ZONAS_APAGADAS === 'undefined' || !ZONAS_APAGADAS.ccpp_keys) {
+    console.warn('[CIMA audit] ZONAS_APAGADAS.ccpp_keys missing or empty');
+    return;
+  }
+  var issues = [];
+  // Check 1: ccpp_keys format
+  var validFormat = 0, invalidFormat = [];
+  ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+    if (/^\d{6}:.+$/.test(k)) validFormat++;
+    else invalidFormat.push(k);
+  });
+  if (invalidFormat.length > 0) {
+    issues.push('ccpp_keys con formato inválido: ' + invalidFormat.length);
+  }
+  // Check 2: d6 in ccpp_keys ⊆ districts_with_off
+  var ccppD6 = new Set();
+  ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+    var idx = k.indexOf(':');
+    if (idx >= 0) ccppD6.add(k.substring(0, idx));
+  });
+  var ccppD6NotInDistricts = [];
+  ccppD6.forEach(function (d6) {
+    if (!ZONAS_APAGADAS.districts_with_off.has(d6)) {
+      ccppD6NotInDistricts.push(d6);
+    }
+  });
+  if (ccppD6NotInDistricts.length > 0) {
+    issues.push('ccpp_keys d6 NO en districts_with_off: ' + ccppD6NotInDistricts.length);
+  }
+  // Check 3: districts_with_off size
+  if (ZONAS_APAGADAS.districts_with_off.size === 0) {
+    issues.push('districts_with_off está VACÍO');
+  }
+  // Check 4: total_zones consistency
+  if (ZONAS_APAGADAS.total_zones !== ZONAS_APAGADAS.ccpp_keys.size) {
+    issues.push('total_zones (' + ZONAS_APAGADAS.total_zones + ') ≠ ccpp_keys.size (' + ZONAS_APAGADAS.ccpp_keys.size + ')');
+  }
+  // Report
+  if (issues.length > 0) {
+    console.warn('[CIMA audit] ZONAS_APAGADAS issues:', issues);
+  } else {
+    console.log('[CIMA audit] ZONAS_APAGADAS OK: ' + ZONAS_APAGADAS.ccpp_keys.size + ' CCPPs, ' + ZONAS_APAGADAS.districts_with_off.size + ' districts');
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // MODO POPUP (D-8)
