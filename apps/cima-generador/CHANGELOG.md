@@ -1,5 +1,89 @@
 # Changelog — cima-generador
 
+## [3.9.13] - 2026-10-16 — ✍️ SPEECH REESCRITO — template {placeholders}
+
+CEO directive: "Vamos a mejorar el Speech:" + nuevo copy redactado
+(más conciso, formal "usted", 2 párrafos separados).
+
+### 🆕 Nuevo template de speech (`comu5514_postventa_marcaje`)
+
+CEO reemplazó el copy largo anterior con uno más profesional y
+conciso (2 párrafos, ~70% del original). El template introduce
+nueva sintaxis de placeholders con llaves `{...}`.
+
+```
+ANTES (v3.9.12 — comu5514_postventa_marcaje):
+"APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS: Queremos
+ informarte que, a partir del [día] de [mes], el servicio
+ Movistar dejará de funcionar en la zona [zona]. En otras
+ zonas, el servicio seguirá disponible con normalidad.
+ Lamentamos las molestias y agradecemos tu comprensión."
+
+AHORA (v3.9.13):
+"Queremos informarle que, a partir del {dia} de {mes} el
+ servicio de Movistar 2G dejara de funcionar en
+ {distrito,departamento}, Contamos con nuevas mejoras en la
+ red 4G para darte una mejor experiencia en tu servicio.
+
+ Por lo que es necesario que su equipo este configurado
+ adecuadamente para soprote esta red actualizada {Red}."
+```
+
+### 🆕 Placeholders nuevos (sintaxis `{...}`)
+
+| Placeholder | Resuelve a | Ejemplo |
+|---|---|---|
+| `{dia}` | día numérico | `3` |
+| `{mes}` | mes en español | `septiembre` |
+| `{anio}` / `{yyyy}` | año | `2026` |
+| `{zona}` | zona del contexto | `vituya` |
+| `{distrito,departamento}` | distrito + dpto del addrCtx | `San Isidro, Lima` |
+| `{Red}` | tecnología desplegada | `4G` |
+
+### 🔧 Resolución JS actualizada
+
+`showApagadoPanelInline`:
+1. Resuelve primero los `{placeholders}` (sintaxis nueva CEO)
+2. Resuelve después los `[placeholders]` (LEGACY para otros speeches)
+3. Fallback final: cualquier `{xxx}` o `[xxx]` no resuelto → "—"
+
+```js
+// v3.9.13: nueva sintaxis
+.replace(/\{distrito,departamento\}/gi, fullLoc)  // "San Isidro, Lima"
+.replace(/\{dia\}/gi, f.dd)                          // "3"
+.replace(/\{mes\}/gi, f.mes)                        // "septiembre"
+.replace(/\{Red\}|\{red\}/gi, redTecnologia)        // "4G"
+// legacy (otros speeches)
+.replace(/\[dd\]/gi, f.dd)
+.replace(/\[zona\]/gi, zonaLabel)
+// ...
+```
+
+### 🎨 Bold highlighting automático
+
+El motor `highlightKeyText` (v3.9.8) sigue aplicando bold a:
+- `\d+ de septiembre` → "**3 de septiembre**" ✓
+- `\b[24]G\b` → "**4G**" / "**2G**" ✓
+- `\d+/\d+/\d+` → fechas numéricas ✓
+
+Los placeholders resueltos quedan automáticamente resaltados
+al leerse.
+
+### ✅ Validación
+
+- 432/432 tests PASS
+- audit_masivo ALL PASS
+- node --check OK
+
+### 📝 CEO — typo decisions
+
+El copy incluye typos intencionales del autor ("dejara" sin
+tilde, "soporte" en vez de "soportar"). Mantenidos verbatim en
+implementación — la versión final del copy la confirma el
+CEO tras user testing.
+
+---
+
 ## [3.9.12] - 2026-10-16 — 📐 LAYOUT REORGANIZADO — 4 filas coherentes
 
 CEO directives 2026-10-16:
