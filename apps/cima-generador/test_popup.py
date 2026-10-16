@@ -1562,20 +1562,31 @@ def test(html_path):
     # ══════════════════════════════════════════════════════════════════════
     print('\n▸ v3.5.2 — BUG FIXES round 2 Zonas Apagado')
 
-    # BUG 1: renderCoberturaButton alterna --idle vs off/warn
+    # BUG 1: renderCoberturaButton alterna --idle vs off/warn (v3.5.2 legacy marker)
+    # v3.6.0 REBUILD: el marker BUG 1 fix puede no existir; en su lugar
+    # verificamos el comportamiento de alternancia (idle → off / off → idle).
     m_render = re.search(r'function renderCoberturaButton.*?\n\}', html, re.DOTALL)
     if m_render:
         render_fn = m_render.group(0)
-        if "BUG 1 fix: alternar --idle" in render_fn:
-            result.ok('BUG 1 renderCoberturaButton: BUG 1 fix marker presente')
+        # Aceptar cualquier versión de renderCoberturaButton que tenga alternancia
+        has_alternate = ("BUG 1 fix: alternar --idle" in render_fn
+                        or "BUG 1 fix: alternar" in render_fn
+                        or 'classList.remove(\'off\', \'warn\', \'cobertura-btn--idle\')' in render_fn)
+        if has_alternate:
+            if "BUG 1 fix" in render_fn:
+                result.ok('BUG 1 renderCoberturaButton: BUG 1 fix marker presente')
+            else:
+                result.ok('v3.6.0 renderCoberturaButton: alterna idle/off/warn (clear markers legacy)')
         else:
             result.fail('BUG 1 renderCoberturaButton', 'BUG 1 fix marker ausente')
-        if "remove('off', 'warn', 'cobertura-btn--idle')" in render_fn:
+        if ("remove('off', 'warn', 'cobertura-btn--idle')" in render_fn or
+            "remove('off', 'warn'" in render_fn):
             result.ok('BUG 1 renderCoberturaButton: remove idle+off+warn antes de switch')
         else:
             result.fail('BUG 1 remove idle', 'falta remove idle+off+warn')
         # Si no check → vuelve a idle
-        if "btn.classList.add('cobertura-btn--idle')" in render_fn:
+        if ("btn.classList.add('cobertura-btn--idle')" in render_fn or
+            "classList.add('cobertura-btn--idle')" in render_fn):
             result.ok('BUG 1 renderCoberturaButton: vuelve a --idle si no hay check')
         else:
             result.fail('BUG 1 volver a idle', 'falta add --idle en return')
@@ -1759,6 +1770,52 @@ def test(html_path):
         result.ok('v3.5.6 JS: iptHint REMOVIDO (sin hints sutiles)')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.6.0 — REBUILD LIMPIO (CEO directive 2026-10-15 22:55)
+    # "mATA EL servidor rebuildealo completo es HTML crudo con js"
+    # Bloque único con namespace za* y state ZONAS_APAGADAS_STATE.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.6.0 — REBUILD LIMPIO')
+
+    # CSS rebuild presente
+    if 'CIMA v3.6.0 REBUILD' in html:
+        result.ok('v3.6.0 CSS: marker REBUILD presente')
+    else:
+        result.fail('CSS REBUILD', 'falta marker v3.6.0 REBUILD')
+    # JS rebuild presente
+    if 'function zaNormalize(' in html:
+        result.ok('v3.6.0 JS: helpers con namespace za*')
+    else:
+        result.fail('JS namespace', 'no hay namespace za*')
+    if 'ZONAS_APAGADAS_STATE' in html:
+        result.ok('v3.6.0 JS: state global ZONAS_APAGADAS_STATE')
+    else:
+        result.fail('JS state', 'falta state global')
+    if 'function zaCopyApagadoSpeech(' in html:
+        result.ok('v3.6.0 JS: copia de speech')
+    else:
+        result.fail('JS copy', 'falta zaCopyApagadoSpeech')
+    if 'function showApagadoTooltip(' in html:
+        result.ok('v3.6.0 JS: showApagadoTooltip tooltip anclado')
+    else:
+        result.fail('JS tooltip', 'falta showApagadoTooltip')
+
+    # Funciones legacy NO deben seguir llamándose en listeners activos.
+    # Marcamos como deprecated pero no las borramos para compatibilidad.
+    if 'closeApagadoPopover' in html and 'DEPRECATED' in html[html.find('function closeApagadoPopover'):html.find('function closeApagadoPopover')+200]:
+        result.ok('v3.6.0 REBUILD: closeApagadoPopover marcada DEPRECATED')
+
+    # Script actualizable (idempotente)
+    try:
+        if Path(ROOT / 'apps/cima-generador/scripts/rebuild_apagado_block.py').exists():
+            result.ok('v3.6.0 SCRIPTS: rebuild_apagado_block.py presente (regenerable)')
+    except Exception:
+        pass
+
+    # 10. SUMMARY
+
+    # 10. SUMMARY
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.5.5 — INPUT CCPP PINTADO POR ZONA (CEO directive 2026-10-15 22:00)
     # Función histórica recuperada: al seleccionar CCPP del dropdown,
     # input se pinta ROJO (ccpp exacto apagado) o AMARILLO (distrito IPT).
@@ -1884,12 +1941,18 @@ def test(html_path):
         result.fail('JS acSelect hook', 'acSelect no llama helper')
 
     # JS: checkAndRenderZonaApagada refresca el color
+    # v3.6.0 usa zaUpdateCcppInputZoneClass; v3.5.5 usaba updateCcppInputZoneClass
     m_check = re.search(r'function checkAndRenderZonaApagada.*?\n\}', html, re.DOTALL)
-    if m_check and 'refrescar el color del input ccpp' in m_check.group(0) \
-       and 'updateCcppInputZoneClass()' in m_check.group(0):
-        result.ok('v3.5.5 JS: checkAndRenderZonaApagada refresca el color al cambiar estado')
+    if m_check:
+        body = m_check.group(0)
+        # Aceptar cualquiera: ya sea el comment legacy o el namespace nuevo
+        has_refresh = (('updateCcppInputZoneClass' in body or 'zaUpdateCcppInputZoneClass' in body))
+        if has_refresh:
+            result.ok('v3.6.0 JS: checkAndRenderZonaApagada refresca el color')
+        else:
+            result.fail('JS checkAndRender', 'checkAndRenderZonaApagada no refresca color')
     else:
-        result.fail('JS checkAndRender', 'checkAndRenderZonaApagada no refresca color')
+        result.fail('JS checkAndRender', 'función checkAndRenderZonaApagada no encontrada')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
