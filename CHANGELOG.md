@@ -1,5 +1,295 @@
 # Changelog — cima-generador
 
+## [3.7.8] - 2026-10-16 — DROPDOWN ITEMS EN MAYÚSCULAS (L-061)
+
+CEO directive 2026-10-16: "CCPP/CASERIO su input al darle click abre un
+dropdown con las opciones en minusculas y es incorrecto debe salir todo
+en MAYUSCULAS".
+
+### Fixed — Dropdown items uppercase explícito
+
+CCPP_DATA inline (43,491 caseríos) tiene 99.9% de items en case natural
+(GeoNames: "Bellavista", "Buena Vista"). Sin regla CSS explícita, los
+items del dropdown se renderizaban con su case original.
+
+| Cambio | Detalle | Estado |
+|---|---|---|
+| `.ac-item` | `text-transform: uppercase` agregado | ✅ |
+| `.ac-empty` | "Sin coincidencias" en MAYÚSCULAS | ✅ |
+| Dropdown UX | Items 100% mayúsculas, sin importar case del data | ✅ |
+
+---
+
+## [3.7.7] - 2026-10-16 — INPUT CCPP MAYÚSCULAS EXPLÍCITAS (L-060)
+
+CEO directive: "al darle click a CCPP/CASERIO el input con texto lleno
+al editarlo salen los datos en minúsculas, revisalo bien que no este
+pisandose el CSS todos es MAYUSCULA".
+
+### Fixed — text-transform explícito en clases dinámicas
+
+Aunque `.field input` tiene `text-transform: uppercase` (línea 634), las
+clases dinámicas `ccpp-off-confirmed` y `ccpp-off-ipt` no lo especificaban
+explícitamente. El CEO sospechaba herencia rota. Fix defensivo aplicado
+en 2 lugares (main + popup).
+
+| Clase | Antes | Después |
+|---|---|---|
+| `.ccpp-off-confirmed` | sin text-transform | `text-transform: uppercase` EXPLÍCITO |
+| `.ccpp-off-confirmed.filled` | sin text-transform | `text-transform: uppercase` EXPLÍCITO |
+| `.ccpp-off-ipt` | sin text-transform | `text-transform: uppercase` EXPLÍCITO |
+| `.ccpp-off-ipt.filled` | sin text-transform | `text-transform: uppercase` EXPLÍCITO |
+
+---
+
+## [3.7.6] - 2026-10-16 — DROPDOWN SIEMPRE ABAJO DEL INPUT (L-059)
+
+CEO directive: "Falta arreglar el input de CCPP/CASERIO al darle click
+sale el input arriba al top del container no mantiene su posicion
+original del input".
+
+### Fixed — Lógica de flip-arriba ELIMINADA (definitivo)
+
+`acFitToGrid` tenía rama `if (available < FLIP_THRESHOLD)` que hacía
+flip-arriba cuando el espacio era < 100px. En popup mode (max 800px),
+el CCPP está en `row-2` y el grid container se quedaba corto → flip
+arriba → dropdown saltaba al top del container (UX rota).
+
+| Eliminado | Preservado |
+|---|---|
+| `FLIP_THRESHOLD` constant | `classList.remove('is-flipped')` (defensivo) |
+| `flipCap` variable | `.ac-dropdown.is-flipped` CSS (defensivo) |
+| `aboveAvailable` variable | max-height cap 220px |
+| `topAbove` variable | min usable 80px |
+| `is-flipped` class add logic | |
+| `available < FLIP_THRESHOLD` branch | |
+
+```js
+// v3.7.6 (L-059): SIEMPRE ABAJO, sin flip
+var cap = Math.max(80, Math.min(220, available));
+drop.style.top = (rect.bottom + 4) + 'px';
+drop.style.maxHeight = cap + 'px';
+drop.classList.remove('is-flipped');
+```
+
+---
+
+## [3.7.5] - 2026-10-16 — FOOTER "X de Y" ELIMINADO DEL DROPDOWN (L-058)
+
+CEO directive: "Cuando busco en departamento y filtro abajo del dropdown
+sale la cantidad 7 de 15 <- eliminar esa alerta".
+
+### Fixed — Footer de conteo eliminado
+
+| Removido | Razón |
+|---|---|
+| `<div class="ac-meta">7 de 15</div>` | Información redundante |
+| `.ac-meta` CSS (background oscuro, sticky bottom, uppercase) | Decoración innecesaria |
+| `ac-meta` builder en render | Sin uso |
+
+UX: el dropdown se ve LIMPIO — solo los items, sin footer de conteo.
+El supervisor escanea la lista, los relevantes aparecen primero
+(scoring v3.7.3), los irrelevantes no aparecen (filtrados).
+
+---
+
+## [3.7.4] - 2026-10-16 — CCPP DROPDOWN IDÉNTICO A LOS OTROS (L-057)
+
+CEO directive: "Listo se arregló DPT, PROVI, DISTR. pero sigue roto
+CCPP/CASERIO al darle click el dropdown es diferente. unicamente debe
+estar pintado la zona que esta en apagado para diferenciarla".
+
+### Fixed — Dropdown unificado para los 4 inputs
+
+Eliminada la lógica de `ac-item-zone-off` (pintaba TODO el distrito como
+ámbar sutil) — eso hacía que el CCPP se viera DIFERENTE de los otros
+dropdowns. Ahora:
+
+| Cambio | Detalle |
+|---|---|
+| `.ac-item-zone-off` CSS | ELIMINADA (hover, mark, color, background) |
+| `acRender('ccpp')` | Solo marca items match exacto con `ccpp_keys` (239 CCPPs oficiales) |
+| `.ac-item` base | UNIFICADA para los 4 inputs (depto/prov/dist/ccpp) |
+| Items match exacto apagado | `ac-item-off` + dot rojo 6×6px (color danger, fondo 8% danger) |
+
+REGLA CEO: "únicamente debe estar pintado la zona que está en apagado"
+= SOLO los items oficialmente apagados (match exacto en ccpp_keys),
+NO todo el distrito.
+
+---
+
+## [3.7.3] - 2026-10-16 — BÚSQUEDA INTELIGENTE POR SCORING (L-056)
+
+CEO directive: "se sigue partiendo algo, se corta por letras, no es una
+experiencia agradable".
+
+### Fixed — Highlight eliminado, scoring numérico
+
+| Cambio | Antes | Después |
+|---|---|---|
+| `acHighlight` | Insertaba `<mark>` que partía el texto | ELIMINADO, items se ven COMPLETOS |
+| `acFilter` scoring | Sin scoring | Score 0-1: exact=1.0, startsWith=0.95, contains=0.80, subsequence=0.60 |
+| Threshold | Sin threshold | 0.4 (incluye subsequence, descarta irrelevantes) |
+| Orden | Sin orden estable | score DESC + idx ASC (estabilidad visual) |
+
+UX: el supervisor TIPEA "C" → items con C ordenados por relevancia
+(CAJAMARCA primero startsWith 0.95, luego los que contienen C con
+0.80), SIN highlight que rompa el texto, SIN cortar items.
+
+---
+
+## [3.7.2] - 2026-10-16 — BÚSQUEDA POR SIMILITUD (L-055)
+
+CEO directive: "C se remarca la C y separa lo demás, no correcto debe
+buscar por similitud".
+
+### Fixed — Subsequence match + highlight solo con q >= 2
+
+| Cambio | Detalle |
+|---|---|
+| `acHighlight` con `q.length < 2` | Retorna texto plano (sin `<mark>`) |
+| `acFilter` niveles | startsWith (1) → contains (2) → fuzzy/subsequence (3) |
+| Subsequence match | Todos los chars del query aparecen en ORDEN en el item |
+| `q.length >= 2` | Activa fuzzy (1 char matchearía casi todo) |
+
+Ejemplos subsequence: "JSE" → "San José", "SNT" → "Santa", "LUS" → "San Luis".
+Sin falsos positivos: "DM" no matchea "MADRE" (D antes que M).
+
+Lección CEO: "búsqueda por similitud" = el motor debe tolerar typos
+con subsequence match, no requerir substring exacto.
+
+---
+
+## [3.7.1] - 2026-10-15 — DROPDOWNS ADDRESS UNIFICADOS (L-054)
+
+CEO directive: "se ve diferente al darle click en CCPP/CASERIO al resto".
+
+### Fixed — Dropdowns 4 inputs con MISMO estilo
+
+| Antes (v3.5.6) | Después (v3.7.1) |
+|---|---|
+| Items CCPP apagados: `padding-left: 14px`, `border-left: 4px solid var(--danger)`, `font-weight: 800`, `letter-spacing: 0.01em`, `text-shadow`, emoji ⚠️ 16px con pulse | Items UNIFICADOS con depto/prov/dist |
+| `apagadoPulse` keyframe | ELIMINADO |
+| `.ac-off-icon` (emoji ⚠️) | Reemplazado por `.ac-off-dot` (círculo 6×6px con `background: currentColor`) |
+| CSS duplicada popup mode | Heredada de main (sin duplicar) |
+
+REGLA: MISMO estilo base para los 4 dropdowns. Solo diferenciación
+VISUAL SUTIL (color + dot) para items en zona apagada.
+
+---
+
+## [3.7.0] - 2026-10-15 — BÚSQUEDA ADDRESS ACCENT-INSENSITIVE (L-053)
+
+CEO directive: agentes tipean "jose" (sin tilde) y debe matchear
+"San José" en el dropdown.
+
+### Fixed — upper() idempotente + búsqueda sin acentos
+
+| Cambio | Detalle |
+|---|---|
+| `upper()` | Ya NO muta el DOM si el valor es equivalente uppercase (cada keystroke antes reseteaba el cursor al inicio) |
+| `normSearch()` | NFD + remove combining marks (técnica L-048 aplicada a ADDRESS) |
+| Cascada onDepChange/onProvChange | Solo resetea hijos que ya NO son válidos para el padre nuevo |
+| `normSearch` no hace trim | Espacios son contenido de CCPP; trim solo al query |
+
+UX: agentes tipean "jose" → matchea "San José". "maria" → "María".
+"SAN JOSE" → "San José" (preserva capitalización original).
+
+---
+
+## [3.6.0] - 2026-10-15 — REBUILD LIMPIO DEL BLOQUE ZONAS APAGADO
+
+CEO directive: "mATA EL servidor rebuildealo completo es HTML crudo con js".
+
+### Refactor — Clean rebuild con namespace za*
+
+Bloque único con namespace `za*` y state `ZONAS_APAGADAS_STATE`.
+Reemplaza el v3.5.0-v3.5.8 con código spaghetti de tests/fixes intermedios.
+
+| Cambio | Detalle |
+|---|---|
+| Namespace | `zaNormalize`, `zaGetCodes`, `zaParseFecha`, `zaUpdateCcppInputZoneClass`, `zaOutsideClick`, `zaEscListener`, `zaCloseApagadoTooltip`, `zaCopyApagadoSpeech` |
+| State global | `ZONAS_APAGADAS_STATE` (single source of truth) |
+| Block CSS | Sobre-escribe legacy en specificity (single source of truth CSS) |
+| Legacy code | Marcado DEPRECATED (closeApagadoPopover, showApagadoPopover) |
+| Regenerable | `scripts/rebuild_apagado_block.py` (idempotente) |
+
+El REBUILD consolida la arquitectura de zonas apagado en un solo bloque
+coherente. Las versiones v3.5.0-v3.5.8 son iteraciones intermedias que
+se reemplazan con este rebuild limpio.
+
+---
+
+## [3.5.8] - 2026-10-15 — REGEX FIX [dd/m] EN SPEECH (BUG auditoría CEO)
+
+### Fixed — Soporte para [dd/m] y [dd/mm] en placeholder
+
+El regex del JS usaba `[dí]` que solo matchea í, NO d. Esto rompía
+el placeholder `[dd/m]` de `ipt_postventa_sin_4g`.
+
+| Antes | Después |
+|---|---|
+| `\[dí\]` | `[dí]` (incluye d, tolera typo) |
+| Match: solo í | Match: d o í |
+
+UX: el speech IPT Grupo 2 ahora se genera correctamente con el día
+"a partir del [dd/m] de [mes]".
+
+---
+
+## [3.5.5] - 2026-10-15 — INPUT CCPP PINTADO POR ZONA
+
+CEO directive: 2026-10-15 22:00.
+
+### Fixed — Input CCPP pintado según zona
+
+Función histórica recuperada: al seleccionar CCPP del dropdown, input
+se pinta ROJO (ccpp exacto apagado) o AMARILLO (distrito IPT). Reemplaza
+el verde `.filled` cuando aplica.
+
+| Estado | Clase | Color |
+|---|---|---|
+| Match exacto apagado | `.ccpp-off-confirmed` | Rojo (var(--danger)) |
+| Distrito IPT sin match exacto | `.ccpp-off-ipt` | Ámbar (#f59e0b) |
+| Default | `.filled` | Verde |
+
+```js
+// updateCcppInputZoneClass helper
+ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt');
+if (ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + ccppNorm)) {
+  ccppEl.classList.add('ccpp-off-confirmed');  // ROJO
+} else if (ZONAS_APAGADAS.districts_with_off.has(d6)) {
+  ccppEl.classList.add('ccpp-off-ipt');  // AMARILLO
+}
+```
+
+---
+
+## [3.5.0] - 2026-10-15 — ZONAS APAGADO INTELIGENTE (rama feat/apagado-inteligente)
+
+CEO directive 2026-10-15: implementar feature "click en ⚠️ → popover
+inteligente con speech completo del operador (COMU-5472 + COMU-5514)".
+
+### Added — Popover inteligente anclado al botón ⚠️
+
+| Feature | Detalle |
+|---|---|
+| Data extendida | ZONAS_APAGADAS_INTEL con comunicados, speechs, flujos postventa |
+| Click handler | Abre popover con header + speech + zona + fecha |
+| Copy button | Copia el speech al clipboard |
+| Idempotente | Re-click cierra el popover (toggle) |
+| Accesibilidad | aria-label, aria-expanded, focus trap |
+
+### Flujos de uso (call center técnico MOVIL)
+
+1. Cliente llama por apagado 2G → agente tipea dirección
+2. Sistema detecta zona apagada → botón ⚠️ cambia a rojo
+3. Agente click ⚠️ → popover con speech IPT/COMU-5514
+4. Agente lee speech al cliente
+5. Click "Copiar" → speech en clipboard para pegar en CRM
+
+---
+
 ## [3.4.4] - 2026-10-15 — AUDITORÍA EXCEL + DP FIXES + SEARCH IMPROVEMENT
 
 CEO directive 2026-10-15:
