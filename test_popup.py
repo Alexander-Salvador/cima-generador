@@ -1748,6 +1748,78 @@ def test(html_path):
     else:
         result.fail('JS icon sutil', 'falta prefijo ⚠ sutil')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.5 — INPUT CCPP PINTADO POR ZONA (CEO directive 2026-10-15 22:00)
+    # Función histórica recuperada: al seleccionar CCPP del dropdown,
+    # input se pinta ROJO (ccpp exacto apagado) o AMARILLO (distrito IPT).
+    # Reemplaza el verde .filled cuando aplica.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.5 — Input CCPP pintado por zona')
+
+    # CSS: clase ccpp-off-confirmed (ROJO)
+    if '.field input.ccpp-off-confirmed' in html:
+        result.ok('v3.5.5 CSS: .ccpp-off-confirmed (ROJO) presente')
+    else:
+        result.fail('CSS confirmed', 'falta regla ccpp-off-confirmed')
+    m_red = re.search(r'\.ccpp-off-confirmed\s*\{([^}]+)\}', html)
+    if m_red and 'var(--danger)' in m_red.group(1):
+        result.ok('v3.5.5 CSS: rojo usa var(--danger) como base')
+    if m_red and 'border-color: var(--danger)' in m_red.group(1):
+        result.ok('v3.5.5 CSS: border-color var(--danger)')
+
+    # CSS: clase ccpp-off-ipt (AMARILLO)
+    if '.field input.ccpp-off-ipt' in html:
+        result.ok('v3.5.5 CSS: .ccpp-off-ipt (AMARILLO) presente')
+    else:
+        result.fail('CSS ipt', 'falta regla ccpp-off-ipt')
+    m_yel = re.search(r'\.ccpp-off-ipt\s*\{([^}]+)\}', html)
+    if m_yel and '#f59e0b' in m_yel.group(1):
+        result.ok('v3.5.5 CSS: amarillo usa #f59e0b (ámbar)')
+
+    # JS helper
+    if 'function updateCcppInputZoneClass()' in html:
+        result.ok('v3.5.5 JS: helper updateCcppInputZoneClass definido')
+    else:
+        result.fail('JS helper', 'falta función updateCcppInputZoneClass')
+
+    # JS logic: match exacto → ROJO
+    if "ccppEl.classList.add('ccpp-off-confirmed')" in html:
+        result.ok('v3.5.5 JS: aplica ccpp-off-confirmed (ROJO) para match exacto')
+    else:
+        result.fail('JS confirmed apply', 'no aplica ccpp-off-confirmed')
+
+    # JS logic: distrito IPT → AMARILLO
+    if "ccppEl.classList.add('ccpp-off-ipt')" in html:
+        result.ok('v3.5.5 JS: aplica ccpp-off-ipt (AMARILLO) para IPT')
+    else:
+        result.fail('JS ipt apply', 'no aplica ccpp-off-ipt')
+
+    # JS logic: limpia clases antes
+    if "ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt')" in html:
+        result.ok('v3.5.5 JS: limpia clases antes de evaluar')
+    else:
+        result.fail('JS clear', 'no limpia clases')
+
+    # JS logic: usa districts_with_off.has() para IPT
+    if 'districts_with_off.has(d6)' in html:
+        result.ok('v3.5.5 JS: usa districts_with_off.has() para detectar IPT')
+    else:
+        result.fail('JS districts', 'no consulta districts_with_off')
+
+    # JS: acSelect llama el helper cuando ccpp
+    if "if (AC_STATE.active === 'ccpp') {\n    updateCcppInputZoneClass();" in html:
+        result.ok('v3.5.5 JS: acSelect llama updateCcppInputZoneClass al seleccionar ccpp')
+    else:
+        result.fail('JS acSelect hook', 'acSelect no llama helper')
+
+    # JS: checkAndRenderZonaApagada refresca el color
+    m_check = re.search(r'function checkAndRenderZonaApagada.*?\n\}', html, re.DOTALL)
+    if m_check and 'refrescar el color del input ccpp' in m_check.group(0) \
+       and 'updateCcppInputZoneClass()' in m_check.group(0):
+        result.ok('v3.5.5 JS: checkAndRenderZonaApagada refresca el color al cambiar estado')
+    else:
+        result.fail('JS checkAndRender', 'checkAndRenderZonaApagada no refresca color')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
