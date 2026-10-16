@@ -616,14 +616,19 @@
      el distrito tiene zonas de apagado". Ahora: texto y background
      NORMALES (igual que items sin zona), solo el triángulo ámbar +
      un fondo sutil ámbar para indicar visualmente que está en zona. */
-  .ac-item.ac-item-zone {
-    color: var(--text);
-    background: transparent;
+   .ac-item.ac-item-zone {
+    /* v3.8.0 (FIX 3): CEO feedback "No se diferencia las zonas de
+       apagado" — el blanco original no diferenciaba de items sin
+       zona. Ahora: texto amber-deep + fondo amber 14% para que el
+       usuario DISTINGA VISUALMENTE items en zona (ccpp_keys). */
+    color: var(--zone-amber-deep);
+    background: color-mix(in srgb, var(--zone-amber) 14%, transparent);
+    font-weight: 600;
   }
   .ac-item.ac-item-zone:hover,
   .ac-item.ac-item-zone.active {
-    background: color-mix(in srgb, var(--accent) 92%, transparent);
-    color: var(--on-accent);
+    background: color-mix(in srgb, var(--zone-amber) 28%, var(--glass-3-bg));
+    color: var(--zone-amber-deep);
   }
   /* v3.8.0: triángulo sutil para distrito en zona — ámbar pero más
      pequeño que el de CCPP (que es 8px). El distrito es "potencial",
@@ -633,17 +638,18 @@
     border-left-width: 4px;
     border-right-width: 4px;
   }
-  /* v3.8.0: DISTRITO en ipt_districts (COMU-5672) — ROJO. Mismo
-     triángulo sutil, pero el color base es --zone-ipt (red, más
-     severo que amber porque afecta TODA la red 2G del distrito). */
+  /* v3.8.0: DISTRITO en ipt_districts (COMU-5672) — ROJO. Color más
+     intenso que .ac-item-zone (amber) porque ipt afecta TODA la red
+     2G del distrito (severidad mayor que ccpp_keys preventivo). */
   .ac-item.ac-item-ipt {
-    color: var(--zone-ipt);
-    background: color-mix(in srgb, var(--zone-ipt) 10%, transparent);
+    color: var(--zone-ipt-deep);
+    background: color-mix(in srgb, var(--zone-ipt) 14%, transparent);
+    font-weight: 600;
   }
   .ac-item.ac-item-ipt:hover,
   .ac-item.ac-item-ipt.active {
-    background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-3-bg));
-    color: var(--zone-ipt);
+    background: color-mix(in srgb, var(--zone-ipt) 28%, var(--glass-3-bg));
+    color: var(--zone-ipt-deep);
   }
   .ac-item.ac-item-ipt .ac-off-tri {
     border-bottom-color: currentColor;
@@ -1811,7 +1817,105 @@
 }
 
 
-/* APAGADO TOOLTIP (v3.5.2) — anclado al botón ⚠️, compacto, dentro del grid Address */
+/* v3.8.0 (FIX 3): SPEECH PANEL INLINE dentro del grid BUSQUEDA ADDRESS.
+   CEO directive 2026-10-16: "al darle click mostrar el speech directo
+   sin extenderse, y debe contenerse en la grid de BUSQUEDA ADDRESS".
+   Antes: tooltip flotante con position:fixed que se salía del grid.
+   Ahora: panel hijo del grid, contenido, con max-height + overflow-y
+   para que el speech largo se pueda scrollear sin romper el layout. */
+.apagado-speech-panel {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--surface, rgba(15,15,18,0.6));
+  color: var(--text, #f2f0ed);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  font-size: 12.5px;
+  line-height: 1.45;
+  max-height: 240px;
+  overflow-y: auto;
+  position: relative;
+  animation: apagadoPanelIn 0.18s ease-out;
+}
+@keyframes apagadoPanelIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.apagado-speech-panel[hidden] { display: none !important; }
+.apagado-speech-panel .apagado-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: var(--text-dim, #9ca3af);
+}
+.apagado-speech-panel .apagado-panel-com {
+  color: var(--zone-ipt, #dc2626);
+  font-weight: 700;
+}
+.apagado-speech-panel[data-com="COMU-5514"] .apagado-panel-com {
+  color: var(--zone-amber, #f59e0b);
+}
+.apagado-speech-panel .apagado-panel-zona {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text, #f2f0ed);
+}
+.apagado-speech-panel .apagado-panel-speech {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text, #f2f0ed);
+  white-space: pre-wrap;
+  margin: 0 0 10px 0;
+}
+.apagado-speech-panel .apagado-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.apagado-speech-panel .apagado-panel-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  background: rgba(255,255,255,0.05);
+  color: var(--text, #f2f0ed);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.apagado-speech-panel .apagado-panel-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+.apagado-speech-panel .apagado-panel-btn-primary {
+  background: var(--zone-ipt, #dc2626);
+  border-color: var(--zone-ipt, #dc2626);
+  color: #fff;
+  margin-left: auto;
+}
+.apagado-speech-panel[data-com="COMU-5514"] .apagado-panel-btn-primary {
+  background: var(--zone-amber, #f59e0b);
+  border-color: var(--zone-amber, #f59e0b);
+  color: #1a1a1a;
+}
+.apagado-speech-panel .apagado-panel-feedback {
+  font-size: 10.5px;
+  color: #22c55e;
+  font-weight: 600;
+}
+
+
+/* APAGADO TOOLTIP (v3.5.2 legacy) — anclado al botón ⚠️, compacto. */
+/* v3.8.0 (FIX 3): DEPRECADO en favor de .apagado-speech-panel inline.
+   Se conserva el CSS por compat con tests/CSS legacy pero ya no se usa
+   en el flujo principal (el panel inline reemplaza este tooltip flotante). */
 .apagado-tooltip {
   position: absolute;
   z-index: 99999;
@@ -2935,6 +3039,15 @@ font-size: 10px;
           </svg>
         </button>
       </div>
+
+      <!-- v3.8.0 (FIX 3): Speech panel INLINE dentro del grid BUSQUEDA ADDRESS.
+           CEO directive: "al darle click mostrar el speech directo sin
+           extenderse, y debe contenerse en la grid de BUSQUEDA ADDRESS".
+           Antes: tooltip flotante en document.body con position:fixed que
+           podía salirse del viewport. Ahora: panel hijo del grid, con
+           max-height y overflow-y:auto para contenido largo. -->
+      <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
+           aria-label="Speech de zona de apagado" hidden></div>
 </div>
   </div>
 
@@ -4229,66 +4342,50 @@ function showApagadoTooltip(btn, currentCheck, addrCtx) {
     if (fm) fechaCorta = fm[3] + '/' + fm[2] + '/' + fm[1];
   }
 
-  // Render HTML compacto
+  // Render HTML compacto PARA PANEL INLINE (no flotante)
+  // v3.8.0 (FIX 3): CEO directive "al darle click mostrar el speech
+  // directo sin extenderse, y debe contenerse en la grid de BUSQUEDA
+  // ADDRESS". Antes: tooltip flotante con position:fixed que se salía
+  // del grid y del viewport. Ahora: panel hijo del grid (inline),
+  // contenido, max-height + overflow para speech largo.
   var html = ''+
-    '<div class="apagado-tooltip-overlay" onclick="zaCloseApagadoTooltip(event)">'+
-      '<div class="apagado-tooltip-content" onclick="event.stopPropagation()" role="document">'+
-        '<div class="apagado-tooltip-arrow"></div>'+
-        '<div class="apagado-tooltip-header">'+
-          '<span class="apagado-tooltip-icon" aria-hidden="true">⚠️</span>'+
-          '<span class="apagado-tooltip-com">' + escapeHtml(comunicadoLabel + ' ' + comunicadoVersion).trim() + '</span>'+
-          '<button class="apagado-tooltip-close" type="button" onclick="zaCloseApagadoTooltip(event)" aria-label="Cerrar">×</button>'+
-        '</div>'+
-        '<div class="apagado-tooltip-zona">📍 <strong>' + escapeHtml(zonaLabel) + '</strong>'+
-          (fechaCorta ? ' <span class="apagado-tooltip-fecha">📅 ' + fechaCorta + '</span>' : '')+
-        '</div>'+
-        '<p class="apagado-tooltip-speech" id="apagadoTooltipSpeech">' + escapeHtml(speechFilled) + '</p>'+
-        '<div class="apagado-tooltip-actions">'+
-          '<button class="apagado-tooltip-btn" type="button" data-act="copy">📋 Copiar</button>'+
-          '<span id="apagadoTooltipFeedback" class="apagado-tooltip-feedback"></span>'+
-          '<button class="apagado-tooltip-btn apagado-tooltip-btn-primary" type="button" data-act="close" style="margin-left:auto">Cerrar</button>'+
-        '</div>'+
-      '</div>'+
+    '<div class="apagado-panel-header">'+
+      '<span aria-hidden="true">⚠️</span>'+
+      '<span class="apagado-panel-com">' + escapeHtml(comunicadoLabel + ' ' + comunicadoVersion).trim() + '</span>'+
+      (currentCheck.nivel === 'ipt_distrito' ? '<span style="color:var(--zone-ipt); font-size:9px; padding:1px 4px; border:1px solid currentColor; border-radius:3px;">RED 2G</span>' : '')+
+    '</div>'+
+    '<div class="apagado-panel-zona">📍 <strong>' + escapeHtml(zonaLabel) + '</strong>'+
+      (fechaCorta ? ' <span style="opacity:0.7;">📅 ' + fechaCorta + '</span>' : '')+
+    '</div>'+
+    '<p class="apagado-panel-speech" id="apagadoTooltipSpeech">' + escapeHtml(speechFilled) + '</p>'+
+    '<div class="apagado-panel-actions">'+
+      '<button class="apagado-panel-btn" type="button" data-act="copy">📋 Copiar</button>'+
+      '<span id="apagadoTooltipFeedback" class="apagado-panel-feedback"></span>'+
+      '<button class="apagado-panel-btn apagado-panel-btn-primary" type="button" data-act="close">Cerrar</button>'+
     '</div>';
 
-  // Crear tooltip anclado en document.body
-  var tooltip = document.createElement('div');
-  tooltip.className = 'apagado-tooltip';
-  tooltip.setAttribute('role', 'tooltip');
-  tooltip.id = 'apagadoTooltipActive';
-  tooltip.innerHTML = html;
-  document.body.appendChild(tooltip);
-
-  // Posicionar al lado del botón ⚠️
-  var rect = btn.getBoundingClientRect();
-  var tipRect = tooltip.getBoundingClientRect();
-  var scrollY = window.scrollY || 0;
-  var scrollX = window.scrollX || 0;
-  var spaceAbove = rect.top;
-  var top;
-  if (spaceAbove > tipRect.height + 12) {
-    top = rect.top + scrollY - tipRect.height - 10;
-    tooltip.classList.add('apagado-tooltip--above');
-  } else {
-    top = rect.bottom + scrollY + 10;
-    tooltip.classList.add('apagado-tooltip--below');
+  // v3.8.0: usar el panel INLINE en lugar de tooltip flotante
+  var panel = document.getElementById('apagadoSpeechPanel');
+  if (!panel) return;
+  // Si ya hay un panel antiguo, limpiarlo primero
+  if (panel._clickHandler) {
+    try { panel.removeEventListener('click', panel._clickHandler); } catch (e) {}
   }
-  var left = rect.right + scrollX - tipRect.width;
-  if (left < scrollX + 8) left = scrollX + 8;
-  if (left + tipRect.width > scrollX + window.innerWidth - 8) {
-    left = scrollX + window.innerWidth - 8 - tipRect.width;
-  }
-  tooltip.style.top = top + 'px';
-  tooltip.style.left = left + 'px';
+  panel.innerHTML = html;
+  panel.setAttribute('data-com', comunicadoLabel);
+  panel.hidden = false;
+  // Scroll al panel para que el usuario lo vea
+  try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
 
-  // Handlers
-  tooltip.addEventListener('click', function(e) {
-    var act = e.target.getAttribute('data-act');
+  // Handler local (un solo listener, no acumulamos)
+  panel._clickHandler = function(e) {
+    var act = e.target.getAttribute && e.target.getAttribute('data-act');
     if (act === 'copy') zaCopyApagadoSpeech();
-    else if (act === 'close') zaCloseApagadoTooltip(e);
-  });
+    else if (act === 'close') zaCloseApagadoTooltip();
+  };
+  panel.addEventListener('click', panel._clickHandler);
 
-  // Cerrar al click fuera / ESC
+  // Cerrar al click fuera del panel y grid, o ESC
   setTimeout(function() {
     document.addEventListener('click', zaOutsideClick, { once: true, capture: true });
     document.addEventListener('keydown', zaEscListener, { once: true });
@@ -4296,16 +4393,32 @@ function showApagadoTooltip(btn, currentCheck, addrCtx) {
 }
 
 function zaOutsideClick(e) {
+  // v3.8.0 (FIX 3): si el panel INLINE está visible, click dentro del
+  // panel no debe cerrarlo. Click en el botón ⚠️ o en el speech cierra
+  // otros casos.
+  var panel = document.getElementById('apagadoSpeechPanel');
+  if (panel && !panel.hidden) {
+    if (panel.contains(e.target)) {
+      // re-bind para próximo click dentro del panel
+      document.addEventListener('click', zaOutsideClick, { once: true, capture: true });
+      return;
+    }
+    // Si el click fue en el botón cobertura, dejar que su handler decida
+    var btn = document.getElementById('coberturaBtn');
+    if (btn && btn.contains(e.target)) return;
+  }
+  // Legacy: tooltip flotante
   var t = document.getElementById('apagadoTooltipActive');
-  if (!t) return;
-  if (t.contains(e.target)) {
-    // re-bind para próximo click dentro del tooltip
-    document.addEventListener('click', zaOutsideClick, { once: true, capture: true });
+  if (t && !t.contains(e.target)) {
+    var btn2 = document.getElementById('coberturaBtn');
+    if (!(btn2 && btn2.contains(e.target))) {
+      zaCloseApagadoTooltip();
+    }
+  } else if (!t && (!panel || panel.hidden)) {
     return;
   }
-  var btn = document.getElementById('coberturaBtn');
-  if (btn && btn.contains(e.target)) return;
-  zaCloseApagadoTooltip();
+  // Si llegamos aquí y no hay panel/tooltip visible, no hacer nada
+  if (!t && (!panel || panel.hidden)) return;
 }
 
 function zaEscListener(e) {
@@ -4314,6 +4427,18 @@ function zaEscListener(e) {
 
 function zaCloseApagadoTooltip(e) {
   if (e) e.stopPropagation();
+  // v3.8.0 (FIX 3): cerrar el panel INLINE en lugar del tooltip flotante
+  var panel = document.getElementById('apagadoSpeechPanel');
+  if (panel) {
+    panel.hidden = true;
+    panel.innerHTML = '';
+    panel.removeAttribute('data-com');
+    if (panel._clickHandler) {
+      try { panel.removeEventListener('click', panel._clickHandler); } catch (e) {}
+      panel._clickHandler = null;
+    }
+  }
+  // Legacy: si hay un tooltip flotante antiguo, cerrarlo también
   var t = document.getElementById('apagadoTooltipActive');
   if (t && t.parentNode) t.parentNode.removeChild(t);
   document.removeEventListener('click', zaOutsideClick, { capture: true });
@@ -4360,9 +4485,13 @@ function escapeHtmlZa(s) {
     var dist = upper('distrito');
     var ccpp_el = $('ccpp');
     var ccpp_val = ccpp_el ? (ccpp_el.value || '').trim() : '';
-    if (!dep || !prov || !dist || !ccpp_val) return; // BUG 2 fix: requiere 4 campos
+    // v3.8.0 (FIX 3): CEO directive "si en el distrito entero se apago
+    // el 2G el boton de zona de apagado debe funcionar". IPT requiere
+    // solo 3 campos (depto+prov+dist), no 4. CCPP exacto sigue
+    // requiriendo los 4.
+    if (!dep || !prov || !dist) return; // al menos 3 campos
     var chk = checkZonaApagada(dep, prov, dist, ccpp_val);
-    if (chk && (this.classList.contains('off') || this.classList.contains('warn'))) {
+    if (chk && (this.classList.contains('off') || this.classList.contains('warn') || this.classList.contains('ipt'))) {
       showApagadoTooltip(this, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
     }
   }
@@ -4749,12 +4878,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var dist = upper('distrito');
     var ccpp_el = document.getElementById('ccpp');
     var ccpp_val = ccpp_el ? (ccpp_el.value || '').trim() : '';
-    // BUG 2 fix: requiere los 4 campos completos
-    if (!dep || !prov || !dist || !ccpp_val) {
-      return;  // sin popover
+    // v3.8.0 (FIX 3): CEO "si en el distrito entero se apago el 2G
+    // el boton de zona de apagado debe funcionar". IPT requiere solo
+    // 3 campos (depto+prov+dist), no 4. CCPP exacto sigue requiriendo
+    // los 4.
+    if (!dep || !prov || !dist) {
+      return;  // sin popover — al menos 3 campos requeridos
     }
     var chk = checkZonaApagada(dep, prov, dist, ccpp_val);
-    if (chk && (btn.classList.contains('off') || btn.classList.contains('warn'))) {
+    if (chk && (btn.classList.contains('off') || btn.classList.contains('warn') || btn.classList.contains('ipt'))) {
       showApagadoTooltip(btn, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
     }
   });
