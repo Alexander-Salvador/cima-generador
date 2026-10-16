@@ -1631,6 +1631,83 @@ def test(html_path):
     if 'BUG 1 fix: alternar' not in html or 'BUG 2 fix' not in html:
         result.fail('regresión v3.5.1', 'algun fix v3.5.1 se perdió')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.5.3 — MARCADO VISUAL ROJO CCPP DROPDOWN (CEO directive 2026-10-15 21:30)
+    # Bug: el CCPP/Caserío apagado no se veía claramente en el dropdown.
+    # Fix:
+    #   1. CSS .ac-item.ac-item-off más fuerte (22% bg, border-left, ⚠️ 16px, font 800)
+    #   2. CSS .ac-item.ac-item-off-ipt NUEVO (naranja) para IPT (sin match exacto)
+    #   3. JS: marcar offIpt cuando distrito entero está en districts_with_off
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.5.3 — Marcado visual CCPP Apagado')
+
+    # CSS reforzado
+    css_off_match = re.search(r'\.ac-item\.ac-item-off\s*\{([^}]+)\}', html)
+    if css_off_match:
+        body = css_off_match.group(1)
+        # Background 22% rojo
+        if 'var(--danger) 22%' in body:
+            result.ok('v3.5.3 CSS: background 22% rojo (era 10%)')
+        else:
+            result.fail('CSS bg 22%', 'aún background 10%')
+        # Border-left
+        if 'border-left: 4px solid var(--danger)' in body:
+            result.ok('v3.5.3 CSS: border-left 4px solid var(--danger) NUEVO')
+        else:
+            result.fail('CSS border-left', 'falta border-left 4px solid')
+        # Font-weight 800
+        if 'font-weight: 800' in body:
+            result.ok('v3.5.3 CSS: font-weight 800 (era 700)')
+        else:
+            result.fail('CSS font 800', 'aún 700')
+        # padding-left 14px
+        if 'padding-left: 14px' in body:
+            result.ok('v3.5.3 CSS: padding-left 14px (espacio para border)')
+        else:
+            result.fail('CSS padding-left 14', 'falta padding-left 14px')
+    else:
+        result.fail('CSS .ac-item.ac-item-off', 'regla no encontrada')
+
+    # ⚠️ 16px en .ac-off-icon
+    icon_match = re.search(r'\.ac-item \.ac-off-icon\s*\{([^}]+)\}', html)
+    if icon_match:
+        body = icon_match.group(1)
+        if 'font-size: 16px' in body:
+            result.ok('v3.5.3 CSS: .ac-off-icon font-size 16px (era 13px)')
+        else:
+            result.fail('CSS icon 16px', 'aún 13px')
+        if 'animation:' in body and 'apagadoPulse' in body:
+            result.ok('v3.5.3 CSS: ⚠️ con animation pulse')
+        else:
+            result.fail('CSS pulse', 'falta animation pulse')
+
+    # CSS .ac-item-off-ipt nuevo (para IPT — distrito entero apagado)
+    if '.ac-item.ac-item-off-ipt' in html:
+        result.ok('v3.5.3 CSS: regla .ac-item.ac-item-off-ipt para IPT presente')
+    else:
+        result.fail('CSS off-ipt', 'falta regla .ac-item-off-ipt')
+    if '@keyframes apagadoPulse' in html:
+        result.ok('v3.5.3 CSS: @keyframes apagadoPulse presente')
+    else:
+        result.fail('CSS keyframes', 'falta @keyframes apagadoPulse')
+
+    # JS: marcar offIpt (buscar contexto más amplio)
+    js_render_match = re.search(r"var d6ForMark = null;.*?\}\)\.join", html, re.DOTALL)
+    if js_render_match:
+        body = js_render_match.group(0)
+        if 'districts_with_off.has(d6ForMark)' in body:
+            result.ok('v3.5.3 JS: offIpt marcado con districts_with_off (IPT)')
+        else:
+            result.fail('JS offIpt', 'falta districts_with_off.has check')
+        if 'ac-item-off-ipt' in body:
+            result.ok('v3.5.3 JS: aplica clase ac-item-off-ipt')
+        else:
+            result.fail('JS class off-ipt', 'falta clase ac-item-off-ipt')
+        if 'ac-off-icon-ipt' in body:
+            result.ok('v3.5.3 JS: prefijo ⚠️ con clase ac-off-icon-ipt')
+        else:
+            result.fail('JS prefix off-ipt', 'falta prefijo ⚠️ con clase ipt')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
