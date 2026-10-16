@@ -1,5 +1,80 @@
 # Changelog — cima-generador
 
+## [3.9.3] - 2026-10-16 — 📋 DOCUMENTACIÓN del botón ⚠️ inteligente
+
+CEO feedback: "Listo mejoro bastante commitea todo hasta este punto y aclara funcionalidad del button inteligente <- falta arreglar pero funciona".
+
+### 🎯 Botón ⚠️ INTELIGENTE — 3 estados con feedback siempre visible
+
+El botón **`#coberturaBtn`** ahora clasifica el estado de la dirección y responde apropiadamente a **TODO** click. No más silencio.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ CLICK en ⚠️ → estado actual de la dirección:           │
+│                                                         │
+│   ┌─ (A) DATOS INCOMPLETOS                             │
+│   │   Trigger: < 3 campos seleccionados                │
+│   │   Visual: micro-shake 240ms                        │
+│   │   Toast: "Selecciona depto + provincia + distrito" │
+│   │   Color: ámbar (--zone-amber)                      │
+│   │                                                       │
+│   ├─ (B) HAY ALERTA ZONA APAGADO                       │
+│   │   Trigger: checkZonaApagada() returns {nivel:...}  │
+│   │   Visual: panel inline + speech copiado           │
+│   │   Toast: omitido (panel tiene la info)             │
+│   │   Pulse verde 1.1s tras copia exitosa              │
+│   │   Speech: COMU-5514 (CCPP) o COMU-5672 (IPT)       │
+│   │                                                       │
+│   └─ (C) SIN ALERTA (dirección OK)                     │
+│       Trigger: checkZonaApagada() returns null         │
+│       Visual: micro-shake 220ms                        │
+│       Toast: "Sin alerta de apagado en esta dirección" │
+│       Color: verde (--green)                           │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 📍 Detección de nivel (`checkZonaApagada`)
+
+| Nivel | Trigger | data-zone | Color CSS | Speech |
+|---|---|---|---|---|
+| `ccpp_exacto` | d6:CCPP ∈ `ccpp_keys` (4 campos) | `[data-zone="ccpp_exacto"]` | 🔴 ROJO `--zone-ipt` | COMU-5514 v00003 |
+| `ipt_distrito` | d6 ∈ `ipt_districts` (3 campos, COMU-5672) | `[data-zone="ipt_distrito"]` | 🟡 AMARILLO `--zone-amber` | COMU-5672 `ipt_visor_4g` |
+| `distrito_of` | d6 ∈ `districts_with_off` (preventive) | `[data-zone="distrito_of"]` | 🟡 AMARILLO `--zone-amber` | COMU-5514 v00003 |
+
+### 🔧 Pendientes declarados (no resueltos en v3.9.2)
+
+1. **Toast positioning edge cases** — En popup mode con viewport chico, el toast podría tocar el borde superior. Fix pendiente: clamp con `viewport.height - toast.height - 8`.
+2. **Panel inline auto-OPEN** — El panel se abre al click, no auto. CEO pidió "auto-show al detectar match mientras tipea — sin click" en v3.9.0 spec pero no se implementó por prioridad de bugs del click.
+3. **3er visual mode (desktop)** — Hay CSS responsive con breakpoints para mobile/tablet/desktop pero el botón ⚠️ solo tiene CSS para main + popup mode. Desktop popup usa mismo CSS (responsive flow).
+
+### 🆕 Verificación inmediata
+
+| Recurso | Estado |
+|---|---|
+| Footer version | `v3.9.3` visible junto a "Alexander ♥" |
+| Console log | `%c[CIMA v3.9.2] ⚠️ click registrado` cada click |
+| Tests | 434/434 PASS · audit_masivo ALL PASS · node --check OK |
+| Last commit | `7c86470` v3.9.2 fix |
+
+---
+
+## [3.9.2] - 2026-10-16 — FIX function hoisting + versión visible + no-cache
+
+CEO feedback v3.9.1: "los cambios no llegaron, agregar version en footer para verificar".
+
+**ROOT CAUSE BUG CRÍTICO**: Dos `function showApagadoTooltip` en el archivo (líneas 4368 y 4851). Por function hoisting en `'use strict'`, la ÚLTIMA sobrescribe a la anterior. La legacy floating tooltip (rota en popup) ganaba → click handler llamaba a versión rota.
+
+**FIX**:
+- Renombrar mi función a `showApagadoPanelInline` (evita colisión)
+- Click handler llama `showApagadoPanelInline` (con fallback)
+- Exportar ambas en `window.*` para coexistencia
+- Footer muestra version badge `v3.9.2` junto a "Alexander ♥"
+- Meta tags no-cache fuerzan reload sin cache browser
+- Toast re-posicionado ARRIBA-CENTRADO (antes salía del viewport en popup mode)
+- `console.log` con marca de versión para verificar en DevTools
+
+---
+
 ## [3.9.1] - 2026-10-16 — FIX colores invertidos (duplicado CSS popup)
 
 CEO feedback v3.9.0: "colores dispares a pesar que es la ruta que tu me diste. tambien se detecta que boton no funciona al darle click es estatico".
