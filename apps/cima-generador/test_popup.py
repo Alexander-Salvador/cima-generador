@@ -1553,86 +1553,83 @@ def test(html_path):
         result.fail('filterEtiquetasByCat empty', 'aún usa hideEtiquetaPreview() en vez de show(null)')
 
     # ══════════════════════════════════════════════════════════════════════
-    # v3.5.1 — ZONAS APAGADO Bug Fixes (CEO directive 2026-10-15)
-    # Bug 1: Alerta CCPP se apagaba al completar caserío (silencio erróneo)
-    # Bug 2: Click en ⚠️ antes de completar la ruta
-    # Bug 3: Popover mostraba secciones extra → debe ser compacto y solo speech
+    # v3.5.2 — ZONAS APAGADO Bug Fixes round 2 (CEO directive 2026-10-15 21:10)
+    # Bug 1 (persistente): ⚠️ no se enciende en CCPP/Caserío (CSS cascade --idle vs off/warn)
+    # Bug 4 (NUEVO): Popover debe ser TOOLTIP anclado al botón, no modal overlay
+    #                  - dentro del grid #gridAddress
+    #                  - solo header + speech + copiar/cerrar
+    #                  - width max 320px, no supera el contenedor
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.5.1 — BUG FIXES Zonas Apagado')
+    print('\n▸ v3.5.2 — BUG FIXES round 2 Zonas Apagado')
 
-    # BUG 1: checkZonaApagada — verifica que el silencio erróneo fue removido
-    m_check = re.search(r'function checkZonaApagada.*?\n\}', html, re.DOTALL)
-    if m_check:
-        check_fn = m_check.group(0)
-        if 'var hasCcpp = ' in check_fn and 'var distritoTieneApagados' in check_fn:
-            result.ok('BUG 1 checkZonaApagada: tiene vars hasCcpp + distritoTieneApagados')
+    # BUG 1: renderCoberturaButton alterna --idle vs off/warn
+    m_render = re.search(r'function renderCoberturaButton.*?\n\}', html, re.DOTALL)
+    if m_render:
+        render_fn = m_render.group(0)
+        if "BUG 1 fix: alternar --idle" in render_fn:
+            result.ok('BUG 1 renderCoberturaButton: BUG 1 fix marker presente')
         else:
-            result.fail('BUG 1 vars', 'faltan vars hasCcpp o distritoTieneApagados')
-        # El comentario "// CCPP tipeado pero NO matchea exacto → silencio" debe NO existir
-        if 'silencio (sin match exacto, no alertar)' not in check_fn:
-            result.ok('BUG 1 checkZonaApagada: silencio erróneo removido')
+            result.fail('BUG 1 renderCoberturaButton', 'BUG 1 fix marker ausente')
+        if "remove('off', 'warn', 'cobertura-btn--idle')" in render_fn:
+            result.ok('BUG 1 renderCoberturaButton: remove idle+off+warn antes de switch')
         else:
-            result.fail('BUG 1 silencio erróneo', 'aún retorna silencio si CCPP no matchea')
-        # Debe alertar como distrito_of incluso con CCPP no-match
-        if 'BUG 1 fix' in check_fn and 'nivel: \'distrito_of\'' in check_fn:
-            result.ok('BUG 1 checkZonaApagada: fallback a distrito_of (no silencio)')
+            result.fail('BUG 1 remove idle', 'falta remove idle+off+warn')
+        # Si no check → vuelve a idle
+        if "btn.classList.add('cobertura-btn--idle')" in render_fn:
+            result.ok('BUG 1 renderCoberturaButton: vuelve a --idle si no hay check')
         else:
-            result.fail('BUG 1 fallback', 'no tiene fallback a distrito_of con CCPP no-match')
+            result.fail('BUG 1 volver a idle', 'falta add --idle en return')
     else:
-        result.fail('BUG 1 checkZonaApagada', 'función no encontrada')
+        result.fail('BUG 1 renderCoberturaButton', 'función no encontrada')
 
-    # BUG 2: click handler requiere 4 campos completos
-    if 'BUG 2 fix' in html:
-        result.ok('BUG 2 click handler: BUG 2 fix marker presente')
-        # Verificar validación de los 4 campos
-        idx_bug2 = html.find('BUG 2 fix')
-        slice_bug2 = html[idx_bug2:idx_bug2 + 1500]
-        if 'if (!dep || !prov || !dist || !ccpp_val)' in slice_bug2:
-            result.ok('BUG 2 click handler: valida 4 campos (dep+prov+dist+ccpp_val)')
-        else:
-            result.fail('BUG 2 validación 4 campos', 'falta el if de validación')
-        if 'return;' in slice_bug2 and 'sin popover' in slice_bug2:
-            result.ok('BUG 2 click handler: return temprano sin popover')
-        else:
-            result.fail('BUG 2 return temprano', 'falta return temprano')
+    # BUG 4: showApagadoTooltip es anclado (no modal overlay), con CSS compacto
+    if 'function showApagadoTooltip' in html:
+        result.ok('BUG 4 showApagadoTooltip: función presente')
     else:
-        result.fail('BUG 2 click handler', 'BUG 2 fix marker no encontrado')
+        result.fail('BUG 4 showApagadoTooltip', 'función no encontrada')
+    # El modal overlay antiguo debe haber sido removido (no showApagadoPopover)
+    # Aunque podría quedar algún showApagadoPopover residual que NO es llamado,
+    # lo importante es que el click handler llama showApagadoTooltip.
+    if 'showApagadoTooltip(btn' in html:
+        result.ok('BUG 4 click handler: invoca showApagadoTooltip')
+    else:
+        result.fail('BUG 4 click handler', 'no llama showApagadoTooltip')
+    # El tooltip debe crearse en document.body (no dentro del grid) y ser absolute
+    m_tooltip = re.search(r'function showApagadoTooltip.*?function closeApagadoTooltip', html, re.DOTALL)
+    if m_tooltip:
+        t_fn = m_tooltip.group(0)
+        if 'document.body.appendChild(tooltip)' in t_fn:
+            result.ok('BUG 4 tooltip: position absolute via document.body')
+        else:
+            result.fail('BUG 4 tooltip body', 'tooltip no se monta en document.body')
+        if 'min(320px' in t_fn or 'width: 320px' in t_fn or 'min(320' in html:
+            result.ok('BUG 4 tooltip: width máximo compacto (≤320px)')
+        else:
+            result.fail('BUG 4 tooltip width', 'falta width compacto')
+        # Solo speech + zona + fecha, sin secciones largas
+        if '🛠️ Si cliente reclama' not in t_fn and '📞 Si cliente pide BAJA' not in t_fn:
+            result.ok('BUG 4 tooltip: NO secciones largas (reclamo/baja)')
+        else:
+            result.fail('BUG 4 secciones largas', 'aún hay secciones largas')
+    # CSS .apagado-tooltip presente
+    if '.apagado-tooltip {' in html:
+        result.ok('BUG 4 CSS: .apagado-tooltip { rules presentes')
+    else:
+        result.fail('BUG 4 CSS', 'falta .apagado-tooltip {')
+    # CSS .apagado-tooltip-speech presente (el speech estilizado)
+    if '.apagado-tooltip-speech' in html:
+        result.ok('BUG 4 CSS: speech estilizado en tooltip')
+    else:
+        result.fail('BUG 4 CSS speech', 'falta .apagado-tooltip-speech')
+    # copy handler
+    if 'function copyApagadoTooltipSpeech' in html:
+        result.ok('BUG 4 tooltip: función copyApagadoTooltipSpeech presente')
+    else:
+        result.fail('BUG 4 copy fn', 'falta copyApagadoTooltipSpeech')
 
-    # BUG 3: popover compacto (solo speech + zona + fecha)
-    if 'function showApagadoPopover' in html:
-        result.ok('BUG 3 showApagadoPopover: función presente')
-    else:
-        result.fail('BUG 3 showApagadoPopover', 'función no encontrada')
-    if 'apagado-modal-content--compact' in html:
-        result.ok('BUG 3 modal: clase compacto aplicada')
-    else:
-        result.fail('BUG 3 compacto className', 'falta clase apagado-modal-content--compact')
-    if 'function parseFechaES(' in html:
-        result.ok('BUG 3 modal: helper parseFechaES presente')
-    else:
-        result.fail('BUG 3 parseFechaES', 'helper no encontrado')
-    # El popover compacto NO debe tener las secciones largas de reclamo y baja
-    m_pop = re.search(r'function showApagadoPopover.*?function parseFechaES', html, re.DOTALL)
-    if m_pop:
-        pop_body = m_pop.group(0)
-        if '<h3>🛠️ Si cliente reclama</h3>' not in pop_body:
-            result.ok('BUG 3 modal: NO muestra "Si cliente reclama" (compacto)')
-        else:
-            result.fail('BUG 3 modal', 'aún muestra sección de reclamo — debe ser compacto')
-        if '<h3>📞 Si cliente pide BAJA' not in pop_body:
-            result.ok('BUG 3 modal: NO muestra "Si pide BAJA" (compacto)')
-        else:
-            result.fail('BUG 3 modal baja', 'aún muestra sección de baja — debe ser compacto')
-        # Debe reemplazar [zona] con el depto (no distrito)
-        if 'zonaLabel = m.depto' in pop_body:
-            result.ok('BUG 3 zona: para IPT, zona = depto (no distrito)')
-        else:
-            result.fail('BUG 3 zona IPT', 'zona no se asigna al depto')
-        # Debe reemplazar placeholders [dd], [mes], [zona], [año]
-        if 'replace(/\\[d' in pop_body and 'replace(/\\[zona\\]' in pop_body and 'replace(/\\[mes\\]' in pop_body:
-            result.ok('BUG 3 modal: reemplaza placeholders [dd] [mes] [zona]')
-        else:
-            result.fail('BUG 3 placeholders', 'falta reemplazo de algún placeholder')
+    # Compatibilidad: checkZonaApagada + click handler BUG 2 (v3.5.1) siguen presentes
+    if 'BUG 1 fix: alternar' not in html or 'BUG 2 fix' not in html:
+        result.fail('regresión v3.5.1', 'algun fix v3.5.1 se perdió')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

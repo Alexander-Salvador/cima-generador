@@ -1625,6 +1625,127 @@
   font-size: 0.92rem;
   border-radius: 10px;
 }
+
+
+/* APAGADO TOOLTIP (v3.5.2) — anclado al botón ⚠️, compacto, dentro del grid Address */
+.apagado-tooltip {
+  position: absolute;
+  z-index: 99999;
+  width: min(320px, calc(100vw - 24px));
+  background: var(--surface, #fff);
+  color: var(--text-primary, #111827);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  animation: apagadoTooltipIn 0.16s ease-out;
+}
+@keyframes apagadoTooltipIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+.apagado-tooltip-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border-right: 1px solid var(--border, #e5e7eb);
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.apagado-tooltip--above .apagado-tooltip-arrow {
+  bottom: -6px;
+  right: 18px;
+  transform: rotate(45deg);
+}
+.apagado-tooltip--below .apagado-tooltip-arrow {
+  top: -6px;
+  right: 18px;
+  transform: rotate(-135deg);
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 1px solid var(--border, #e5e7eb);
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+.apagado-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.apagado-tooltip-icon { font-size: 1rem; }
+.apagado-tooltip-com {
+  flex: 1;
+  font-weight: 700;
+  color: #b91c1c;
+  letter-spacing: 0.02em;
+}
+.apagado-tooltip-close {
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0 4px;
+  border-radius: 4px;
+}
+.apagado-tooltip-close:hover { background: rgba(0,0,0,0.05); color: #111827; }
+.apagado-tooltip-zona {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.86rem;
+  color: var(--text-secondary, #4b5563);
+  text-transform: capitalize;
+}
+.apagado-tooltip-fecha {
+  margin-left: auto;
+  font-size: 0.78rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.apagado-tooltip-speech {
+  margin: 0 0 8px 0;
+  background: #fffbeb;
+  border-left: 3px solid #d97706;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-style: italic;
+  line-height: 1.4;
+  color: #1f2937;
+}
+.apagado-tooltip-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.apagado-tooltip-btn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  border: 0;
+  cursor: pointer;
+  font-weight: 500;
+  background: #e5e7eb;
+  color: #374151;
+}
+.apagado-tooltip-btn:hover { background: #d1d5db; }
+.apagado-tooltip-feedback {
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .apagado-modal-header {
   display: flex;
   align-items: center;
@@ -3444,137 +3565,198 @@ function escapeHtml(s) {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// ═══ APAGADO POPOVER (v3.5.0) — click en ⚠️ → modal inteligente ═══
-function showApagadoPopover(currentCheck, addrCtx) {
-  if (!currentCheck) return;
-  addrCtx = addrCtx || {};
-  var modal = document.getElementById('apagadoModal');
-  if (!modal) return;
 
-  // ═══ Resolución de metadata para el speech ═══
+// ══════════════════════════════════════════════════════════════════════
+// v3.5.2 BUG 4 fix: TOOLTIP anclado al botón ⚠️ (no modal overlay)
+// Aparece al lado del botón, dentro del contenedor #gridAddress.
+// Solo muestra: header (zona+com) + speech autocompletado + copiar/cerrar.
+// Width máx: ~320px (no supera el contenedor Address).
+// ══════════════════════════════════════════════════════════════════════
+function showApagadoTooltip(btn, currentCheck, addrCtx) {
+  closeApagadoTooltip();  // cerrar cualquier tooltip abierto
+  if (!btn || !currentCheck) return;
+  addrCtx = addrCtx || {};
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'apagado-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  tooltip.id = 'apagadoTooltipActive';
+
+  // ═══ Resolver metadata ═══
   var zonaLabel = '';
   var fechaApagadoIso = '';
   var fechaSmsIso = '';
   var speechKey = '';
-  var speechCuerpo = '';
-  var comunicadoLabel = 'Apagado de Red Movistar';
+  var comunicadoLabel = '';
   var comunicadoVersion = '';
 
   if (currentCheck.nivel === 'ccpp_exacto') {
-    // COMU-5514: zonas específicas en centros poblados
     speechKey = 'comu5514_postventa_marcaje';
-    comunicadoLabel = 'COMU-5514 — Apagado Estaciones Base en Centros Poblados';
+    comunicadoLabel = 'COMU-5514';
     comunicadoVersion = 'v00003';
     fechaApagadoIso = '2026-09-11';
-    // Para ccpp_exacto, zona = CCPP exacto (más específico que distrito)
-    var ccppLabel = currentCheck.code.split(':')[1] || currentCheck.code;
-    zonaLabel = ccppLabel;
+    zonaLabel = (currentCheck.code.split(':')[1] || currentCheck.code).toLowerCase();
   } else if (currentCheck.nivel === 'distrito_of') {
     var d6 = currentCheck.code;
-    // Determinar si es IPT (COMU-5672) o Centros Poblados (COMU-5514)
     var isIPT = (typeof ZONAS_APAGADAS_INTEL !== 'undefined')
-      && ZONAS_APAGADAS_INTEL.ipt_districts
-      && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6);
+      && ZONAS_APAGADAS_INTEL.ipt_districts && ZONAS_APAGADAS_INTEL.ipt_districts.has(d6);
     if (isIPT) {
-      // COMU-5672: Apagado Zonas IPT
       speechKey = 'ipt_postventa_4g';
-      comunicadoLabel = 'COMU-5672 — Apagado Zonas IPT';
+      comunicadoLabel = 'COMU-5672';
       comunicadoVersion = 'v00001';
       var m = ZONAS_APAGADAS_INTEL.ipt_metadata_by_district[d6];
       if (m) {
         fechaApagadoIso = m.fecha_apagado || '';
         fechaSmsIso = m.fecha_sms_inicio || '';
-        // Zona = DEPTO según ejemplo del CEO:
-        //   "...dejará de funcionar en la zona CAJAMARCA"
-        zonaLabel = m.depto;
+        zonaLabel = (m.depto || '').toLowerCase();
       } else {
-        zonaLabel = addrCtx.depto || '';
+        zonaLabel = (addrCtx.depto || '').toLowerCase();
       }
     } else {
-      // COMU-5514: distrito con apagados, CCPPs exactos definidos en este d6
       speechKey = 'comu5514_postventa_marcaje';
-      comunicadoLabel = 'COMU-5514 — Apagado Estaciones Base en Centros Poblados';
+      comunicadoLabel = 'COMU-5514';
       comunicadoVersion = 'v00003';
       fechaApagadoIso = '2026-09-11';
-      // Para COMU-5514 distrito, zona = CCPP tipeado o distrito
-      zonaLabel = currentCheck.ccpp_tipeado || addrCtx.dist || addrCtx.depto || '';
+      zonaLabel = (currentCheck.ccpp_tipeado || addrCtx.dist || addrCtx.depto || '').toLowerCase();
     }
   }
 
-  // ═══ Resolver speech con placeholders autocompletados ═══
+  // ═══ Resolver speech ═══
   var speechData = (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.speechs)
-    ? (ZONAS_APAGADAS_INTEL.speechs[speechKey] || {})
-    : {};
+    ? (ZONAS_APAGADAS_INTEL.speechs[speechKey] || {}) : {};
   var speechRaw = speechData.cuerpo || '';
-  var fechaObj = parseFechaES(fechaApagadoIso);
-  var dd = fechaObj.dd;
-  var mes = fechaObj.mes;
-  var anio = fechaObj.anio;
+  var f = parseFechaES ? parseFechaES(fechaApagadoIso) : { dd: '—', mes: '—', anio: '—' };
 
-  // Reemplazos múltiples variantes de placeholder:
   var speechFinal = speechRaw
-    // "[dd] de [mes]"  | "[día] de [mes]" | "[dd/mm] de [mes]" | "[dd/mm de mes]"
-    .replace(/\[d[\u00edi]a?d?\](?:\/mm)?\s+de\s+\[mes\]/gi, dd + ' de ' + mes)
-    .replace(/\[d[\u00edi]a\]\s+de\s+\[mes\]/gi, dd + ' de ' + mes)
-    // "[día]" suelto
-    .replace(/\[d[\u00edi]a\]/gi, dd)
-    // "[dd]" simple
-    .replace(/\[dd\]/gi, dd)
-    // "[mes]"
-    .replace(/\[mes\]/gi, mes)
-    // "[zona]"
+    .replace(/\[d[\u00edi]a?d?\](?:\/mm)?\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
+    .replace(/\[d[\u00edi]a\]\s+de\s+\[mes\]/gi, f.dd + ' de ' + f.mes)
+    .replace(/\[d[\u00edi]a\]/gi, f.dd)
+    .replace(/\[dd\]/gi, f.dd)
+    .replace(/\[mes\]/gi, f.mes)
     .replace(/\[zona\]/gi, zonaLabel)
-    // "[año]" / "[anio]" / "[yyyy]"
-    .replace(/\[a[n\u00f1]o\]|\[yyyy\]/gi, anio);
-  // Si quedó algún [...] sin reemplazar → "—"
+    .replace(/\[a[n\u00f1]o\]|\[yyyy\]/gi, f.anio);
   speechFinal = speechFinal.replace(/\[[^\]]+\]/g, '\u2014');
 
+  var fechaCorta = (function() {
+    if (!fechaApagadoIso) return '';
+    var mm = fechaApagadoIso.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!mm) return fechaApagadoIso;
+    return mm[3] + '/' + mm[2] + '/' + mm[1];
+  })();
+
   // ═══ HTML compacto ═══
-  var fechaHumana = formatDateES(fechaApagadoIso);
-  var html = ''+
-    '<div class="apagado-modal-overlay" onclick="closeApagadoPopover(event)">'+
-      '<div class="apagado-modal-content apagado-modal-content--compact" onclick="event.stopPropagation()" role="document">'+
-        '<button class="apagado-modal-close" onclick="closeApagadoPopover(event)" aria-label="Cerrar">\u00d7</button>'+
-        '<div class="apagado-modal-header">'+
-          '<span class="apagado-modal-icon" aria-hidden="true">\u26a0\ufe0f</span>'+
-          '<h2 class="apagado-modal-title">Zona de Apagado</h2>'+
-        '</div>'+
-        '<div class="apagado-modal-meta">'+
-          '<span class="apagado-modal-com">' + escapeHtml_(comunicadoLabel) + ' ' + escapeHtml_(comunicadoVersion) + '</span>'+
-          (fechaHumana ? '<span class="apagado-modal-fecha">\ud83d\udcc5 ' + escapeHtml_(fechaHumana) + '</span>' : '')+
-          (fechaSmsIso ? '<span class="apagado-modal-sms">\ud83d\udce9 SMS: ' + escapeHtml_(formatDateES(fechaSmsIso)) + '</span>' : '')+
-          '<span class="apagado-modal-zona">\ud83d\udccd Zona: <strong>' + escapeHtml_(zonaLabel) + '</strong></span>'+
-        '</div>'+
-        '<blockquote class="apagado-modal-speech" id="apagadoSpeechText">' + escapeHtml_(speechFinal) + '</blockquote>'+
-        '<div class="apagado-modal-actions">'+
-          '<button class="apagado-modal-btn apagado-modal-btn-copy" onclick="copyApagadoSpeech()">\ud83d\udccb Copiar</button>'+
-          '<span id="apagadoCopyFeedback" class="apagado-modal-copy-feedback"></span>'+
-          '<button class="apagado-modal-btn apagado-modal-btn-primary" onclick="closeApagadoPopover(event)" style="margin-left:auto">Cerrar</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
+  tooltip.innerHTML = ''
+    + '<div class="apagado-tooltip-arrow"></div>'
+    + '<div class="apagado-tooltip-header">'
+    +   '<span class="apagado-tooltip-icon" aria-hidden="true">\u26a0\ufe0f</span>'
+    +   '<span class="apagado-tooltip-com">' + escapeHtml_(comunicadoLabel) + ' ' + escapeHtml_(comunicadoVersion) + '</span>'
+    +   '<button class="apagado-tooltip-close" type="button" aria-label="Cerrar">\u00d7</button>'
+    + '</div>'
+    + '<div class="apagado-tooltip-zona">\ud83d\udccd <strong>' + escapeHtml_(zonaLabel) + '</strong>'
+    +   (fechaCorta ? ' <span class="apagado-tooltip-fecha">' + escapeHtml_(fechaCorta) + '</span>' : '')
+    + '</div>'
+    + '<p class="apagado-tooltip-speech" id="apagadoTooltipSpeech">' + escapeHtml_(speechFinal) + '</p>'
+    + '<div class="apagado-tooltip-actions">'
+    +   '<button class="apagado-tooltip-btn apagado-tooltip-btn-copy" type="button" data-act="copy">\ud83d\udccb Copiar speech</button>'
+    +   '<span class="apagado-tooltip-feedback" id="apagadoTooltipFeedback"></span>'
+    + '</div>';
 
-  modal.innerHTML = html;
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden', 'false');
-  var closeBtn = modal.querySelector('.apagado-modal-close');
-  if (closeBtn) closeBtn.focus();
+  document.body.appendChild(tooltip);
+
+  // ═══ Posicionar al lado del botón ⚠️ ═══
+  // Aparece ARRIBA del botón (mejor en mobile) + un poco a la izquierda
+  // para que la flecha apunte al botón.
+  var rect = btn.getBoundingClientRect();
+  var tipRect = tooltip.getBoundingClientRect();
+  var scrollY = window.scrollY || window.pageYOffset;
+  var scrollX = window.scrollX || window.pageXOffset;
+  // top: encima del botón. Si no hay espacio arriba, debajo.
+  var spaceAbove = rect.top;
+  var top;
+  if (spaceAbove > tipRect.height + 12) {
+    top = rect.top + scrollY - tipRect.height - 10;
+    tooltip.classList.add('apagado-tooltip--above');
+  } else {
+    top = rect.bottom + scrollY + 10;
+    tooltip.classList.add('apagado-tooltip--below');
+  }
+  // Horizontal: alinear con el botón pero dentro de la viewport.
+  // El tooltip va pegado al botón por la derecha, con la flecha señalando.
+  var left = rect.right + scrollX - tipRect.width;
+  // Si se sale por la izquierda, moverlo.
+  if (left < scrollX + 8) left = scrollX + 8;
+  // Si se sale por la derecha
+  if (left + tipRect.width > scrollX + window.innerWidth - 8) {
+    left = scrollX + window.innerWidth - 8 - tipRect.width;
+  }
+  tooltip.style.top = top + 'px';
+  tooltip.style.left = left + 'px';
+
+  // ═══ Event handlers ═══
+  tooltip.querySelector('.apagado-tooltip-close').addEventListener('click', function () {
+    closeApagadoTooltip();
+  });
+  tooltip.querySelector('[data-act="copy"]').addEventListener('click', function () {
+    copyApagadoTooltipSpeech();
+  });
+  // Auto-cerrar al click fuera
+  setTimeout(function () {
+    document.addEventListener('click', apagadoTooltipOutsideClick, { once: true, capture: true });
+    document.addEventListener('keydown', apagadoTooltipEscListener, { once: true });
+  }, 0);
 }
 
-// Parsea fecha ISO "2026-08-28" a {dd, mes, anio}
-function parseFechaES(iso) {
-  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  if (!iso) return { dd: '\u2014', mes: '\u2014', anio: '\u2014' };
-  var m = String(iso).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (!m) return { dd: '\u2014', mes: '\u2014', anio: '\u2014' };
-  var dd = parseInt(m[3], 10);
-  var mm = parseInt(m[2], 10) - 1;
-  return {
-    dd: isNaN(dd) ? '\u2014' : dd,
-    mes: (mm >= 0 && mm < 12) ? meses[mm] : '\u2014',
-    anio: m[1]
-  };
+function apagadoTooltipOutsideClick(e) {
+  var t = document.getElementById('apagadoTooltipActive');
+  if (!t) return;
+  if (t.contains(e.target)) {
+    // re-bind para próximo click dentro del tooltip
+    document.addEventListener('click', apagadoTooltipOutsideClick, { once: true, capture: true });
+    return;
+  }
+  var btn = document.getElementById('coberturaBtn');
+  if (btn && btn.contains(e.target)) {
+    // click en el botón → lo maneja el listener normal, no cerrar
+    return;
+  }
+  closeApagadoTooltip();
 }
+
+function apagadoTooltipEscListener(e) {
+  if (e.key === 'Escape') closeApagadoTooltip();
+}
+
+function closeApagadoTooltip() {
+  var t = document.getElementById('apagadoTooltipActive');
+  if (t && t.parentNode) t.parentNode.removeChild(t);
+  document.removeEventListener('click', apagadoTooltipOutsideClick, { capture: true });
+  document.removeEventListener('keydown', apagadoTooltipEscListener);
+}
+
+function copyApagadoTooltipSpeech() {
+  var el = document.getElementById('apagadoTooltipSpeech');
+  if (!el) return;
+  var text = el.innerText;
+  function done() {
+    var fb = document.getElementById('apagadoTooltipFeedback');
+    if (fb) {
+      fb.textContent = '\u2713 Copiado';
+      setTimeout(function () { if (fb) fb.textContent = ''; }, 2000);
+    }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done);
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+}
+
+
 
 function closeApagadoPopover(event) {
   if (event) event.stopPropagation();
@@ -3641,7 +3823,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     var chk = checkZonaApagada(dep, prov, dist, ccpp_val);
     if (chk && (btn.classList.contains('off') || btn.classList.contains('warn'))) {
-      showApagadoPopover(chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
+      showApagadoTooltip(btn, chk, { depto: dep, prov: prov, dist: dist, ccpp: ccpp_val });
     }
   });
 });
@@ -3655,17 +3837,22 @@ document.addEventListener('DOMContentLoaded', function() {
 function renderCoberturaButton(check) {
   var btn = $('coberturaBtn');
   if (!btn) return;
-  btn.classList.remove('off', 'warn');
+  // v3.5.2 BUG 1 fix: alternar --idle vs off/warn para que el CSS cascade
+  // funcione inequívocamente (antes el botón conservaba --idle junto con
+  // off/warn, creando competencia entre selectores same-specificity).
+  btn.classList.remove('off', 'warn', 'cobertura-btn--idle');
   btn.setAttribute('aria-pressed', 'false');
-  if (!check) { btn.title = ''; return; }
+  if (!check) {
+    btn.title = 'Sin alertas — cobertura OK';
+    btn.classList.add('cobertura-btn--idle');
+    return;
+  }
 
   if (check.nivel === 'ccpp_exacto') {
-    // CCPP exacto matcheado — alerta específica fuerte
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
     btn.title = '⚠️ CCPP exacto apagado Movistar: ' + check.code + ' — ' + check.mensaje;
   } else if (check.nivel === 'distrito_of') {
-    // Distrito con apagados, sin CCPP exacto — alerta preventiva
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
     btn.title = '⚠️ Distrito con apagados Movistar: ' + check.code + ' — ' + check.mensaje;
