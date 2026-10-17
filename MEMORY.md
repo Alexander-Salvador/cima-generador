@@ -56,9 +56,18 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-17 — v3.10.0 AUDITORÍA END-TO-END BASES (separación COMU + disclaimer fuentes)**. Sesión v3.10.0 completa con: separación semántica COMU-5514 vs COMU-5672, disclaimer obligatorio para COMU-5672 (no oficial), anomalías departamentales documentadas, trazabilidad de fuentes, 41 distritos sin CCPP catalogados. 468/468 tests PASS (+36 nuevos). Working tree: staged for commit. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0 pendiente subtree split).
+Memoria persistente. Última actualización: **2026-10-17 — v3.10.1 ANOMALÍAS INVESTIGADAS + TESTS AGRESIVOS**. Sesión v3.10.1 completa con: anomalías TUMBES/LORETO/UCAYALI investigadas (consecuencia de gaps en base CCPP), 49 CCPP nuevos inyectados (UNION PROGRESO + UNION ASHÁNINKA), script offline para 33 dist restantes, 54 tests agresivos (regresión/integración/stress/coherencia/inteligencia). 522/522 tests PASS (468 popup + 54 aggressive). **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0/3.10.1 pendiente subtree split).
 
-✅ **Sesión v3.10.0 — Auditoría end-to-end de bases — STAGED:**
+✅ **Sesión v3.10.1 — Anomalías investigadas + tests agresivos — STAGED:**
+
+| Tema | Acción | Métrica |
+|---|---|---|
+| Anomalías TUMBES/LORETO/UCAYALI | Investigadas: gaps en base CCPP, no del PDF | TUMBES 0/13 CCPP, LORETO 33/55 dist sin CCPP |
+| 49 CCPP nuevos inyectados | UNION PROGRESO (20) + UNION ASHÁNINKA (29) | 1851→1853 dist, 43,491→43,540 CCPP |
+| Script OSM offline | enrich_ccpp_from_osm.py para 33 dist pendientes | CEO corre cuando haya conectividad |
+| Tests agresivos | test_aggressive.py con 5 tipos | 54/54 PASS, 125k checks/seg |
+
+✅ **Sesión v3.10.0 — Auditoría end-to-end de bases — `376205c`:**
 
 | Tema | Acción | Archivo |
 |---|---|---|
