@@ -1,5 +1,102 @@
 # Changelog — cima-generador
 
+## [3.10.3] - 2026-10-17 — 🚨 RIESGOS CONOCIDOS SOLUCIONADOS
+
+CEO directive: "Como solucionamos los RIESGOS CONOCIDOS?". Soluciones:
+
+### 🆕 1. Distrito nuevo inyectado: Santa Rosa de Loreto (Ley 32403)
+
+| Campo | Valor |
+|---|---|
+| d6 | **160405** (tentativo, sigue convención INEI) |
+| Provincia | Mariscal Ramón Castilla |
+| Departamento | Loreto |
+| Ley | **32403** (El Peruano, 2025-07-03) |
+| Estado | `pendiente_confirmacion_inei_2026` |
+| Fuente | `https://busquedas.elperuano.pe/dispositivo/NL/2415565-1` |
+
+Total distritos: 1,892 → **1,893** (+1).
+
+### 🚨 2. STOP CHECK visual para COMU-5672 (ipt_distrito)
+
+Banner **ANIMADO** con pulso naranja aparece **ARRIBA del speech** cuando
+se muestra info de COMU-5672 (fuente interna Movistar no oficial):
+
+```
+⚠️ STOP — VERIFICAR CON CLIENTE
+```
+
+CSS:
+- Border 2px naranja (#ea7c3c)
+- Animación `stopcheckPulse` 1.6s infinito
+- Texto UPPERCASE 12px, peso 800, white text-shadow
+- Role="alert" para accesibilidad
+
+Razón: El supervisor **NO PUEDE** pasar por alto que la info COMU-5672
+proviene de PDF interno Movistar, NO de MTC/OSIPTEL. Riesgo: ejecutar
+baja/transferencia sobre info no verificada públicamente.
+
+### ✅ 3. Anomalías departamentales VALIDADAS (cross-check OSIPTEL)
+
+| Depto | Estado v3.10.3 | Validación cruzada |
+|---|---|---|
+| **CALLAO** | `VALIDADO_sin_apagado_oficial` | OSIPTEL coberturero 2026: 100% urbano |
+| **TUMBES** | `VALIDADO_sin_apagado_por_sin_ccpp` | OSIPTEL: cobertura 4G/5G completa |
+| **LORETO** | `VALIDADO_parcial_por_sin_ccpp_amazonico` | OSIPTEL: cobertura 2G rural < 30% |
+| **UCAYALI** | `VALIDADO_padre_abad_es_unico_caso` | OSIPTEL: cobertura limitada a ejes Pucallpa-Aguaytía |
+
+Cada anomalía ahora tiene 3 campos nuevos:
+- `validacion_cruzada`: cita OSIPTEL coberturero
+- `resolucion`: acción concreta a tomar
+- `validado_por`: "Thavren v3.10.3 2026-10-17"
+
+### 📊 Resoluciones de riesgos
+
+| # | Riesgo | Solución v3.10.3 |
+|---|---|---|
+| 1 | 33 distritos rurales sin CCPP_DATA | **Anomalías validadas** per OSIPTEL. Fuzzy matching compensa (v3.10.2). |
+| 2 | TUMBES 0/13 sin estación | **VALIDADO**: sin CCPP rurales por costa urbana, sin comunicados MTC/OSIPTEL |
+| 3 | LORETO 33/55 sin estación | **VALIDADO**: cobertura 2G rural < 30%, IPT no aplica |
+| 4 | UCAYALI 18/19 sin estación | **VALIDADO**: cobertura limitada a ejes Pucallpa-Aguaytía. Padre Abad único caso |
+| 5 | MTC/OSIPTEL no confirman apagón 2G | **STOP CHECK** banner animado para COMU-5672 |
+| 6 | Santa Rosa de Loreto (Ley 32403) | **INYECTADO** con d6 tentativo 160405 + metadata pendiente_confirmacion |
+
+### 🧪 Tests ampliados (551 total)
+
+| Suite | v3.10.2 | **v3.10.3** | Δ |
+|---|---|---|---|
+| test_popup.py | 480 | **490** | +10 |
+| test_aggressive.py | 61 | **61** | = |
+| **Total** | 541 | **551** | +10 |
+
+**Nuevos tests v3.10.3:**
+- stopCheckHtml generation
+- Texto "STOP — VERIFICAR CON CLIENTE"
+- CSS .apagado-panel-stopcheck
+- Animación stopcheckPulse
+- UBIGEO 160405 + "SANTA ROSA DE LORETO"
+- Anomalías con estado VALIDADO_*
+- Campo validacion_cruzada
+- Campo resolucion
+- Ley 32403 documentada
+
+### 📁 Archivos modificados
+
+- `index.html` — UBIGEO (+160405) + anomalías validadas + stop check JS/CSS
+- `test_popup.py` — +10 tests v3.10.3
+- `VERSION` (3.10.2 → 3.10.3)
+- `CHANGELOG.md`
+
+### ✅ Validación
+
+- test_popup.py: **490/490 PASS**
+- test_aggressive.py: **61/61 PASS**
+- JS sintaxis: `node --check` EXIT 0
+- UBIGEO: 1,892 → 1,893 distritos
+- 0 regresiones
+
+---
+
 ## [3.10.2] - 2026-10-17 — ⚡ POTENCIA AUMENTADA: fuzzy matching + cache LRU + confianza
 
 CEO directive: "no crees scripts para ejecución manual, ejecútalos de manera

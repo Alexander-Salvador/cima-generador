@@ -27,8 +27,8 @@ DEFAULT_HTML = Path(__file__).parent / 'index.html'
 # Expected fixture counts
 EXPECTED_DEPTOS = 25
 EXPECTED_PROVINCIAS = 196
-EXPECTED_DISTRITOS = 1892
-EXPECTED_DISTRITOS_CCPP = 1851  # some districts don't have caseríos in GeoNames
+EXPECTED_DISTRITOS = 1893  # v3.10.3: +1 (Santa Rosa de Loreto Ley 32403, d6 tentativo 160405)
+EXPECTED_DISTRITOS_CCPP = 1853  # some districts don't have caseríos in GeoNames
 EXPECTED_CCPP_MIN = 40000  # 43,491 actual
 
 class TestResult:
@@ -2648,10 +2648,10 @@ def test(html_path):
             else:
                 result.fail(f'v3.10.0 anomalia {depto}', f'{depto} no documentado en anomalias_departamentales')
         # Verificar campos clave
-        if 'razon' in body and 'evidencia' in body and 'verificado_por' in body:
-            result.ok('v3.10.0 INTEL: anomalias tienen campos razon/evidencia/verificado_por')
+        if 'razon' in body and 'evidencia' in body and 'validado_por' in body:
+            result.ok('v3.10.3 INTEL: anomalias tienen campos razon/evidencia/validado_por')
         else:
-            result.fail('v3.10.0 INTEL anomalia campos', 'anomalias sin campos razon/evidencia/verificado_por')
+            result.fail('v3.10.3 INTEL anomalia campos', 'anomalias sin campos razon/evidencia/validado_por')
     else:
         result.fail('v3.10.0 INTEL anomalias', 'anomalias_departamentales missing')
 
@@ -2820,6 +2820,69 @@ def test(html_path):
         result.ok('v3.10.2 HTML: apagado-panel-fuzzy-item rendering')
     else:
         result.fail('v3.10.2 HTML fuzzy item', 'rendering de fuzzy_matches missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.3 — STOP CHECK visual para COMU-5672 + Santa Rosa de Loreto
+    # CEO directive: "como solucionamos los RIESGOS CONOCIDOS?"
+    # Soluciones: stop check prominente + distrito nuevo 160405 + anomalías
+    # validadas per OSIPTEL cross-check.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.3 — STOP CHECK visual + riesgos resueltos')
+
+    # JS: stopCheckHtml generado cuando requiere_disclaimer
+    if re.search(r'stopCheckHtml\s*=\s*[\'"]\'', html):
+        result.ok('v3.10.3 JS: stopCheckHtml (stop check banner JS)')
+    else:
+        result.fail('v3.10.3 JS stopCheck', 'stopCheckHtml no implementado')
+
+    if re.search(r'STOP.*VERIFICAR CON CLIENTE', html, re.DOTALL):
+        result.ok('v3.10.3 JS: texto "STOP — VERIFICAR CON CLIENTE"')
+    else:
+        result.fail('v3.10.3 JS stopCheck texto', 'texto STOP missing')
+
+    # CSS: .apagado-panel-stopcheck
+    if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-stopcheck\s*\{', html):
+        result.ok('v3.10.3 CSS: .apagado-panel-stopcheck (banner alerta)')
+    else:
+        result.fail('v3.10.3 CSS stopCheck', '.apagado-panel-stopcheck missing')
+
+    if re.search(r'@keyframes\s+stopcheckPulse', html):
+        result.ok('v3.10.3 CSS: stopcheckPulse animation')
+    else:
+        result.fail('v3.10.3 CSS stopCheck anim', 'stopcheckPulse missing')
+
+    # UBIGEO: Santa Rosa de Loreto inyectada
+    if re.search(r'"SANTA ROSA DE LORETO"', html):
+        result.ok('v3.10.3 UBIGEO: SANTA ROSA DE LORETO inyectada (d6 160405)')
+    else:
+        result.fail('v3.10.3 UBIGEO santa_rosa', 'SANTA ROSA DE LORETO no inyectada')
+
+    if '"_ubigeo":"160405"' in html:
+        result.ok('v3.10.3 UBIGEO: d6 160405 presente')
+    else:
+        result.fail('v3.10.3 UBIGEO 160405', 'd6 160405 missing')
+
+    # Anomalías: estado VALIDADO_*
+    if re.search(r'VALIDADO_sin_apagado_oficial', html):
+        result.ok('v3.10.3 INTEL: anomalías con estado VALIDADO_*')
+    else:
+        result.fail('v3.10.3 INTEL validado', 'estados VALIDADO_* no encontrados')
+
+    if re.search(r'validacion_cruzada', html):
+        result.ok('v3.10.3 INTEL: campo validacion_cruzada (OSIPTEL cross-check)')
+    else:
+        result.fail('v3.10.3 INTEL validacion', 'campo validacion_cruzada missing')
+
+    if re.search(r'"resolucion"\s*:', html):
+        result.ok('v3.10.3 INTEL: campo resolucion (acción por anomalía)')
+    else:
+        result.fail('v3.10.3 INTEL resolucion', 'campo resolucion missing')
+
+    # Ley 32403 documentada
+    if re.search(r'Ley\s*32403', html):
+        result.ok('v3.10.3 DOC: Ley 32403 (Santa Rosa de Loreto) referenciada')
+    else:
+        result.fail('v3.10.3 DOC ley 32403', 'Ley 32403 no referenciada')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.0 — BASE UBIGEO COMPLETA

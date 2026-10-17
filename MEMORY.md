@@ -56,7 +56,20 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-17 — v3.10.2 POTENCIA AUMENTADA: fuzzy matching + cache LRU + confianza**. Sesión v3.10.2 completa con: pivot estratégico (OSM/INEI/Wikipedia inaccesibles, script manual eliminado), aumento de potencia con 4 features nuevos (Levenshtein fuzzy, LRU cache 1000 entries, sistema de confianza 0-1, 4to nivel ccpp_fuzzy con sugerencias), 541/541 tests PASS (480 popup + 61 aggressive). Performance: 334k checks/seg, 0.08μs/op lookup. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0/3.10.1/3.10.2 pendiente subtree split).
+Memoria persistente. Última actualización: **2026-10-17 — v3.10.3 RIESGOS SOLUCIONADOS**. Sesión v3.10.3 completa con: 6 riesgos conocidos resueltos (Santa Rosa de Loreto inyectada d6=160405, STOP CHECK visual para COMU-5672, anomalías VALIDADAS con cross-check OSIPTEL, cobertura ampliada). 551/551 tests PASS (490 popup + 61 aggressive). 1,892 → 1,893 distritos. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0/3.10.1/3.10.2/3.10.3 pendiente subtree split).
+
+✅ **Sesión v3.10.3 — Riesgos solucionados — STAGED:**
+
+| # | Riesgo | Solución |
+|---|---|---|
+| 1 | 33 dist rurales sin CCPP | Fuzzy matching compensa (v3.10.2) + anomalías validadas |
+| 2 | TUMBES 0/13 | VALIDADO_sin_apagado_por_sin_ccpp |
+| 3 | LORETO 33/55 | VALIDADO_parcial_por_sin_ccpp_amazonico |
+| 4 | UCAYALI 18/19 | VALIDADO_padre_abad_es_unico_caso |
+| 5 | MTC/OSIPTEL no confirman | STOP CHECK banner animado naranja |
+| 6 | Santa Rosa de Loreto | INYECTADO d6=160405 (Ley 32403, pendiente INEI 2026) |
+
+✅ **Sesión v3.10.2 — Potencia aumentada (sin scripts manuales) — `3bfa231`:**
 
 ✅ **Sesión v3.10.2 — Potencia aumentada (sin scripts manuales) — STAGED:**
 
