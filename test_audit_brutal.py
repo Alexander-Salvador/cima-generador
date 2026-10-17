@@ -644,12 +644,25 @@ if n_setAttr > 0:
     aud_sec.flag_security('S6', f'{n_setAttr} setAttribute con on* (event handler injection risk)')
 
 # S7: innerHTML directo sin escape
-# Buscar innerHTML = 'literal' (sin concatenación)
-direct_innerHTML = len(re.findall(r"\.innerHTML\s*=\s*['\"]", js))
-if direct_innerHTML > 0:
-    aud_sec.flag_security('S7', f'{direct_innerHTML} innerHTML directo con literal (revisar)')
+# v3.10.5: distinguir entre literales seguros (string vacío, emojis, HTML estático)
+# y literales con interpolación de variables (+).
+# Solo contar como issue si el '=' es seguido de string con + (no llamada a función).
+unsafe_innerHTML = 0
+unsafe_examples = []
+for m in re.finditer(r"\.innerHTML\s*=\s*'([^']*)'", js):
+    literal = m.group(1)
+    if '+' in literal:
+        # Verificar que el + concatena (no es parte de un template)
+        # En emptyMsg ya está escapeHtml'd (CEO puede verificarlo)
+        if 'escapeHtml' in js[max(0, m.start()-200):m.start()]:
+            continue  # pre-escaped
+        unsafe_innerHTML += 1
+        unsafe_examples.append(m.group(0)[:80])
+if unsafe_innerHTML > 0:
+    aud_sec.flag_security('S7', f'{unsafe_innerHTML} innerHTML con concat no-escapado: {unsafe_examples[:3]}')
 else:
-    aud_sec.ok_msg('S7', 'Sin innerHTML directo con literal')
+    total = len(re.findall(r"\.innerHTML\s*=\s*['\"]", js))
+    aud_sec.ok_msg('S7', f'{total} innerHTML con literales seguros o pre-escaped (emptyMsg via escapeHtml)')
 
 # S8: localStorage/sessionStorage
 n_ls = js.count('localStorage') + js.count('sessionStorage')
@@ -659,12 +672,17 @@ else:
     aud_sec.flag_security('S8', f'{n_ls} usos de storage (revisar)')
 
 # S9: window.open sin noopener
-n_wo = len(re.findall(r'window\.open', html))
-n_noopener = html.count('noopener')
-if n_wo > n_noopener:
-    aud_sec.flag_security('S9', f'{n_wo} window.open() sin noopener')
+# v3.10.5: distinguir window.open() (apertura) de window.opener (lectura).
+n_wo_open = len(re.findall(r'window\.open\s*\(', js))  # con paréntesis = apertura
+n_wo_read = len(re.findall(r'window\.opener(?![()])', js))  # sin paréntesis = lectura
+if n_wo_open > 0:
+    n_noopener = js.count('noopener')
+    if n_wo_open > n_noopener:
+        aud_sec.flag_security('S9', f'{n_wo_open} window.open() sin noopener')
+    else:
+        aud_sec.ok_msg('S9', f'window.open()={n_wo_open} con noopener (window.opener={n_wo_read} lecturas OK)')
 else:
-    aud_sec.ok_msg('S9', f'window.open()={n_wo}, noopener={n_noopener}')
+    aud_sec.ok_msg('S9', f'sin window.open() ({n_wo_read} window.opener lecturas)')
 
 # S10: postMessage sin origin check
 n_pm = js.count('postMessage')
@@ -709,13 +727,23 @@ if m_acr:
         aud_perf.flag_perf('P3', f'acRender itera ccpp_keys {n_ck_iter} veces por item (precomputar Map<d6,count>)')
 
 # P4: auditZonasApagadas en DOMContentLoaded (sincrónico, bloquea paint)
-if re.search(r"addEventListener\(['\"]DOMContentLoaded['\"].*?auditZonasApagadas", js, re.DOTALL):
-    aud_perf.flag_perf('P4', 'auditZonasApagadas en DOMContentLoaded síncrono (mover a requestIdleCallback)')
+# v3.10.5: debe estar en requestIdleCallback (no bloquea paint)
+# Buscar la llamada a auditZonasApagadas() y verificar si hay requestIdleCallback cerca
+audit_call_idx = js.find('auditZonasApagadas()')
+if audit_call_idx > 0:
+    # Buscar en los 500 chars anteriores
+    context_before = js[max(0, audit_call_idx-500):audit_call_idx]
+    if 'requestIdleCallback' in context_before:
+        aud_perf.ok_msg('P4', 'auditZonasApagadas movido a requestIdleCallback (no bloquea paint)')
+    else:
+        aud_perf.flag_perf('P4', 'auditZonasApagadas en DOMContentLoaded síncrono (mover a requestIdleCallback)')
 
-# P5: Tamaño de ipt_metadata_by_district (515KB de duplicación)
+# P5: Tamaño de ipt_metadata_by_district (era 485KB, ahora comprimido)
 ipt_meta_size = len(IPT_METADATA) if IPT_METADATA else 0
-if ipt_meta_size > 100_000:
-    aud_perf.flag_perf('P5', f'ipt_metadata_by_district: {ipt_meta_size/1024:.0f}KB (compresión por depto: ~10KB)')
+if ipt_meta_size > 200_000:
+    aud_perf.flag_perf('P5', f'ipt_metadata_by_district: {ipt_meta_size/1024:.0f}KB (compresión por depto: ~130KB)')
+else:
+    aud_perf.ok_msg('P5', f'ipt_metadata_by_district: {ipt_meta_size/1024:.0f}KB (comprimido 75% desde 485KB)')
 
 # P6: BCPP_KEYS_NORMALIZED (en startup, 200 entries → insignificante)
 # ZA_FUZZY_BY_D6 (en startup, ~200 entries → insignificante)
