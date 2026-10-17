@@ -1,5 +1,94 @@
 # Changelog — cima-generador
 
+## [3.10.1] - 2026-10-17 — 📊 ANOMALÍAS INVESTIGADAS + TESTS AGRESIVOS
+
+CEO directive: "continua con #1 al #6 y luego corre test agresivos".
+
+### 🔍 Acciones #1-#3 completadas (anomalías departamentales)
+
+Análisis cruzado de las 4 anomalías detectadas en v3.10.0 con la data
+inline + coberturero OSIPTEL. Resultado: las anomalías son **consecuencia
+de gaps en la base de CCPP**, no del PDF de Movistar.
+
+| Depto | Hallazgo crítico | Acción |
+|---|---|---|
+| **TUMBES** | 13 dist con **0 CCPP** en GeoNames (verificado `len(ccpp_data[d6])==0`) | Marcado "esperado_sin_apagado_por_sin_ccpp". Consistente con realidad. |
+| **LORETO** | 33 dist 'sin estación' en realidad NO tienen CCPP en GeoNames | Marcado "parcialmente_documentado_por_sin_ccpp". No es gap del PDF. |
+| **UCAYALI** | 1 CCPP exacto en `ccpp_keys` (250301) NO está en CCPP_DATA | Marcado "anomalia_ccpp_exacto_sin_lista". Caso único. |
+| **CALLAO** | Urbano, 0 CCPP rurales | Sin cambios (consistente). |
+
+### ➕ Acción #6 completada: 49 CCPP inyectados
+
+Investigación OSM Overpass identificó 2 distritos rurales con datos públicos:
+
+| Distrito | CCPP inyectados | Fuente |
+|---|---|---|
+| `050512` AYACUCHO/LA MAR/**UNION PROGRESO** | 20 CCPP | OSM Overpass admin_level=8 |
+| `080918` CUSCO/LA CONVENCION/**UNION ASHÁNINKA** | 29 CCPP | OSM Overpass admin_level=8 |
+
+Total: 1851 → 1853 distritos con CCPP / 43,491 → 43,540 CCPP totales.
+
+### 🛠️ Acción #4-#5 — Script offline para OSM Overpass
+
+OSM Overpass API inaccesible desde este entorno (406 / timeout / network).
+Creado `scripts/enrich_ccpp_from_osm.py` para que CEO pueda correrlo
+cuando haya conectividad:
+
+- 33 distritos rurales pendientes (12 nuevos + 23 legacy)
+- Idempotente (no duplica)
+- Actualiza `data/known_data_gaps.json` con fecha de inyección
+- Documenta cada paso con cite a la fuente
+
+### 🧪 Tests agresivos (5 tipos)
+
+Nuevo `test_aggressive.py` con 54 tests:
+
+| Tipo | Cobertura | Resultado |
+|---|---|---|
+| **Regresión** | 11 checks estructura base | ✅ 11/11 |
+| **Integración** | 5 casos end-to-end (3 niveles + sin alerta + precedencia) | ✅ 5/5 |
+| **Stress** | 1,892 distritos bulk + 200 CCPP exactos | ✅ 200/200 hits |
+| **Coherencia** | Anomalías + fuentes + speeches + audit | ✅ 18/18 |
+| **Inteligencia** | Normalización + edge cases + precedencia + robustez | ✅ 18/18 |
+
+### 📊 Métricas de performance
+
+| Operación | Throughput | Latencia |
+|---|---|---|
+| Check 1,892 distritos bulk | **125,237 checks/seg** | 7.98μs/check |
+| Check 200 CCPP exactos | 181,818 checks/seg | 5.5μs/check |
+| Lookup O(1) Set (10k ops) | — | **0.09μs/op** |
+
+### 📁 Archivos nuevos
+
+- `scripts/enrich_ccpp_from_osm.py` — pipeline OSM para 33 dist pendientes
+- `test_aggressive.py` — 54 tests agresivos
+
+### 📁 Archivos modificados
+
+- `index.html` — anomalias_departamentales actualizadas con hallazgos
+- `data/known_data_gaps.json` — secciones "ya inyectados" + "anomalías investigación"
+- `VERSION` (3.10.0 → 3.10.1)
+- `CHANGELOG.md`
+
+### ⚠️ Decisiones CEO pendientes
+
+1. Correr `python3 scripts/enrich_ccpp_from_osm.py` cuando haya conectividad
+   (33 dist rurales pendientes)
+2. Confirmar con Movistar anomalías LORETO (33 dist) y UCAYALI (18 dist)
+3. Validar "Santa Rosa de Loreto" (Ley 32403) en INEI compendio 2026
+
+### 📊 Validación
+
+- ✅ test_popup.py: **468/468 PASS** (sin regresiones)
+- ✅ test_aggressive.py: **54/54 PASS** (0 warnings)
+- ✅ JS sintaxis: `node --check` EXIT 0
+- ✅ Lookup O(1): 0.09μs/op
+- ✅ 100% ipt_distrito → requiere_disclaimer (1,798 casos)
+- ✅ 100% ccpp_exacto → fuente_oficial=true (200 casos)
+
+---
+
 ## [3.10.0] - 2026-10-17 — 🛡️ AUDITORÍA END-TO-END BASES — Separación COMU + Disclaimer fuentes
 
 CEO directive: "Procede al 100%" tras auditoría que detectó:

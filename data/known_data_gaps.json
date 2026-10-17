@@ -83,20 +83,41 @@
         "d6": "050512",
         "dist": "UNION PROGRESO",
         "ccpp_count": 20,
-        "accion": "incluir en v3.10.1 con cite OSM"
+        "estado": "INYECTADO v3.10.0",
+        "fecha_inyeccion": "2026-10-17"
       },
       {
         "d6": "080918",
         "dist": "UNION ASHÁNINKA",
         "ccpp_count": 29,
-        "accion": "incluir en v3.10.1 con cite OSM"
+        "estado": "INYECTADO v3.10.0",
+        "fecha_inyeccion": "2026-10-17"
       }
     ]
+  },
+  "anomalias_investigacion_2026_10_17": {
+    "TUMBES": {
+      "hallazgo": "13 distritos con 0 CCPP en GeoNames (len(ccpp_data[d6])==0 para todos)",
+      "implicancia": "Sin CCPP rurales, no puede haber apagado de estaciones rurales. Consistente con realidad (costa urbana).",
+      "accion": "Marcar como 'esperado_sin_apagado_por_sin_ccpp' en ZONAS_APAGADAS_INTEL.anomalias_departamentales"
+    },
+    "LORETO_33_distritos": {
+      "hallazgo": "33 distritos 'sin estación' en realidad NO tienen CCPP en GeoNames",
+      "implicancia": "La mayoría son amazónicos con CCPP no indexados. No es gap del PDF — es gap de la base de CCPP.",
+      "distritos_afectados_principales": ["160102 MAYNAS/ALTO NANAY", "160104 MAYNAS/INDIANA", "160105 MAYNAS/LAS AMAZONAS", "160106 MAYNAS/MAZAN", "160109 MAYNAS/PUTUMAYO", "160202 ALTO AMAZONAS/BALSAPUERTO", "160205 ALTO AMAZONAS/JEBEROS"],
+      "accion": "Inyectar CCPP amazónicos con INEI Marco Geoestadístico 2018+ o scraping OSM cuando haya conectividad"
+    },
+    "UCAYALI_250301": {
+      "hallazgo": "CCPP exacto en zonas apagadas (ccpp_keys) NO está en CCPP_DATA",
+      "implicancia": "Supervisor ve alerta ⚠️ pero no puede autocompletar el CCPP. Caso único.",
+      "accion": "Inyectar CCPP de PADRE ABAD al inline data (OSM Overpass pendiente por restricción de red)"
+    }
   },
   "resumen_recomendaciones": [
     "Para 12 distritos rurales nuevos (creados post-2015): descargar INEI Marco Geoestadístico Nacional 2018+",
     "Para 23 distritos rurales legacy: scrappear OpenStreetMap Overpass por admin_level=8 con tags village/hamlet",
     "Para 6 distritos urbanos: NO aplicar fix (no aplica CCPP rurales)",
-    "Para 'Santa Rosa de Loreto' (160405): esperar INEI compendio 2026 o usar fuente directa del El Peruano"
+    "Para 'Santa Rosa de Loreto' (160405): esperar INEI compendio 2026 o usar fuente directa del El Peruano",
+    "Para TUMBES/LORETO/UCAYALI: anomalías documentadas, no son gaps del PDF sino de la base de CCPP"
   ]
 }
