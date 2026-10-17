@@ -27,7 +27,7 @@ DEFAULT_HTML = Path(__file__).parent / 'index.html'
 EXPECTED_DEPTOS = 25
 EXPECTED_PROVINCIAS = 196
 EXPECTED_DISTRITOS = 1893  # v3.10.3: +1 (Santa Rosa de Loreto Ley 32403, d6 tentativo 160405)
-EXPECTED_DISTRITOS_CCPP = 1853  # v3.10.0: +2 (UNION PROGRESO, UNION ASHÁNINKA)
+EXPECTED_DISTRITOS_CCPP = 1886  # v3.10.4: +33 (capitales de distritos rurales sin CCPP, fuentes Eidren 2026-10-17)
 EXPECTED_CCPP_MIN = 43000
 
 class AggressiveTestResult:

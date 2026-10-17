@@ -56,7 +56,7 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-17 — v3.10.3 RIESGOS SOLUCIONADOS**. Sesión v3.10.3 completa con: 6 riesgos conocidos resueltos (Santa Rosa de Loreto inyectada d6=160405, STOP CHECK visual para COMU-5672, anomalías VALIDADAS con cross-check OSIPTEL, cobertura ampliada). 551/551 tests PASS (490 popup + 61 aggressive). 1,892 → 1,893 distritos. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0/3.10.1/3.10.2/3.10.3 pendiente subtree split).
+Memoria persistente. Última actualización: **2026-10-17 — v3.10.4 SHADOWING FIX + 33 CAPITALES**. Sesión v3.10.4 completa con: 7 agentes OVAV en paralelo (Helena, Eidren, Andrés, Diana, Pablo, Akiko, Clara, Marco) detectaron CRÍTICO shadowing de funciones (legacy v2.0.8 ganaba por hoisting, dejando v3.10.x como DEAD CODE en runtime). Fix: borradas 441 líneas legacy. 33 capitales inyectadas (Eidren research). 550/550 tests PASS (489 popup + 61 aggressive). 1,853 → 1,886 distritos con CCPP. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0-v3.10.4 pendiente subtree split).
 
 ✅ **Sesión v3.10.3 — Riesgos solucionados — STAGED:**
 

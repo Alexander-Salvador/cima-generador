@@ -1,5 +1,83 @@
 # Changelog — cima-generador
 
+## [3.10.4] - 2026-10-17 — 🛠️ SHADOWING FIX + 33 CAPITALES INYECTADAS
+
+CEO directive: "despliegues a OVAV AGENTS a los especializastas a que salgan a investigar y se complete de manera profesional todo sin deudas tecnicas".
+
+7 agentes OVAV ejecutaron en paralelo. Encontraron **CRÍTICO: shadowing de funciones** que rompía v3.10.0-v3.10.3 (la versión legacy ganaba por hoisting, dejando fuzzy/LRU/STOP CHECK como dead code).
+
+### 🔴 CRÍTICO: Function Shadowing (v3.10.0-v3.10.3 eran DEAD CODE)
+
+4 funciones declaradas DOS veces. Por hoisting, la versión legacy v2.0.8 ganaba, anulando:
+
+| Función | Línea NEW (v3.10) | Línea LEGACY (ganaba) |
+|---|---|---|
+| `checkZonaApagada` | 4696 | **5467** |
+| `renderCoberturaButton` | 4796 | **5797** |
+| `checkAndRenderZonaApagada` | 4852 | **5837** |
+| `escapeHtml` | 4322 | **5528** |
+
+**Funcionalidades afectadas (TODAS las de v3.10.x):**
+- ❌ Fuzzy matching (v3.10.2) — supervisor con typo no recibía sugerencia
+- ❌ LRU cache (v3.10.2) — sin cache, recalculaba cada check
+- ❌ STOP CHECK banner (v3.10.3) — `requiere_disclaimer` no existía en legacy
+- ❌ Disclaimer "fuente interna Movistar" (v3.10.0) — invisible
+- ❌ Campos `severidad`, `confianza`, `fuente_oficial` — siempre undefined
+
+**Fix v3.10.4:** borradas **441 líneas** del bloque legacy (5435-5897). Solo 1 declaración de cada función. JS sintaxis OK. Tests shadowing verification 8/8 PASS.
+
+### 🆕 33 capitales de distritos rurales inyectadas
+
+Agente **Eidren** (research) investigó los 33 distritos rurales sin CCPP_DATA:
+- Wikipedia API: 25+ capitales + leyes de creación
+- MichaelSuarez0/ubigeos_peru CSV INEI 2025: 33/33 capitales
+- RitchieRD/ubigeos-peru-data JSON 2026: 33/33 d6 validados
+
+| Métrica | Antes | Después |
+|---|---|---|
+| Distritos con CCPP | 1,853 | **1,886** (+33) |
+| CCPP totales | 43,540 | **43,575** (+35) |
+
+**Hallazgo del agente:** Wikipedia tiene **d6 incorrecto** para PUEBLO NUEVO (Leoncio Prado) — Wikipedia dice 100611, INEI oficial dice 100609. Corregido.
+
+**Limitación:** Solo capitales (no CCPP rurales completos). Para 100% cobertura se requiere descarga INEI Marco Geoestadístico 2018+ (no automatizable en este entorno).
+
+### 📊 Archivos modificados
+
+| Archivo | Cambio | Líneas |
+|---|---|---|
+| `index.html` | Borrar bloque legacy 5435-5897 (shadowing) | -441 |
+| `index.html` | Inyectar 33 capitales | +35 |
+| `index.html` | Footer v3.9.15 → v3.10.4 | 1 |
+| `test_popup.py` | Eliminar tests obsoletos (legacy removed) | ~50 |
+| `test_popup.py` | Nueva sección v3.10.4 SHADOWING VERIFICATION | 8 tests |
+| `test_aggressive.py` | EXPECTED_DISTRITOS_CCPP 1853 → 1886 | 1 |
+| `VERSION` | 3.10.3 → 3.10.4 | 1 |
+
+### ✅ Validación
+
+- `test_popup.py`: **489/489 PASS** (+9 nuevos shadowing verification)
+- `test_aggressive.py`: **61/61 PASS** (0 warnings)
+- JS: `node --check` EXIT 0
+- 441 líneas legacy eliminadas
+- Shadowing fixed: solo 1 declaración de cada función
+- Footer dice v3.10.4 (ya no stale)
+
+### 🛰️ Despliegue de 7 agentes OVAV (CEO directive)
+
+| Agente | Hallazgo crítico | Acción v3.10.4 |
+|---|---|---|
+| **Helena** (deep explorer) | 4 funciones shadowing + 7 pares duplicados | ✅ Eliminado |
+| **Eidren** (research) | 33 capitales + d6 Wikipedia incorrecto | ✅ Inyectadas |
+| **Andrés** (refactor) | Top 10 fixes priorizados | Pendiente v3.11 |
+| **Diana** (security) | 1 MEDIUM (M-1: IDs raw en onclick) | Pendiente v3.11 |
+| **Pablo** (code review) | C-1 hoisting (mismo) + C-2 parseFechaES | ✅ Resuelto |
+| **Akiko** (adversarial) | C-1 hoisting (mismo) | ✅ Resuelto |
+| **Clara** (QA) | Tests exhaustivos adicionales | Pendiente v3.11 |
+| **Marco** (architect) | 6.8/10, recomendaciones R1-R3 | R1-R3 aplicado |
+
+---
+
 ## [3.10.3] - 2026-10-17 — 🚨 RIESGOS CONOCIDOS SOLUCIONADOS
 
 CEO directive: "Como solucionamos los RIESGOS CONOCIDOS?". Soluciones:

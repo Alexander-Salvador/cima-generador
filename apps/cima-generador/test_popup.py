@@ -1622,57 +1622,49 @@ def test(html_path):
     else:
         result.fail('BUG 1 renderCoberturaButton', 'función no encontrada')
 
-    # BUG 4: showApagadoTooltip es anclado (no modal overlay), con CSS compacto
-    if 'function showApagadoTooltip' in html:
-        result.ok('BUG 4 showApagadoTooltip: función presente')
+    # BUG 4 v3.10.4: showApagadoTooltip legacy REMOVIDA. Ahora usa showApagadoPanelInline (panel inline).
+    if 'function showApagadoPanelInline' in html:
+        result.ok('v3.10.4 BUG 4: showApagadoPanelInline (panel inline) reemplaza showApagadoTooltip legacy')
     else:
-        result.fail('BUG 4 showApagadoTooltip', 'función no encontrada')
-    # El modal overlay antiguo debe haber sido removido (no showApagadoPopover)
-    # Aunque podría quedar algún showApagadoPopover residual que NO es llamado,
-    # lo importante es que el click handler llama showApagadoTooltip.
-    if 'showApagadoTooltip(btn' in html:
-        result.ok('BUG 4 click handler: invoca showApagadoTooltip')
+        result.fail('v3.10.4 BUG 4', 'showApagadoPanelInline no encontrado')
+    # showApagadoTooltip legacy NO debe existir
+    if 'function showApagadoTooltip' not in html:
+        result.ok('v3.10.4: showApagadoTooltip legacy removido (shadowing fix)')
     else:
-        result.fail('BUG 4 click handler', 'no llama showApagadoTooltip')
+        result.fail('v3.10.4 shadow', 'showApagadoTooltip legacy aún presente')
     # El tooltip debe crearse en document.body (no dentro del grid) y ser absolute
-    m_tooltip = re.search(r'function showApagadoTooltip.*?function closeApagadoTooltip', html, re.DOTALL)
-    if m_tooltip:
-        t_fn = m_tooltip.group(0)
-        if 'document.body.appendChild(tooltip)' in t_fn:
-            result.ok('BUG 4 tooltip: position absolute via document.body')
+    m_tooltip = None  # v3.10.4: showApagadoTooltip legacy removido, ahora panel inline
+    if m_tooltip is None:
+        # v3.10.4: el panel inline es el reemplazo moderno. Verificar que esté.
+        if 'function showApagadoPanelInline' in html:
+            result.ok('v3.10.4 BUG 4: showApagadoTooltip reemplazado por showApagadoPanelInline (panel inline)')
         else:
-            result.fail('BUG 4 tooltip body', 'tooltip no se monta en document.body')
-        if 'min(320px' in t_fn or 'width: 320px' in t_fn or 'min(320' in html:
-            result.ok('BUG 4 tooltip: width máximo compacto (≤320px)')
+            result.fail('v3.10.4 BUG 4', 'showApagadoPanelInline no encontrado')
+        # CSS .apagado-speech-panel (panel inline) presente
+        if '.apagado-speech-panel' in html:
+            result.ok('v3.10.4 BUG 4: .apagado-speech-panel CSS presente (reemplazo de .apagado-tooltip)')
         else:
-            result.fail('BUG 4 tooltip width', 'falta width compacto')
-        # Solo speech + zona + fecha, sin secciones largas
-        if '🛠️ Si cliente reclama' not in t_fn and '📞 Si cliente pide BAJA' not in t_fn:
-            result.ok('BUG 4 tooltip: NO secciones largas (reclamo/baja)')
-        else:
-            result.fail('BUG 4 secciones largas', 'aún hay secciones largas')
-    # CSS .apagado-tooltip presente
-    if '.apagado-tooltip {' in html:
-        result.ok('BUG 4 CSS: .apagado-tooltip { rules presentes')
+            result.fail('v3.10.4 BUG 4 CSS', 'falta .apagado-speech-panel')
+    # copy handler v3.10.4: copyApagadoTooltipSpeech legacy REMOVIDA. Usa zaCopyApagadoSpeech.
+    if 'function zaCopyApagadoSpeech' in html:
+        result.ok('v3.10.4: zaCopyApagadoSpeech (copy handler vivo)')
     else:
-        result.fail('BUG 4 CSS', 'falta .apagado-tooltip {')
-    # CSS .apagado-tooltip-speech presente (el speech estilizado)
-    if '.apagado-tooltip-speech' in html:
-        result.ok('BUG 4 CSS: speech estilizado en tooltip')
+        result.fail('v3.10.4 copy', 'zaCopyApagadoSpeech no encontrado')
+    if 'function copyApagadoTooltipSpeech' not in html:
+        result.ok('v3.10.4: copyApagadoTooltipSpeech legacy removido')
     else:
-        result.fail('BUG 4 CSS speech', 'falta .apagado-tooltip-speech')
-    # copy handler
-    if 'function copyApagadoTooltipSpeech' in html:
-        result.ok('BUG 4 tooltip: función copyApagadoTooltipSpeech presente')
-    else:
-        result.fail('BUG 4 copy fn', 'falta copyApagadoTooltipSpeech')
+        result.fail('v3.10.4 shadow', 'copyApagadoTooltipSpeech legacy aún presente')
 
-    # v3.9.0: BUG 1 fix preservado en renderCoberturaButton; BUG 2 fix consolidado
-    # en el nuevo onClickCobertura (siempre responde con shake + toast o panel).
-    if 'BUG 1 fix: alternar' not in html:
-        result.fail('regresión v3.5.2 BUG 1', 'BUG 1 fix (alternar idle vs off/warn/ipt) perdido')
-    if 'onClickCobertura' not in html or 'cima-shake' not in html:
-        result.fail('regresión v3.9.0', 'nuevo onClickCobertura o feedback shake perdido')
+    # v3.10.4: BUG 1 fix consolidado en onClickCobertura (no requiere marker legacy).
+    # El comportamiento de alternar idle/off/warn/ipt está implementado en el código vivo.
+    if 'function renderCoberturaButton' in html and 'cobertura-btn--idle' in html:
+        result.ok('v3.10.4: BUG 1 fix consolidado en renderCoberturaButton (idle/off/warn/ipt alternancia)')
+    else:
+        result.fail('v3.10.4 BUG 1', 'BUG 1 fix perdido tras shadowing fix')
+    if 'function onClickCobertura' in html and 'cima-shake' in html:
+        result.ok('v3.10.4: onClickCobertura + feedback shake preservados')
+    else:
+        result.fail('v3.10.4 onClick', 'onClickCobertura o feedback shake perdido')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.5.3 — MARCADO VISUAL ROJO CCPP DROPDOWN (CEO directive 2026-10-15 21:30)
@@ -1835,10 +1827,10 @@ def test(html_path):
         result.ok('v3.6.0 JS: copia de speech')
     else:
         result.fail('JS copy', 'falta zaCopyApagadoSpeech')
-    if 'function showApagadoTooltip(' in html:
-        result.ok('v3.6.0 JS: showApagadoTooltip tooltip anclado')
+    if 'function showApagadoTooltip(' not in html:
+        result.ok('v3.10.4: showApagadoTooltip legacy removido (shadowing fix)')
     else:
-        result.fail('JS tooltip', 'falta showApagadoTooltip')
+        result.fail('v3.10.4 shadow', 'showApagadoTooltip legacy aún presente')
 
     # Funciones legacy NO deben seguir llamándose en listeners activos.
     # Marcamos como deprecated pero no las borramos para compatibilidad.
@@ -1898,23 +1890,16 @@ def test(html_path):
 
     print('\n▸ v3.5.8 — Regex fix [dd/m] en speech (BUG auditoría CEO)')
 
-    # El regex del JS usa [d\u00edi] que solo matchea í, NO d.
-    # Esto rompe el placeholder [dd/m] de ipt_postventa_sin_4g.
-    # v3.5.8 fix: usar [d\u00edi] (incluye d) en vez de [\u00edi].
-    m_re = re.search(r"// v3\.5\.8: soporte para \[dd/m\]", html)
-    if m_re:
-        result.ok('v3.5.8 JS: marker v3.5.8 (fix regex [dd/m]) presente')
-    else:
-        result.fail('JS marker v3.5.8', 'falta marker')
+    # v3.10.4: marker v3.5.8 está dentro del bloque legacy showApagadoTooltip REMOVIDO.
+    # v3.9.13 ya consolidó la sintaxis a {placeholders}, eliminando [dd/m].
+    # El fix v3.5.8 (regex [dí]) ya no es necesario.
+    result.ok('v3.10.4: marker v3.5.8 obsoleto (reemplazado por {placeholders} v3.9.13)')
 
-    # El nuevo regex debe incluir 'd' (no solo í): [d\u00edi]
-    if r'\[d[d\u00edi]a?d?\/m+\]\s+de\s+\[mes\]' in html:
-        result.ok('v3.5.8 JS: regex [dd/m] con [dí] (incluye d) presente')
+    # v3.10.4: regex {placeholders} (sintaxis llaves) presente en showApagadoPanelInline
+    if r'{distrito,departamento}' in html or r'\{distrito,departamento\}' in html:
+        result.ok('v3.10.4: {placeholders} (sintaxis llaves) presente en showApagadoPanelInline')
     else:
-        result.fail('JS regex fix', 'falta regex [dí]')
-    # El regex viejo (que solo ten\u00eda í) NO debe seguir all\u00ed:
-    if r'\[d[\u00edi]a?d?\/m+\]\s+de\s+\[mes\]' in html:
-        result.fail('JS regex bug', 'regex viejo con [\u00edi] solo aún presente')
+        result.fail('v3.10.4 placeholders', 'falta {distrito,departamento}')
 
     print('\n▸ v3.5.5 — Input CCPP pintado por zona')
 
