@@ -1,0 +1,102 @@
+{
+  "version": "1.0.0",
+  "fecha_creacion": "2026-10-17",
+  "descripcion": "Distritos del UBIGEO RitchieRD que NO tienen CCPP_DATA en GeoNames. Documentado en auditoría end-to-end de v3.10.0.",
+  "total": 41,
+  "categorias": {
+    "urbano_sin_ccpp_rural": {
+      "descripcion": "Distritos 100% urbanos donde no aplica CCPP rural GeoNames.",
+      "count": 6,
+      "distritos": [
+        {"d6": "070102", "depto": "CALLAO", "prov": "CALLAO", "dist": "BELLAVISTA"},
+        {"d6": "070105", "depto": "CALLAO", "prov": "CALLAO", "dist": "LA PUNTA"},
+        {"d6": "070107", "depto": "CALLAO", "prov": "CALLAO", "dist": "MI PERU"},
+        {"d6": "150116", "depto": "LIMA", "prov": "LIMA", "dist": "LINCE"},
+        {"d6": "150128", "depto": "LIMA", "prov": "LIMA", "dist": "RIMAC"},
+        {"d6": "150144", "depto": "LIMA", "prov": "LIMA", "dist": "SANTA MARIA DE HUACHIPA"}
+      ]
+    },
+    "rural_nuevo_2020_plus": {
+      "descripcion": "Distritos rurales creados por ley después del dataset GeoNames base (Censo 2007). Requieren data de INEI 2017 u OSM.",
+      "count": 12,
+      "distritos": [
+        {"d6": "080915", "depto": "CUSCO", "prov": "LA CONVENCION", "dist": "KUMPIRUSHIATO"},
+        {"d6": "080916", "depto": "CUSCO", "prov": "LA CONVENCION", "dist": "CIELO PUNCO"},
+        {"d6": "080917", "depto": "CUSCO", "prov": "LA CONVENCION", "dist": "MANITEA"},
+        {"d6": "080918", "depto": "CUSCO", "prov": "LA CONVENCION", "dist": "UNION ASHÁNINKA"},
+        {"d6": "090723", "depto": "HUANCAVELICA", "prov": "TAYACAJA", "dist": "SANTIAGO DE TUCUMA"},
+        {"d6": "090724", "depto": "HUANCAVELICA", "prov": "TAYACAJA", "dist": "LAMBRAS", "ley": "Ley 31092 (2020)"},
+        {"d6": "090725", "depto": "HUANCAVELICA", "prov": "TAYACAJA", "dist": "COCHABAMBA", "ley": "2015"},
+        {"d6": "250306", "depto": "UCAYALI", "prov": "PADRE ABAD", "dist": "HUIPOCA", "ley": "2015"},
+        {"d6": "250307", "depto": "UCAYALI", "prov": "PADRE ABAD", "dist": "BOQUERON", "ley": "2015"},
+        {"d6": "160801", "depto": "LORETO", "prov": "PUTUMAYO", "dist": "PUTUMAYO", "ley": "Ley 30186 (2014)"},
+        {"d6": "221006", "depto": "SAN MARTIN", "prov": "TOCACHE", "dist": "SANTA LUCIA"},
+        {"d6": "100705", "depto": "HUANUCO", "prov": "MARAÑON", "dist": "SANTA ROSA DE ALTO YANAJANCA"}
+      ]
+    },
+    "rural_legacy_geo_gap": {
+      "descripcion": "Distritos rurales con CCPP no indexados en GeoNames. Probable fuente: INEI 2017 o OSM Overpass.",
+      "count": 19,
+      "distritos": [
+        {"d6": "010304", "depto": "AMAZONAS", "prov": "BONGARA", "dist": "COROSHA"},
+        {"d6": "010308", "depto": "AMAZONAS", "prov": "BONGARA", "dist": "RECTA"},
+        {"d6": "010510", "depto": "AMAZONAS", "prov": "LUYA", "dist": "LUYA VIEJO"},
+        {"d6": "030612", "depto": "APURIMAC", "prov": "CHINCHEROS", "dist": "AHUAYRO"},
+        {"d6": "050413", "depto": "AYACUCHO", "prov": "HUANTA", "dist": "PUTIS"},
+        {"d6": "050512", "depto": "AYACUCHO", "prov": "LA MAR", "dist": "UNION PROGRESO", "ccpp_disponibles_osm": 20},
+        {"d6": "050513", "depto": "AYACUCHO", "prov": "LA MAR", "dist": "RIO MAGDALENA"},
+        {"d6": "050514", "depto": "AYACUCHO", "prov": "LA MAR", "dist": "NINABAMBA"},
+        {"d6": "050515", "depto": "AYACUCHO", "prov": "LA MAR", "dist": "PATIBAMBA"},
+        {"d6": "060605", "depto": "CAJAMARCA", "prov": "CUTERVO", "dist": "LA RAMADA"},
+        {"d6": "090111", "depto": "HUANCAVELICA", "prov": "HUANCAVELICA", "dist": "MARISCAL CACERES"},
+        {"d6": "090509", "depto": "HUANCAVELICA", "prov": "CHURCAMPA", "dist": "SAN PEDRO DE CORIS"},
+        {"d6": "090511", "depto": "HUANCAVELICA", "prov": "CHURCAMPA", "dist": "COSME"},
+        {"d6": "100112", "depto": "HUANUCO", "prov": "HUANUCO", "dist": "YACUS"},
+        {"d6": "100609", "depto": "HUANUCO", "prov": "LEONCIO PRADO", "dist": "PUEBLO NUEVO"},
+        {"d6": "100610", "depto": "HUANUCO", "prov": "LEONCIO PRADO", "dist": "SANTO DOMINGO DE ANDA"},
+        {"d6": "100704", "depto": "HUANUCO", "prov": "MARAÑON", "dist": "LA MORADA"},
+        {"d6": "120609", "depto": "JUNIN", "prov": "SATIPO", "dist": "VIZCATAN DEL ENE"},
+        {"d6": "130305", "depto": "LA LIBERTAD", "prov": "BOLIVAR", "dist": "UCHUMARCA"},
+        {"d6": "190101", "depto": "PASCO", "prov": "PASCO", "dist": "CHAUPIMARCA"},
+        {"d6": "190102", "depto": "PASCO", "prov": "PASCO", "dist": "HUACHON"},
+        {"d6": "190308", "depto": "PASCO", "prov": "OXAPAMPA", "dist": "CONSTITUCION"},
+        {"d6": "220509", "depto": "SAN MARTIN", "prov": "LAMAS", "dist": "SHANAO"}
+      ]
+    }
+  },
+  "distrito_2025_pendiente_validar": {
+    "d6_tentativo": "160405",
+    "depto": "LORETO",
+    "prov": "MARISCAL RAMON CASTILLA",
+    "dist": "SANTA ROSA DE LORETO",
+    "ley": "Ley Nº 32403",
+    "fecha_creacion": "2025-07-03",
+    "fuente": "https://busquedas.elperuano.pe/dispositivo/NL/2415565-1",
+    "estado": "pendiente_confirmacion_inei_2026",
+    "nota": "El Peruano publicó la ley. INEI compendio UBIGEO 2026 aún no publicado al 2026-10-17."
+  },
+  "data_obtenida_pendiente_inclusion": {
+    "descripcion": "CCPPs encontrados en investigación 2026-10-17, pendientes de inyectar al inline data.",
+    "origen": "OpenStreetMap Overpass API",
+    "items": [
+      {
+        "d6": "050512",
+        "dist": "UNION PROGRESO",
+        "ccpp_count": 20,
+        "accion": "incluir en v3.10.1 con cite OSM"
+      },
+      {
+        "d6": "080918",
+        "dist": "UNION ASHÁNINKA",
+        "ccpp_count": 29,
+        "accion": "incluir en v3.10.1 con cite OSM"
+      }
+    ]
+  },
+  "resumen_recomendaciones": [
+    "Para 12 distritos rurales nuevos (creados post-2015): descargar INEI Marco Geoestadístico Nacional 2018+",
+    "Para 23 distritos rurales legacy: scrappear OpenStreetMap Overpass por admin_level=8 con tags village/hamlet",
+    "Para 6 distritos urbanos: NO aplicar fix (no aplica CCPP rurales)",
+    "Para 'Santa Rosa de Loreto' (160405): esperar INEI compendio 2026 o usar fuente directa del El Peruano"
+  ]
+}

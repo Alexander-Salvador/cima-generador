@@ -56,7 +56,21 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-16 — v3.9.15 CHECKPOINT final (inteligencia sistema alineada)** en rama `develop` (HEAD `63e50fc`). Sesión v3.9.4 → v3.9.15 completa con 12 versiones incrementales. 432/432 tests PASS. audit_masivo ALL. Working tree: clean. **POPUP LIVE en GitHub Pages: `v3.9.15`** ✅ (desplegado via subtree split desde `c71fd60`).
+Memoria persistente. Última actualización: **2026-10-17 — v3.10.0 AUDITORÍA END-TO-END BASES (separación COMU + disclaimer fuentes)**. Sesión v3.10.0 completa con: separación semántica COMU-5514 vs COMU-5672, disclaimer obligatorio para COMU-5672 (no oficial), anomalías departamentales documentadas, trazabilidad de fuentes, 41 distritos sin CCPP catalogados. 468/468 tests PASS (+36 nuevos). Working tree: staged for commit. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0 pendiente subtree split).
+
+✅ **Sesión v3.10.0 — Auditoría end-to-end de bases — STAGED:**
+
+| Tema | Acción | Archivo |
+|---|---|---|
+| Separación COMU-5514 ↔ COMU-5672 | severidad/fuente_oficial/requiere_disclaimer en checkZonaApagada | `index.html` |
+| Disclaimer fuentes no oficiales | Bloque condicional con texto MTC/OSIPTEL | `index.html` |
+| Anomalías departamentales | CALLAO/TUMBES/LORETO/UCAYALI documentados | `ZONAS_APAGADAS_INTEL.anomalias_departamentales` |
+| Trazabilidad fuentes | 4 bloques (ubigeo/ccpp/5514/5672) | `ZONAS_APAGADAS_INTEL.fuentes_datos` + `docs/FUENTES_ZONAS_APAGADAS.md` |
+| 41 distritos sin CCPP | categorizados (6 urbanos / 12 nuevos / 23 legacy) | `data/known_data_gaps.json` |
+| auditZonasApagadas | 4 checks nuevos (8-11) | `index.html` |
+| Tests | +36 nuevos (468/468 PASS) | `test_popup.py` |
+
+✅ **Sesión v3.9.4 → v3.9.15 (popup rediseñado coherente end-to-end — `63e50fc`):**
 
 ✅ **Sesión v3.9.4 → v3.9.15 (popup rediseñado coherente end-to-end — `63e50fc`):**
 
