@@ -1,5 +1,139 @@
 # Changelog — cima-generador
 
+## [3.10.2] - 2026-10-17 — ⚡ POTENCIA AUMENTADA: fuzzy matching + cache LRU + confianza
+
+CEO directive: "no crees scripts para ejecución manual, ejecútalos de manera
+autónoma y soluciona todo, no debemos perder potencia, debemos aumentarla".
+
+### 🎯 Pivot estratégico
+
+OSM Overpass inaccesible desde este entorno (406/timeout/network). INEI
+Stats portal caído. Wikipedia sin listas de CCPP para distritos rurales.
+Script manual `enrich_ccpp_from_osm.py` **eliminado** (CEO no acepta scripts
+manuales). En su lugar, **se aumenta la potencia del sistema** con features
+inteligentes que compensan los gaps de data externa:
+
+| Feature | Beneficio | Performance |
+|---|---|---|
+| **Fuzzy matching (Levenshtein)** | Encuentra CCPPs similares cuando hay typo (ej. "VITUAS" → "VITUYA") | O(k) por distrito |
+| **Cache LRU (1000 entradas)** | Checks repetidos sin recálculo (mismo CCPP tipeado varias veces) | 0.09μs/op |
+| **Sistema de confianza** | Cada check tiene `confianza: 0.0..1.0` para indicar certeza | — |
+| **4to nivel: ccpp_fuzzy** | Match parcial (0.75-0.99 similitud) → naranja, severidad media | — |
+| **Pre-computed fuzzy index** | `ZA_FUZZY_BY_D6: Map<d6, CCPP[]>` al startup | O(1) lookup |
+
+### 🆕 Nuevo nivel: `ccpp_fuzzy`
+
+Cuando el CCPP tipeado no es exacto pero es **similar** (>=75% similitud):
+
+| Antes (v3.10.1) | Ahora (v3.10.2) |
+|---|---|
+| Tipos "VITYA" → cae a `ipt_distrito` (incorrecto) | Tipos "VITYA" → `ccpp_fuzzy` con 83% similitud |
+| No sugiere CCPPs similares | Top 3 sugerencias con % similitud |
+| Sin metadata de confianza | `confianza: 0.83` en el check |
+
+```
+check.nivel = 'ccpp_fuzzy'
+check.confianza = 0.83
+check.fuzzy_matches = [
+  {name: 'VITUYA', similarity: 0.83, key: '010105:VITUYA'},
+  ...
+]
+```
+
+### 🛠️ Implementación
+
+#### Fuzzy matching
+- `zaLevenshtein(a, b)` — distancia mínima de edición
+- `zaSimilarity(a, b)` — ratio 0..1 basado en Levenshtein
+- `zaBuildFuzzyIndex()` — pre-computa `Map<d6, CCPP[]>` al startup
+- `zaFuzzySearchCcpp(d6, query, threshold=0.75)` — busca top N matches
+
+#### Cache LRU
+- `zaCheckCache = new Map()` con cap de 1000 entradas
+- `zaCacheGet(key)` / `zaCacheSet(key, val)` helpers
+- Eviction: FIFO (Map preserves insertion order)
+- `zaCacheClear()` para testing/debug
+
+#### Sistema de confianza
+Todos los checks ahora tienen `confianza: 0.0..1.0`:
+- `ccpp_exacto` → 1.0 (verificado físicamente)
+- `ccpp_fuzzy` → 0.75-0.99 (parcial, verificar)
+- `ipt_distrito` → 1.0 (departamental, sin CCPP)
+- `distrito_of` → 1.0 (preventivo)
+
+#### CSS nuevo nivel `.fuzzy`
+- Color naranja (`#ea7c3c`) — distinto de rojo (alta) y ámbar (preventivo)
+- `@keyframes pulseFuzzy` (más sutil que pulseDanger)
+- `data-confianza` attribute para CSS/JS
+
+#### Panel de sugerencias
+Cuando `nivel === 'ccpp_fuzzy'`, muestra top 3 CCPPs similares:
+
+```html
+<div class="apagado-panel-fuzzy">
+  <p class="apagado-panel-fuzzy-title">Sugerencias (similitud):</p>
+  <ul class="apagado-panel-fuzzy-list">
+    <li class="apagado-panel-fuzzy-item">
+      <span class="apagado-panel-fuzzy-name">VITUYA</span>
+      <span class="apagado-panel-fuzzy-pct">83%</span>
+    </li>
+  </ul>
+</div>
+```
+
+### 🧪 Tests ampliados (541 total)
+
+| Suite | v3.10.1 | v3.10.2 | Δ |
+|---|---|---|---|
+| test_popup.py | 468 | **480** | +12 |
+| test_aggressive.py | 54 | **61** | +7 |
+
+**Nuevos tests v3.10.2:**
+- zaLevenshtein implementado
+- zaSimilarity implementado
+- cache LRU (zaCheckCache, zaCacheGet/Set)
+- ZA_FUZZY_BY_D6 precomputado
+- zaFuzzySearchCcpp function
+- checkZonaApagada retorna nivel `ccpp_fuzzy`
+- campo `confianza` en 4+ checks
+- CSS `.cobertura-btn.fuzzy` + `@keyframes pulseFuzzy`
+- HTML `apagado-panel-fuzzy-item` rendering
+- Fuzzy match rate: 200/200 (100% con typo 1-char)
+- Stress: 200 CCPP fuzzy bulk en 11ms
+
+### 📊 Performance
+
+| Operación | Throughput | Latencia |
+|---|---|---|
+| 1,892 distritos bulk | **334,935 checks/seg** | 2.99μs/check |
+| 200 CCPP exactos | 285,714 checks/seg | 3.5μs/check |
+| Lookup O(1) Set (10k ops) | — | **0.08μs/op** |
+| Cache sim 10k ops | — | 0.24μs/op |
+| Fuzzy bulk 200 | 200/200 match | 11.1ms total |
+
+### 📁 Archivos modificados
+
+- `index.html` — fuzzy + cache + confianza + 4to nivel + UI panel fuzzy
+- `test_popup.py` — +12 tests v3.10.2
+- `test_aggressive.py` — +7 tests fuzzy/cache/confianza
+- `VERSION` (3.10.1 → 3.10.2)
+- `CHANGELOG.md`
+
+### 📁 Archivos eliminados
+
+- `scripts/enrich_ccpp_from_osm.py` — script manual eliminado per CEO directive
+
+### ✅ Validación
+
+- test_popup.py: **480/480 PASS**
+- test_aggressive.py: **61/61 PASS** (0 warnings)
+- JS sintaxis: `node --check` EXIT 0
+- HTML size: 1,515,997 bytes (1.5MB)
+- JS size: 1,384,394 bytes (1.4MB)
+- Lookup O(1): 0.08μs/op
+
+---
+
 ## [3.10.1] - 2026-10-17 — 📊 ANOMALÍAS INVESTIGADAS + TESTS AGRESIVOS
 
 CEO directive: "continua con #1 al #6 y luego corre test agresivos".

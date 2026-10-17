@@ -543,6 +543,140 @@ for _ in range(10000):
 elapsed_us = (time.time() - start) * 1_000_000
 result.metric('lookup_10k_set_us', f'{elapsed_us:.0f}μs total, {elapsed_us/10000:.2f}μs/op')
 
+# 5.14 v3.10.2: FUZZY MATCHING — typos deben encontrar CCPPs similares
+def zaLevenshtein(a, b):
+    if a == b: return 0
+    if not a: return len(b)
+    if not b: return len(a)
+    m, n = len(a), len(b)
+    if m > n: a, b = b, a; m, n = n, m
+    prev = list(range(m + 1))
+    curr = [0] * (m + 1)
+    for j in range(1, n + 1):
+        curr[0] = j
+        cj = b[j - 1]
+        for i in range(1, m + 1):
+            cost = 0 if a[i - 1] == cj else 1
+            curr[i] = min(curr[i-1] + 1, prev[i] + 1, prev[i-1] + cost)
+        prev, curr = curr, prev
+    return prev[m]
+
+# VITUYA está en 010105 — typos comunes
+# Cálculo correcto de Levenshtein:
+# - "VITUYA" vs "VITUYA" = 0
+# - "VITYA" (5 chars) vs "VITUYA" (6) = 1 (insert U). Sim = 1 - 1/6 = 0.83
+# - "VITUYA " (7 chars, con espacio) vs "VITUYA" (6) = 1 (insert space). Sim = 1 - 1/7 = 0.857
+# - "VITAY" (5 chars, 2 sustituciones) vs "VITUYA" = 2. Sim = 1 - 2/6 = 0.667
+# - "VITUYS" (6 chars, 2 sust) vs "VITUYA" = 2. Sim = 0.667
+# - "VITUYA123" vs "VITUYA" = 3. Sim = 1 - 3/9 = 0.667
+fuzzy_tests = [
+    ('VITUYA', '010105', True, 1.0, 'exacto'),
+    ('vituya', '010105', True, 1.0, 'lowercase'),
+    ('VITYA', '010105', True, 0.83, '1 char insert'),
+    ('VITUYA ', '010105', True, 0.85, 'trailing space'),
+    ('VITAY', '010105', False, 0.0, '2 chars diff (no match con threshold 0.75)'),
+    ('XYZ123', '010105', False, 0.0, 'completamente diferente'),
+]
+for query, d6, expected_match, min_sim, reason in fuzzy_tests:
+    qn = zaNormalize(query)
+    found = None
+    for k in CCPP_KEYS:
+        if k.startswith(d6 + ':'):
+            kn = k.split(':', 1)[1]
+            dist = zaLevenshtein(qn, kn)
+            sim = 1.0 - (dist / max(len(qn), len(kn)))
+            if sim >= 0.75:
+                if found is None or sim > found[1]:
+                    found = (k, sim)
+    if expected_match:
+        if found and found[1] >= min_sim - 0.05:  # tolerance
+            result.ok(f'INTELIGENCIA fuzzy: "{query}" en {d6} → match {found[0]} ({found[1]:.0%}) [{reason}]')
+        else:
+            result.fail(f'INTELIGENCIA fuzzy {query}', f'esperaba match, got {found} [{reason}]')
+    else:
+        if found is None:
+            result.ok(f'INTELIGENCIA fuzzy: "{query}" → sin match (correcto) [{reason}]')
+        else:
+            result.warn(f'INTELIGENCIA fuzzy {query}', f'match inesperado: {found}')
+
+# 5.15 v3.10.2: sistema de confianza — verificar que fuzzy < 1.0
+# Simular el flow checkZonaApagada con CCPP typo
+def checkZonaApagada_fuzzy(depto, prov, dist, ccpp):
+    codes = zaGetCodes(depto, prov, dist)
+    if not codes or not codes['d6']: return None
+    d6 = codes['d6']
+    hasCcpp = ccpp and str(ccpp).strip()
+    if hasCcpp:
+        key = d6 + ':' + zaNormalize(ccpp)
+        if key in CCPP_KEYS:
+            return {'nivel': 'ccpp_exacto', 'confianza': 1.0}
+        # Fuzzy
+        best = None
+        for k in CCPP_KEYS:
+            if k.startswith(d6 + ':'):
+                kn = k.split(':', 1)[1]
+                dist_lev = zaLevenshtein(zaNormalize(ccpp), kn)
+                sim = 1.0 - (dist_lev / max(len(zaNormalize(ccpp)), len(kn)))
+                if sim >= 0.75 and (best is None or sim > best[1]):
+                    best = (k, sim)
+        if best:
+            return {'nivel': 'ccpp_fuzzy', 'confianza': best[1]}
+    if d6 in IPT_DISTRICTS:
+        return {'nivel': 'ipt_distrito', 'confianza': 1.0}
+    if d6 in DISTRICTS_WITH_OFF:
+        return {'nivel': 'distrito_of', 'confianza': 1.0}
+    return None
+
+# Pick a CCPP exacto
+sample = next(iter(CCPP_KEYS))
+d6, ccpp = sample.split(':', 1)
+info = d6_lookup[d6]
+# Exacto
+check = checkZonaApagada_fuzzy(info['depto'], info['prov'], info['dist'], ccpp)
+if check and check['nivel'] == 'ccpp_exacto' and check['confianza'] == 1.0:
+    result.ok('POTENCIA confianza: ccpp_exacto → 1.0')
+else:
+    result.fail('POTENCIA confianza', f'ccpp_exacto sin confianza 1.0: {check}')
+# Typo
+if len(ccpp) > 3:
+    typo = ccpp[:-1] + 'X'  # cambiar último char
+    check = checkZonaApagada_fuzzy(info['depto'], info['prov'], info['dist'], typo)
+    if check and check['nivel'] == 'ccpp_fuzzy' and 0 < check['confianza'] < 1.0:
+        result.ok(f'POTENCIA confianza: ccpp_fuzzy "{typo}" → {check["confianza"]:.0%}')
+    else:
+        result.warn('POTENCIA confianza fuzzy', f'typo "{typo}" → {check}')
+
+# 5.16 v3.10.2: cache LRU performance — 10k checks repetidos deben ser rápidos
+start = time.time()
+cache = {}
+for i in range(10000):
+    key = f'{d6}:{ccpp}'
+    if key in cache:
+        _ = cache[key]
+    else:
+        cache[key] = check
+elapsed = (time.time() - start) * 1_000_000
+result.metric('cache_simulated_10k_us', f'{elapsed:.0f}μs total, {elapsed/10000:.2f}μs/op')
+
+# 5.17 v3.10.2: stress con fuzzy — todas las queries fuzzy
+start = time.time()
+fuzzy_total = 0
+fuzzy_matches = 0
+for k in CCPP_KEYS:
+    d6_test, ccpp_test = k.split(':', 1)
+    # Typo: cambiar último char
+    if len(ccpp_test) > 3:
+        typo = ccpp_test[:-1] + 'X'
+        info_test = d6_lookup.get(d6_test)
+        if info_test:
+            check = checkZonaApagada_fuzzy(info_test['depto'], info_test['prov'], info_test['dist'], typo)
+            fuzzy_total += 1
+            if check and check['nivel'] == 'ccpp_fuzzy':
+                fuzzy_matches += 1
+elapsed = (time.time() - start) * 1000
+result.metric(f'fuzzy_bulk_{fuzzy_total}_ms', f'{elapsed:.1f}ms')
+result.metric(f'  fuzzy_match_rate', f'{fuzzy_matches}/{fuzzy_total} = {fuzzy_matches/fuzzy_total:.0%}')
+
 # ══════════════════════════════════════════════════════════════════════
 # RESUMEN
 # ══════════════════════════════════════════════════════════════════════

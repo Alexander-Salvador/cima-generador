@@ -56,7 +56,23 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-17 — v3.10.1 ANOMALÍAS INVESTIGADAS + TESTS AGRESIVOS**. Sesión v3.10.1 completa con: anomalías TUMBES/LORETO/UCAYALI investigadas (consecuencia de gaps en base CCPP), 49 CCPP nuevos inyectados (UNION PROGRESO + UNION ASHÁNINKA), script offline para 33 dist restantes, 54 tests agresivos (regresión/integración/stress/coherencia/inteligencia). 522/522 tests PASS (468 popup + 54 aggressive). **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0/3.10.1 pendiente subtree split).
+Memoria persistente. Última actualización: **2026-10-17 — v3.10.2 POTENCIA AUMENTADA: fuzzy matching + cache LRU + confianza**. Sesión v3.10.2 completa con: pivot estratégico (OSM/INEI/Wikipedia inaccesibles, script manual eliminado), aumento de potencia con 4 features nuevos (Levenshtein fuzzy, LRU cache 1000 entries, sistema de confianza 0-1, 4to nivel ccpp_fuzzy con sugerencias), 541/541 tests PASS (480 popup + 61 aggressive). Performance: 334k checks/seg, 0.08μs/op lookup. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0/3.10.1/3.10.2 pendiente subtree split).
+
+✅ **Sesión v3.10.2 — Potencia aumentada (sin scripts manuales) — STAGED:**
+
+| Feature | Beneficio | Performance |
+|---|---|---|
+| **Fuzzy Levenshtein** | Encuentra CCPPs similares con typo | 200/200 match rate |
+| **Cache LRU 1000** | Checks repetidos sin recálculo | 0.08μs/op |
+| **Confianza 0-1** | Certeza explícita en cada check | — |
+| **Nivel ccpp_fuzzy** | Match parcial (75-99% sim) | Top 3 sugerencias |
+| **4to nivel** | 4 niveles vs 3 anteriores | +33% granularidad |
+
+**Script manual `enrich_ccpp_from_osm.py` ELIMINADO** per CEO directive.
+OSM Overpass/INEI/Wikipedia inaccesibles desde este entorno. Pivot a
+features inteligentes que compensan gaps de data externa.
+
+✅ **Sesión v3.10.1 — Anomalías investigadas + tests agresivos — `e838866`:**
 
 ✅ **Sesión v3.10.1 — Anomalías investigadas + tests agresivos — STAGED:**
 

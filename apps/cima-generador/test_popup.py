@@ -1599,7 +1599,8 @@ def test(html_path):
         has_alternate = ("BUG 1 fix: alternar --idle" in render_fn
                         or "BUG 1 fix: alternar" in render_fn
                         or 'classList.remove(\'off\', \'warn\', \'cobertura-btn--idle\')' in render_fn
-                        or "classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle')" in render_fn)
+                        or "classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle')" in render_fn
+                        or "classList.remove('off', 'warn', 'ipt', 'fuzzy', 'cobertura-btn--idle')" in render_fn)
         if has_alternate:
             if "BUG 1 fix" in render_fn:
                 result.ok('BUG 1 renderCoberturaButton: BUG 1 fix marker presente')
@@ -2740,6 +2741,85 @@ def test(html_path):
             result.ok('v3.10.0 AUDIT: check 11 integridad CCPP (>= 40k)')
         else:
             result.fail('v3.10.0 AUDIT 11', 'auditZonasApagadas sin check 11')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.2 — POTENCIA AUMENTADA: fuzzy matching + cache LRU
+    # CEO directive 2026-10-17: "no debemos perder potencia, debemos aumentarla".
+    # Nuevos features: Levenshtein fuzzy, cache LRU, sistema de confianza.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.2 — POTENCIA: fuzzy matching + cache LRU + confianza')
+
+    # JS: zaLevenshtein function definida
+    if re.search(r'function\s+zaLevenshtein\s*\(', html):
+        result.ok('v3.10.2 JS: zaLevenshtein (fuzzy distance) implementado')
+    else:
+        result.fail('v3.10.2 JS levenshtein', 'zaLevenshtein no definido')
+
+    # JS: zaSimilarity function definida
+    if re.search(r'function\s+zaSimilarity\s*\(', html):
+        result.ok('v3.10.2 JS: zaSimilarity (ratio similitud) implementado')
+    else:
+        result.fail('v3.10.2 JS similarity', 'zaSimilarity no definido')
+
+    # JS: cache LRU implementado
+    if re.search(r'zaCheckCache\s*=\s*new\s+Map\s*\(\s*\)', html):
+        result.ok('v3.10.2 JS: cache LRU (zaCheckCache = Map)')
+    else:
+        result.fail('v3.10.2 JS cache', 'cache LRU no implementado')
+
+    if re.search(r'zaCacheGet|zaCacheSet', html):
+        result.ok('v3.10.2 JS: zaCacheGet/Set helpers')
+    else:
+        result.fail('v3.10.2 JS cache helpers', 'zaCacheGet/Set no definidos')
+
+    # JS: ZA_FUZZY_BY_D6 precomputado
+    if re.search(r'function\s+zaBuildFuzzyIndex\s*\(', html) and re.search(r'ZA_FUZZY_BY_D6', html):
+        result.ok('v3.10.2 JS: zaBuildFuzzyIndex (índice fuzzy precomputado)')
+    else:
+        result.fail('v3.10.2 JS fuzzy index', 'ZA_FUZZY_BY_D6 no implementado')
+
+    # JS: zaFuzzySearchCcpp function
+    if re.search(r'function\s+zaFuzzySearchCcpp\s*\(', html):
+        result.ok('v3.10.2 JS: zaFuzzySearchCcpp (búsqueda fuzzy)')
+    else:
+        result.fail('v3.10.2 JS fuzzy search', 'zaFuzzySearchCcpp no definido')
+
+    # JS: checkZonaApagada integrado con fuzzy
+    if re.search(r"nivel:\s*'ccpp_fuzzy'", html):
+        result.ok('v3.10.2 JS: checkZonaApagada retorna nivel ccpp_fuzzy')
+    else:
+        result.fail('v3.10.2 JS nivel fuzzy', 'nivel ccpp_fuzzy no implementado')
+
+    # JS: confianza field en checks
+    confianza_count = len(re.findall(r'confianza:\s*[\d.]+|confianza:\s*(?:currentCheck\.confianza|fuzzy\[)', html))
+    if confianza_count >= 4:
+        result.ok(f'v3.10.2 JS: campo confianza en checks ({confianza_count} ocurrencias)')
+    else:
+        result.fail('v3.10.2 JS confianza', f'solo {confianza_count} ocurrencias de confianza')
+
+    # CSS: .cobertura-btn.fuzzy
+    if re.search(r'\.cobertura-btn\.fuzzy\s*\{', html):
+        result.ok('v3.10.2 CSS: .cobertura-btn.fuzzy estilo')
+    else:
+        result.fail('v3.10.2 CSS fuzzy', '.cobertura-btn.fuzzy CSS missing')
+
+    # CSS: panel de fuzzy
+    if re.search(r'\.apagado-panel-fuzzy\s*\{', html):
+        result.ok('v3.10.2 CSS: .apagado-panel-fuzzy (sugerencias)')
+    else:
+        result.fail('v3.10.2 CSS panel fuzzy', '.apagado-panel-fuzzy missing')
+
+    # CSS: pulseFuzzy animation
+    if re.search(r'@keyframes\s+pulseFuzzy', html):
+        result.ok('v3.10.2 CSS: pulseFuzzy animation')
+    else:
+        result.fail('v3.10.2 CSS pulseFuzzy', '@keyframes pulseFuzzy missing')
+
+    # HTML: panel con fuzzy_matches rendering
+    if re.search(r'apagado-panel-fuzzy-item', html):
+        result.ok('v3.10.2 HTML: apagado-panel-fuzzy-item rendering')
+    else:
+        result.fail('v3.10.2 HTML fuzzy item', 'rendering de fuzzy_matches missing')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.0 — BASE UBIGEO COMPLETA
