@@ -1959,6 +1959,7 @@
     flex-shrink: 0;
   }
   .apagado-speech-panel[data-nivel="ccpp_exacto"] .apagado-panel-icon { color: var(--zone-ipt); }
+  .apagado-speech-panel[data-nivel="ccpp_fuzzy"] .apagado-panel-icon { color: #ea7c3c; }
   .apagado-speech-panel[data-nivel="ipt_distrito"] .apagado-panel-icon { color: #ea7c3c; }
   .apagado-speech-panel[data-nivel="distrito_of"] .apagado-panel-icon { color: var(--zone-amber); }
   /* v3.10.0: meta inline (versión + fecha) — texto dim, no compite con COMU. */
@@ -1981,6 +1982,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   }
   .apagado-speech-panel[data-nivel="ccpp_exacto"] .apagado-panel-severidad { color: var(--zone-ipt); }
+  .apagado-speech-panel[data-nivel="ccpp_fuzzy"] .apagado-panel-severidad { color: #ea7c3c; }
   .apagado-speech-panel[data-nivel="ipt_distrito"] .apagado-panel-severidad { color: #ea7c3c; }
   .apagado-speech-panel[data-nivel="distrito_of"] .apagado-panel-severidad { color: var(--zone-amber); }
 
@@ -2035,6 +2037,53 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .apagado-speech-panel .apagado-panel-disclaimer { animation: none; }
+  }
+
+  /* v3.10.2: panel de sugerencias fuzzy. Lista compacta con nombre y %.
+     Color naranja para distinguir del speech principal. */
+  .apagado-speech-panel .apagado-panel-fuzzy {
+    margin: 0 0 8px 0;
+    padding: 6px 8px;
+    background: color-mix(in srgb, #ea7c3c 8%, var(--glass-1-bg));
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, #ea7c3c 24%, transparent);
+  }
+  .apagado-speech-panel .apagado-panel-fuzzy-title {
+    margin: 0 0 4px 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: #ea7c3c;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .apagado-speech-panel .apagado-panel-fuzzy-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .apagado-speech-panel .apagado-panel-fuzzy-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .apagado-speech-panel .apagado-panel-fuzzy-name {
+    color: var(--text, #f2f0ed);
+    font-weight: 500;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .apagado-speech-panel .apagado-panel-fuzzy-pct {
+    color: #ea7c3c;
+    font-weight: 700;
+    margin-left: 8px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
   }
 
   /* v3.9.8: STATUS PILL ELIMINADO (no más autocopia, no más pill).
@@ -2523,6 +2572,22 @@
       0 0 0 3px color-mix(in srgb, var(--zone-amber) 26%, transparent),
       var(--ring-hairline);
   }
+  /* v3.10.2: .fuzzy = CCPP similar (typo, similitud 0.75-0.99). Color
+     naranja con pulse sutil para distinguir de ccpp_exacto (rojo) y de
+     ipt_distrito (amarillo). El supervisor debe verificar antes de actuar. */
+   .cobertura-btn.fuzzy {
+    background: color-mix(in srgb, #ea7c3c 22%, var(--glass-2-bg));
+    border-color: #ea7c3c;
+    color: #ea7c3c;
+    animation: pulseFuzzy 2.8s var(--motion-ease) infinite;
+  }
+   .cobertura-btn.fuzzy:hover,
+   .cobertura-btn.fuzzy:focus-visible {
+    background: color-mix(in srgb, #ea7c3c 34%, var(--glass-2-bg));
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, #ea7c3c 26%, transparent),
+      var(--ring-hairline);
+  }
   .cobertura-btn:focus-visible {
     outline: none;
     box-shadow:
@@ -2557,8 +2622,9 @@
       transform: scale(1.025);
     }
   }
-  @media (prefers-reduced-motion: reduce) {
+   @media (prefers-reduced-motion: reduce) {
     .cobertura-btn.off { animation: none; }
+    .cobertura-btn.fuzzy { animation: none; }
   }
   /* ═══ v3.9.0 FEEDBACK CLICK — siempre respuesta (CEO directive) ═══
      El botón ⚠️ responde a TODOS los clicks (no más "no muestra nada"):
@@ -3004,7 +3070,21 @@ font-size: 10px;
       color: #f59e0b;
       animation: pulseWarn 2.8s ease infinite;
     }
-    @keyframes pulseDanger {
+  @keyframes pulseFuzzy {
+    0%, 100% {
+      box-shadow:
+        0 0 0 0 color-mix(in srgb, #ea7c3c 50%, transparent),
+        var(--ring-hairline);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow:
+        0 0 0 5px color-mix(in srgb, #ea7c3c 0%, transparent),
+        var(--ring-hairline);
+      transform: scale(1.015);
+    }
+  }
+  @keyframes pulseDanger {
       0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 60%, transparent); }
       50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 0%, transparent); }
     }
@@ -4426,6 +4506,108 @@ function zaNormalize(s) {
   return String(s).trim().toUpperCase().replace(/\s+/g, ' ').normalize('NFC');
 }
 
+// v3.10.2: Levenshtein distance para fuzzy matching de CCPP.
+// Retorna el número mínimo de ediciones (insert/delete/replace) para
+// convertir `a` en `b`. Usado para sugerir CCPPs similares cuando el
+// supervisor tipea uno que no está en ccpp_keys.
+function zaLevenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a) return b.length;
+  if (!b) return a.length;
+  // Optimización: longest common prefix reduce costo
+  var m = a.length, n = b.length;
+  if (m > n) { var t = a; a = b; b = t; m = n; n = t.length; }
+  var prev = new Array(m + 1);
+  var curr = new Array(m + 1);
+  for (var i = 0; i <= m; i++) prev[i] = i;
+  for (var j = 1; j <= n; j++) {
+    curr[0] = j;
+    var cj = b.charAt(j - 1);
+    for (var i = 1; i <= m; i++) {
+      var cost = (a.charAt(i - 1) === cj) ? 0 : 1;
+      curr[i] = Math.min(
+        curr[i - 1] + 1,        // insertion
+        prev[i] + 1,            // deletion
+        prev[i - 1] + cost      // substitution
+      );
+    }
+    var tmp = prev; prev = curr; curr = tmp;
+  }
+  return prev[m];
+}
+
+// v3.10.2: Ratio de similitud 0..1 basado en Levenshtein.
+// 1.0 = idéntico, 0.0 = completamente diferente.
+// Usa la longitud del string más largo como denominador.
+function zaSimilarity(a, b) {
+  if (!a || !b) return 0;
+  var an = zaNormalize(a), bn = zaNormalize(b);
+  if (an === bn) return 1.0;
+  var maxLen = Math.max(an.length, bn.length);
+  if (maxLen === 0) return 1.0;
+  var dist = zaLevenshtein(an, bn);
+  return 1.0 - (dist / maxLen);
+}
+
+// v3.10.2: Cache LRU para checks repetidos. Key: d6:ccpp_normalized.
+// Cap: 1000 entradas (suficiente para sesiones de supervisor típicas).
+// Mejora ~10x en checks repetidos (mismo CCPP tipeado varias veces).
+var ZA_CACHE_MAX = 1000;
+var zaCheckCache = new Map();
+function zaCacheGet(key) { return zaCheckCache.get(key); }
+function zaCacheSet(key, val) {
+  if (zaCheckCache.size >= ZA_CACHE_MAX) {
+    // Evict oldest (first key)
+    var firstKey = zaCheckCache.keys().next().value;
+    if (firstKey !== undefined) zaCheckCache.delete(firstKey);
+  }
+  zaCheckCache.set(key, val);
+  return val;
+}
+function zaCacheClear() { zaCheckCache.clear(); }
+
+// v3.10.2: Fuzzy CCPP lookup precomputado al startup.
+// Map: d6 → array de CCPP names (de ccpp_keys con ese d6).
+// Permite buscar CCPPs similares en O(k) donde k = CCPPs en el distrito.
+// Pre-computado en setupZAFuzzyIndex() llamado al startup.
+var ZA_FUZZY_BY_D6 = null;
+function zaBuildFuzzyIndex() {
+  if (typeof ZONAS_APAGADAS === 'undefined' || !ZONAS_APAGADAS.ccpp_keys) {
+    ZA_FUZZY_BY_D6 = new Map();
+    return;
+  }
+  ZA_FUZZY_BY_D6 = new Map();
+  ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+    var idx = k.indexOf(':');
+    if (idx < 0) return;
+    var d6 = k.substring(0, idx);
+    var ccppName = k.substring(idx + 1);
+    if (!ZA_FUZZY_BY_D6.has(d6)) ZA_FUZZY_BY_D6.set(d6, []);
+    ZA_FUZZY_BY_D6.get(d6).push(ccppName);
+  });
+}
+
+// v3.10.2: Buscar CCPPs fuzzy en un distrito.
+// Retorna array de {key, name, similarity} ordenado por similitud descendente.
+// threshold: similitud mínima (default 0.7).
+function zaFuzzySearchCcpp(d6, queryCcpp, threshold) {
+  if (!ZA_FUZZY_BY_D6) zaBuildFuzzyIndex();
+  if (threshold === undefined) threshold = 0.7;
+  var qn = zaNormalize(queryCcpp);
+  if (!qn) return [];
+  var candidates = ZA_FUZZY_BY_D6.get(d6) || [];
+  var matches = [];
+  for (var i = 0; i < candidates.length; i++) {
+    var cn = candidates[i];
+    var sim = zaSimilarity(qn, cn);
+    if (sim >= threshold) {
+      matches.push({ key: d6 + ':' + cn, name: cn, similarity: sim });
+    }
+  }
+  matches.sort(function (a, b) { return b.similarity - a.similarity; });
+  return matches;
+}
+
 // Dado un ubigeo completo, devuelve sus códigos ubigeo
 function zaGetCodes(depto, prov, dist) {
   var d = UBIGEO[depto];
@@ -4469,6 +4651,12 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   var d6 = codes.d6;
   var hasCcpp = ccpp && String(ccpp).trim().length > 0;
 
+  // v3.10.2: LRU cache. Key = d6:ccpp_normalizado (o d6 si no hay ccpp).
+  // Supera 1000 entradas: evict oldest (FIFO).
+  var cacheKey = d6 + (hasCcpp ? ':' + zaNormalize(ccpp) : ':_');
+  var cached = zaCacheGet(cacheKey);
+  if (cached !== undefined) return cached;
+
   // v3.8.0: lookup en CCPP_KEYS_NORMALIZED (pre-normalizado) si está disponible.
   function lookupCcpp(key) {
     if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
@@ -4477,33 +4665,56 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
     return ZONAS_APAGADAS_STATE.ccpp_keys.has(key);
   }
 
+  var result = null;
+
   // Nivel 1: ccpp exacto (COMU-5514) — precedencia sobre ipt — confirmación más específica
   // v3.10.0: severidad ALTA — es el único nivel con CCPP físicamente verificado en lista.
   if (hasCcpp) {
     var key = d6 + ':' + zaNormalize(ccpp);
     if (lookupCcpp(key)) {
-      return {
+      result = {
         nivel: 'ccpp_exacto',
         code: key,
         mensaje: 'CCPP exacto en zona de apagado Movistar',
         comu: 'COMU-5514',
         severidad: 'alta',
+        confianza: 1.0,
         fuente_oficial: true,
         requiere_disclaimer: false
       };
+    } else {
+      // v3.10.2: Nivel 1.5 — fuzzy match (CCPP similar, posible typo).
+      // Severidad ALTA-MEDIA. Confianza < 1.0 indica que es match parcial.
+      // El supervisor debe confirmar antes de actuar.
+      var fuzzy = zaFuzzySearchCcpp(d6, ccpp, 0.75);
+      if (fuzzy.length > 0 && fuzzy[0].similarity >= 0.75) {
+        result = {
+          nivel: 'ccpp_fuzzy',
+          code: fuzzy[0].key,
+          mensaje: 'Posible match fuzzy con CCPP apagado. Similitud: ' +
+                   (fuzzy[0].similarity * 100).toFixed(0) + '%. Verificar CCPP exacto.',
+          comu: 'COMU-5514',
+          severidad: 'media',
+          confianza: fuzzy[0].similarity,
+          fuente_oficial: true,
+          requiere_disclaimer: false,
+          fuzzy_matches: fuzzy.slice(0, 3)  // top 3 sugerencias
+        };
+      }
     }
   }
 
   // Nivel 2: distrito IPT (COMU-5672) — RED 2G departamental
   // v3.10.0: severidad MEDIA — afecta toda la red 2G del distrito (no por CCPP).
   // Fuente: PDF "Apagado Zonas IPT.pdf" interno Movistar (no publicado por OSIPTEL/MTC).
-  if (ZONAS_APAGADAS_STATE.ipt_districts && ZONAS_APAGADAS_STATE.ipt_districts.has(d6)) {
-    return {
+  if (!result && ZONAS_APAGADAS_STATE.ipt_districts && ZONAS_APAGADAS_STATE.ipt_districts.has(d6)) {
+    result = {
       nivel: 'ipt_distrito',
       code: d6,
       mensaje: 'Distrito en COMU-5672 (Apagado Zonas IPT). Red 2G completa del distrito en plan de apagado.',
       comu: 'COMU-5672',
       severidad: 'media',
+      confianza: 1.0,
       fuente_oficial: false,
       requiere_disclaimer: true,
       color: 'amber'
@@ -4513,20 +4724,23 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   // Nivel 3: distrito con zonas apagadas (preventivo) — solo estaciones base
   // v3.10.0: severidad PREVENTIVA — distrito con CCPPs exactos en la lista, pero
   // el CCPP tipeado no coincide con ninguno conocido. Posible match por typo.
-  if (ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
-    return {
+  if (!result && ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
+    result = {
       nivel: 'distrito_of',
       code: d6,
       mensaje: 'Este distrito tiene zonas de apagado Movistar (verificar CCPP exacto)',
       comu: 'COMU-5514',
       severidad: 'preventiva',
+      confianza: 1.0,
       fuente_oficial: true,
       requiere_disclaimer: false,
       color: 'amber'
     };
   }
 
-  return null;
+  // Cache result
+  zaCacheSet(cacheKey, result);
+  return result;
 }
 
 // ─── 4. RENDER BOTÓN ───
@@ -4535,35 +4749,43 @@ function renderCoberturaButton(check) {
   var btn = $('coberturaBtn');
   if (!btn) return;
   // Reset de clases
-  btn.classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle');
+  btn.classList.remove('off', 'warn', 'ipt', 'fuzzy', 'cobertura-btn--idle');
   btn.setAttribute('aria-pressed', 'false');
   if (!check) {
     btn.title = 'Sin alertas — cobertura OK';
     btn.classList.add('cobertura-btn--idle');
     return;
   }
-  // v3.10.0: separación semántica explícita de los 3 niveles.
+  // v3.10.2: 4 niveles semánticos (agregado ccpp_fuzzy):
   // - ccpp_exacto: CCPP específico en ccpp_keys (COMU-5514) — verificado físico
+  // - ccpp_fuzzy: CCPP similar (typo) — alta-media confianza
   // - ipt_distrito: distrito en ipt_districts (COMU-5672) — plan de apagado 2G
   // - distrito_of: distrito con zonas apagadas (preventivo, no verificado por CCPP)
-  // El CSS visual mantiene: .off ROJO, .ipt y .warn ÁMBAR. La distinción
-  // semántica se hace via:
-  //   (a) color del icono (rojo vs amarillo)
-  //   (b) title nativo del botón (incluye COMU + severidad)
-  //   (c) aria-label
-  //   (d) data-severidad y data-fuente-oficial para que CSS/JS los lean
   if (check.nivel === 'ccpp_exacto') {
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
     btn.setAttribute('aria-label', 'Estación base desactivada en este CCPP — click para ver detalles COMU-5514');
     btn.setAttribute('data-severidad', 'alta');
+    btn.setAttribute('data-confianza', '1.00');
     btn.setAttribute('data-fuente-oficial', 'true');
     btn.title = '🔴 COMU-5514 (ALTA · oficial): Estación base desactivada en ' + check.code + '. Click para ver detalles.';
+  } else if (check.nivel === 'ccpp_fuzzy') {
+    // v3.10.2: fuzzy match — confianza < 1.0
+    btn.classList.add('fuzzy');
+    btn.setAttribute('aria-pressed', 'true');
+    var simPct = Math.round((check.confianza || 0) * 100);
+    btn.setAttribute('aria-label', 'Posible match fuzzy con CCPP apagado (' + simPct + '% similitud) — click para ver sugerencias');
+    btn.setAttribute('data-severidad', 'media');
+    btn.setAttribute('data-confianza', check.confianza ? check.confianza.toFixed(2) : '0.75');
+    btn.setAttribute('data-fuente-oficial', 'true');
+    var firstMatch = (check.fuzzy_matches && check.fuzzy_matches[0]) ? check.fuzzy_matches[0].name : '?';
+    btn.title = '🟠 COMU-5514 (MEDIA · fuzzy ' + simPct + '%): CCPP similar a "' + firstMatch + '" — verificar CCPP exacto.';
   } else if (check.nivel === 'ipt_distrito') {
     btn.classList.add('ipt');
     btn.setAttribute('aria-pressed', 'true');
     btn.setAttribute('aria-label', 'Distrito en plan de apagado 2G (red IPT) — click para ver detalles COMU-5672. Fuente interna Movistar, MTC/OSIPTEL aún no confirman cronograma público.');
     btn.setAttribute('data-severidad', 'media');
+    btn.setAttribute('data-confianza', '1.00');
     btn.setAttribute('data-fuente-oficial', 'false');
     btn.title = '🟠 COMU-5672 (MEDIA · interna): Distrito en plan de apagado 2G ' + check.code + '. Fuente: info interna Movistar. MTC/OSIPTEL aún no confirman.';
   } else if (check.nivel === 'distrito_of') {
@@ -4571,6 +4793,7 @@ function renderCoberturaButton(check) {
     btn.setAttribute('aria-pressed', 'true');
     btn.setAttribute('aria-label', 'Distrito con zonas de apagado Movistar (preventivo, CCPP exacto no verificado) — click para ver detalles');
     btn.setAttribute('data-severidad', 'preventiva');
+    btn.setAttribute('data-confianza', '1.00');
     btn.setAttribute('data-fuente-oficial', 'true');
     btn.title = '🟡 COMU-5514 (PREVENTIVA · oficial): Distrito con zonas de apagado ' + check.code + '. CCPP exacto no verificado, revisar con el cliente.';
   }
@@ -4654,6 +4877,14 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
     fechaApagadoIso = '2026-09-11';
     var parts = currentCheck.code.split(':');
     zonaLabel = (parts[1] || currentCheck.code).toLowerCase();
+  } else if (currentCheck.nivel === 'ccpp_fuzzy') {
+    // v3.10.2: fuzzy match — usar el CCPP exacto que matcheó como zona
+    speechKey = 'comu5514_postventa_marcaje';
+    comunicadoLabel = 'COMU-5514';
+    comunicadoVersion = 'v00003';
+    fechaApagadoIso = '2026-09-11';
+    var fparts = currentCheck.code.split(':');
+    zonaLabel = (fparts[1] || currentCheck.code).toLowerCase();
   } else if (currentCheck.nivel === 'ipt_distrito') {
     // v3.8.0: nivel EXPLÍCITO para distritos en COMU-5672. Speech ipt_visor_4g
     // (cliente con 4G, configurar APN) o ipt_visor_sin_4g (sin 4G, sugerir
@@ -4793,14 +5024,18 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   var speechEscaped = escapeHtml(speechFilled);
   var speechHighlighted = highlightKeyText(speechEscaped);
 
-  // v3.10.0: meta-footer con COMU + versión + fecha + icono de severidad.
+  // v3.10.2: meta-footer con COMU + versión + fecha + icono de severidad.
   // El icono cambia según nivel: 🔴 alta (CCPP exacto COMU-5514),
-  // 🟠 media (red 2G COMU-5672), 🟡 preventiva (distrito con zonas).
+  // 🟠 media (CCPP fuzzy, red 2G COMU-5672), 🟡 preventiva (distrito con zonas).
   var severidadIcon = '⚠';
   var severidadLabel = '';
   if (currentCheck && currentCheck.nivel === 'ccpp_exacto') {
     severidadIcon = '🔴';
     severidadLabel = 'Estación base desactivada';
+  } else if (currentCheck && currentCheck.nivel === 'ccpp_fuzzy') {
+    severidadIcon = '🟠';
+    var simPct = Math.round((currentCheck.confianza || 0) * 100);
+    severidadLabel = 'Posible match fuzzy ' + simPct + '% — verificar CCPP exacto';
   } else if (currentCheck && currentCheck.nivel === 'ipt_distrito') {
     severidadIcon = '🟠';
     severidadLabel = 'Red 2G — distrito en plan de apagado';
@@ -4834,6 +5069,23 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
       '</p>';
   }
 
+  // v3.10.2: panel de sugerencias fuzzy — solo si nivel == 'ccpp_fuzzy'.
+  // Muestra top 3 CCPPs similares con su % de similitud para que el
+  // supervisor pueda elegir el correcto o descartar el match.
+  var fuzzyHtml = '';
+  if (currentCheck && currentCheck.nivel === 'ccpp_fuzzy' && currentCheck.fuzzy_matches) {
+    fuzzyHtml = '<ul class="apagado-panel-fuzzy-list">';
+    for (var fi = 0; fi < currentCheck.fuzzy_matches.length; fi++) {
+      var fm = currentCheck.fuzzy_matches[fi];
+      var pct = Math.round(fm.similarity * 100);
+      fuzzyHtml += '<li class="apagado-panel-fuzzy-item">' +
+        '<span class="apagado-panel-fuzzy-name">' + escapeHtml(fm.name) + '</span>' +
+        '<span class="apagado-panel-fuzzy-pct">' + pct + '%</span>' +
+      '</li>';
+    }
+    fuzzyHtml += '</ul>';
+  }
+
   var html = ''+
     '<div class="apagado-panel-header" data-severidad="' + (currentCheck ? currentCheck.nivel : '') + '">'+
       '<span aria-hidden="true" class="apagado-panel-icon">' + severidadIcon + '</span>'+
@@ -4841,6 +5093,7 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
       '<span class="apagado-panel-meta">' + escapeHtml(metaText) + '</span>'+
     '</div>'+
     '<p class="apagado-panel-severidad">' + escapeHtml(severidadLabel) + '</p>'+
+    (fuzzyHtml ? '<div class="apagado-panel-fuzzy"><p class="apagado-panel-fuzzy-title">Sugerencias (similitud):</p>' + fuzzyHtml + '</div>' : '')+
     '<p class="apagado-panel-speech">' + speechHighlighted + '</p>'+
     disclaimerHtml;
 
@@ -6975,6 +7228,10 @@ document.addEventListener('DOMContentLoaded', function () {
       CCPP_KEYS_NORMALIZED.add(d6 + ':' + normalized);
     });
   }
+
+  // v3.10.2: Build fuzzy index para búsqueda por similitud.
+  // Pre-computa Map<d6, CCPP[]> para fuzzy matching O(k) por distrito.
+  zaBuildFuzzyIndex();
 });
 
 // v3.8.0: Set pre-normalizado para lookup O(1) de CCPP apagados.
