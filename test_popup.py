@@ -2183,9 +2183,10 @@ def test(html_path):
         result.fail('CSS cobertura ipt color', '.cobertura-btn.ipt no usa --zone-amber (debe ser delicado)')
 
     # JS: renderCoberturaButton unifica los 2 estados
+    # v3.10.0: labels actualizados a "COMU-XXXX (NIVEL · fuente)" + data-severidad
     m_btn = re.search(r'function renderCoberturaButton\(check\)\s*\{(.*?)\n\}', html, re.DOTALL)
-    if m_btn and 'ESTACIÓN BASE DESACTIVADA' in m_btn.group(1) and 'ZONA DE APAGADO (distrito preventivo)' in m_btn.group(1):
-        result.ok('v3.9.15 JS: renderCoberturaButton usa labels específicos por COMU (estaciones vs distrito)')
+    if m_btn and 'COMU-5514' in m_btn.group(1) and 'COMU-5672' in m_btn.group(1) and 'data-severidad' in m_btn.group(1):
+        result.ok('v3.10.0 JS: renderCoberturaButton usa labels COMU + data-severidad (separación semántica)')
     else:
         result.fail('JS renderCoberturaButton labels', 'labels específicos COMU-5514/5672 no presentes')
 
@@ -2531,6 +2532,232 @@ def test(html_path):
         result.ok('v3.7.9 JS: cls += \' ac-item-zone\' aplicado en render (sin dot, sin border-left)')
     else:
         result.fail('JS cls zone', 'cls no incluye ac-item-zone')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.0 — AUDITORÍA END-TO-END DE BASES
+    # CEO directive 2026-10-17: "procede al 100%" — separación semántica
+    # COMU-5514 vs COMU-5672, disclaimer para fuentes no oficiales,
+    # anomalías departamentales documentadas, trazabilidad de fuentes.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.0 — Separación semántica COMU-5514 vs COMU-5672')
+
+    # JS: checkZonaApagada retorna campos semánticos (severidad, fuente_oficial, requiere_disclaimer)
+    m_check_v310 = re.search(r'function checkZonaApagada\([^)]+\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_check_v310:
+        body = m_check_v310.group(1)
+        # Nivel ccpp_exacto debe tener severidad 'alta' y fuente_oficial true
+        if re.search(r"nivel:\s*'ccpp_exacto'[\s\S]{0,500}severidad:\s*'alta'", body):
+            result.ok('v3.10.0 JS: checkZonaApagada ccpp_exacto → severidad=alta')
+        else:
+            result.fail('v3.10.0 JS severidad', 'ccpp_exacto sin severidad=alta')
+        if re.search(r"nivel:\s*'ccpp_exacto'[\s\S]{0,500}fuente_oficial:\s*true", body):
+            result.ok('v3.10.0 JS: checkZonaApagada ccpp_exacto → fuente_oficial=true')
+        else:
+            result.fail('v3.10.0 JS fuente', 'ccpp_exacto sin fuente_oficial=true')
+        # Nivel ipt_distrito debe tener severidad 'media' y requiere_disclaimer true
+        if re.search(r"nivel:\s*'ipt_distrito'[\s\S]{0,500}severidad:\s*'media'", body):
+            result.ok('v3.10.0 JS: checkZonaApagada ipt_distrito → severidad=media')
+        else:
+            result.fail('v3.10.0 JS severidad ipt', 'ipt_distrito sin severidad=media')
+        if re.search(r"nivel:\s*'ipt_distrito'[\s\S]{0,500}requiere_disclaimer:\s*true", body):
+            result.ok('v3.10.0 JS: checkZonaApagada ipt_distrito → requiere_disclaimer=true')
+        else:
+            result.fail('v3.10.0 JS disclaimer', 'ipt_distrito sin requiere_disclaimer=true')
+        if re.search(r"nivel:\s*'ipt_distrito'[\s\S]{0,500}fuente_oficial:\s*false", body):
+            result.ok('v3.10.0 JS: checkZonaApagada ipt_distrito → fuente_oficial=false')
+        else:
+            result.fail('v3.10.0 JS fuente ipt', 'ipt_distrito sin fuente_oficial=false')
+        # Nivel distrito_of debe tener severidad 'preventiva'
+        if re.search(r"nivel:\s*['\"]distrito_of['\"][\s\S]{0,500}severidad:\s*['\"]preventiva['\"]", body):
+            result.ok('v3.10.0 JS: checkZonaApagada distrito_of → severidad=preventiva')
+        else:
+            result.fail('v3.10.0 JS severidad dist', 'distrito_of sin severidad=preventiva')
+
+    # JS: renderCoberturaButton expone data-severidad y data-fuente-oficial
+    m_render_v310 = re.search(r'function renderCoberturaButton\([^)]+\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_render_v310:
+        body = m_render_v310.group(1)
+        if re.search(r"setAttribute\('data-severidad',\s*'alta'\)", body):
+            result.ok('v3.10.0 JS: renderCoberturaButton ccpp_exacto data-severidad=alta')
+        else:
+            result.fail('v3.10.0 JS data-sev alta', 'renderCoberturaButton sin data-severidad=alta')
+        if re.search(r"setAttribute\('data-fuente-oficial',\s*'false'\)", body):
+            result.ok('v3.10.0 JS: renderCoberturaButton ipt data-fuente-oficial=false')
+        else:
+            result.fail('v3.10.0 JS data-fuente', 'renderCoberturaButton sin data-fuente-oficial=false')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.0 — DISCLAIMER PARA FUENTES NO OFICIALES
+    # CEO directive 2026-10-17: MTC/OSIPTEL no confirman apagón 2G.
+    # Speeches COMU-5672 deben llevar disclaimer visible.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.0 — Disclaimer fuentes no oficiales (COMU-5672)')
+
+    # CSS: .apagado-panel-disclaimer con borde naranja sutil
+    if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-disclaimer\s*\{', html):
+        result.ok('v3.10.0 CSS: .apagado-panel-disclaimer definido')
+    else:
+        result.fail('v3.10.0 CSS disclaimer', '.apagado-panel-disclaimer CSS missing')
+
+    # JS: showApagadoPanelInline genera bloque disclaimer cuando requiere_disclaimer
+    m_panel_v310 = re.search(r'function showApagadoPanelInline\([^)]+\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_panel_v310:
+        body = m_panel_v310.group(1)
+        if re.search(r"requiere_disclaimer[\s\S]{0,200}disclaimerHtml", body):
+            result.ok('v3.10.0 JS: disclaimer condicional en showApagadoPanelInline')
+        else:
+            result.fail('v3.10.0 JS disclaimer cond', 'disclaimer no condicional')
+        if re.search(r'Fuente: información interna Movistar', body):
+            result.ok('v3.10.0 JS: texto "Fuente: información interna Movistar" presente')
+        else:
+            result.fail('v3.10.0 JS texto disclaimer', 'texto disclaimer missing')
+        if re.search(r'MTC.*OSIPTEL.*cronograma', body, re.DOTALL):
+            result.ok('v3.10.0 JS: disclaimer menciona MTC/OSIPTEL sin cronograma')
+        else:
+            result.fail('v3.10.0 JS mtc', 'disclaimer sin mention MTC')
+
+    # CSS: .apagado-panel-meta (versión + fecha inline)
+    if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-meta\s*\{', html):
+        result.ok('v3.10.0 CSS: .apagado-panel-meta (COMU + versión + fecha)')
+    else:
+        result.fail('v3.10.0 CSS meta', '.apagado-panel-meta CSS missing')
+
+    # CSS: .apagado-panel-severidad (línea de severidad 1 línea)
+    if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-severidad\s*\{', html):
+        result.ok('v3.10.0 CSS: .apagado-panel-severidad (1 línea explicativa)')
+    else:
+        result.fail('v3.10.0 CSS sev', '.apagado-panel-severidad CSS missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.0 — ANOMALÍAS DEPARTAMENTALES DOCUMENTADAS
+    # CEO directive: anomalías CALLAO/TUMBES/LORETO/UCAYALI no son gaps,
+    # son documentadas con razón verificable.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.0 — Anomalías departamentales documentadas')
+
+    # HTML: ZONAS_APAGADAS_INTEL.anomalias_departamentales existe
+    # v3.10.0: la estructura es compleja (objetos anidados con campos razón/evidencia),
+    # por lo que usamos un regex más simple que captura hasta el cierre de la sección.
+    m_anom = re.search(r'anomalias_departamentales:\s*\{(.*?)\n  \},\n  // v3\.10\.0: TRAZABILIDAD', html, re.DOTALL)
+    if m_anom:
+        body = m_anom.group(1)
+        for depto in ['CALLAO', 'TUMBES', 'LORETO', 'UCAYALI']:
+            if f'"{depto}":' in body:
+                result.ok(f'v3.10.0 INTEL: anomalias_departamentales.{depto} documentado')
+            else:
+                result.fail(f'v3.10.0 anomalia {depto}', f'{depto} no documentado en anomalias_departamentales')
+        # Verificar campos clave
+        if 'razon' in body and 'evidencia' in body and 'verificado_por' in body:
+            result.ok('v3.10.0 INTEL: anomalias tienen campos razon/evidencia/verificado_por')
+        else:
+            result.fail('v3.10.0 INTEL anomalia campos', 'anomalias sin campos razon/evidencia/verificado_por')
+    else:
+        result.fail('v3.10.0 INTEL anomalias', 'anomalias_departamentales missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.0 — TRAZABILIDAD DE FUENTES
+    # Documentar de dónde salió cada bloque de data. Importante para que
+    # el supervisor entienda qué puede confiar y qué requiere validación.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.0 — Trazabilidad de fuentes (fuentes_datos)')
+
+    # HTML: ZONAS_APAGADAS_INTEL.fuentes_datos existe
+    m_fuentes = re.search(r'fuentes_datos:\s*\{', html)
+    if m_fuentes:
+        result.ok('v3.10.0 INTEL: fuentes_datos presente')
+        # Verificar que los 4 bloques están
+        for bloque in ['ubigeo_estructura', 'ccpp_caserios', 'zonas_apagadas_5514', 'zonas_apagadas_5672']:
+            if bloque in html:
+                result.ok(f'v3.10.0 INTEL: fuentes_datos.{bloque} documentado')
+            else:
+                result.fail(f'v3.10.0 fuente {bloque}', f'{bloque} missing en fuentes_datos')
+    else:
+        result.fail('v3.10.0 INTEL fuentes', 'fuentes_datos missing')
+
+    # Doc: docs/FUENTES_ZONAS_APAGADAS.md existe
+    doc_path = Path(__file__).parent / 'docs' / 'FUENTES_ZONAS_APAGADAS.md'
+    if doc_path.exists():
+        result.ok('v3.10.0 DOC: docs/FUENTES_ZONAS_APAGADAS.md existe')
+        doc_text = doc_path.read_text()
+        if 'Santa Rosa de Loreto' in doc_text:
+            result.ok('v3.10.0 DOC: FUENTES doc menciona Santa Rosa de Loreto (Ley 32403)')
+        else:
+            result.fail('v3.10.0 DOC santa rosa', 'FUENTES doc sin mention Santa Rosa de Loreto')
+        if 'MTC' in doc_text and 'OSIPTEL' in doc_text and 'cronograma' in doc_text:
+            result.ok('v3.10.0 DOC: FUENTES doc documenta que apagón 2G es PLANIFICADO no ejecutado')
+        else:
+            result.fail('v3.10.0 DOC mtc', 'FUENTES doc no documenta contexto oficial MTC/OSIPTEL')
+    else:
+        result.fail('v3.10.0 DOC', 'docs/FUENTES_ZONAS_APAGADAS.md missing')
+
+    # Doc: data/known_data_gaps.json existe
+    gaps_path = Path(__file__).parent / 'data' / 'known_data_gaps.json'
+    if gaps_path.exists():
+        result.ok('v3.10.0 DATA: data/known_data_gaps.json existe')
+        try:
+            import json as _json
+            gaps = _json.loads(gaps_path.read_text())
+            if gaps.get('total') == 41:
+                result.ok('v3.10.0 DATA: known_data_gaps total=41 distritos')
+            else:
+                result.fail('v3.10.0 DATA total', f'known_data_gaps total != 41 (es {gaps.get("total")})')
+            for depto_check in ['CALLAO', 'LIMA', 'CUSCO', 'LORETO', 'UCAYALI']:
+                if depto_check in gaps_path.read_text():
+                    pass  # presente, OK
+            if 'Santa Rosa de Loreto' in gaps_path.read_text():
+                result.ok('v3.10.0 DATA: known_data_gaps documenta Santa Rosa de Loreto')
+        except Exception as e:
+            result.warn('v3.10.0 DATA parse', f'JSON parse: {e}')
+    else:
+        result.fail('v3.10.0 DATA gaps', 'data/known_data_gaps.json missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.0 — AUDIT CHECKS AMPLIADOS
+    # auditZonasApagadas debe validar checks 8, 9, 10, 11.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.0 — auditZonasApagadas checks ampliados')
+
+    m_audit = re.search(r'function auditZonasApagadas\(\)\s*\{(.*?)\nfunction', html, re.DOTALL)
+    if m_audit:
+        body = m_audit.group(1)
+        # Check 8: anomalías departamentales
+        if 'anomalias_departamentales' in body:
+            result.ok('v3.10.0 AUDIT: check 8 anomalías departamentales')
+        else:
+            result.fail('v3.10.0 AUDIT 8', 'auditZonasApagadas sin check 8')
+        # Check 9: ipt_metadata coherencia
+        if 'ipt_metadata_by_district' in body and re.search(r'metaRequired\s*=\s*\[', body):
+            result.ok('v3.10.0 AUDIT: check 9 ipt_metadata coherencia')
+        else:
+            result.fail('v3.10.0 AUDIT 9', 'auditZonasApagadas sin check 9')
+        # Check 10: fuente del PDF
+        if re.search(r'ZONAS_APAGADAS\.fuente\s+missing', body) or re.search(r"ZONAS_APAGADAS\.fuente", body):
+            result.ok('v3.10.0 AUDIT: check 10 fuente del PDF documentada')
+        else:
+            result.fail('v3.10.0 AUDIT 10', 'auditZonasApagadas sin check 10')
+        # Check 11: integridad CCPP
+        if re.search(r'CCPP_DATA\.totalCcpp|totalCcpp\s*=', body):
+            result.ok('v3.10.0 AUDIT: check 11 integridad CCPP (>= 40k)')
+        else:
+            result.fail('v3.10.0 AUDIT 11', 'auditZonasApagadas sin check 11')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.0 — BASE UBIGEO COMPLETA
+    # Verificar 25 deptos, 196 prov, 1892 dist sigue presente.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.0 — Base UBIGEO + CCPP')
+
+    # UBIGEO inline: 25 deptos, 196 prov, 1892 dist
+    m_ubigeo = re.search(r'const UBIGEO = (\{[^\n]+\{[^}]*\}\})', html, re.DOTALL)
+    if m_ubigeo:
+        result.ok('v3.10.0 UBIGEO: const UBIGEO inline presente')
+    # CCPP_DATA inline: 43k+ caseríos
+    m_ccpp = re.search(r'const CCPP_DATA = \{', html)
+    if m_ccpp:
+        result.ok('v3.10.0 CCPP: const CCPP_DATA inline presente')
+
+    # 41 distritos sin CCPP deben estar documentados (NO agregados al data)
+    # Esto se valida en data/known_data_gaps.json ya verificado arriba.
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

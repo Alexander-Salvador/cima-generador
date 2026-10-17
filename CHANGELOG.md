@@ -1,5 +1,138 @@
 # Changelog — cima-generador
 
+## [3.10.0] - 2026-10-17 — 🛡️ AUDITORÍA END-TO-END BASES — Separación COMU + Disclaimer fuentes
+
+CEO directive: "Procede al 100%" tras auditoría que detectó:
+- Mezcla conceptual COMU-5514 vs COMU-5672 (1,798 distritos IPT dentro de
+  `districts_with_off` que se confunden con estaciones base físicas).
+- 41 distritos UBIGEO sin CCPP_DATA (6 urbanos razonables, 35 rurales
+  nuevos/legacy que sí deberían tener data).
+- Falsa atribución de oficialidad: COMU-5672 aparece como si el apagón 2G
+  estuviera ejecutado, pero MTC (oct 2025) y OSIPTEL aún no han confirmado
+  un cronograma público de apagado 2G en Perú.
+- Anomalías departamentales (CALLAO, TUMBES, LORETO, UCAYALI) sin documentar.
+
+### 🔴 Auditoría: 6 problemas críticos detectados
+
+| # | Problema | Severidad | Status v3.10.0 |
+|---|---|---|---|
+| 1 | Mezcla COMU-5514 ↔ COMU-5672 (1,798 dist IPT) | CRÍTICO | ✅ Separación semántica |
+| 2 | 41 distritos sin CCPP_DATA | ALTO | ✅ Documentado en `data/known_data_gaps.json` |
+| 3 | Sin disclaimer para fuentes no oficiales | CRÍTICO | ✅ Disclaimer condicional en panel |
+| 4 | Anomalías CALLAO/TUMBES/LORETO/UCAYALI sin documentar | ALTO | ✅ Sección `anomalias_departamentales` |
+| 5 | Trazabilidad de fuentes incompleta | MEDIO | ✅ Sección `fuentes_datos` + `docs/FUENTES_ZONAS_APAGADAS.md` |
+| 6 | Distrito Santa Rosa de Loreto (jul 2025) no en UBIGEO | BAJO | ✅ Documentado, pendiente INEI 2026 |
+
+### ✨ Cambios principales
+
+#### 1. Separación semántica COMU-5514 vs COMU-5672 (CRÍTICO)
+
+`checkZonaApagada` ahora retorna campos explícitos de severidad y fuente:
+
+```js
+// Nivel 1: ccpp_exacto (COMU-5514) — Estación base desactivada
+{ nivel: 'ccpp_exacto', severidad: 'alta', fuente_oficial: true, requiere_disclaimer: false }
+
+// Nivel 2: ipt_distrito (COMU-5672) — Distrito en plan de apagado 2G
+{ nivel: 'ipt_distrito', severidad: 'media', fuente_oficial: false, requiere_disclaimer: true }
+
+// Nivel 3: distrito_of (COMU-5514) — Distrito con zonas (preventivo)
+{ nivel: 'distrito_of', severidad: 'preventiva', fuente_oficial: true, requiere_disclaimer: false }
+```
+
+`renderCoberturaButton` expone `data-severidad` y `data-fuente-oficial` para que CSS/JS los consulten.
+
+#### 2. Disclaimer obligatorio para fuentes no oficiales (COMU-5672)
+
+Nuevo bloque `.apagado-panel-disclaimer` que aparece **solo** cuando el nivel es `ipt_distrito` (COMU-5672). Texto:
+
+> 📋 Fuente: información interna Movistar. MTC (oct 2025) y OSIPTEL aún no han confirmado un cronograma público definitivo de apagado 2G en Perú. Verificar con el cliente antes de ejecutar baja o transferencia de servicio.
+
+CSS: caja con borde naranja sutil, icono 📋, texto 10px.
+Razón: el supervisor **no debe ejecutar flujos de baja/transferencia** sobre información no verificada por MTC/OSIPTEL.
+
+#### 3. Meta + severidad en el panel (1 línea explicativa)
+
+Header del panel ahora muestra:
+- Icono de severidad: 🔴 alta / 🟠 media / 🟡 preventiva
+- COMU label (COMU-5514 / COMU-5672)
+- Meta: versión + fecha de apagado (inline, dim)
+
+Nueva clase `.apagado-panel-severidad` debajo del header con la explicación:
+- "Estación base desactivada"
+- "Red 2G — distrito en plan de apagado"
+- "Distrito con zonas de apagado (preventivo)"
+
+#### 4. Anomalías departamentales documentadas (4 deptos)
+
+Nueva sección `ZONAS_APAGADAS_INTEL.anomalias_departamentales`:
+
+| Depto | Estado | Razón | Acción |
+|---|---|---|---|
+| CALLAO | esperado_sin_apagado | 100% urbano, sin CCPP rurales | — |
+| TUMBES | anomalia_investigada | 13 dist sin estación, costa rural | Confirmar con Movistar |
+| LORETO | parcialmente_documentado | 22/55 dist con estación | Confirmar 33 dist restantes |
+| UCAYALI | anomalia_investigada | 1/19 dist con estación | Confirmar con Movistar |
+
+#### 5. Trazabilidad de fuentes (`fuentes_datos`)
+
+Nueva sección `ZONAS_APAGADAS_INTEL.fuentes_datos` con metadata por bloque:
+- `ubigeo_estructura` (RitchieRD GitHub ODbL)
+- `ccpp_caserios` (GeoNames CC BY 4.0)
+- `zonas_apagadas_5514` (PDFs Movistar internos)
+- `zonas_apagadas_5672` (PDF IPT interno, ⚠️ no oficial)
+
+Documento paralelo: `docs/FUENTES_ZONAS_APAGADAS.md` con cronología
+de comunicados MTC/OSIPTEL verificables y disclaimer sobre oficialidad.
+
+#### 6. CCPP gaps documentados (`data/known_data_gaps.json`)
+
+Lista los 41 distritos sin CCPP_DATA, categorizados:
+- 6 urbanos (razonable no tener)
+- 12 rurales nuevos (creados 2015-2020, requieren INEI 2017+)
+- 23 rurales legacy (gap en GeoNames, OSM Overpass disponible)
+
+Plus: 2 distritos con CCPP ya encontrados vía OSM (UNION PROGRESO con 20 CP, UNION ASHÁNINKA con 29 CP) pendientes de inyectar en v3.10.1.
+
+#### 7. auditZonasApagadas ampliado (checks 8-11)
+
+4 nuevos checks de auditoría:
+- **Check 8**: anomalías departamentales (CALLAO/TUMBES/LORETO/UCAYALI) presentes
+- **Check 9**: ipt_metadata_by_district tiene campos requeridos (depto, fecha_apagado, comunicado, origen_pdf)
+- **Check 10**: ZONAS_APAGADAS.fuente y fecha presentes
+- **Check 11**: CCPP_DATA total >= 40,000 (regresión)
+
+### 📊 Validación
+
+- ✅ JS sintaxis: `node --check` EXIT 0 (1.4MB inline)
+- ✅ Tests automatizados: **468/468 PASS** (+36 nuevos)
+- ✅ Cero regresiones en checks anteriores
+- ✅ Sin cambios en data inline (0 fetch, 0 CDN)
+
+### 📁 Archivos nuevos
+
+- `data/known_data_gaps.json` (41 distritos categorizados)
+- `docs/FUENTES_ZONAS_APAGADAS.md` (trazabilidad de fuentes)
+
+### 📁 Archivos modificados
+
+- `index.html` (checkZonaApagada, renderCoberturaButton, showApagadoPanelInline, CSS, auditZonasApagadas, ZONAS_APAGADAS_INTEL.anomalias_departamentales + fuentes_datos)
+- `test_popup.py` (+36 tests)
+- `VERSION` (3.9.15 → 3.10.0)
+- `CHANGELOG.md` (esta entrada)
+
+### ⚠️ Decisiones CEO pendientes
+
+1. **Confirmar TUMBES con Movistar** (¿planes apagado reales oclusión genuina?)
+2. **Confirmar LORETO 33 dist sin estación**
+3. **Confirmar UCAYALI 18 dist sin estación**
+4. **Descargar INEI Marco Geoestadístico 2018+** para 12 dist rurales nuevos
+5. **Scrappear OSM Overpass** para 23 dist rurales legacy
+6. **Inyectar UNION PROGRESO + UNION ASHÁNINKA** (CCPP ya encontrados) en v3.10.1
+7. **Monitorear MTC/OSIPTEL** por cronograma público de apagado 2G
+
+---
+
 ## [3.9.15] - 2026-10-16 — 🎯 ALINEACIÓN INTELIGENCIA — COMU-5514 vs COMU-5672
 
 CEO feedback post-v3.9.14: "la base ya no está dando data correcta, las

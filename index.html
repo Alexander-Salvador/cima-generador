@@ -1952,6 +1952,37 @@
   .apagado-speech-panel[data-com="COMU-5514"] .apagado-panel-com {
     color: var(--zone-amber);
   }
+  /* v3.10.0: icono de severidad al inicio del header. Color según nivel. */
+  .apagado-speech-panel .apagado-panel-icon {
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .apagado-speech-panel[data-nivel="ccpp_exacto"] .apagado-panel-icon { color: var(--zone-ipt); }
+  .apagado-speech-panel[data-nivel="ipt_distrito"] .apagado-panel-icon { color: #ea7c3c; }
+  .apagado-speech-panel[data-nivel="distrito_of"] .apagado-panel-icon { color: var(--zone-amber); }
+  /* v3.10.0: meta inline (versión + fecha) — texto dim, no compite con COMU. */
+  .apagado-speech-panel .apagado-panel-meta {
+    font-size: 10px;
+    color: var(--text-dim, #9ca3af);
+    margin-left: auto;
+    letter-spacing: 0.01em;
+    font-weight: 500;
+    text-transform: none;
+  }
+  /* v3.10.0: línea de severidad — explica en 1 línea qué significa el nivel. */
+  .apagado-speech-panel .apagado-panel-severidad {
+    margin: 0 0 8px 0;
+    padding: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  }
+  .apagado-speech-panel[data-nivel="ccpp_exacto"] .apagado-panel-severidad { color: var(--zone-ipt); }
+  .apagado-speech-panel[data-nivel="ipt_distrito"] .apagado-panel-severidad { color: #ea7c3c; }
+  .apagado-speech-panel[data-nivel="distrito_of"] .apagado-panel-severidad { color: var(--zone-amber); }
 
   /* SPEECH BODY — sin cambios de font-size para evitar overflow */
   .apagado-speech-panel .apagado-panel-speech {
@@ -1971,6 +2002,39 @@
     font-weight: 700;
     color: color-mix(in srgb, var(--zone-ipt) 88%, var(--text));
     letter-spacing: -0.003em;
+  }
+
+  /* v3.10.0: DISCLAIMER — bloque debajo del speech para fuentes no oficiales.
+     Diferencia visual: caja con borde sutil, icono 📋, texto pequeño.
+     Solo aparece para niveles con requiere_disclaimer (actualmente IPT).
+     CEO directive 2026-10-17: no ejecutar flujos de baja/transferencia
+     sobre información no verificada por MTC/OSIPTEL. */
+  .apagado-speech-panel .apagado-panel-disclaimer {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 9px 0 0 0;
+    padding: 7px 8px;
+    border: 1px solid color-mix(in srgb, #ea7c3c 40%, transparent);
+    background: color-mix(in srgb, #ea7c3c 10%, var(--glass-1-bg));
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.32;
+    color: color-mix(in srgb, #ea7c3c 90%, var(--text));
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  }
+  .apagado-speech-panel .apagado-panel-disclaimer-icon {
+    font-size: 11px;
+    line-height: 1.32;
+    flex-shrink: 0;
+  }
+  .apagado-speech-panel .apagado-panel-disclaimer-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .apagado-speech-panel .apagado-panel-disclaimer { animation: none; }
   }
 
   /* v3.9.8: STATUS PILL ELIMINADO (no más autocopia, no más pill).
@@ -4232,6 +4296,90 @@ const ZONAS_APAGADAS_INTEL = {
   comunicados: {"COMU-5514": {"nombre": "Apagado Estaciones Base en Centros Poblados", "comunicado": "COMU-5514", "version": "00003", "actualizado": "2026-09-18", "fecha_apagado_unica": "2026-09-11", "fecha_sms_inicio": "2026-09-04", "q_clientes": {"grupo1": 1700, "grupo2": 15000, "grupo3": 1700}, "a_quien_aplica": "Postpago + Prepago en centros poblados"}, "COMU-5672": {"nombre": "Apagado de Red en Centros Poblados (Apagados Zonas IPT)", "comunicado": "COMU-5672", "version": "00001", "fecha_apagado_unica": "2026-08-28", "q_clientes": 39500, "a_quien_aplica": "Postpago + Prepago con señal Movistar 2G en zonas rurales"}},
   speechs: {"ipt_visor_4g": {"titulo": "APAGADOS ZONAS IPT — Clientes con equipo 4G (CONFIGURACIÓN DE EQUIPO)", "cuerpo": "Queremos informarle que, a partir del {dia} de {mes} el servicio de Movistar 2G dejara de funcionar en {distrito,departamento}, Contamos con nuevas mejoras en la red 4G para darle una mejor experiencia en su servicio.\n\nPor lo que es necesario que su equipo este configurado adecuadamente para soprote esta red actualizada {Red}.", "aplicable_a": "Cliente con equipo 4G en zona IPT — speech visor (4.1)", "comunicado": "COMU-5672", "version": "00001"}, "ipt_visor_sin_4g": {"titulo": "APAGADOS ZONAS IPT — Clientes SIN equipo 4G (SUGERIR RENOVACIÓN DE EQUIPO)", "cuerpo": "Queremos informarle que, a partir del {dia} de {mes} el servicio de Movistar 2G dejara de funcionar en {distrito,departamento}. Como su equipo no soporta la red 4G, le recomendamos renovarlo en cualquier tienda Movistar para seguir disfrutando del servicio.\n\nPara más información sobre puntos de venta, consulte el sitio web oficial de Movistar o llame al 104.", "aplicable_a": "Cliente SIN equipo 4G en zona IPT — speech visor (4.2)", "comunicado": "COMU-5672", "version": "00001"}, "ipt_postventa_4g": {"titulo": "Postventa IPT — Cliente con equipo 4G (marcaje 4.1)", "cuerpo": "Queremos informarle que, a partir del {dia} de {mes} el servicio de Movistar 2G dejara de funcionar en {distrito,departamento}, Contamos con nuevas mejoras en la red 4G para darle una mejor experiencia en su servicio.\n\nPor lo que es necesario que su equipo este configurado adecuadamente para soprote esta red actualizada {Red}.", "aplicable_a": "Postventa: cliente con marcaje visor (4.1) en zona IPT", "comunicado": "COMU-5672"}, "ipt_postventa_sin_4g": {"titulo": "Postventa IPT — Cliente SIN equipo 4G (marcaje 4.2)", "cuerpo": "Queremos informarle que, a partir del {dia} de {mes} el servicio de Movistar 2G dejara de funcionar en {distrito,departamento}. Como su equipo no soporta la red 4G, le recomendamos renovarlo en cualquier tienda Movistar para seguir disfrutando del servicio.\n\nPara más información sobre puntos de venta, consulte el sitio web oficial de Movistar o llame al 104.", "aplicable_a": "Postventa: cliente con marcaje visor (4.2) en zona IPT — sugerir renovación", "comunicado": "COMU-5672"}, "comu5514_visor_unico": {"titulo": "APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS — Speech único visor", "cuerpo": "Queremos informarte que, a partir del [día] de [mes], el servicio Movistar dejará de funcionar en la zona [zona]. En otras zonas, el servicio seguirá disponible con normalidad. Lamentamos las molestias y agradecemos tu comprensión.", "nota": "REVISAR COMUNICADO APAGADO DE ESTACIONES BASE EN CENTROS POBLADOS", "aplicable_a": "Consulta por comunicación recibida (con o sin marcaje) — Grupos 1/2/3", "comunicado": "COMU-5514", "version": "00003", "actualizado": "2026-09-18"}, "comu5514_postventa_marcaje": {"titulo": "Postventa COMU-5514 — Cliente con marcaje", "cuerpo": "Le informamos que, a partir del {dia} de {mes} la estación base de Movistar en {distrito,departamento} será desactivada. El servicio no estará disponible en este CCPP desde esa fecha.\n\nEn otras zonas geográficas, el servicio seguirá funcionando con normalidad.", "aplicable_a": "Postventa: cliente con marcaje visor en zona centros poblados apagados", "comunicado": "COMU-5514"}},
   flujos_postventa: {"COMU-5672": {"canal_inicial": "Call Center 1ra línea, Tiendas Postventa, Canales Escritos", "tipificacion_crm": {"motivo": "Internet No Navega", "submotivo": "Configuración equipo Datos 2G/3G / No datos", "moviles_no_apn": "Movistar.pe"}, "reclamo_ruta": {"detalle": "Otros Reclamos Soluciones Móvil", "motivo": "Calidad", "submotivo": "Problemas de cobertura y señal", "color_observaciones": "Color en observaciones — Apagado de zona rural", "canales_escritos_url": "https://www.movistar.com.pe/atencion-al-cliente/reclamos"}, "baja_servicio": {"call_center_1ra_linea": "Transferir a Pool Retenciones", "tiendas": "Atiende según flujo regular de retenciones", "canales_escritos": "Derivar al 104 o tienda"}, "reglas_clave": ["Si cliente tiene equipo 4G en zona IPT → speech ipt_visor_4g + orientar configuración APN/equipo", "Si cliente NO tiene equipo 4G en zona IPT → speech ipt_visor_sin_4g + sugerir renovación equipo / venta pta", "Si cliente NO contacta y está en zona → atender flujo regular (VOZ → CEE → DATOS)"]}, "COMU-5514": {"canal_inicial": "Call Center 1ra línea, Tiendas Postventa, Canales Escritos", "reclamo_ruta": {"detalle": "Otros Reclamos Soluciones Móvil", "motivo": "Calidad", "submotivo": "Problemas de cobertura y señal", "color_observaciones": "Color en observaciones — Apagado de zona rural", "canales_escritos_url": "https://www.movistar.com.pe/atencion-al-cliente/reclamos"}, "baja_servicio": {"call_center_1ra_linea": "Transferir a Pool Retenciones", "tiendas": "Atiende según flujo regular de retenciones", "canales_escritos": "Derivar al 104 o tienda"}, "reglas_clave": ["Si cliente consulta por comunicado recibido → speech comu5514_visor_unico (con o sin marcaje)", "Si cliente NO contacta con señal en zona → Call Center: VOZ → CEE → DATOS", "Si cliente pregunta \"no hay señal en mi línea\" → responder que solo en esa zona no tendrá, otras zonas sí", "Si cliente pregunta \"puedo navegar con WiFi\" → sí, con WiFi navega"]}},
+  // v3.10.0: ANOMALÍAS DEPARTAMENTALES documentadas.
+  // Depto con cobertura apagado que NO sigue el patrón "todos en IPT".
+  // Hallazgos de auditoría 2026-10-17: ver docs/FUENTES_ZONAS_APAGADAS.md.
+  anomalias_departamentales: {
+    "CALLAO": {
+      "estado": "esperado_sin_apagado",
+      "estaciones_count": 0,
+      "ipt_count": 0,
+      "total_distritos": 7,
+      "razon": "Departamento 100% urbano, sin Centros Poblados rurales donde aplique Apagado de Estaciones Base ni IPT 2G (Movistar mantiene cobertura 2G/4G activa en toda la provincia constitucional).",
+      "evidencia": "OSIPTEL coberturero 2026 + INEI caracterización urbana",
+      "verificado_por": "Thavren auditoría 2026-10-17"
+    },
+    "TUMBES": {
+      "estado": "anomalia_investigada",
+      "estaciones_count": 0,
+      "ipt_count": 0,
+      "total_distritos": 13,
+      "razon": "Costa norte, frontera con Ecuador. Sin CCPP rurales en las Bases de Apagado Movistar. Movilizar contraste con coberturero OSIPTEL/MTC: ¿Tumbes realmente no tiene estaciones rurales o es gap del PDF?",
+      "evidencia": "OSIPTEL coberturero muestra cobertura 2G completa en Tumbes urbano + rural. Cobertura 4G/5G en expansión.",
+      "accion_pendiente": "Confirmar con Movistar si hay planes de apagado en Tumbes. Si NO, documentar como 'consistente con realidad operativa'.",
+      "verificado_por": "Thavren auditoría 2026-10-17"
+    },
+    "LORETO": {
+      "estado": "parcialmente_documentado",
+      "estaciones_count": 22,
+      "ipt_count": 0,
+      "total_distritos": 55,
+      "razon": "Amazonia profunda con 33 distritos sin estación apagada documentada. Loreto históricamente tiene menor cobertura Movistar por logística fluvial. Cobertura 2G es limitada en zonas rurales — no hay red 2G para apagar (IPT no aplica).",
+      "evidencia": "OSIPTEL coberturero 2026: cobertura 2G Loreto rural < 30%; Iquitos 4G/5G completo.",
+      "accion_pendiente": "Confirmar con Movistar los 33 distritos sin estación: ¿es gap oclusión operativa genuina?",
+      "verificado_por": "Thavren auditoría 2026-10-17"
+    },
+    "UCAYALI": {
+      "estado": "anomalia_investigada",
+      "estaciones_count": 1,
+      "ipt_count": 0,
+      "total_distritos": 19,
+      "razon": "Solo 1 distrito (Padre Abad) con CCPP exacto. Cobertura Movistar concentrada en Pucallpa (capital); mercado rural dominado por Entel/Claro. Posible gap del PDF o exclusión operativa genuina.",
+      "evidencia": "OSIPTEL coberturero 2026: cobertura Movistar Ucayali rural limitada a ejes Pucallpa-Aguaytía.",
+      "accion_pendiente": "Confirmar con Movistar si hay planes de apagado en Ucayali rural fuera de Padre Abad.",
+      "verificado_por": "Thavren auditoría 2026-10-17"
+    }
+  },
+  // v3.10.0: TRAZABILIDAD de fuentes de datos.
+  // Documenta de dónde salió cada bloque de data. Es importante para que
+  // el supervisor (y futuros maintainers) entiendan qué se puede confiar
+  // y qué requiere validación con Movistar.
+  fuentes_datos: {
+    "ubigeo_estructura": {
+      "fuente": "RitchieRD/ubigeos-peru-data (GitHub)",
+      "url": "https://github.com/RitchieRD/ubigeos-peru-data",
+      "licencia": "ODbL",
+      "cobertura": "25 deptos, 196 provincias, 1892 distritos",
+      "actualizado": "validado en auditoría 2026-10-17",
+      "gap_conocido": "No incluye distrito 'Santa Rosa de Loreto' creado el 2025-07-03 (Ley 32403, d6 tentativo 160405)"
+    },
+    "ccpp_caserios": {
+      "fuente": "GeoNames (vía RitchieRD)",
+      "url": "http://www.geonames.org/",
+      "licencia": "CC BY 4.0",
+      "cobertura": "43491 caseríos en 1851 distritos (de 1892)",
+      "actualizado": "Censo INEI 2007 (CIFRA OBSOLETA para 2026)",
+      "gap_conocido": "41 distritos sin CCPP (6 urbanos + 35 rurales nuevos/legacy). Ver data/known_data_gaps.json."
+    },
+    "zonas_apagadas_5514": {
+      "fuente": "PDFs internos Movistar 'Apagado de Estaciones Base en Centros Poblados' (Grupo 1, 2, 3)",
+      "url": "no pública (distribuida internamente)",
+      "licencia": "Prohibida su reproducción (per nota al pie PDFs)",
+      "cobertura": "200 CCPP exactos en 22 departamentos",
+      "actualizado": "regenerado 2026-10-15 desde PDF",
+      "extraccion": "pdfplumber (texto) + OCR visual modelo (PDFs escaneados)",
+      "gap_conocido": "Tumbes, Loreto (parcial), Ucayali (parcial) sin cobertura completa"
+    },
+    "zonas_apagadas_5672": {
+      "fuente": "PDF interno Movistar 'Apagado Zonas IPT.pdf' (no público)",
+      "url": "no pública",
+      "licencia": "interno Movistar",
+      "cobertura": "1798 distritos en 21 departamentos (amplitud: departamento)",
+      "actualizado": "regenerado 2026-10-15",
+      "estado_oficial": "NO oficial — MTC (oct 2025) y OSIPTEL no han confirmado cronograma público de apagado 2G en Perú",
+      "clientes_declarados": "39500 (según PDF, no verificado OSIPTEL)"
+    }
+  }
 };
 
 
@@ -4326,28 +4474,53 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
     return ZONAS_APAGADAS_STATE.ccpp_keys.has(key);
   }
 
-  // Nivel 1: ccpp exacto (precedencia sobre ipt — confirmación más específica)
+  // Nivel 1: ccpp exacto (COMU-5514) — precedencia sobre ipt — confirmación más específica
+  // v3.10.0: severidad ALTA — es el único nivel con CCPP físicamente verificado en lista.
   if (hasCcpp) {
     var key = d6 + ':' + zaNormalize(ccpp);
     if (lookupCcpp(key)) {
-      return { nivel: 'ccpp_exacto', code: key, mensaje: 'CCPP exacto en zona de apagado Movistar', comu: 'COMU-5514' };
+      return {
+        nivel: 'ccpp_exacto',
+        code: key,
+        mensaje: 'CCPP exacto en zona de apagado Movistar',
+        comu: 'COMU-5514',
+        severidad: 'alta',
+        fuente_oficial: true,
+        requiere_disclaimer: false
+      };
     }
   }
 
-  // Nivel 2: distrito IPT (COMU-5672) — RED
+  // Nivel 2: distrito IPT (COMU-5672) — RED 2G departamental
+  // v3.10.0: severidad MEDIA — afecta toda la red 2G del distrito (no por CCPP).
+  // Fuente: PDF "Apagado Zonas IPT.pdf" interno Movistar (no publicado por OSIPTEL/MTC).
   if (ZONAS_APAGADAS_STATE.ipt_districts && ZONAS_APAGADAS_STATE.ipt_districts.has(d6)) {
     return {
       nivel: 'ipt_distrito',
       code: d6,
-      mensaje: 'Distrito en COMU-5672 (Apagado Zonas IPT). Red 2G completa apagada.',
+      mensaje: 'Distrito en COMU-5672 (Apagado Zonas IPT). Red 2G completa del distrito en plan de apagado.',
       comu: 'COMU-5672',
-      color: 'red'
+      severidad: 'media',
+      fuente_oficial: false,
+      requiere_disclaimer: true,
+      color: 'amber'
     };
   }
 
-  // Nivel 3: distrito apagado preventive
+  // Nivel 3: distrito con zonas apagadas (preventivo) — solo estaciones base
+  // v3.10.0: severidad PREVENTIVA — distrito con CCPPs exactos en la lista, pero
+  // el CCPP tipeado no coincide con ninguno conocido. Posible match por typo.
   if (ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
-    return { nivel: 'distrito_of', code: d6, mensaje: 'Este distrito tiene zonas de apagado Movistar', comu: 'COMU-5514', color: 'amber' };
+    return {
+      nivel: 'distrito_of',
+      code: d6,
+      mensaje: 'Este distrito tiene zonas de apagado Movistar (verificar CCPP exacto)',
+      comu: 'COMU-5514',
+      severidad: 'preventiva',
+      fuente_oficial: true,
+      requiere_disclaimer: false,
+      color: 'amber'
+    };
   }
 
   return null;
@@ -4366,24 +4539,37 @@ function renderCoberturaButton(check) {
     btn.classList.add('cobertura-btn--idle');
     return;
   }
-  // v3.8.0: visualmente .off y .warn son IGUALES (ámbar unificado, CSS).
-  // .ipt es ROJO (más severo — COMU-5672 afecta TODA la red 2G).
-  // Labels distintos en title (tooltip nativo) para diferenciar nivel.
+  // v3.10.0: separación semántica explícita de los 3 niveles.
+  // - ccpp_exacto: CCPP específico en ccpp_keys (COMU-5514) — verificado físico
+  // - ipt_distrito: distrito en ipt_districts (COMU-5672) — plan de apagado 2G
+  // - distrito_of: distrito con zonas apagadas (preventivo, no verificado por CCPP)
+  // El CSS visual mantiene: .off ROJO, .ipt y .warn ÁMBAR. La distinción
+  // semántica se hace via:
+  //   (a) color del icono (rojo vs amarillo)
+  //   (b) title nativo del botón (incluye COMU + severidad)
+  //   (c) aria-label
+  //   (d) data-severidad y data-fuente-oficial para que CSS/JS los lean
   if (check.nivel === 'ccpp_exacto') {
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
-    btn.setAttribute('aria-label', 'Estación base desactivada en este CCPP — click para ver speech COMU-5514');
-    btn.title = '🔴 ESTACIÓN BASE DESACTIVADA (CCPP exacto): ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Estación base desactivada en este CCPP — click para ver detalles COMU-5514');
+    btn.setAttribute('data-severidad', 'alta');
+    btn.setAttribute('data-fuente-oficial', 'true');
+    btn.title = '🔴 COMU-5514 (ALTA · oficial): Estación base desactivada en ' + check.code + '. Click para ver detalles.';
   } else if (check.nivel === 'ipt_distrito') {
     btn.classList.add('ipt');
     btn.setAttribute('aria-pressed', 'true');
-    btn.setAttribute('aria-label', 'Distrito en zona IPT (red 2G apagada) — click para ver speech COMU-5672');
-    btn.title = '🟡 COMU-5672 (RED 2G IPT): ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Distrito en plan de apagado 2G (red IPT) — click para ver detalles COMU-5672. Fuente interna Movistar, MTC/OSIPTEL aún no confirman cronograma público.');
+    btn.setAttribute('data-severidad', 'media');
+    btn.setAttribute('data-fuente-oficial', 'false');
+    btn.title = '🟠 COMU-5672 (MEDIA · interna): Distrito en plan de apagado 2G ' + check.code + '. Fuente: info interna Movistar. MTC/OSIPTEL aún no confirman.';
   } else if (check.nivel === 'distrito_of') {
     btn.classList.add('warn');
     btn.setAttribute('aria-pressed', 'true');
-    btn.setAttribute('aria-label', 'Distrito con zonas de apagado Movistar (preventivo) — click para ver speech');
-    btn.title = '⚠️ ZONA DE APAGADO (distrito preventivo): ' + check.code + ' — ' + check.mensaje;
+    btn.setAttribute('aria-label', 'Distrito con zonas de apagado Movistar (preventivo, CCPP exacto no verificado) — click para ver detalles');
+    btn.setAttribute('data-severidad', 'preventiva');
+    btn.setAttribute('data-fuente-oficial', 'true');
+    btn.title = '🟡 COMU-5514 (PREVENTIVA · oficial): Distrito con zonas de apagado ' + check.code + '. CCPP exacto no verificado, revisar con el cliente.';
   }
 }
 
@@ -4604,12 +4790,56 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   var speechEscaped = escapeHtml(speechFilled);
   var speechHighlighted = highlightKeyText(speechEscaped);
 
+  // v3.10.0: meta-footer con COMU + versión + fecha + icono de severidad.
+  // El icono cambia según nivel: 🔴 alta (CCPP exacto COMU-5514),
+  // 🟠 media (red 2G COMU-5672), 🟡 preventiva (distrito con zonas).
+  var severidadIcon = '⚠';
+  var severidadLabel = '';
+  if (currentCheck && currentCheck.nivel === 'ccpp_exacto') {
+    severidadIcon = '🔴';
+    severidadLabel = 'Estación base desactivada';
+  } else if (currentCheck && currentCheck.nivel === 'ipt_distrito') {
+    severidadIcon = '🟠';
+    severidadLabel = 'Red 2G — distrito en plan de apagado';
+  } else if (currentCheck && currentCheck.nivel === 'distrito_of') {
+    severidadIcon = '🟡';
+    severidadLabel = 'Distrito con zonas de apagado (preventivo)';
+  }
+
+  // v3.10.0: meta con COMU + versión + fecha
+  var metaParts = [comunicadoLabel];
+  if (comunicadoVersion) metaParts.push('v' + comunicadoVersion.replace(/^v/i, ''));
+  if (fechaApagadoIso) metaParts.push('apagado: ' + fechaCorta);
+  var metaText = metaParts.join(' · ');
+
+  // v3.10.0: disclaimer SOLO para fuentes no oficiales (COMU-5672 IPT).
+  // El MTC (oct 2025) y OSIPTEL aún no han confirmado un cronograma público
+  // de apagado 2G en Perú. Es importante que el supervisor distinga info
+  // oficial de info interna Movistar para no ejecutar flujos de baja/transferencia
+  // sobre datos no verificados.
+  var disclaimerHtml = '';
+  if (currentCheck && currentCheck.requiere_disclaimer) {
+    disclaimerHtml = ''+
+      '<p class="apagado-panel-disclaimer" role="note">'+
+        '<span class="apagado-panel-disclaimer-icon" aria-hidden="true">📋</span>'+
+        '<span class="apagado-panel-disclaimer-text">'+
+          'Fuente: información interna Movistar. '+
+          'MTC (oct 2025) y OSIPTEL aún no han confirmado un cronograma público '+
+          'definitivo de apagado 2G en Perú. '+
+          'Verificar con el cliente antes de ejecutar baja o transferencia de servicio.'+
+        '</span>'+
+      '</p>';
+  }
+
   var html = ''+
-    '<div class="apagado-panel-header">'+
-      '<span aria-hidden="true">⚠</span>'+
+    '<div class="apagado-panel-header" data-severidad="' + (currentCheck ? currentCheck.nivel : '') + '">'+
+      '<span aria-hidden="true" class="apagado-panel-icon">' + severidadIcon + '</span>'+
       '<span class="apagado-panel-com">' + escapeHtml(comunicadoLabel) + '</span>'+
+      '<span class="apagado-panel-meta">' + escapeHtml(metaText) + '</span>'+
     '</div>'+
-    '<p class="apagado-panel-speech">' + speechHighlighted + '</p>';
+    '<p class="apagado-panel-severidad">' + escapeHtml(severidadLabel) + '</p>'+
+    '<p class="apagado-panel-speech">' + speechHighlighted + '</p>'+
+    disclaimerHtml;
 
   // v3.8.0: usar el panel INLINE en lugar de tooltip flotante
   var panel = document.getElementById('apagadoSpeechPanel');
@@ -4620,6 +4850,7 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   }
   panel.innerHTML = html;
   panel.setAttribute('data-com', comunicadoLabel);
+  panel.setAttribute('data-nivel', currentCheck ? currentCheck.nivel : '');
   panel.hidden = false;
   // Scroll al panel para que el usuario lo vea
   try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
@@ -6870,6 +7101,59 @@ function auditZonasApagadas() {
     });
     if (speechIssue.length > 0) {
       issues.push('speech integrity: ' + speechIssue.join(' | '));
+    }
+  }
+  // Check 8 (v3.10.0): anomalías departamentales documentadas.
+  // CALLAO, TUMBES, LORETO (parcial), UCAYALI (parcial) son los deptos
+  // con cobertura apagado que no siguen el patrón "todos en IPT".
+  // Esto es esperado (urbano, costa, selva) pero debe quedar registro.
+  if (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.anomalias_departamentales) {
+    var anom = ZONAS_APAGADAS_INTEL.anomalias_departamentales;
+    var requiredDeptos = ['CALLAO', 'TUMBES', 'LORETO', 'UCAYALI'];
+    var missingDoc = requiredDeptos.filter(function(d) { return !anom[d]; });
+    if (missingDoc.length > 0) {
+      issues.push('anomalías departamentales sin documentar: ' + missingDoc.join(', '));
+    }
+  } else {
+    issues.push('anomalias_departamentales missing en ZONAS_APAGADAS_INTEL');
+  }
+  // Check 9 (v3.10.0): ipt_metadata coherencia — cada ipt_district debe tener
+  // metadata con los campos requeridos (depto, fecha_apagado, comunicado, origen_pdf).
+  if (typeof ZONAS_APAGADAS_INTEL !== 'undefined' && ZONAS_APAGADAS_INTEL.ipt_metadata_by_district) {
+    var meta = ZONAS_APAGADAS_INTEL.ipt_metadata_by_district;
+    var metaRequired = ['depto', 'fecha_apagado', 'comunicado', 'origen_pdf'];
+    var metaIssues = [];
+    Object.keys(meta).forEach(function(d6) {
+      var m = meta[d6];
+      metaRequired.forEach(function(field) {
+        if (!m[field]) {
+          metaIssues.push(d6 + ': missing ' + field);
+        }
+      });
+    });
+    if (metaIssues.length > 0) {
+      issues.push('ipt_metadata incompleto: ' + metaIssues.length + ' issues (primeros 5: ' + metaIssues.slice(0, 5).join('; ') + ')');
+    }
+  }
+  // Check 10 (v3.10.0): fuente del PDF documentada en ZONAS_APAGADAS.
+  if (typeof ZONAS_APAGADAS !== 'undefined') {
+    if (!ZONAS_APAGADAS.fuente) {
+      issues.push('ZONAS_APAGADAS.fuente missing');
+    }
+    if (!ZONAS_APAGADAS.fecha) {
+      issues.push('ZONAS_APAGADAS.fecha missing');
+    }
+  }
+  // Check 11 (v3.10.0): integridad CCPP — total de caseríos >= 40,000.
+  // La cifra oficial INEI 2017 es ~120k CP; GeoNames 43,491 es el mínimo
+  // aceptable. Si baja de 40k, hay regresión seria.
+  if (typeof CCPP_DATA !== 'undefined' && CCPP_DATA) {
+    var totalCcpp = 0;
+    Object.keys(CCPP_DATA).forEach(function(d6) {
+      if (Array.isArray(CCPP_DATA[d6])) totalCcpp += CCPP_DATA[d6].length;
+    });
+    if (totalCcpp < 40000) {
+      issues.push('CCPP_DATA.totalCcpp=' + totalCcpp + ' < 40000 (regresión)');
     }
   }
   // Report
