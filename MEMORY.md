@@ -56,21 +56,67 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-16 — v3.9.8 CHECKPOINT dialog read-only minimal** (HEAD `b563419`). Sesión v3.9.4 → v3.9.8 completa. 434/434 tests PASS. Working tree: clean.
+Memoria persistente. Última actualización: **2026-10-16 — v3.9.15 CHECKPOINT final (inteligencia sistema alineada)** en rama `develop` (HEAD `63e50fc`). Sesión v3.9.4 → v3.9.15 completa con 12 versiones incrementales. 432/432 tests PASS. audit_masivo ALL. Working tree: clean. **POPUP LIVE en GitHub Pages: `v3.9.15`** ✅ (desplegado via subtree split desde `c71fd60`).
 
-✅ **Sesión v3.9.4 → v3.9.8 (popup rediseñado coherente — `b563419`):**
-- **v3.9.4**: tokens semánticos (rojo=apagado, amarillo=IPT 2G), botón ⚠️ siempre responde, panel inline con header compacto
-- **v3.9.5**: panel position:absolute (overlay) — no estira el grid
-- **v3.9.6**: refinamiento Apple 2026 (radius 16px, saturate 1.8, shadow layered, inset highlight)
-- **v3.9.7**: dialog MINIMAL — quitado border rojo izquierdo, header solo COMU, sin scroll, sin espacio muerto
-- **v3.9.8**: ELIMINADO status pill "✓ Copiado" + autocopia. Dialog READ-ONLY. Bold en fechas + 2G/4G del speech
+✅ **Sesión v3.9.4 → v3.9.15 (popup rediseñado coherente end-to-end — `63e50fc`):**
 
-🆕 **Lecciones aprendidas v3.9.4 → v3.9.8 (L-079 a L-084):**
-- **L-079**: "Iterar = fallar". v3.9.4→v3.9.6 agregó complejidad (Apple 2026 features) que el CEO rechazó explícitamente ("marcos feos, iterando demasiado"). La versión final v3.9.8 es MÁS SIMPLE que v3.9.5.
-- **L-080**: "Menos es más en dialogs". Header minimal (`⚠ COMU-XXXX`) > header rico (`COMU · zona · fecha · tag RED 2G`). Cada elemento extra es decisión cognitiva para el usuario.
-- **L-081**: "El espacio muerto es ruido visual". Status pill con `display: inline-flex` + `opacity: 0` igual ocupa layout space y se ve mal. Solución: no renderizarlo.
-- **L-082**: "Read-only > autocopia". CEO directive "es solo para leer, no copiar automáticamente". El supervisor lee el speech para sí mismo antes de hablar — copiar no aporta valor si no pidió copiar.
-- **L-083**: "Bold con color sutil enfoca la atención sin gritar". `font-weight: 700` + `color: zone-ipt 88%` resalta fechas/4G sin saturar visualmente.
+| Versión | Cambio | Commit |
+|---|---|---|
+| v3.9.4 | Tokens semánticos + botón ⚠️ siempre responde | `272668b` |
+| v3.9.5 | Panel position:absolute (overlay) — no estira el grid | `23a53ac` |
+| v3.9.6 | Refinamiento Apple 2026 (radius 16, saturate 1.8) | `2a1faed` |
+| v3.9.7 | Dialog MINIMAL (sin border rojo, sin scroll) | `a15760f` |
+| v3.9.8 | ELIMINADO autocopia + Bold en fechas/4G | `b563419` |
+| v3.9.9 | Dropdown DISTRITO WIDEN + sin background | `fbcb53d` |
+| v3.9.10 | Dropdown CONTAINED en grid-block (no overflow popup) | `cc478ae` |
+| v3.9.11 | Dropdown WIDEN nombres completos sin overflow | `2c5b18d` |
+| v3.9.12 | Layout reorganizado 4 filas (DEPTO+DIST / DIREC+CCPP / REF+btns / RESULTADO) | `913ad5c` |
+| v3.9.13 | Speech reescrito con placeholders `{dia} {mes} {distrito,departamento} {Red}` | `228134d` |
+| v3.9.14 | IPT speeches acortados (-47% palabras) | `9f35852` |
+| **v3.9.15** | **Inteligencia sistema alineada — COMU-5514 vs COMU-5672 distinguidos** | `63e50fc` ← **LIVE** |
+
+### 🔥 v3.9.15 — Fixes críticos de inteligencia (CEO: "CORRECCIÓN END TO END")
+
+| # | Bug detectado en auditoría | Fix |
+|---|---|---|
+| 1 | `comu5514_postventa_marcaje` tenía copy mezclado de IPT ("2G dejará de funcionar") | Restaurado copy de **estaciones-base**: "estación base será desactivada" |
+| 2 | `renderCoberturaButton` title usaba 🔴 para IPT (yellow visual) | Emoji corregido 🟡 + agregado "ESTACIÓN BASE" para COMU-5514 |
+| 3 | `ipt_visor_sin_4g` sintaxis legacy `[dd/m]` | Actualizado a `{placeholders}` para consistencia |
+| 4 | Check 7 (nuevo) — speech integrity por COMU | speech 5514 NO debe mencionar "2G"; speech 5672 SÍ debe mencionarlo |
+
+### 🆕 Speeches alineados (estado final v3.9.15)
+
+| Speech | COMU | Tema |
+|---|---|---|
+| `comu5514_visor_unico` | **5514** | Estaciones Base (genérico) |
+| `comu5514_postventa_marcaje` | **5514** | ✅ Estación Base DESACTIVADA |
+| `ipt_visor_4g` | **5672** | Tecnología 2G + alternativa 4G |
+| `ipt_visor_sin_4g` | **5672** | Tecnología 2G + renovación tienda |
+| `ipt_postventa_4g` | 5672 | 2G + 4G (postventa) |
+| `ipt_postventa_sin_4g` | 5672 | 2G + renovación (postventa) |
+
+### 📦 Deployments al remoto (ambos pusheados)
+
+```
+PUSH 1: develop → origin/develop  (v3.9.15 @ 63e50fc) ✅
+PUSH 2: popup-deploy → origin/main (v3.9.15 @ c71fd60, LIVE) ✅
+URL LIVE: https://alexander-salvador.github.io/cima-generador/
+```
+
+### 🧠 Lecciones aprendidas v3.9.4 → v3.9.15 (L-079 a L-090)
+
+- **L-079**: "Iterar = fallar". v3.9.4→v3.9.6 agregó complejidad rechazada por CEO. Final v3.9.8 es MÁS SIMPLE.
+- **L-080**: "Menos es más en dialogs". Header minimal > header rico. Cada elemento extra = decisión cognitiva.
+- **L-081**: "Espacio muerto invisible = ruido visual". Status pill con `opacity:0` igual ocupa layout.
+- **L-082**: "Read-only > autocopia". El supervisor lee, no necesita auto-copia.
+- **L-083**: "Bold con color sutil". `font-weight:700 + color zone-ipt 88%` resalta sin saturar.
+- **L-084**: "Overlay > in-flow". `position:absolute bottom calc(100%+N)` para dialogs anclados.
+- **L-085**: "Widen sin constraints = bug en modos angostos". Popup mode (480px) necesita dropdown bounded.
+- **L-086**: "Container-aware sizing". Dropdown/dialog deben medir parent (.grid-block) y clamp.
+- **L-087**: "Contained sin readable = bug visual". v3.9.10 constreñido pero nombres truncados. Container constraints deben permitir CRECER dentro de los límites.
+- **L-088**: "Layout gridded > layout spaghetti". v3.9.12 reorganizó 4 filas con roles claros.
+- **L-089**: "Copy largo = copy no leído". Speeches >70 palabras pierden atención del supervisor.
+- **L-090**: "Speech segregation by COMU". COMU-5514 (estaciones físicas) vs COMU-5672 (IPT 2G tech) son TIPOS DISTINTOS. Mezclar copy = sistema confuso. Check 7 en `auditZonasApagadas` previene regresión futura.
 - **L-084**: "Overlay > in-flow". `position: absolute` con `bottom: calc(100% + N)` es el patrón correcto para dialogs anclados a un trigger (no `position: relative` que estira el layout).
 
 ✅ **Sesión v3.9.0 → v3.9.3 (popup rediseñado coherente — `7c86470`):**
