@@ -26,7 +26,7 @@ from collections import Counter, defaultdict
 DEFAULT_HTML = Path(__file__).parent / 'index.html'
 EXPECTED_DEPTOS = 25
 EXPECTED_PROVINCIAS = 196
-EXPECTED_DISTRITOS = 1892
+EXPECTED_DISTRITOS = 1893  # v3.10.3: +1 (Santa Rosa de Loreto Ley 32403, d6 tentativo 160405)
 EXPECTED_DISTRITOS_CCPP = 1853  # v3.10.0: +2 (UNION PROGRESO, UNION ASHÁNINKA)
 EXPECTED_CCPP_MIN = 43000
 
@@ -351,7 +351,7 @@ if m_anom:
             result.ok(f'COHERENCIA anomalias: {depto} presente')
         else:
             result.fail(f'COHERENCIA anomalia {depto}', 'missing')
-    for campo in ['razon', 'evidencia', 'verificado_por']:
+    for campo in ['razon', 'evidencia', 'validado_por']:
         if campo in anom_body:
             result.ok(f'COHERENCIA anomalias: campo {campo} presente')
         else:
