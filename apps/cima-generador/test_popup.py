@@ -251,10 +251,11 @@ def test(html_path):
         else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 200 cleaned or 239 legacy)')
         if len(dist_items) >= 191: result.ok(f'districts_with_off size = {len(dist_items)} (>=191, incluye IPT)')
         else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected >=191)')
-        if total_zones >= 239: result.ok(f'total_zones = {total_zones} (>=239)')
-        else: result.fail(f'total_zones', f'{total_zones} (expected >=239)')
-        if total_districts >= 191: result.ok(f'total_districts = {total_districts} (>=191)')
-        else: result.fail(f'total_districts', f'{total_districts} (expected >=191)')
+        if total_zones >= 200: result.ok(f'total_zones = {total_zones} (>=200)')
+        else: result.fail(f'total_zones', f'{total_zones} (expected >=200)')
+        if total_districts >= 200: result.ok(f'total_districts = {total_districts} (>=200)')
+        else: result.fail(f'total_districts', f'{total_districts} (expected >=200)')
+
 
         # Formato de keys: "d6:ccpp"
         if all(':' in k for k in ccpp_items): result.ok('all ccpp_keys tienen formato d6:ccpp')

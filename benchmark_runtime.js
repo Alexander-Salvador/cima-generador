@@ -1,4 +1,4 @@
-// benchmark_runtime.js — Mide performance REAL del popup en Node.
+// benchmark_runtime.js - Mide performance REAL del popup en Node.
 // Carga el HTML, extrae el script, ejecuta checkZonaApagada en runtime Node real.
 // Mide: latencia check, throughput, fuzzy match rate en runtime REAL (no Python).
 
