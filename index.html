@@ -4421,6 +4421,15 @@ const ZONAS_APAGADAS_INTEL = {
   // acción, validación cruzada, y fuente de cierre.
   // El popup usa esta metadata para mostrar validación OSIPTEL cuando el
   // supervisor está en uno de estos deptos (en el panel de tooltip).
+  // v3.10.7 (A1): disclaimer global de honestidad — todos los datos son
+  // interpretación basada en búsqueda pública, NO validación oficial Movistar.
+  // Cualquier supervisor/operador debe verificar antes de ejecutar baja de servicio.
+  _disclaimer_interpretacion: {
+    fuente_datos: "Búsqueda pública OSIPTEL coberturero + MTC comunicados oct 2025 + análisis propio",
+    estado_oficial: "MTC y OSIPTEL NO han confirmado un cronograma público de apagado 2G en Perú (oct 2025)",
+    alcance: "Esta metadata es INTERPRETACIÓN basada en búsqueda web, NO validación oficial Movistar",
+    accion_requerida: "Verificar con cliente antes de ejecutar baja o transferencia de servicio. Las cifras (39,500 clientes IPT, etc.) son del PDF interno Movistar, no validadas con OSIPTEL ni MTC."
+  },
   anomalias_departamentales: {
     "CALLAO": {
       "estado": "VALIDADO_sin_apagado_oficial",
@@ -6896,21 +6905,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // v3.8.0: Pre-normalizar ccpp_keys a NFC + upper para O(1) lookup.
-  // Antes hacíamos .normalize('NFC').toUpperCase() en cada lookup, ahora
-  // una sola vez al startup. Mismas keys en ZONAS_APAGADAS.ccpp_keys
-  // (originales) y CCPP_KEYS_NORMALIZED (pre-normalizadas).
-  if (typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
-    CCPP_KEYS_NORMALIZED = new Set();
-    ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
-      // El formato es d6:NAME — preservamos d6 y normalizamos solo el NAME
-      var idx = k.indexOf(':');
-      if (idx < 0) return;
-      var d6 = k.substring(0, idx);
-      var name = k.substring(idx + 1);
-      var normalized = name.normalize ? name.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : name.toUpperCase().replace(/\s+/g, ' ').trim();
-      CCPP_KEYS_NORMALIZED.add(d6 + ':' + normalized);
-    });
-  }
+  // v3.10.7 (A2): init movido al IIFE module-level (ver línea initCCPPKeyNormalized).
+  // El init aquí en DOMContentLoaded es redundante — el module-level ya inicializó.
+  // Mantenemos la referencia para no romper la estructura del callback, pero
+  // CCPP_KEYS_NORMALIZED ya está poblado por el IIFE.
 
   // v3.10.2: Build fuzzy index para búsqueda por similitud.
   // Pre-computa Map<d6, CCPP[]> para fuzzy matching O(k) por distrito.
@@ -6940,7 +6938,25 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 
 // v3.8.0: Set pre-normalizado para lookup O(1) de CCPP apagados.
+// v3.10.7 (A2): se inicializa al final del script (línea initRuntimeState abajo)
+// para que esté disponible en Node.js runtime, no solo en browser.
 var CCPP_KEYS_NORMALIZED = null;
+
+// v3.10.7 (A2): INIT al module-level. Antes esto estaba en DOMContentLoaded
+// lo que dejaba CCPP_KEYS_NORMALIZED=null en Node.js runtime.
+// Como un IIFE, se ejecuta al parse del script.
+(function initCCPPKeyNormalized() {
+  if (typeof ZONAS_APAGADAS === 'undefined' || !ZONAS_APAGADAS.ccpp_keys) return;
+  CCPP_KEYS_NORMALIZED = new Set();
+  ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+    var idx = k.indexOf(':');
+    if (idx < 0) return;
+    var d6 = k.substring(0, idx);
+    var name = k.substring(idx + 1);
+    var normalized = name.normalize ? name.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : name.toUpperCase().replace(/\s+/g, ' ').trim();
+    CCPP_KEYS_NORMALIZED.add(d6 + ':' + normalized);
+  });
+})();
 
 // v3.8.0: AUDITORÍA DE INTEGRIDAD — verifica ZONAS_APAGADAS end-to-end.
 // Loguea issues a console.warn. No rompe la app.
