@@ -118,6 +118,16 @@
     "Para 23 distritos rurales legacy: scrappear OpenStreetMap Overpass por admin_level=8 con tags village/hamlet",
     "Para 6 distritos urbanos: NO aplicar fix (no aplica CCPP rurales)",
     "Para 'Santa Rosa de Loreto' (160405): esperar INEI compendio 2026 o usar fuente directa del El Peruano",
-    "Para TUMBES/LORETO/UCAYALI: anomalías documentadas, no son gaps del PDF sino de la base de CCPP"
-  ]
+    "Para TUMBES/LORETO/UCAYALI: anomalías documentadas, no son gaps del PDF"
+  ],
+  "validacion_2026_10_17": {
+    "distritos_sin_ccpp_real": 7,
+    "distritos_sin_ccpp_antes_v3104": 41,
+    "reduccion": 34,
+    "reduccion_porcentaje": "82.9%",
+    "categoria_1_urbanos": 6,
+    "categoria_2_amazonicos": 1,
+    "categoria_3_rurales_recien_creados": 0,
+    "metodo": "v3.10.4 inyecto 33 capitales rurales + 3 d6 adicionales a districts_with_off. Quedan 7 d6 sin CCPP_DATA: 6 urbanos (CALLAO + LIMA) y 1 amazonico (Santa Rosa de Loreto d6=160405)."
+  }
 }
