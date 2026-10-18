@@ -4047,7 +4047,8 @@ function renderEtiquetasDropdown(query) {
   }
   var html = matches.slice(0, 12).map(function (e) {
     var safeSol = escapeHtml(e.solicitud);
-    return '<div class="ac-item etiqueta-item" data-id="' + e.id + '" onclick="selectEtiqueta(' + e.id + ')" role="option">' +
+    // v3.10.8 (A7/D10): event delegation. data-id en lugar de onclick inline.
+    return '<div class="ac-item etiqueta-item" data-id="' + escapeHtml(String(e.id)) + '" data-action="select-etiqueta" role="option">' +
       '<span class="etiqueta-item-title">' + safeSol + '</span>' +
     '</div>';
   }).join('');
@@ -5885,12 +5886,11 @@ function acRender(key) {
             }
           });
         } else {
-          ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
-            if (k.indexOf(prefix) === 0) {
-              zone = true;
-              d6ForItem = d6Candidate;
-            }
-          });
+          // v3.10.8 (D3): lookup O(1) en CCPP_COUNT_BY_D6 en vez de iterar 200 keys
+          if (CCPP_COUNT_BY_D6.has(d6Candidate)) {
+            zone = true;
+            d6ForItem = d6Candidate;
+          }
         }
         // v3.8.0: verificar si es IPT (broad, RED). Si no tiene CCPPs
         // confirmados pero está en ipt_districts, marcar con .ac-item-ipt.
@@ -5920,14 +5920,8 @@ function acRender(key) {
       // visualmente normal pero con un triángulo que indica "este distrito
       // tiene zonas de apagado" — el conteo va en el title nativo.
       cls += ' ac-item-zone';
-      // Contar CCPPs apagados en este distrito (para el title)
-      var ccppCount = 0;
-      if (typeof ZONAS_APAGADAS !== 'undefined' && ZONAS_APAGADAS.ccpp_keys) {
-        var prefix = d6ForItem + ':';
-        ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
-          if (k.indexOf(prefix) === 0) ccppCount++;
-        });
-      }
+      // v3.10.8 (D3): lookup O(1) en CCPP_COUNT_BY_D6
+      var ccppCount = CCPP_COUNT_BY_D6.get(d6ForItem) || 0;
       var distTitle = acEscape(item) + ' — distrito con ' + ccppCount + ' CCPP' + (ccppCount === 1 ? '' : 's') + ' en zona de apagado Movistar';
       return '<div class="' + cls + '" role="option" data-idx="' + i + '" data-val="' + acEscape(item) + '" data-zone="distrito_of" title="' + distTitle + '">'
         + '<span class="ac-off-tri" aria-hidden="true"></span>'
@@ -6626,7 +6620,8 @@ function renderTipifs() {
         '<div class="output-label">Resultado (click para copiar)</div>' +
         '<div class="output-row">' +
           '<div class="output-wrap">' +
-            '<div class="output-box' + (isPlaceholder ? ' placeholder' : '') + '" data-tipif-act="copy" data-id="' + t.id + '" onclick="copyTipifOutput(\'' + t.id + '\')">' + escAttr(out) + '</div>' +
+            // v3.10.8 (A7/D10): event delegation. data-action en lugar de onclick inline.
+            '<div class="output-box' + (isPlaceholder ? ' placeholder' : '') + '" data-action="copy-tipif" data-id="' + escapeHtml(String(t.id)) + '">' + escAttr(out) + '</div>' +
           '</div>' +
           '<button class="btn-icon btn-icon-clear" data-tipif-act="remove" data-id="' + t.id + '" aria-label="Eliminar tipificación" title="Eliminar">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -6886,6 +6881,22 @@ document.addEventListener('DOMContentLoaded', function () {
   if (tipifList) tipifList.addEventListener('click', tipifListHandler);
   if (tipifList) tipifList.addEventListener('input', tipifListHandler);
 
+  // v3.10.8 (A7/D10): event delegation para acciones dinámicas (data-action).
+  // Reemplaza onclick="selectEtiqueta(' + e.id + ')" y copyTipifOutput.
+  // El listener captura clicks y dispatcha según data-action.
+  document.addEventListener('click', function(ev) {
+    var target = ev.target.closest('[data-action]');
+    if (!target) return;
+    var action = target.getAttribute('data-action');
+    if (action === 'select-etiqueta') {
+      var id = target.getAttribute('data-id');
+      if (id) selectEtiqueta(id);
+    } else if (action === 'copy-tipif') {
+      var tid = target.getAttribute('data-id');
+      if (tid) copyTipifOutput(tid);
+    }
+  });
+
   // v3.8.0: AUDITORÍA DE INTEGRIDAD ZONAS_APAGADAS al startup.
   // Verifica que toda la data esté consistente end-to-end:
   // (1) ccpp_keys con formato d6:NAME válido
@@ -6955,6 +6966,21 @@ var CCPP_KEYS_NORMALIZED = null;
     var name = k.substring(idx + 1);
     var normalized = name.normalize ? name.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : name.toUpperCase().replace(/\s+/g, ' ').trim();
     CCPP_KEYS_NORMALIZED.add(d6 + ':' + normalized);
+  });
+})();
+
+// v3.10.8 (D3/A3): Precomputar Map<d6, count> al startup.
+// Antes acRender iteraba ccpp_keys (200) por cada item del dropdown (12).
+// Con 12 items × 200 keys = 2,400 iteraciones por keystroke.
+// Ahora lookup O(1) con CCPP_COUNT_BY_D6.get(d6).
+var CCPP_COUNT_BY_D6 = new Map();
+(function initCCPPCountByD6() {
+  if (typeof ZONAS_APAGADAS === 'undefined' || !ZONAS_APAGADAS.ccpp_keys) return;
+  ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
+    var idx = k.indexOf(':');
+    if (idx < 0) return;
+    var d6 = k.substring(0, idx);
+    CCPP_COUNT_BY_D6.set(d6, (CCPP_COUNT_BY_D6.get(d6) || 0) + 1);
   });
 })();
 
