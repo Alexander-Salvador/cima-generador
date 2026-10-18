@@ -4320,14 +4320,18 @@ function hideEtiquetaDropdown() {
 }
 
 // Helper HTML escape (usa el existente o fallback)
+// v3.10.9 (R1): Función unificada de escape HTML.
+// Antes: 4 variantes (escapeHtml, escapeHtmlZa, acEscape, escAttr).
+// Ahora: escapeHtml es la canónica (incluye / para JSON safety).
+// acEscape y escAttr se mantienen como aliases para claridad en uso.
 function escapeHtml(str) {
-  if (typeof escapeHtmlImpl === 'function') return escapeHtmlImpl(str);
-  return String(str)
+  return String(str == null ? '' : str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/'/g, '&#39;')
+    .replace(/\//g, '&#x2F;');
 }
 function copyTipifOutput(id) {
   var block = document.querySelector('.tipif-block[data-id="' + id + '"]');
@@ -4607,18 +4611,31 @@ function zaSimilarity(a, b) {
   return 1.0 - (dist / maxLen);
 }
 
-// v3.10.2: Cache LRU para checks repetidos. Key: d6:ccpp_normalized.
+// v3.10.9 (R3): Cache LRU REAL para checks repetidos. Key: d6:ccpp_normalized.
+// v3.10.2: era FIFO (solo insertaba al final, sin mover al usar).
+// v3.10.9: LRU real — get() mueve la key al final (marcada como recently used).
 // Cap: 1000 entradas (suficiente para sesiones de supervisor típicas).
 // Mejora ~10x en checks repetidos (mismo CCPP tipeado varias veces).
 var ZA_CACHE_MAX = 1000;
 var zaCheckCache = new Map();
-function zaCacheGet(key) { return zaCheckCache.get(key); }
+function zaCacheGet(key) {
+  // LRU: al acceder, eliminar y re-insertar para mover al final (most recently used)
+  if (zaCheckCache.has(key)) {
+    var val = zaCheckCache.get(key);
+    zaCheckCache.delete(key);
+    zaCheckCache.set(key, val);
+    return val;
+  }
+  return undefined;
+}
 function zaCacheSet(key, val) {
-  if (zaCheckCache.size >= ZA_CACHE_MAX) {
-    // Evict oldest (first key)
+  if (zaCheckCache.size >= ZA_CACHE_MAX && !zaCheckCache.has(key)) {
+    // Cache full y key nueva: evict oldest (first key = menos recently used)
     var firstKey = zaCheckCache.keys().next().value;
     if (firstKey !== undefined) zaCheckCache.delete(firstKey);
   }
+  // Si key ya existe, eliminarla para re-insertar al final (LRU)
+  if (zaCheckCache.has(key)) zaCheckCache.delete(key);
   zaCheckCache.set(key, val);
   return val;
 }
@@ -5306,12 +5323,8 @@ function zaCopyApagadoSpeech() {
 }
 
 // ─── 8. ESCAPE HTML HELPER (usa el global si existe) ───
-function escapeHtmlZa(s) {
-  if (typeof escapeHtml === 'function') return escapeHtml(s);
-  return String(s || '').replace(/[&<>"']/g, function(c) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-  });
-}
+// v3.10.9 (R1): Eliminado escapeHtmlZa — era solo wrapper redundante.
+// Use escapeHtml directamente.
 
 // ─── 9. LISTENER PRINCIPAL: click en ⚠️ (v3.9.0 always-functional) ───
 (function() {
@@ -6548,9 +6561,9 @@ function buildTipifOutput(t) {
   return t.numero + ' // ' + t.consulta + ' // ' + t.respuesta + ' // $$_' + t.idc + '_&&';
 }
 
-function escAttr(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// v3.10.9 (R1): escAttr ahora delega a escapeHtml (elimina duplicación).
+// Mantenido como nombre para claridad en atributos HTML.
+function escAttr(s) { return escapeHtml(s); }
 
 function renderTipifs() {
   var list = $('tipifList');
