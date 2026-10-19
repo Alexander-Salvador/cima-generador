@@ -4663,15 +4663,15 @@ function renderCoberturaButton(check) {
   // Reset de clases
   btn.classList.remove('off', 'warn', 'fuzzy', 'cobertura-btn--idle');
   btn.setAttribute('aria-pressed', 'false');
+  // v3.10.14: SOLO ccpp_exacto activa el botón visualmente. ccpp_fuzzy y
+  // distrito_of mantienen el botón en IDLE (gris, sin alerta). El supervisor
+  // debe tipear el CCPP EXACTO para ver la alerta. Click en IDLE muestra
+  // toast "sin alerta en esta dirección".
   if (!check) {
     btn.title = 'Sin alertas — cobertura OK';
     btn.classList.add('cobertura-btn--idle');
     return;
   }
-  // v3.10.12: 3 niveles semánticos (eliminado ipt_distrito / COMU-5672 / 2G):
-  // - ccpp_exacto: CCPP específico en ccpp_keys (COMU-5514) — verificado físico
-  // - ccpp_fuzzy: CCPP similar (typo) — alta-media confianza
-  // - distrito_of: distrito con zonas apagadas (preventivo, no verificado por CCPP)
   if (check.nivel === 'ccpp_exacto') {
     btn.classList.add('off');
     btn.setAttribute('aria-pressed', 'true');
@@ -4680,25 +4680,12 @@ function renderCoberturaButton(check) {
     btn.setAttribute('data-confianza', '1.00');
     btn.setAttribute('data-fuente-oficial', 'true');
     btn.title = '🔴 COMU-5514 (ALTA · oficial): Estación base desactivada en ' + check.code + '. Click para ver detalles.';
-  } else if (check.nivel === 'ccpp_fuzzy') {
-    // v3.10.2: fuzzy match — confianza < 1.0
-    btn.classList.add('fuzzy');
-    btn.setAttribute('aria-pressed', 'true');
-    var simPct = Math.round((check.confianza || 0) * 100);
-    btn.setAttribute('aria-label', 'Posible match fuzzy con CCPP apagado (' + simPct + '% similitud) — click para ver sugerencias');
-    btn.setAttribute('data-severidad', 'media');
-    btn.setAttribute('data-confianza', check.confianza ? check.confianza.toFixed(2) : '0.75');
-    btn.setAttribute('data-fuente-oficial', 'true');
-    var firstMatch = (check.fuzzy_matches && check.fuzzy_matches[0]) ? check.fuzzy_matches[0].name : '?';
-    btn.title = '🟠 COMU-5514 (MEDIA · fuzzy ' + simPct + '%): CCPP similar a "' + firstMatch + '" — verificar CCPP exacto.';
-  } else if (check.nivel === 'distrito_of') {
-    btn.classList.add('warn');
-    btn.setAttribute('aria-pressed', 'true');
-    btn.setAttribute('aria-label', 'Distrito con zonas de apagado Movistar (preventivo, CCPP exacto no verificado) — click para ver detalles');
-    btn.setAttribute('data-severidad', 'preventiva');
-    btn.setAttribute('data-confianza', '1.00');
-    btn.setAttribute('data-fuente-oficial', 'true');
-    btn.title = '🟡 COMU-5514 (PREVENTIVA · oficial): Distrito con zonas de apagado ' + check.code + '. CCPP exacto no verificado, revisar con el cliente.';
+  } else {
+    // v3.10.14: ccpp_fuzzy y distrito_of NO activan el botón. Solo IDLE.
+    // (La lógica de detección sigue existiendo en checkZonaApagada, pero
+    // la UI no la refleja hasta que haya match EXACTO.)
+    btn.title = 'Búsqueda no exacta. Tipear CCPP exacto para activar alerta.';
+    btn.classList.add('cobertura-btn--idle');
   }
 }
 
@@ -4721,7 +4708,7 @@ function checkAndRenderZonaApagada() {
 function zaUpdateCcppInputZoneClass() {
   var ccppEl = $('ccpp');
   if (!ccppEl) return;
-  ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt', 'ccpp-ipt-warn');
+  ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt');
   var ccppVal = (ccppEl.value || '').trim();
   if (!ccppVal) return;
   var codes = zaGetCodes(upper('departamento'), upper('provincia'), upper('distrito'));
@@ -4732,18 +4719,15 @@ function zaUpdateCcppInputZoneClass() {
   var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
     ? CCPP_KEYS_NORMALIZED.has(itemKey)
     : ZONAS_APAGADAS_STATE.ccpp_keys.has(itemKey);
-  // Precedencia: ccpp_exacto (específico) > distrito_of (preventive).
-  // v3.10.12: ELIMINADA rama ipt (COMU-5672 / 2G).
+  // v3.10.14: SOLO pintar si match EXACTO. Sin distrito_of preventivo.
   if (hasMatch) {
-    ccppEl.classList.add('ccpp-off-confirmed'); // ÁMBAR
-  } else if (ZONAS_APAGADAS_STATE.districts_with_off.has(d6)) {
-    ccppEl.classList.add('ccpp-off-ipt');        // ÁMBAR
+    ccppEl.classList.add('ccpp-off-confirmed');
   }
 }
 
 // v3.7.9: zaUpdateDistInputZoneClass — pinta el input DISTRITO con
-// .dist-off-warn (ámbar) si está en districts_with_off. Cubre el flujo
-// end-to-end en la versión za* (v3.6.0 REBUILD) del popup.
+// .dist-off-warn (ámbar) si tiene CCPPs exactos confirmados en ccpp_keys.
+// v3.10.14: SOLO distritos con CCPPs exactos confirmados. Sin preventivo genérico.
 function zaUpdateDistInputZoneClass() {
   var distEl = $('distrito');
   if (!distEl) return;
@@ -4752,9 +4736,9 @@ function zaUpdateDistInputZoneClass() {
   if (!distVal) return;
   var codes = zaGetCodes(upper('departamento'), upper('provincia'), distVal);
   if (!codes || !codes.d6) return;
-  // v3.10.12: ELIMINADA rama ipt (COMU-5672 / 2G). Solo distrito_of (preventive).
-  if (ZONAS_APAGADAS_STATE.districts_with_off.has(codes.d6)) {
-    distEl.classList.add('dist-off-warn');  // ÁMBAR
+  // v3.10.14: solo si el distrito tiene CCPPs exactos confirmados (CCPP_COUNT_BY_D6).
+  if (typeof CCPP_COUNT_BY_D6 !== 'undefined' && CCPP_COUNT_BY_D6.has(codes.d6)) {
+    distEl.classList.add('dist-off-warn');  // ÁMBAR — distrito con CCPPs exactos confirmados
   }
 }
 
@@ -5833,21 +5817,19 @@ function updateCcppInputZoneClass() {
     : ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + itemKey);
   // Precedencia: ccpp_exacto (específico) > distrito_of (preventive).
   // v3.10.12: ELIMINADA rama ipt (COMU-5672 / 2G).
+  // v3.10.14: ELIMINADO distrito_of preventivo. Solo match EXACTO pinta el input.
   if (hasMatch) {
     ccppEl.classList.add('ccpp-off-confirmed');
     return;
-  }
-  // Distrito en districts_with_off pero CCPP sin match exacto → AMARILLO (input)
-  if (ZONAS_APAGADAS.districts_with_off.has(d6)) {
-    ccppEl.classList.add('ccpp-off-ipt');
   }
 }
 
 // ═══ v3.7.9/v3.8.0: updateDistInputZoneClass — pinta el input distrito según zona ═══
 // Llamar cuando: (a) se selecciona distrito del dropdown, (b) cambia provincia
 // (cascada), (c) checkAndRenderZonaApagada cambia de estado.
-// v3.10.12: SOLO marca .dist-off-warn (ámbar) si está en districts_with_off.
-// Eliminada rama ipt (COMU-5672 / 2G).
+// v3.10.14: SOLO pinta .dist-off-warn (ámbar) si el distrito tiene CCPPs exactos
+// confirmados (no preventivo genérico). El supervisor ve el ámbar solo si hay
+// datos concretos de apagado en ese distrito.
 function updateDistInputZoneClass() {
   var distEl = $('distrito');
   if (!distEl) return;
@@ -5860,9 +5842,9 @@ function updateDistInputZoneClass() {
   var p = upper('provincia');
   var codes = getUbigeoCodesForAddress(d, p, distVal);
   if (!codes || !codes.d6) return;
-  // v3.10.12: ELIMINADA precedencia ipt. Solo distrito_of (preventive).
-  if (ZONAS_APAGADAS.districts_with_off.has(codes.d6)) {
-    distEl.classList.add('dist-off-warn');  // ÁMBAR
+  // v3.10.14: solo si el distrito tiene CCPPs exactos confirmados (no preventivo).
+  if (typeof CCPP_COUNT_BY_D6 !== 'undefined' && CCPP_COUNT_BY_D6.has(codes.d6)) {
+    distEl.classList.add('dist-off-warn');  // ÁMBAR — distrito con CCPPs exactos confirmados
   }
 }
 

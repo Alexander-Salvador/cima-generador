@@ -1,5 +1,46 @@
 # Changelog — cima-generador
 
+## [3.10.14] - 2026-10-19 — 🎯 Botón ⚠️ SOLO se activa en búsqueda EXACTA
+
+**CEO directive:** "Ahora vamos a mejorar el boton de zonas de apagado, que se active en la busqueda exacta no antes."
+
+### 🎯 Comportamiento
+
+| Nivel de check | Botón ⚠️ antes | Botón ⚠️ ahora |
+|---|---|---|
+| `ccpp_exacto` (match exacto) | 🔴 activado | 🔴 **activado** (sin cambios) |
+| `ccpp_fuzzy` (typo ≥0.75) | 🟠 activado (fuzzy) | ⚪ IDLE — sin alerta visual |
+| `distrito_of` (preventivo) | 🟡 activado (warn) | ⚪ IDLE — sin alerta visual |
+| `null` (sin match) | ⚪ IDLE | ⚪ IDLE (sin cambios) |
+
+### 🔧 Cambios
+
+| Componente | Cambio |
+|---|---|
+| `renderCoberturaButton` | ccpp_fuzzy y distrito_of → IDLE (gris, sin pulse, sin aria-pressed=true, sin title de alerta) |
+| `zaUpdateCcppInputZoneClass` | Solo `ccpp-off-confirmed` si match exacto. Eliminada rama `ccpp-off-ipt` preventiva |
+| `zaUpdateDistInputZoneClass` | Solo `dist-off-warn` si distrito tiene CCPPs exactos en `ccpp_keys` (via `CCPP_COUNT_BY_D6`), no preventivo genérico |
+| `updateCcppInputZoneClass` (original) | Misma lógica: solo match exacto pinta |
+| `updateDistInputZoneClass` (original) | Misma lógica: solo CCPP_COUNT_BY_D6 |
+
+### 🎯 Razón
+
+El botón ⚠️ reflejaba 3 estados visuales (rojo/ámbar/naranja) que confundían al supervisor: ¿es match exacto? ¿es aproximado? ¿es solo preventivo? Ahora la respuesta es binaria:
+- **Botón gris (IDLE)**: tipear CCPP exacto para activar alerta, o "no hay alerta en esta dirección"
+- **Botón rojo (off)**: match exacto verificado — click para ver detalles COMU-5514
+
+La lógica de fuzzy y distrito_of sigue existiendo en `checkZonaApagada()` y se evalúa, pero NO se refleja visualmente hasta que haya match exacto.
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** (234/234 ccpp_exacto, 100% fuzzy 234/234) |
+| `test_audit_brutal.py` | **58 OK** + 1 mentira VERSION drift |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.13] - 2026-10-19 — 🎯 RECUPERACIÓN END-TO-END de 34 zonas de apagado (PDFs Movistar)
 
 **CEO directive:** "se rompio las zonas de apagado no esta trackeando correctamente! revisa los PDF y marca los distritos y CPP/CASERIO que estan en la lista de apagados movistar donde ya no habra servicio, revisalo end to end no debe omitirse ninguna zona."
