@@ -3209,9 +3209,10 @@ def test(html_path):
     print('\n▸ v3.10.42 — REDISTRIBUCIÓN ALERTS 1/section + AI 2026 SPEECHES')
 
     # CSS: .script-card-text font-size 12.5px (era 11px → CEO pidió mejor font)
+    # v3.10.43: regex más específico para evitar matchear .script-card-body > .script-card-text
     script_text_font = re.search(
-        r'\.script-card-text\s*\{([^}]+)\}',
-        html, re.DOTALL
+        r'^\s*\.script-card-text\s*\{([^}]+)\}',
+        html, re.MULTILINE | re.DOTALL
     )
     if script_text_font:
         body = re.sub(r'/\*[\s\S]*?\*/', '', script_text_font.group(1))
@@ -3290,6 +3291,86 @@ def test(html_path):
         result.ok('v3.10.42 SPEECH: encuesta modernizado (recibió/resuelto)')
     else:
         result.fail('v3.10.42 SPEECH encuesta', 'modernización AI 2026 esperada')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.43 — BUG FIXES (3 bugs reportados por CEO)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.43 — BUG FIXES: bienvenida telefono-last3 + encuesta overflow + visuales')
+
+    # BUG 1: bienvenida usa telefono-last3 (solo 3 dígitos) + NO "por la consulta de"
+    bienvenida_bug_match = re.search(
+        r'id="script-text-bienvenida"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if bienvenida_bug_match:
+        bb_text_raw = bienvenida_bug_match.group(1)
+        bb_text_visible = re.sub(r'<[^>]+>', '', bb_text_raw)
+        bb_text_visible = re.sub(r'\s+', ' ', bb_text_visible).strip()
+        if 'l\u00ednea que termina en' in bb_text_visible and \
+           'por la consulta de' not in bb_text_visible and \
+           'data-ph="telefono-last3"' in bb_text_raw:
+            result.ok('v3.10.43 BUG 1: bienvenida usa telefono-last3 + sin "por la consulta de"')
+        else:
+            issues = []
+            if 'l\u00ednea que termina en' not in bb_text_visible: issues.append('falta "línea que termina en"')
+            if 'por la consulta de' in bb_text_visible: issues.append('NO debe contener "por la consulta de"')
+            if 'data-ph="telefono-last3"' not in bb_text_raw: issues.append('falta data-ph="telefono-last3"')
+            result.fail('v3.10.43 BUG 1 bienvenida', f'issues: {issues}')
+    else:
+        result.fail('v3.10.43 BUG 1', 'script-text-bienvenida not found')
+
+    # BUG 1: JS telefono-last3 transformation (últimos 3 dígitos)
+    if re.search(r"key\s*===\s*['\"]telefono-last3['\"]", html) and \
+       re.search(r"\.slice\(-3\)", html) and \
+       re.search(r"\.replace\([^)]*\\D", html):
+        result.ok('v3.10.43 JS: telefono-last3 transformation (últimos 3 dígitos)')
+    else:
+        result.fail('v3.10.43 JS telefono-last3', 'transformación regex últimos 3 dígitos esperada')
+
+    # BUG 2: .script-card-body display: flex (overflow fix para encuesta)
+    # v3.10.43: regex más específico para matchear el bloque SIN prefijos
+    # (.script-card.is-collapsed .script-card-body tiene { display: none })
+    body_flex = re.search(
+        r'^\s*\.script-card-body\s*\{([^}]+)\}',
+        html, re.MULTILINE | re.DOTALL
+    )
+    if body_flex:
+        body_content = re.sub(r'/\*[\s\S]*?\*/', '', body_flex.group(1))
+        if 'display: flex' in body_content and 'flex-wrap: wrap' in body_content:
+            result.ok('v3.10.43 BUG 2: .script-card-body display:flex + flex-wrap (encuesta overflow fix)')
+        else:
+            result.fail('v3.10.43 BUG 2 .script-card-body', 'display:flex + flex-wrap esperados')
+    else:
+        result.fail('v3.10.43 BUG 2', '.script-card-body CSS missing')
+
+    # BUG 2: .script-card-body > .script-card-text con flex: 1 1 200px + min-width: 0
+    text_flex = re.search(r'\.script-card-body\s*>\s*\.script-card-text\s*\{([^}]+)\}', html, re.DOTALL)
+    if text_flex and 'flex: 1 1 200px' in text_flex.group(1) and 'min-width: 0' in text_flex.group(1):
+        result.ok('v3.10.43 BUG 2: .script-card-body > .script-card-text flex (wrap con badge)')
+    else:
+        result.fail('v3.10.43 BUG 2 .script-card-text', 'flex: 1 1 200px + min-width: 0 esperados')
+
+    # BUG 3: .script-section-header font-size 12px (más prominente)
+    header_font = re.search(r'\.script-section-header\s*\{([^}]+)\}', html, re.DOTALL)
+    if header_font:
+        header_body = re.sub(r'/\*[\s\S]*?\*/', '', header_font.group(1))
+        if 'font-size: 12px' in header_body and 'font-weight: 800' in header_body:
+            result.ok('v3.10.43 BUG 3: .script-section-header font-size 12px + weight 800 (más prominente)')
+        else:
+            result.fail('v3.10.43 BUG 3 section-header', 'font-size 12px + weight 800 esperados')
+    else:
+        result.fail('v3.10.43 BUG 3', '.script-section-header CSS missing')
+
+    # BUG 3: .script-alert font-size 10.5px (más compacto)
+    alert_font = re.search(r'\.script-alert\s*\{([^}]+)\}', html, re.DOTALL)
+    if alert_font:
+        alert_body = re.sub(r'/\*[\s\S]*?\*/', '', alert_font.group(1))
+        if 'font-size: 10.5px' in alert_body and 'max-width: 96%' in alert_body:
+            result.ok('v3.10.43 BUG 3: .script-alert font-size 10.5px + max-width 96% (más compacto)')
+        else:
+            result.fail('v3.10.43 BUG 3 .script-alert', 'font-size 10.5px + max-width 96% esperados')
+    else:
+        result.fail('v3.10.43 BUG 3 alert', '.script-alert CSS missing')
 
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
