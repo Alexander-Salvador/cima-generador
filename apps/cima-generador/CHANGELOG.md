@@ -1,5 +1,37 @@
 # Changelog — cima-generador
 
+## [3.10.19] - 2026-10-19 — 📐 Panel ⚠️ hijo de .row-ref-buttons (full width del row, dentro del grid)
+
+**CEO directive:** "[imagen] roto igual" — el panel se salía del grid por la derecha, estirándose horizontalmente fuera del contenedor de Búsqueda Address.
+
+**Causa raíz:** el panel estaba como hijo de `.cobertura-wrap` (que es inline-flex de 36px). Con `position: static; width: 100%` heredaba el ancho del wrap y se posicionaba relativo a él, saliéndose del row.
+
+**Fix:** el panel se mueve a ser **hijo directo de `.row-ref-buttons`** (no del wrap). Ahora:
+
+- `.row-ref-buttons` con `flex-wrap: wrap` — el panel baja a su propia línea
+- Panel con `flex: 0 0 100%; width: 100%; max-width: 100%` — full width del row
+- `position: static` (in-flow, sin absolute)
+- `max-height: 140px; overflow-y: auto` — cap estricto
+- `.cobertura-wrap` vuelve a `inline-flex` (solo contiene el botón ⚠)
+
+### 🎯 Resultado
+
+- Panel **dentro** del grid de Búsqueda Address, en su propia fila
+- Width 100% del row, NO se sale del grid
+- `max-height: 140px` con scroll interno
+- NO estira el contenido horizontalmente
+- Línea de severidad + speech en 1 línea compacta
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.18] - 2026-10-19 — 📐 Dialog ⚠️ in-flow DENTRO del grid + contenido compacto
 
 **CEO directive:** "Regreso a su estado inicial sigue incorrecto recuerda que nada debe exceder el ancho y alto maximo del GRID donde este el contenido ubicalo bien en el codigo y que se renderice dentro, se preciso mejora el contenido del dialog"
