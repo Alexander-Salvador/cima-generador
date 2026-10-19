@@ -1,5 +1,71 @@
 # Changelog — cima-generador
 
+## [3.10.47] - 2026-10-19 — 🐛 BUG FIX CRÍTICO: grids mismo ancho (jerarquía DOM)
+
+**CEO directive:** "Recuerda que en las GRID es para el modo responsive popup y no ha mejorado sigue igual las 3 grid deben tener el mismo ancho."
+
+### 🎯 Causa raíz (análisis con BeautifulSoup)
+
+**v3.10.44** (refactor MOTIVO cards) introdujo **1 `</div>` extra** en la línea 4013 del HTML. Ese cierre extra cerraba prematuramente `<div class="app">` ANTES de que abrieran `gridAddress` y `gridTipif`.
+
+Resultado en popup 480px:
+
+| Grid | Parent | Width |
+|---|---|---|
+| `gridScript` | `div.app` (padding 6px × 2 = 12px) | **453px** |
+| `gridAddress` | `div.popup-frame` (sin padding) | **465px** |
+| `gridTipif` | `div.popup-frame` (sin padding) | **465px** |
+
+→ 12px de diferencia visual entre gridScript y los otros 2.
+
+Confirmado vía `BeautifulSoup`:
+```python
+gridScript: parent=div.app       # correcto
+gridAddress: parent=div.popup-frame  # HUÉRFANO
+gridTipif: parent=div.popup-frame    # HUÉRFANO
+```
+
+### 🔧 Fix
+
+Eliminar el `</div>` extra en L4013 (cierre prematuro de `.app`).
+
+```diff
+-         </div>
+-        </div>
+        </div>
++       </div>
+
+   <div class="grid-block" id="gridAddress" data-grid="address">
+```
+
+Después del fix, **balance de divs: 98 opens = 98 closes** (perfecto).
+
+Ahora los 3 grids son hijos de `div.app`:
+
+| Grid | Parent | Width |
+|---|---|---|
+| `gridScript` | `div.app` | **453px** |
+| `gridAddress` | `div.app` | **453px** |
+| `gridTipif` | `div.app` | **453px** |
+
+→ **Diferencia: 0px** ✓
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +2 nuevos tests v3.10.47 con `BeautifulSoup` parser real
+- ✅ 583 → 585 tests PASS
+- ✅ Validación jerarquía DOM:
+  - Los 3 grids son hijos de `div.app`
+  - `.app` tiene 8 hijos directos (srStatus, srAlert, header, alertBox, gridScript, gridAddress, gridTipif, footer)
+
+### 📝 Lecciones
+
+- **Test gap histórico:** `test_popup.py` validaba el orden textual de los grids (`id="gridScript"` antes que `id="gridAddress"`), pero **NO** la jerarquía DOM con un parser real.
+- **CSS no soluciona nada:** las reglas CSS estaban correctas (`.grid-block { width: 100% }`). El bug era 100% HTML.
+- **Impacto:** cualquier regla CSS que dependa de `.app > .grid-block` (selector descendiente) ahora funciona correctamente.
+
+---
+
 ## [3.10.46] - 2026-10-19 — 🐛 BUG FIXES: grid widths + CTRL+SHIFT+R + speeches CEO
 
 **CEO directives (4 bugs):**

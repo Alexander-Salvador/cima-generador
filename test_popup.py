@@ -3573,6 +3573,49 @@ def test(html_path):
     else:
         result.fail('v3.10.46 anti-regresion', '.section debe mantener border')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.47 — BUG FIX CRÍTICO: grids mismo ancho (jerarquía DOM)
+    # CEO: "las 3 grid deben tener el mismo ancho" en modo popup.
+    # Causa raíz: 1 </div> extra entre gridScript y gridAddress cerraba
+    # prematuramente .app. gridAddress/gridTipif quedaban como hijos de
+    # .popup-frame (sin padding, 465px) mientras gridScript era hijo de
+    # .app (con padding 6px, 453px) → 12px de diferencia visual.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.47 — BUG FIX: jerarquía DOM (los 3 grids hijos de .app)')
+
+    # Verificar jerarquía DOM con BeautifulSoup
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, 'html.parser')
+
+    grids = soup.find_all('div', class_='grid-block')
+    grid_parents = {}
+    for g in grids:
+        cid = g.get('id', '')
+        parent = g.parent
+        parent_label = f"{parent.name}.{'.'.join(parent.get('class', []))}"
+        grid_parents[cid] = parent_label
+
+    # Los 3 grids deben ser hijos de div.app
+    all_in_app = all(parent == 'div.app' for parent in grid_parents.values())
+    if all_in_app and len(grid_parents) == 3:
+        result.ok('v3.10.47 DOM: 3 grids (gridScript/gridAddress/gridTipif) son hijos de div.app')
+    else:
+        result.fail('v3.10.47 DOM', f'los 3 grids deben ser hijos de div.app, parents={grid_parents}')
+
+    # Anti-regresión: la app tiene exactamente 8 hijos directos
+    # (srStatus, srAlert, header, alertBox, gridScript, gridAddress, gridTipif, footer)
+    app_div = soup.find('div', class_='app')
+    if app_div:
+        app_children = app_div.find_all(recursive=False)
+        # Contar TODOS los hijos con tag (no solo divs)
+        n_significant = len(app_children)
+        if n_significant >= 7:  # srStatus, srAlert, header, alertBox, gridScript, gridAddress, gridTipif
+            result.ok(f'v3.10.47 DOM: .app tiene {n_significant} hijos (srStatus/header/3 grids/footer)')
+        else:
+            result.fail('v3.10.47 DOM .app children', f'≥7 hijos esperados, {n_significant} encontrados')
+    else:
+        result.fail('v3.10.47 DOM .app', 'div.app no encontrado')
+
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
         result.ok('v3.10.37 HTML: retorno card REMOVIDO (reemplazado por alerts)')
