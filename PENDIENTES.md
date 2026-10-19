@@ -1,10 +1,10 @@
-# CIMA v3.10.28 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.29 — Lista de Pendientes (Estado al cierre de sesión)
 
 **Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
-## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-28 BUSQUEDA ADDRESS v3)
+## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-29 BUSQUEDA ADDRESS v4)
 
-## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.28) — 18 commits
+## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.29) — 19 commits
 
 | Versión | Cambio | Commit |
 |---|---|---|
@@ -25,7 +25,8 @@
 | v3.10.25 | Eliminar </div> extra en gridAddress (estructura desbalanceada) | 743886c |
 | **v3.10.26** | **BUSQUEDA ADDRESS bugfixes**: cobertura-btn sin vibración + label NO rojo + sin :active scale + clear button hover sutil | 920a3f9 |
 | **v3.10.27** | **BLOQUEO + UX polish**: botón ⚠️ BLOQUEADO sin DPT/PROV/DIST + click feedback reducido + input focus limpio + RESULTADO texto "Aqui se llenaran los datos" + buttons diferenciados (clear dashed vs ⚠️ solid) | 7a39e0a |
-| **v3.10.28** | **Inputs filled clean + toast wording**: REMOVIDO box-shadow halo `--shadow-focus-green` (causaba square+round en filled) + toast "Tipea..." → "Escribe el CCPP exacto del PDF..." | TBD |
+| **v3.10.28** | **Inputs filled clean + toast wording**: REMOVIDO box-shadow halo `--shadow-focus-green` (causaba square+round en filled) + toast "Tipea..." → "Escribe el CCPP exacto del PDF..." | 2bc3636 |
+| **v3.10.29** | **Botón ⚠️ totalmente BLOCKED + RESULTADO hover clean**: showToast REMOVIDO completamente en no-match (silent early return) + CCPP placeholder "(elegir CCPP exacto del PDF)" + REMOVIDO box-shadow halo en `.output-box.output-result:hover` | TBD |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|

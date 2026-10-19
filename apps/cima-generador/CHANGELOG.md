@@ -1,5 +1,68 @@
 # Changelog — cima-generador
 
+## [3.10.29] - 2026-10-19 — 🔒 Botón ⚠️ totalmente BLOCKED + 🎯 RESULTADO hover limpio
+
+**CEO directive:** "El button de zona de apagado sigue mal, le doy click a pesar de que no hay zona de apagado y emite output, ESCRIBE EL CCPP EXACTO DEL PDF <- incorrecto este boton solo debe funcionar cuando se detecta zona de apagado exacta y guiar. Input de RESULTADO al psar el mouse por encima como hover se ve un background cuadrado que rompe estetica del borde redondo."
+
+### 🎯 Causa raíz (2 bugs)
+
+| Bug | Causa | Síntoma CEO |
+|---|---|---|
+| 1. Botón ⚠️ emite toast en click sin match | `showToast` se ejecuta en caso `chk.nivel !== 'ccpp_exacto'` | CEO: "el botón solo debe funcionar cuando se detecta zona de apagado exacta y guiar" |
+| 2. RESULTADO hover "background cuadrado" | `.output-box.output-result:hover:not(.placeholder)` con `box-shadow: 0 0 0 3px` halo verde | Misma percepción "square+round" que inputs filled (v3.10.28) |
+
+### 🔧 Cambios
+
+#### 1. Botón ⚠️ BLOQUEADO totalmente (sin response)
+
+| Caso | Antes | Ahora |
+|---|---|---|
+| `!dep \|\| !prov \|\| !dist` (datos incompletos) | silent (v3.10.27) | silent (sin cambios) |
+| `chk.nivel !== 'ccpp_exacto'` (sin match exacto) | `showToast('Escribe el CCPP exacto del PDF...')` (v3.10.28) | **silent early return** (sin toast, sin shake) |
+| `chk.nivel === 'ccpp_exacto'` (match) | abre panel + click feedback | abre panel + click feedback (sin cambios) |
+
+**Política unificada:** El botón SOLO responde con ccpp_exacto. En cualquier otro caso, click = silent no-op. La "guía" es visual (botón gris = sin alerta) + mejor placeholder en CCPP input:
+
+```html
+<!-- ANTES -->
+<input id="ccpp" placeholder="(tras elegir distrito)" ... />
+
+<!-- AHORA -->
+<input id="ccpp" placeholder="(elegir CCPP exacto del PDF)" ... />
+```
+
+#### 2. RESULTADO hover sin halo (mismo fix que `.filled` v3.10.28)
+
+```css
+/* ANTES — "background cuadrado" perception */
+.output-box.output-result:hover:not(.placeholder) {
+  border-color: green-light;
+  box-shadow: 0 0 0 3px green halo, ring-hairline;
+}
+
+/* AHORA — clean */
+.output-box.output-result:hover:not(.placeholder) {
+  border-color: green-light;
+  box-shadow: ring-hairline;  /* inset 1px sutil, SIN halo */
+}
+```
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **487/487 PASS** (+4 nuevos tests v3.10.29) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (971,984 chars JS) |
+
+### 📐 Lecciones aplicadas
+
+- **L-067/068/069**: el CEO percibe incluso un halo 3px como "background cuadrado" rompiendo la estética. Solución universal: NO usar box-shadow con spread (0 0 0 3px+) — usar solo border + inset hairline.
+- **CRIT-002**: El CEO testeó en navegador real y reportó 2 bugs más. Cada iteración revela nuevos detalles visuales.
+- **UX philosophy**: Un botón debe responder SOLO cuando tiene algo concreto que mostrar. "Guiar" = visual + placeholder, no false-feedback (toast).
+
 ## [3.10.28] - 2026-10-19 — 🎯 Inputs filled limpios + 💬 Toast wording
 
 **CEO directive:** "Cuando los inputs tienen contenido pasa lo mismo se ve como un background cuadrado y bordes redondos rompiendose el estilo. Cuando los inputs dpt, provi, distri estan llenos pero no hay zona de apagado el boton de zona de apagado al darle click emite un mensaje ROTO: tipea el CCPP para activar la alerta."

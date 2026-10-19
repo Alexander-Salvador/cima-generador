@@ -2888,16 +2888,47 @@ def test(html_path):
         result.fail('v3.10.28 CSS .filled', '.field input.filled CSS missing')
 
     # JS: toast wording mejorado (Tipea → Escribe + del PDF)
-    if "showToast(btn, 'Escribe el CCPP exacto del PDF para activar alerta'" in html:
-        result.ok('v3.10.28 JS: toast wording "Escribe el CCPP exacto del PDF" (no "Tipea")')
+    # v3.10.29: el toast fue REMOVIDO completamente (CEO: "solo debe funcionar
+    # cuando se detecta zona de apagado exacta y guiar"). Validamos que NO
+    # exista la línea de showToast para este caso.
+    if re.search(r"if\s*\(\s*!chk\s*\|\|\s*chk\.nivel\s*!==\s*'ccpp_exacto'\s*\)\s*\{[^}]*showToast", html, re.DOTALL):
+        result.fail('v3.10.29 JS toast', 'showToast debe estar REMOVIDO en caso no-match')
+    elif re.search(r"if\s*\(\s*!chk\s*\|\|\s*chk\.nivel\s*!==\s*'ccpp_exacto'\s*\)\s*\{[^}]*return", html, re.DOTALL):
+        result.ok('v3.10.29 JS: BLOQUEO silent en caso no-match (early return, sin toast)')
     else:
-        result.fail('v3.10.28 JS toast', 'toast wording actualizado esperado')
+        result.fail('v3.10.29 JS bloque', 'silent early return esperado en caso no-match')
 
-    # Anti-regression: NO debe quedar el wording viejo "Tipea el CCPP exacto"
-    if "showToast(btn, 'Tipea el CCPP exacto" in html:
-        result.fail('v3.10.28 JS toast regresión', 'wording viejo "Tipea" aún presente')
+    # HTML: CCPP placeholder mejorado para guiar al usuario
+    if 'placeholder="(elegir CCPP exacto del PDF)"' in html:
+        result.ok('v3.10.29 HTML: CCPP placeholder guiando "(elegir CCPP exacto del PDF)"')
     else:
-        result.ok('v3.10.28 JS: wording viejo "Tipea" REMOVIDO')
+        result.fail('v3.10.29 HTML placeholder', 'placeholder CCPP mejorado esperado')
+
+    # Anti-regression: NO debe quedar el placeholder viejo
+    if 'placeholder="(tras elegir distrito)"' in html:
+        result.fail('v3.10.29 HTML placeholder regresión', 'placeholder viejo aún presente')
+    else:
+        result.ok('v3.10.29 HTML: placeholder viejo REMOVIDO')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.29 — RESULTADO hover sin halo
+    # CEO directive: "input de RESULTADO al pasar el mouse por encima como
+    # hover se ve un background cuadrado que rompe estetica del borde redondo"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.29 — RESULTADO hover sin halo (mismo bug que .filled v3.10.28)')
+
+    # CSS: .output-box.output-result:hover SIN box-shadow halo (3px green ring)
+    css_hover_match = re.search(r'\.output-box\.output-result:hover:not\(\.placeholder\)\s*\{([^}]+)\}', html)
+    if css_hover_match:
+        hover_body = re.sub(r'/\*[\s\S]*?\*/', '', css_hover_match.group(1))
+        if 'box-shadow:' in hover_body and '0 0 0 3px' in hover_body:
+            result.fail('v3.10.29 CSS hover', 'box-shadow halo 3px debe estar REMOVIDO')
+        elif 'box-shadow:' in hover_body:
+            result.ok('v3.10.29 CSS: RESULTADO hover SIN halo (solo ring-hairline inset sutil)')
+        else:
+            result.fail('v3.10.29 CSS hover', 'box-shadow ring-hairline inset esperado')
+    else:
+        result.fail('v3.10.29 CSS hover', '.output-box.output-result:hover CSS missing')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.3 — STOP CHECK visual para COMU-5672 + Santa Rosa de Loreto
