@@ -700,7 +700,10 @@
   /* Cuando el input siguiente está enfocado o filled, label del anterior sube de jerarquía */
   .field:focus-within > label,
   .field > input.filled + .ac-wrap { /* placeholder para no romper nada */ }
-  .field:focus-within > label { color: var(--accent); }
+  /* v3.10.26: REMOVIDO .field:focus-within > label { color: var(--accent); }
+     --accent es #dc2626 (ROJO) y el CEO reporta que el label se ponía rojo
+     al hacer click en cualquier input de BUSQUEDA ADDRESS. El label ahora
+     mantiene su color neutro en focus — solo el border del input cambia. */
   .field > input.filled ~ label,
   .field > input.filled + label { color: var(--green); }
   .field input, .field textarea {
@@ -728,10 +731,11 @@
     text-transform: uppercase;
     letter-spacing: 0.012em;
   }
-  /* Press feedback iOS-style */
-  .field input:active, .field textarea:active {
-    transform: scale(0.985);
-  }
+  /* v3.10.26: REMOVIDO .field input:active { transform: scale(0.985); }
+     El scale causaba shift visual al hacer click en los inputs de
+     BUSQUEDA ADDRESS. CEO directive: "elimina el hover active al darle
+     click". El focus state se mantiene via border + box-shadow (sin
+     transform). El :hover se mantiene como pre-feedback (no es al click). */
   .field input:hover:not(:focus):not(:disabled), .field textarea:hover:not(:focus):not(:disabled) {
     border-color: color-mix(in srgb, var(--text-faint) 75%, transparent);
     background: var(--glass-2-bg);
@@ -2494,14 +2498,17 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
-  .cobertura-btn:active {
-    transform: scale(0.94);
-  }
-  /* v2.1.3: estado .idle = cobertura OK, sin alertas (default state) */
+  /* v3.10.26: REMOVIDO .cobertura-btn:active { transform: scale(0.94); }
+     El scale causaba vibración visual al hacer click. El feedback de click
+     se mantiene via .cima-shake (clase JS explícita, sin animación continua). */
+  /* v2.1.3: estado .idle = cobertura OK, sin alertas (default state)
+     v3.10.26: idle look más claro (border sólido + opacidad reducida)
+     para comunicar visualmente "no hay datos para mostrar". */
   .cobertura-btn--idle {
     background: color-mix(in srgb, var(--text-faint) 8%, var(--glass-2-bg));
     border-color: color-mix(in srgb, var(--text-faint) 40%, transparent);
     color: var(--text-faint);
+    opacity: 0.85;
     animation: none;
   }
   .cobertura-btn--idle:hover,
@@ -2522,21 +2529,25 @@
   /* v2.1.4: .cobertura-btn-label ELIMINADO (botón icon-only).
      El label se preserva solo como aria-label + title en el HTML
      para accesibilidad WCAG (lectores de pantalla anuncian el botón). */
-/* v3.9.0: COBERTURA BTN — coherente con dropdown items
-     • .off  = CCPP exacto CONFIRMADO → ROJO (pulseDanger)
-     • .warn = distrito preventivo    → AMARILLO (pulseWarn)
-     • .fuzzy = CCPP similar (typo)   → NARANJA (pulseFuzzy)
+/* v3.10.26: COBERTURA BTN — ESTÁTICO (sin animaciones de pulso)
+     • .off  = CCPP exacto CONFIRMADO → ROJO (estático)
+     • .warn = distrito preventivo    → AMARILLO (estático)
      v3.10.12: ELIMINADO .ipt (era para COMU-5672 / 2G).
+     v3.10.26: ELIMINADO .fuzzy + pulseFuzzy (sin uso desde v3.10.12).
+
      Diferencia entre niveles se mantiene en:
-       (a) color del icono (rojo / amarillo / naranja)
+       (a) color del icono (rojo / amarillo)
        (b) title nativo del botón
        (c) aria-label
-     (sin pulse sincrónico — el pulse comunica "atención", no "severidad"). */
+     SIN pulse, SIN transform, SIN box-shadow expansion.
+     CEO directive: "elimina toda animacion mientras no se gatille
+     correctamente con la busqueda correcta". El botón estático comunica
+     el estado por color — sin vibración visual. */
    .cobertura-btn.off {
     background: color-mix(in srgb, var(--zone-ipt) 22%, var(--glass-2-bg));
     border-color: var(--zone-ipt);
     color: var(--zone-ipt);
-    animation: pulseDanger 2.8s var(--motion-ease) infinite;
+    animation: none;
   }
    .cobertura-btn.off:hover,
    .cobertura-btn.off:focus-visible {
@@ -2550,7 +2561,7 @@
     background: color-mix(in srgb, var(--zone-amber) 22%, var(--glass-2-bg));
     border-color: var(--zone-amber);
     color: var(--zone-amber);
-    animation: pulseWarn 2.8s var(--motion-ease) infinite;
+    animation: none;
   }
    .cobertura-btn.warn:hover,
    .cobertura-btn.warn:focus-visible {
@@ -2560,58 +2571,17 @@
       var(--ring-hairline);
   }
   /* v3.10.12: ELIMINADO .cobertura-btn.ipt (era para COMU-5672 / 2G). */
-  /* v3.10.2: .fuzzy = CCPP similar (typo, similitud 0.75-0.99). Color
-     naranja con pulse sutil para distinguir de ccpp_exacto (rojo). */
-   .cobertura-btn.fuzzy {
-    background: color-mix(in srgb, #ea7c3c 22%, var(--glass-2-bg));
-    border-color: #ea7c3c;
-    color: #ea7c3c;
-    animation: pulseFuzzy 2.8s var(--motion-ease) infinite;
-  }
-   .cobertura-btn.fuzzy:hover,
-   .cobertura-btn.fuzzy:focus-visible {
-    background: color-mix(in srgb, #ea7c3c 34%, var(--glass-2-bg));
-    box-shadow:
-      0 0 0 3px color-mix(in srgb, #ea7c3c 26%, transparent),
-      var(--ring-hairline);
-  }
+  /* v3.10.26: ELIMINADO .cobertura-btn.fuzzy (sin uso desde v3.10.12). */
   .cobertura-btn:focus-visible {
     outline: none;
     box-shadow:
       0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent),
       var(--ring-hairline);
   }
-  @keyframes pulseWarn {
-    0%, 100% {
-      box-shadow:
-        0 0 0 0 color-mix(in srgb, #f59e0b 60%, transparent),
-        var(--ring-hairline);
-      transform: scale(1);
-    }
-    50% {
-      box-shadow:
-        0 0 0 6px color-mix(in srgb, #f59e0b 0%, transparent),
-        var(--ring-hairline);
-      transform: scale(1.02);
-    }
-  }
-  @keyframes pulseDanger {
-    0%, 100% {
-      box-shadow:
-        0 0 0 0 color-mix(in srgb, var(--danger) 60%, transparent),
-        var(--ring-hairline);
-      transform: scale(1);
-    }
-    50% {
-      box-shadow:
-        0 0 0 7px color-mix(in srgb, var(--danger) 0%, transparent),
-        var(--ring-hairline);
-      transform: scale(1.025);
-    }
-  }
    @media (prefers-reduced-motion: reduce) {
+    /* v3.10.26: override ahora no-op (las animaciones ya fueron removidas) */
     .cobertura-btn.off { animation: none; }
-    .cobertura-btn.fuzzy { animation: none; }
+    .cobertura-btn.warn { animation: none; }
   }
   /* ═══ v3.9.0 FEEDBACK CLICK — siempre respuesta (CEO directive) ═══
      El botón ⚠️ responde a TODOS los clicks (no más "no muestra nada"):
@@ -2748,7 +2718,11 @@
   }
   /* v2.1.4: btn-icon-clear — REVERTIDO a icon-only 36×36 (sin label "BORRAR").
      Mismo tamaño y forma que .cobertura-btn para simetría.
-     hover pasa a danger tint (señaliza acción destructiva). */
+     v3.10.26: hover sutil (NO danger tint agresivo) — el cambio brusco a rojo
+     en hover daba falsa sensación de acción destructiva incluso cuando el
+     botón está activo. Ahora hover sutil: bg un poco más oscuro + border
+     más visible, color se mantiene neutro. Solo al click explícito (focus
+     o shake) se comunica danger. */
   .btn-icon-clear {
     background: var(--glass-2-bg);
     -webkit-backdrop-filter: var(--blur-md);
@@ -2759,6 +2733,7 @@
     height: 36px;
     padding: 0;
     color: var(--text-faint);
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
   .btn-icon-clear svg {
     width: 14px;             /* papelera compacta */
@@ -2767,15 +2742,20 @@
   }
   /* v2.1.4: .btn-icon-label ELIMINADO (botón icon-only).
      Accesibilidad WCAG: aria-label + title en el HTML aportan el texto. */
+  /* v3.10.26: hover sutil — bg se eleva 1 nivel glass (--glass-3-bg),
+     border se intensifica. NO color shift a rojo (era alarmista para un
+     botón rutinario de limpiar). Color se mantiene neutral; el action
+     destructive se comunica solo al click explícito via feedback. */
   .btn-icon-clear:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--danger) 75%, transparent);
-    color: var(--danger);
-    background: color-mix(in srgb, var(--danger) 14%, var(--glass-2-bg));
+    border-color: color-mix(in srgb, var(--text-faint) 60%, transparent);
+    color: var(--text);
+    background: var(--glass-3-bg);
   }
   .btn-icon-clear:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent),
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-faint) 32%, transparent),
                 var(--ring-hairline);
+    color: var(--text);
   }
   /* D-25: botón de limpiar deshabilitado cuando no hay datos */
   .btn-icon:disabled,
@@ -3015,7 +2995,9 @@ font-size: 10px;
          .apagado-tooltip + sub-elementos (anclado compacto)
        ═══════════════════════════════════════════════════════════════════════ */
 
-    /* ─── Botón ⚠️ (coberturaBtn) — 3 estados ─── */
+    /* ─── Botón ⚠️ (coberturaBtn) — 3 estados ───
+       v3.10.26: SIN animaciones de pulso, SIN transform scale en :active.
+       Estados se comunican por color/border estáticos. */
     .cobertura-btn {
       display: inline-flex;
       align-items: center;
@@ -3036,49 +3018,34 @@ font-size: 10px;
       flex-shrink: 0;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     }
-    .cobertura-btn:active { transform: scale(0.94); }
+    /* v3.10.26: REMOVIDO .cobertura-btn:active { transform: scale(0.94); }
+       El scale causaba vibración visual al click. Estado se ve igual, sin shift. */
     .cobertura-btn--idle {
       background: color-mix(in srgb, var(--text-faint) 8%, var(--glass-2-bg));
       border-color: color-mix(in srgb, var(--text-faint) 40%, transparent);
       color: var(--text-faint);
+      opacity: 0.85;
       animation: none;
     }
     .cobertura-btn.off {
       background: color-mix(in srgb, var(--danger) 22%, var(--glass-2-bg));
       border-color: var(--danger);
       color: var(--danger);
-      animation: pulseDanger 2.4s ease infinite;
+      animation: none;
     }
     .cobertura-btn.warn {
       background: color-mix(in srgb, #f59e0b 24%, var(--glass-2-bg));
       border-color: #f59e0b;
       color: #f59e0b;
-      animation: pulseWarn 2.8s ease infinite;
+      animation: none;
     }
-  @keyframes pulseFuzzy {
-    0%, 100% {
-      box-shadow:
-        0 0 0 0 color-mix(in srgb, #ea7c3c 50%, transparent),
-        var(--ring-hairline);
-      transform: scale(1);
-    }
-    50% {
-      box-shadow:
-        0 0 0 5px color-mix(in srgb, #ea7c3c 0%, transparent),
-        var(--ring-hairline);
-      transform: scale(1.015);
-    }
-  }
-  @keyframes pulseDanger {
-      0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 60%, transparent); }
-      50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 0%, transparent); }
-    }
-    @keyframes pulseWarn {
-      0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 60%, transparent); }
-      50%      { box-shadow: 0 0 0 6px color-mix(in srgb, #f59e0b 0%, transparent); }
-    }
+  /* v3.10.26: ELIMINADOS los keyframes de pulso (pulseDanger, pulseWarn,
+     pulseFuzzy). Las animaciones de pulso causaban vibración visual
+     percibida por el CEO (L-067/068/069: complejidad visual escala peor
+     que la funcional). El color estático comunica el estado sin
+     movimiento. */
 
     /* v3.7.1: items de dropdown hereda de la sección principal (líneas 555-585)
        para mantener UN SOLO source of truth entre popup mode y main mode. */
@@ -3501,7 +3468,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.4</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.26</span>
     </span>
   </footer>
 </div>
@@ -5207,7 +5174,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.9.15] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.26] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
