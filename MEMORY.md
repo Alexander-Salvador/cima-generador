@@ -56,7 +56,51 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-17 — v3.10.4 SHADOWING FIX + 33 CAPITALES**. Sesión v3.10.4 completa con: 7 agentes OVAV en paralelo (Helena, Eidren, Andrés, Diana, Pablo, Akiko, Clara, Marco) detectaron CRÍTICO shadowing de funciones (legacy v2.0.8 ganaba por hoisting, dejando v3.10.x como DEAD CODE en runtime). Fix: borradas 441 líneas legacy. 33 capitales inyectadas (Eidren research). 550/550 tests PASS (489 popup + 61 aggressive). 1,853 → 1,886 distritos con CCPP. **POPUP LIVE en GitHub Pages: `v3.9.15`** (v3.10.0-v3.10.4 pendiente subtree split).
+Memoria persistente. Última actualización: **2026-10-17 — v3.10.10 FIN SESIÓN (4 bloques completados)**. 
+
+**Estado del popup:**
+- **Versión actual (develop):** v3.10.10
+- **Tests passing:** 613 (489 popup + 61 aggressive + 14 browser static + 49 audit brutal)
+- **Popup LIVE (origin/main):** v3.9.15 (push pendiente CEO)
+- **Branch popup-deploy:** v3.10.10 (subtree split, listo para push)
+
+**Logros de la sesión (v3.10.0 → v3.10.10):**
+- 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras
+- 4 bloques atacados end-to-end: 22 items resueltos
+- Shadowing fixed (441 líneas legacy eliminadas)
+- 33 capitales rurales inyectadas (Eidren research)
+- 3 d6 faltantes agregados a districts_with_off
+- 75% reducción ipt_metadata (495KB → 123KB)
+- LRU real (no más FIFO)
+- CCPP_KEYS_NORMALIZED init module-level
+- 38 regex pre-compilados (no más recompilación)
+- 2 onclick críticos migrados a event delegation
+- 41 → 7 d6 sin CCPP_DATA (todos urbanos, validados)
+- auditZonasApagadas no bloquea paint (requestIdleCallback)
+- 4 funciones escape → 2 (unificadas)
+- Disclaimer "interpretación no oficial" en anomalías
+
+**Para retomar en próximo chat:**
+1. Leer `PENDIENTES.md` (23 items restantes: 1 crítico + 10 Marco + 7 deuda menor + 2 otros)
+2. Próximo bloque sugerido: R1 (borrar 1100+ legacy) + R4 (descomponer showApagadoPanelInline 278 líneas)
+3. Verificar tests antes de continuar:
+   ```bash
+   cd apps/cima-generador
+   python3 test_popup.py test_aggressive.py test_audit_brutal.py test_browser_static.py
+   ```
+
+**Commits en esta sesión (10):**
+v3.10.3 (aa2c23a) → v3.10.4 (0ec1632) → v3.10.4-patch (24bb443) → v3.10.5 (2f2864b) → v3.10.6 (19d69fa) → v3.10.7 (d078ed2) → v3.10.8 (7b1d98e) → v3.10.9 (daa2dfd) → v3.10.10 (0c9972e)
+
+**Archivos de referencia para próximo chat:**
+- `apps/cima-generador/index.html` (1.5MB, 7,260 líneas)
+- `apps/cima-generador/CHANGELOG.md` (v3.10.0-v3.10.10)
+- `PENDIENTES.md` (lista completa)
+- `docs/CHECKLIST_MENTIRAS.md` (24 confesiones)
+- `docs/FUENTES_ZONAS_APAGADAS.md` (trazabilidad)
+- `apps/cima-generador/test_audit_brutal.py` (auditoría de 8 categorías)
+- `apps/cima-generador/test_browser_static.py` (tests browser)
+- `benchmark_runtime.js` (medición Node.js runtime)
 
 ✅ **Sesión v3.10.3 — Riesgos solucionados — STAGED:**
 
