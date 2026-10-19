@@ -1,5 +1,95 @@
 # Changelog — cima-generador
 
+## [3.10.50] - 2026-10-19 — 🐛 3 BUG FIXES (CTRL+SHIFT+R + default collapsed + no auto-desglose)
+
+**CEO directives (3 bugs):**
+
+1. "Cuando hago CONTROL + SHIFT + R no hace nada — algo bloquea la funcion."
+2. "Al abrir y actualiza la web salen todos los datos desplegados deben estar minimizados."
+3. "Al darle click al MOTIVO → Tecnico Movil ← recien debe desplegarse la informacion."
+
+### 🔧 Cambios
+
+#### BUG 1: CTRL+SHIFT+R handler GLOBAL con capture phase
+
+**Causa raíz:** El handler estaba DENTRO de `initPopupMode()` en la rama `if (isPopup)` → solo se registraba en popup mode, NUNCA en standalone.
+
+```js
+// v3.10.46 (rechazado): handler dentro de initPopupMode (solo popup mode)
+// v3.10.50: handler GLOBAL con capture: true (popup + standalone)
+document.addEventListener('keydown', function (e) {
+  if (!(e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r'))) return;
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();  // bloquea otros listeners
+  if (typeof clearScriptTemplate === 'function') {
+    clearScriptTemplate();
+  }
+  return false;
+}, { capture: true });  // captura ANTES que browser procese hard-reload
+```
+
+**Por qué funciona ahora:**
+- `capture: true` → captura el evento en fase de captura, antes que el browser procese el hard-reload
+- `stopImmediatePropagation` → bloquea cualquier otro listener
+- `preventDefault` → cancela el reload nativo
+- Movido FUERA de `initPopupMode` → funciona en popup + standalone
+
+#### BUG 2: Default TODO colapsado al cargar
+
+**Causa raíz:** `applyScriptCollapsedStates()` solo aplicaba estado persistido. Si el usuario nunca había colapsado, todas las cards quedaban expandidas por default.
+
+```js
+function applyScriptCollapsedStates() {
+  var state = loadScriptCollapsed();
+  var stateKeys = Object.keys(state);
+
+  // v3.10.50: Si NO hay estado persistido (primera visita o tras CTRL+SHIFT+R
+  // que borra persistencia), colapsar TODAS las script-cards por default.
+  if (stateKeys.length === 0) {
+    document.querySelectorAll('.script-card[data-script-id]').forEach(function (card) {
+      card.classList.add('is-collapsed');
+    });
+    return;
+  }
+  // Si hay estado persistido, aplicarlo
+  stateKeys.forEach(function (id) {
+    var card = document.querySelector('.script-card[data-script-id="' + id + '"]');
+    if (card) card.classList.add('is-collapsed');
+  });
+}
+```
+
+**Comportamiento:**
+- Primera visita: todo colapsado (no se ve info hasta click en MOTIVO)
+- Click en MOTIVO: `desgloseMotivoFlow()` expande todo y limpia persistencia
+- Después del desglose, si usuario colapsa individualmente, persiste
+- CTRL+SHIFT+R: borra persistencia → próximo load = todo colapsado de nuevo
+
+#### BUG 3: NO auto-desglose al cargar
+
+**Verificado:** `desgloseMotivoFlow()` solo se llama en 1 lugar → el click handler de MOTIVO card activa. NO se ejecuta automáticamente en init.
+
+```js
+// ÚNICA llamada a desgloseMotivoFlow:
+document.querySelectorAll('.motivo-card--active').forEach(function (card) {
+  card.addEventListener('click', function () {
+    motivoSelect.value = card.dataset.motivoValue;
+    // ... update aria-checked, dispatchEvent ...
+    desgloseMotivoFlow(value);  // ← SOLO EN CLICK
+  });
+});
+```
+
+El flow se mantiene colapsado por default. Solo cuando el usuario hace click en una MOTIVO card activa (Técnico Móvil) se desglosa la info correspondiente.
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +5 nuevos tests v3.10.50 (handler global fuera de initPopupMode, capture:true, stopImmediatePropagation, applyScriptCollapsedStates default, no auto-desglose)
+- ✅ 602 → 607 tests PASS
+
+---
+
 ## [3.10.49] - 2026-10-19 — 🎯 DESGLOSE del flow al click en MOTIVO
 
 **CEO directive:** "Vamos a mejorar algo al darle click a el MOTIVO recien se desglozara toda la info correspondiente al motivo"
