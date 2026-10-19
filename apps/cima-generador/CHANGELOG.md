@@ -1,5 +1,45 @@
 # Changelog — cima-generador
 
+## [3.10.20] - 2026-10-19 — 📐 Panel ⚠️ sale ENCIMA (position: absolute) + cierre inteligente
+
+**CEO directive:** "Cuando le doy click ocupa espacio y tira el contenido para abajo, al darle click el contenido debe salir encima y funciona de manera inteligente: Una vez el dialog abierto, al darle click a cualquier lugar debe ocultarse o cerrarse. Si se borra la direccion debe ocultarse o cerrarse."
+
+**Fix:** el panel vuelve a ser `position: absolute; bottom: calc(100% + 8px)` (sale ENCIMA del botón ⚠, no estira el grid). Se le agregan cierres inteligentes:
+- **Click outside** cierra el panel
+- **`clearAddress()`** (botón X borrar) cierra el panel
+
+### 🔧 Cambios
+
+| Elemento | Antes | Ahora |
+|---|---|---|
+| HTML panel | hijo de `.row-ref-buttons` (full width) | hijo de `.cobertura-wrap` (anclado al botón) |
+| `.apagado-speech-panel` position | `static; width: 100%` (in-flow) | `absolute; bottom: calc(100% + 8px); right: 0` |
+| `.apagado-speech-panel` max-width | `100%` (limitado al row) | `min(420px, calc(100vw - 24px))` (cap al viewport) |
+| `.apagado-speech-panel` max-height | `140px` | `180px` (un poco más, sigue capeado) |
+| `.apagado-speech-panel` z-index | `auto` | `80` (encima de todo) |
+| `clearAddress()` | solo limpia inputs | + `zaCloseApagadoTooltip()` (cierra panel) |
+| Click outside | ya existía (`zaOutsideClick`) | confirmado + `zaEscListener` para Escape |
+
+### 🎯 Comportamiento
+
+- ✅ Panel **ENCIMA** del botón ⚠, NO estira el grid
+- ✅ Width cap 420px (no excede el viewport en popup 480px)
+- ✅ `max-height: 180px` con `overflow-y: auto` (scroll interno)
+- ✅ Click en cualquier parte fuera del panel/botón → cierra
+- ✅ Tecla Escape → cierra
+- ✅ Botón X (borrar) → limpia + cierra panel
+- ✅ Click en ⚠️ con panel abierto → toggle (lo cierra)
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.19] - 2026-10-19 — 📐 Panel ⚠️ hijo de .row-ref-buttons (full width del row, dentro del grid)
 
 **CEO directive:** "[imagen] roto igual" — el panel se salía del grid por la derecha, estirándose horizontalmente fuera del contenedor de Búsqueda Address.

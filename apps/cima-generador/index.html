@@ -1638,12 +1638,9 @@
   }
 
   /* v3.9.12: Row REFERENCIA + botones (borrar + alerta) — flex mixto.
-     REFERENCIA toma flex:1 (espacio restante); 2 botones mantienen 36px fijo.
-     v3.10.19: flex-wrap: wrap para que el panel de speech (hijo de este row)
-     baje a su propia línea y ocupe 100% del ancho del row. */
+     REFERENCIA toma flex:1 (espacio restante); 2 botones mantienen 36px fijo. */
   .row-ref-buttons {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
     align-items: flex-end;        /* inputs y buttons alineados por abajo */
     margin-top: var(--space-2);
@@ -1655,13 +1652,8 @@
   .row-ref-buttons .field-ref input {
     width: 100%;
   }
-  .row-ref-buttons > .apagado-speech-panel {
-    flex: 0 0 100%;
-    width: 100%;
-    max-width: 100%;
-  }
-  /* v3.9.12: wrapper del botón ⚠ — ancla el botón.
-     v3.10.19: panel movido a ser hijo de .row-ref-buttons (no del wrap). */
+  /* v3.9.12: wrapper del botón ⚠ — ancla el panel speech con position
+     absolute. v3.10.20: el panel sale ENCIMA del botón (no estira el grid). */
   .cobertura-wrap {
     position: relative;
     flex-shrink: 0;
@@ -1850,17 +1842,14 @@
   }
 
   .apagado-speech-panel {
-    /* v3.10.18: position static (in-flow) — el panel se renderiza DENTRO
-       del .cobertura-wrap, DEBAJO del botón ⚠. NO position absolute, NO
-       sale fuera del grid de Búsqueda Address. max-height estricto para
-       no estirar el grid en popup 480px. */
-    position: static;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    width: 100%;
-    max-width: 100%;
+    /* v3.10.20: position absolute, sale ENCIMA del botón ⚠.
+       max-width y max-height estrictos para no estirar el grid de Búsqueda
+       Address en popup 480px. Click-outside y clearAddress lo cierran. */
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    width: 320px;
+    max-width: min(420px, calc(100vw - 24px));
     box-sizing: border-box;
     margin: 0;
     padding: 8px 10px 9px;
@@ -1874,15 +1863,15 @@
     border: 1px solid color-mix(in srgb, var(--border-strong) 60%, transparent);
     border-radius: 10px;
     box-shadow:
-      0 4px 10px rgba(0,0,0,0.18),
+      0 10px 24px rgba(0,0,0,0.24),
+      0 2px 6px rgba(0,0,0,0.14),
       inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
     font-size: 10.5px;
     line-height: 1.32;
-    /* v3.10.18: cap estricto para no estirar el grid. Si excede, scroll
-       interno. width/height nunca exceden el wrap. */
-    max-height: 140px;
+    /* v3.10.20: cap estricto. Si excede, scroll interno. */
+    max-height: 180px;
     overflow-y: auto;
-    z-index: auto;
+    z-index: 80;
     animation: apagadoPanelIn 0.22s var(--motion-spring-soft);
     pointer-events: auto;
   }
@@ -3256,7 +3245,10 @@ font-size: 10px;
             <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
           </svg>
         </button>
-        <!-- v3.9.12: WRAPPER para anclar el panel de zonas de apagado al ⚠ -->
+        <!-- v3.10.20: panel de vuelta como hijo de .cobertura-wrap, anclado
+             al botón ⚠ con position: absolute. Sale ENCIMA del botón (no
+             estira el grid). Cap estricto de ancho/alto. Click outside
+             y clearAddress lo cierran. -->
         <div class="cobertura-wrap">
           <button id="coberturaBtn" class="cobertura-btn cobertura-btn--idle" type="button"
                   aria-label="Estado de zonas de apagado Movistar"
@@ -3268,13 +3260,9 @@ font-size: 10px;
               <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
             </svg>
           </button>
+          <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
+               aria-label="Speech de zona de apagado" hidden></div>
         </div>
-        <!-- v3.10.19: panel hijo de .row-ref-buttons (no de .cobertura-wrap).
-             Se renderiza en su propia fila dentro del row, full width del
-             row, DEBAJO del botón ⚠. NO position absolute, NO sale del
-             grid. -->
-        <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
-             aria-label="Speech de zona de apagado" hidden></div>
       </div>
 
       <!-- v3.9.12: Row 4 completa — RESULTADO con padding, full width.
@@ -6593,6 +6581,8 @@ function clearAddress() {
   });
   updateAddress();
   updateClearButtonState();  // D-25: deshabilitar botón tras limpiar
+  // v3.10.20: al borrar la dirección, cerrar el panel del botón ⚠.
+  if (typeof zaCloseApagadoTooltip === 'function') zaCloseApagadoTooltip();
 }
 
 // D-25: el botón limpiar se habilita/deshabilita según si hay datos
