@@ -3602,7 +3602,9 @@ font-size: 10px;
               v3.10.34: REMOVIDO "con-quien" card (CEO: innecesario). MOTIVO ahora
               tiene "Sondeo de identificación de AVERIAS" con 3 pasos. -->
 
-         <!-- ▌▌▌ SECCIÓN 1: Bienvenida e identificación (BLUE) ▌▌▌ -->
+<!-- ▌▌▌ SECCIÓN 1: Bienvenida e identificación (BLUE) ▌▌▌
+               v3.10.36: Agregada "Atención segura" (movida desde MOTIVO).
+               Flujo natural: bienvenida → callback number → motive query. -->
          <div class="script-section">
            <div class="script-section-header script-section-header--blue">
              Bienvenida e identificación
@@ -3610,13 +3612,23 @@ font-size: 10px;
 
            <div class="script-card" data-script-id="bienvenida">
              
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">{Agente}</span>. Te comunicas por <span class="ph" data-ph="motivo">{Motivo}</span> de tu número <span class="ph" data-ph="telefono">{Telefono}</span>. ¿Es correcto?"</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">{Agente}</span>. Te comunicas por <span class="ph" data-ph="motivo">{Motivo}</span> de tu número <span class="ph" data-ph="telefono">{Telefono}</span>. ¿Es correcto?"</p>
+              </div>
+           </div>
+
+           <div class="script-card" data-script-id="atencion-segura">
+             
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">{Cliente}</span>, en caso se corte la llamada puedo realizar la devolución al número que me está llamando o podría brindarme otro número de celular".</p>
+              </div>
            </div>
          </div>
 
-         <!-- ▌▌▌ SECCIÓN 2: Motivo de la llamada (GREEN) ▌▌▌ -->
+         <!-- ▌▌▌ SECCIÓN 2: Motivo de la llamada (GREEN) ▌▌▌
+               v3.10.36: Removida "atencion-segura" (movida a BIENVENIDA).
+               v3.10.36: Sondeo identificación AVERIAS speech unificado
+               (CEO: integrar 3 pasos en 1 párrafo + tip "si no encontramos"). -->
          <div class="script-section">
            <div class="script-section-header script-section-header--green">
              Motivo de la llamada
@@ -3624,38 +3636,32 @@ font-size: 10px;
 
            <div class="script-card" data-script-id="sondea">
              
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-sondea">"<span class="ph" data-ph="cliente">{Cliente}</span>, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta."</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-sondea">"<span class="ph" data-ph="cliente">{Cliente}</span>, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta."</p>
+              </div>
            </div>
 
            <div class="script-card" data-script-id="sondeo-averias">
              
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-sondeo-averias">"<span class="ph" data-ph="cliente">{Cliente}</span>, me indicas en qué departamento te encuentras, provincia y distrito por favor. Gracias. Ahora me indicarias por favor cuál es tu dirección donde te encuentras en este momento, para verificar la cobertura de la zona, mz, lote, avenida, urb. Bien, por último me bríndame alguna referencia."</p>
-             </div>
-           </div>
-
-           <div class="script-card" data-script-id="atencion-segura">
-             
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">{Cliente}</span>, en caso se corte la llamada puedo realizar la devolución al número que me está llamando o podría brindarme otro número de celular".</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-sondeo-averias">"<span class="ph" data-ph="cliente">{Cliente}</span>, comprendo, debido al inconveniente que nos mencionas, realizaré una revisión de su servicio. Para esto me confirmas en qué departamento te encuentras, provincia y distrito por favor. Me indicas también la dirección donde te encuentras en este momento por favor, con eso podré avanzar con la búsqueda".</p>
+                <p style="margin-top:6px;font-size:10px;color:var(--text-faint);"><strong>Tip:</strong> En caso no encontremos al cliente, solicitamos referencias.</p>
+              </div>
            </div>
 
            <div class="script-card" data-script-id="tiempo-espera">
              
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-tiempo-espera">"<span class="ph" data-ph="cliente">{Cliente}</span>, por favor, permítame un momento en línea mientras valido su información <span class="ph-inline">(indica brevemente la acción a realizar)</span>".</p>
-               <p style="margin-top:6px;font-size:10px;color:var(--text-faint);"><strong>Importante:</strong> En consultas complejas retoma cada 60 segundos.</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-tiempo-espera">"<span class="ph" data-ph="cliente">{Cliente}</span>, por favor, permítame un momento en línea mientras valido su información <span class="ph-inline">(indica brevemente la acción a realizar)</span>".</p>
+                <p style="margin-top:6px;font-size:10px;color:var(--text-faint);"><strong>Importante:</strong> En consultas complejas retoma cada 60 segundos.</p>
+              </div>
            </div>
 
            <div class="script-card" data-script-id="retorno">
              
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-retorno">"<span class="ph" data-ph="cliente">{Cliente}</span>, disculpa la demora y gracias por tu espera <span class="ph-inline">(informa la verificación o acción realizada)</span>".</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-retorno">"<span class="ph" data-ph="cliente">{Cliente}</span>, disculpa la demora y gracias por tu espera <span class="ph-inline">(informa la verificación o acción realizada)</span>".</p>
+              </div>
            </div>
          </div>
 
@@ -3972,7 +3978,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.35</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.36</span>
     </span>
   </footer>
 </div>
@@ -5824,7 +5830,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.35] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.36] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');

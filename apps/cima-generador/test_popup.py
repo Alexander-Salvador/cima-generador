@@ -2888,7 +2888,9 @@ def test(html_path):
         else:
             result.fail('v3.10.34 SPEECH sondea', 'speech Sondea no coincide con CEO directive')
 
-    # HTML: speech Sondeo identificación de AVERIAS contiene los 3 pasos
+    # HTML: speech Sondeo identificación de AVERIAS contiene las frases del CEO
+    # v3.10.36: CEO refinió el speech — ahora es un solo párrafo unificado,
+    # NO las 3 frases separadas del v3.10.34.
     sondeo_averias_match = re.search(
         r'id="script-text-sondeo-averias"[^>]*>(.+?)</p>',
         html, re.DOTALL
@@ -2896,19 +2898,19 @@ def test(html_path):
     if sondeo_averias_match:
         sa_text = sondeo_averias_match.group(1)
         expected_phrases = [
+            'comprendo',
             'departamento te encuentras',
             'provincia y distrito por favor',
             'dirección donde te encuentras',
-            'mz, lote, avenida, urb',
-            'alguna referencia'
+            'avanzar con la búsqueda'
         ]
         missing_phrases = [p for p in expected_phrases if p not in sa_text]
         if not missing_phrases:
-            result.ok('v3.10.34 SPEECH: Sondeo identificación AVERIAS con 3 pasos completos')
+            result.ok('v3.10.36 SPEECH: Sondeo identificación AVERIAS unificado (CEO directive)')
         else:
-            result.fail('v3.10.34 SPEECH sondeo-averias', f'faltan: {missing_phrases}')
+            result.fail('v3.10.36 SPEECH sondeo-averias', f'faltan: {missing_phrases}')
     else:
-        result.fail('v3.10.34 SPEECH sondeo-averias', 'script-text-sondeo-averias not found')
+        result.fail('v3.10.36 SPEECH sondeo-averias', 'script-text-sondeo-averias not found')
 
     # HTML: card sondeo-averias presente
     if 'data-script-id="sondeo-averias"' in html:
@@ -3024,6 +3026,48 @@ def test(html_path):
         result.ok('v3.10.35 CSS: badges ✓/✗/⭐ preservados en Cierre')
     else:
         result.fail('v3.10.35 CSS badges regresión', 'badges ok/fail/star missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.36 — MOVER atencion-segura a BIENVENIDA + REFINAR sondeo-averias
+    # CEO directive: 'Vamos a subir la atencion segura a BEINVENIDA E
+    # IDENTIFICACION... motivo de la llamada: Sondeo de identificacion de
+    # AVERIAS... mejorar'.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.36 — MOVER atencion-segura a BIENVENIDA + REFINAR sondeo-averias')
+
+    # HTML: atencion-segura AHORA está en sección BIENVENIDA (orden: bienvenida → atencion-segura → sondea)
+    bienvenida_pos = html.find('data-script-id="bienvenida"')
+    atencion_pos = html.find('data-script-id="atencion-segura"')
+    sondea_pos = html.find('data-script-id="sondea"')
+    if bienvenida_pos > 0 and atencion_pos > 0 and sondea_pos > 0:
+        if bienvenida_pos < atencion_pos < sondea_pos:
+            result.ok('v3.10.36 HTML: atencion-segura en BIENVENIDA (orden: bienvenida → atencion-segura → sondea)')
+        else:
+            result.fail('v3.10.36 HTML orden', 'atencion-segura debe estar entre bienvenida y sondea')
+    else:
+        result.fail('v3.10.36 HTML posición', 'cards no encontrados')
+
+    # Anti-regression: Sondeo de identificación AVERIAS speech contiene "comprendo" + "avanzar con la búsqueda"
+    import re as re_mod
+    sa_match = re_mod.search(
+        r'id="script-text-sondeo-averias"[^>]*>(.+?)</p>',
+        html,
+        re_mod.DOTALL
+    )
+    if sa_match:
+        sa_text = sa_match.group(1)
+        if 'comprendo' in sa_text and 'avanzar con la búsqueda' in sa_text:
+            result.ok('v3.10.36 SPEECH: Sondeo identificación AVERIAS unificado (1 párrafo)')
+        else:
+            result.fail('v3.10.36 SPEECH sondeo-averias', 'speech no unificado')
+
+    # Tip en Sondeo AVERIAS: 'En caso no encontremos...'
+    if 'En caso no encontremos al cliente' in html or 'solicitamos referencias' in html:
+        result.ok('v3.10.36 SPEECH: tip "En caso no encontremos al cliente, solicitamos referencias"')
+    else:
+        result.fail('v3.10.36 SPEECH tip', 'tip referencias missing')
+
+
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.28 — Inputs filled clean + toast wording
