@@ -6403,15 +6403,18 @@ function toTitleCase(str) {
 }
 
 function buildAddressForMaps() {
+  // v3.10.22: el campo REFERENCIA es solo para el agente (dato informativo).
+  // NO se incluye en el output para maps — el geocoder (Google Maps,
+  // Nominatim) no lo reconoce y degrada el match score. El comentario
+  // previo "Referencia: OMITIDA (rompe match)" ya era correcto, pero el
+  // código la seguía incluyendo. Ahora se omite definitivamente.
   var dir  = upper('direccion');
-  var ref  = upper('referencia');
   var ccpp = upper('ccpp');
   var dist = upper('distrito');
   var prov = upper('provincia');
   var dep  = upper('departamento');
-  // FIX #9 (v2.1.1): incluir referencia entre direccion y ccpp (entre corchetes)
-  // Formato: "[referencia]" para diferenciar visualmente de la dirección
-  var streetParts = [dir, ref ? '(' + ref + ')' : '', ccpp].filter(function (x) { return x; });
+  // streetParts: solo dirección + CCPP (lo que el maps puede geocodificar).
+  var streetParts = [dir, ccpp].filter(function (x) { return x; });
   var geoParts = [];
   if (dist) geoParts.push(dist);
   if (prov && prov !== dep) geoParts.push(prov);

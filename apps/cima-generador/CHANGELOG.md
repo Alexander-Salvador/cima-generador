@@ -1,5 +1,42 @@
 # Changelog — cima-generador
 
+## [3.10.22] - 2026-10-19 — 🐛 FIX output NO debe incluir REFERENCIA (el geocoder no la reconoce)
+
+**CEO directive:** "Resultado no debe trackear la REFERENCIA que se ingrese ya que el maps no lo reconoce."
+
+**Bug:** la función `buildAddressForMaps()` incluía la REFERENCIA en el output que se copia al maps con formato `(Mercado)` o similar. El comentario en el código ya decía "Referencia: OMITIDA (rompe match)", pero la implementación SÍ la incluía. Esto degradaba el match score en Google Maps / Nominatim porque el geocoder no reconoce datos entre paréntesis como dirección oficial.
+
+**Fix:** la REFERENCIA se omite definitivamente del output para maps. El campo sigue existiendo en el formulario (es útil para el agente como dato informativo), pero NO se incluye en:
+- `box.dataset.full` (clipboard al hacer click)
+- `box.title` (tooltip hover)
+- `compact` (texto visible en pantalla)
+
+### 🔧 Cambios en `buildAddressForMaps()`
+
+| Antes | Ahora |
+|---|---|
+| `var ref = upper('referencia');` | eliminado |
+| `streetParts = [dir, ref ? '(' + ref + ')' : '', ccpp]` | `streetParts = [dir, ccpp]` (sin ref) |
+| Comentario engañoso "incluir referencia entre corchetes" | comentario claro: "OMITIDA, el geocoder no la reconoce" |
+
+### 🎯 Resultado
+
+| Input | Output antes | Output ahora |
+|---|---|---|
+| dir=Calle 123, ccpp=VITUYA, dist=IHUARI, ref=Mercado | `Calle 123, (Mercado), Vituya, Ihuari, Peru` ❌ | `Calle 123, Vituya, Ihuari, Peru` ✓ |
+| dir=Calle 123, dist=LIMA, ref=Plaza | `Calle 123, (Plaza), Lima, Peru` ❌ | `Calle 123, Lima, Peru` ✓ |
+| dir vacío, ccpp=YANASARA, ref=Plaza | `(Plaza), Yanasara, Huamachuco, Peru` ❌ | `Yanasara, Huamachuco, Peru` ✓ |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.21] - 2026-10-19 — 🐛 FIX click-outside no cerraba el dialog (listener `{once: true}` se eliminaba tras 1 click)
 
 **CEO directive:** "Se abre el dialog pero al darle click fuera del dialog este debe cerrarse."
