@@ -1,5 +1,81 @@
 # Changelog — cima-generador
 
+## [3.10.48] - 2026-10-19 — 🎯 SPEECHES nutridos AI 2026 (variación {Cliente} + consecutivas)
+
+**CEO directives (3 puntos):**
+
+1. **MOTIVO tiempo-espera** — "Al final dice {cliente} un momento por favor mientras valido su información. luego tiene que seguir:." (Falta continuación)
+
+2. **DESPEDIDA** — "Vannesa, hemos realizado para ti el (proceso generado). Solo sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderte." (debe ser **consecutiva** la atención)
+
+3. **General** — "debemos nutrir de mejor manera los speech ya que todos al inicio dice {cliente} debemos utilizar mas frases empaticas, cordiales, agradables y no siempre decirle el nombre podemos personalizar poner el nombre en diversas partes donde corresponda para que no se sienta una saturacion y los datos sean inteligentes"
+
+### 🔧 Cambios — 9 speeches nutridos
+
+#### BUG 1: MOTIVO tiempo-espera (con continuación)
+
+```html
+<!-- v3.10.42 (rechazado): -->
+"{Cliente}, un momento por favor mientras valido su información (indique brevemente la acción a realizar)."
+
+<!-- v3.10.48: CEO directive — "luego tiene que seguir" -->
+"Un momento por favor mientras valido su información {Cliente} (indique brevemente la acción a realizar). Apenas tenga novedades, le comento cómo seguimos."
+```
+
+✅ Continuación explícita con "Apenas tenga novedades, le comento cómo seguimos."
+
+#### BUG 2: DESPEDIDA consecutiva (no 2 mensajes separados)
+
+```html
+<!-- v3.10.42 (rechazado por CEO — "debe ser consecutiva la atencion"): -->
+"{Cliente}, hemos realizado para ti el (proceso generado). Solo sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderte."
+
+<!-- v3.10.48: flujo continuo, una sola unidad narrativa -->
+"Perfecto {Cliente}, ya tenemos listo el (proceso generado). Sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderle."
+```
+
+✅ "Perfecto" + "ya tenemos listo" dan sensación de avance continuo, no de 2 mensajes separados.
+
+#### BUG 3: Variación {Cliente} (nutrido AI 2026)
+
+| # | Speech | Antes | Ahora | Posición {Cliente} |
+|---|---|---|---|---|
+| 1 | bienvenida | "Bienvenido a Movistar, le saluda {Agente}..." | sin cambios | (no usa {Cliente}) |
+| 2 | **atencion-segura** | "{Cliente}, si la llamada llegara a cortarse, ¿puedo devolverle la llamada..." | "**Pensando en su comodidad**, si la llamada llegara a cortarse, ¿puedo devolverle la llamada **{Cliente}** al número de su consulta..." | **al medio** |
+| 3 | **sondea** | "{Cliente}, ¿en qué puedo ayudarte?" | "**¿En qué puedo ayudarle hoy?** Cuénteme **{Cliente}** cuál sería el motivo..." | **al final** |
+| 4 | **sondeo-averias** | "{Cliente}, comprendo, debido al inconveniente..." | "**Comprendo {Cliente}**, debido al inconveniente que nos mencionas..." | **inmediato a "Comprendo"** |
+| 5 | **tiempo-espera** | "{Cliente}, un momento por favor..." | "Un momento por favor mientras valido su información **{Cliente}**..." | **al medio** |
+| 6 | **educa-app** | "{Cliente}, en la App Mi Movistar puede..." | "**Para resolver más rápido, {Cliente}**, en la **App Mi Movistar**..." | **después de intro empática** |
+| 7 | **despedida** | "{Cliente}, hemos realizado para ti..." | "**Perfecto {Cliente}**, ya tenemos listo..." | **después de "Perfecto"** |
+| 8 | **encuesta** | "Para finalizar, le agradeceré..." | "**Antes de cerrar {Cliente}**, le agradeceré..." | **al inicio (nuevo)** |
+| 9 | **transferir** | "{Cliente}, su consulta no corresponde... ¿Me lo permite, {Cliente}?" | "**Entiendo {Cliente}**, esta consulta la resuelve mejor un área especializada. ¿Me permite transferirló?" | **1 sola vez (antes 2)** |
+
+**Patrones AI 2026 aplicados:**
+
+1. **Variación de posición**: {Cliente} ya no siempre abre la frase. Ahora está al inicio, medio, final, o después de conectores.
+2. **Frases introductorias empáticas** (no siempre abruptas):
+   - "Pensando en su comodidad..."
+   - "Para resolver más rápido..."
+   - "Comprendo..."
+   - "Entiendo..."
+   - "Perfecto..."
+3. **Datos inteligentes** (no saturación):
+   - transferir: 1 sola mención de {Cliente} (antes 2)
+   - encuesta: 1 mención nueva (antes 0)
+   - bienvenida: no usa {Cliente} (es bienvenida, no identificación)
+4. **Registro consistente** (formal/le, no tu/su):
+   - sondea: "le ayudaré" (antes "puedo ayudarte")
+   - despedida: "atenderle" (antes "atenderte")
+   - transferir: "transferirló" (antes "transferirlo" + redundancia)
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +10 nuevos tests v3.10.48 (1 por speech + variación {Cliente})
+- ✅ 585 → 595 tests PASS
+- ✅ Anti-regresión: bienvenida mantiene "Bienvenido a Movistar" + "¿Es correcto?"
+
+---
+
 ## [3.10.47] - 2026-10-19 — 🐛 BUG FIX CRÍTICO: grids mismo ancho (jerarquía DOM)
 
 **CEO directive:** "Recuerda que en las GRID es para el modo responsive popup y no ha mejorado sigue igual las 3 grid deben tener el mismo ancho."
