@@ -3525,6 +3525,96 @@ def test(html_path):
         result.fail('v3.10.49 JS expand cards', 'querySelectorAll(".script-card.is-collapsed") esperado')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.50 — 3 BUG FIXES reportados por CEO
+    # BUG 1: CTRL+SHIFT+R no funciona (algo bloquea la función)
+    # BUG 2: Al cargar, datos desplegados (deben estar minimizados)
+    # BUG 3: Solo click en MOTIVO → desglose info (no auto)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.50 — 3 BUG FIXES (CTRL+SHIFT+R + default collapsed + no auto-desglose)')
+
+    # BUG 1: Handler CTRL+SHIFT+R está FUERA de initPopupMode (global, popup+standalone)
+    # Verificar que el handler NO está dentro de initPopupMode (que solo se ejecuta en popup)
+    # El handler debe estar en main scope, después del cierre de initPopupMode
+    init_popup_close_pos = html.find('function initPopupMode()')
+    if init_popup_close_pos > 0:
+        # Buscar el cierre de la función (último } antes de function clearScriptTemplate)
+        clear_script_pos = html.find('function clearScriptTemplate()')
+        # Verificar que el listener de CTRL+SHIFT+R está entre initPopupMode cierre y clearScriptTemplate
+        handler_region = html[init_popup_close_pos:clear_script_pos] if clear_script_pos > init_popup_close_pos else ''
+        # El handler debe estar en main scope (después de initPopupMode)
+        has_global_handler = re.search(
+            r"addEventListener\(\s*['\"]keydown['\"]\s*,\s*function[^{]*\{[^}]*ctrlKey[^}]*shiftKey[^}]*clearScriptTemplate",
+            handler_region, re.DOTALL
+        )
+        # Y NO debe estar dentro de initPopupMode
+        inside_popup_match = re.search(
+            r"function initPopupMode\(\)\s*\{[^{}]*addEventListener\(\s*['\"]keydown['\"][^{}]*ctrlKey[^{}]*shiftKey",
+            html, re.DOTALL
+        )
+        if has_global_handler and not inside_popup_match:
+            result.ok('v3.10.50 BUG 1: handler CTRL+SHIFT+R GLOBAL (fuera de initPopupMode)')
+        elif inside_popup_match:
+            result.fail('v3.10.50 BUG 1', 'handler aún está dentro de initPopupMode (solo popup, no standalone)')
+        else:
+            result.fail('v3.10.50 BUG 1', 'handler CTRL+SHIFT+R global no encontrado')
+    else:
+        result.fail('v3.10.50 BUG 1', 'initPopupMode no encontrado')
+
+    # BUG 1: Handler usa capture: true para interceptar antes que browser
+    if re.search(
+        r"addEventListener\(\s*['\"]keydown['\"][\s\S]*?ctrlKey[\s\S]*?shiftKey[\s\S]*?\}\s*,\s*\{\s*capture:\s*true\s*\}\s*\)",
+        html
+    ):
+        result.ok('v3.10.50 BUG 1: handler usa { capture: true } (intercepta antes que browser)')
+    else:
+        result.fail('v3.10.50 BUG 1 capture', 'handler debe usar { capture: true }')
+
+    # BUG 1: Handler llama a stopPropagation + stopImmediatePropagation
+    if re.search(r"ctrlKey[^{}]*shiftKey[^{}]*stopImmediatePropagation", html, re.DOTALL):
+        result.ok('v3.10.50 BUG 1: stopPropagation + stopImmediatePropagation (bloquea otros listeners)')
+    else:
+        result.fail('v3.10.50 BUG 1 stop', 'stopImmediatePropagation esperado')
+
+    # BUG 2 + 3: applyScriptCollapsedStates colapsa TODO por default si no hay estado
+    # (primera visita o tras CTRL+SHIFT+R que borra persistencia)
+    if re.search(
+        r"function applyScriptCollapsedStates[\s\S]{0,600}stateKeys\.length\s*===\s*0[\s\S]{0,200}querySelectorAll\(\s*['\"]\.script-card\[data-script-id\]\s*['\"]",
+        html
+    ):
+        result.ok('v3.10.50 BUG 2: applyScriptCollapsedStates colapsa TODO por default (sin estado persistido)')
+    else:
+        result.fail('v3.10.50 BUG 2', 'applyScriptCollapsedStates debe colapsar todas si no hay estado')
+
+    # BUG 3: NO hay auto-desglose al cargar (el flow solo se desglosa en click MOTIVO)
+    # Contar LLAMADAS REALES a desgloseMotivoFlow (excluir definición + comentarios)
+    # Definición = "function desgloseMotivoFlow(...)"
+    # Comentarios = líneas que empiezan con //
+    # Llamada real = "desgloseMotivoFlow(args)" en línea de código
+    real_calls = []
+    for i, line in enumerate(html.split('\n'), start=1):
+        stripped = line.strip()
+        # Saltar comentarios y definiciones
+        if stripped.startswith('//'):
+            continue
+        if 'function desgloseMotivoFlow' in stripped:
+            continue
+        # Buscar llamadas
+        m = re.search(r"desgloseMotivoFlow\(\s*([A-Za-z_]*)\s*\)", stripped)
+        if m:
+            real_calls.append((i, m.group(1)))
+
+    # Debe haber exactamente 1 llamada real, en el click handler
+    click_handler = re.search(
+        r"card\.addEventListener\(\s*['\"]click['\"]\s*,\s*function[\s\S]{0,1000}desgloseMotivoFlow\(\s*value\s*\)",
+        html
+    )
+    if len(real_calls) == 1 and click_handler:
+        result.ok(f'v3.10.50 BUG 3: desgloseMotivoFlow solo se llama en click handler (L{real_calls[0][0]}, 1 llamada real)')
+    else:
+        result.fail('v3.10.50 BUG 3',
+                    f'desgloseMotivoFlow debe ser solo en click (encontradas {len(real_calls)} llamadas reales: {real_calls})')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.45 — BUG FIXES (layout + telefono-last3)
     # CEO: "Formato roto. No se hizo cambios correctos, las opciones deben
     # estar dentro de MOTIVO. En el speech dice {telefono en consulta} no
