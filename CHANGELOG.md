@@ -1,5 +1,46 @@
 # Changelog — cima-generador
 
+## [3.10.11] - 2026-10-18 — 🐛 FIX bug dropdown CCPP: prefijo UBIGEO como primer caserío
+
+**Síntoma CEO:** "en CCPP/CASERIO tenemos siempre al inicio un numero dentro del dropdown 030215".
+
+**Causa raíz:** `CCPP_DATA["030215"]` en el HTML inline empezaba con `["030215", "Acoragra", ...]` en vez de `["Acoragra", ...]`. El código UBIGEO del distrito estaba inlined como primer elemento del array en los **1,886 distritos (100%)**. Bug histórico del commit `35a032b` (v2.0.0 STANDALONE) — el preprocessing metía el d6 como sentinel sin saber que JS sort lo pondría al inicio del dropdown antes que las letras.
+
+### 🔧 Fix
+
+| Aspecto | Valor |
+|---|---|
+| Script | `scripts/fix_ccpp_ubigeo_prefix.py` |
+| Estrategia | Regex atómica `"d6":["d6",` → `"d6":[` (idempotente) |
+| Distritos corregidos | 1,886 / 1,886 (100%) |
+| Items removidos | 1,886 (uno por distrito) |
+| CCPP_DATA total | 44,954 → 43,068 |
+| HTML size | 1,145,699 → 1,128,725 bytes (−16,974) |
+| Idempotencia | 2da corrida = 0 matches ✓ |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | 489/489 PASS |
+| `test_aggressive.py` | 63/63 PASS |
+| `test_audit_brutal.py` | 61/61 OK (0 mentiras, 0 bugs, 0 security) |
+| `test_browser_static.py` | 14/0/2 (ccpp_total=43068 esperado) |
+| `node --check` | EXIT 0 |
+
+### 🔬 Antes vs Después (030215 Apurímac/Abancay/Chalhuanca)
+
+```
+ANTES:  ["030215","Acoragra","Alejo Pata",...]
+AHORA:  ["Acoragra","Alejo Pata",...]
+```
+
+Comparación con `data/ccpp_by_distrito.json` (source-of-truth): ahora idéntico.
+
+### ⚠️ Drift histórico observado
+
+`VERSION` quedó en `3.10.4` durante los commits v3.10.5 → v3.10.10 (no se bumpeó por sesión). Alineado a `3.10.11` en este commit. Próximos commits deben mantener VERSION ↔ CHANGELOG sincronizados.
+
 ## [3.10.4-patch] - 2026-10-17 — 🔧 3 d6 faltantes + benchmark runtime REAL
 
 CEO directive: "busca mas mentiras de tu parte y cargalas a una checklist".
