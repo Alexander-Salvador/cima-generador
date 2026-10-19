@@ -1,5 +1,112 @@
 # Changelog — cima-generador
 
+## [3.10.44] - 2026-10-19 — 🎨 HEADER "Estructura de Llamada" + MOTIVO cards Apple 2026
+
+**CEO directives (2 partes):**
+1. "EL HEADER DEL GRID SERA 'ESTRUCTURA DE LLAMADA' [...] vamos a arreglar esta parte [...] estilizalo modo premoiun 2026 apple design. en MOTIVO tendremos 1 disponible y 3 desactivados para mejorarlos. Técnico Móvil <- aqui tendremos Internet, llamadas, SMS, tethering. Otras Consultas <- Aqui ira todo tema externo de Tecnico movil que sera transferido (Desactivado por el momento). Averia Masiva <- Aqui sera igual solo que cambiara los speech (desactivado por el momento). GTR Critico <- Aqui tambien cambiaran los speech (desactivado por el momento)"
+2. "Arreglar este speech textual [...] Corregir con esto <- Bienvenido a Movistar, le saluda {Agente}. ¿Su consulta es por el numero que termina en {Telefono en consulta} ¿Es correcto? <- el telefono no debe decir ultimos 3, debe tomar el numero ingresado en la plantilla inicial y mostrar los 3 ultimos digitos."
+
+### 🎯 Causa raíz
+
+- **HEADER GRID 0** genérico ("Llamada") no diferenciaba la fase del flujo
+- **MOTIVO `<select>`** plano no escalaba: CEO quiere roadmap con 4 categorías (1 activa + 3 próximamente)
+- **Speech bienvenida** decía "línea que termina en {Últimos 3}" — placeholder feo y no reflejaba el input origen
+
+### 🔧 Cambios
+
+#### 1. HEADER GRID 0 → "Estructura de Llamada"
+
+```html
+<!-- v3.10.43: -->
+<h3>Llamada</h3>
+
+<!-- v3.10.44: Apple premium -->
+<h3>Estructura de Llamada</h3>
+```
+
+El header `<h3>` hereda styling premium del grid-toggle (uppercase, font-weight 800, letter-spacing premium del v3.10.43).
+
+#### 2. MOTIVO rediseñado: 4 cards visuales (1 activa + 3 desactivadas)
+
+**Reemplazo completo del `<select>` nativo por grid 2x2 de cards premium Apple 2026.**
+
+```html
+<!-- v3.10.43 (rechazado): <select> plano -->
+<select id="script-motivo">
+  <option value="INTERNET">INTERNET</option>
+  <option value="LLAMADAS">LLAMADAS</option>
+  <option value="SMS">SMS</option>
+  <option value="THETERING">THETERING</option>
+  <option value="OTRO">OTRO (transferir)</option>
+</select>
+
+<!-- v3.10.44: 4 cards visuales con glass premium -->
+<div class="motivo-grid" role="radiogroup">
+  <button class="motivo-card motivo-card--active" data-motivo-value="MOVIL">
+    📱 Técnico Móvil · Internet · Llamadas · SMS · Tethering · ✓
+  </button>
+  <button class="motivo-card motivo-card--disabled" disabled>
+    🔀 Otras Consultas · Tema externo · Transferido · Próximamente
+  </button>
+  <button class="motivo-card motivo-card--disabled" disabled>
+    📡 Avería Masiva · Cambio de speech operativo · Próximamente
+  </button>
+  <button class="motivo-card motivo-card--disabled" disabled>
+    ⚡ GTR Crítico · Cambio de speech crítico · Próximamente
+  </button>
+</div>
+```
+
+**Visual states (Apple 2026 design language):**
+
+| Estado | CSS | Detalles |
+|---|---|---|
+| **Activa default** | `glass-1-bg`, `glass-border` | Card premium normal |
+| **Activa hover** | `border-color sage 50%`, `transform: translateY(-1px)` | Lift sutil + glow sage |
+| **Activa selected** | `aria-checked="true"` → gradient sage 16% + box-shadow | Check ✓ visible con scale-in spring |
+| **Disabled** | `opacity: 0.55`, `cursor: not-allowed`, `bg text 3%` | Atenuado pero legible |
+| **Disabled hover** | `opacity: 0.7` | Feedback sutil de "no disponible" |
+| **Badge "Próximamente"** | top-right, font 7.5px uppercase | Marca visual de roadmap |
+
+#### 3. JS handler para motivo cards
+
+```js
+function initMotivoCards() {
+  // Click activa → actualiza select + aria-checked + updateScriptPlaceholders
+  // Click disabled → toast accesible "Próximamente" + micro-feedback "Pronto ✨"
+}
+
+function syncMotivoCardsFromSelect() {
+  // Sincroniza aria-checked cuando el select cambia programáticamente
+}
+```
+
+El `<select>` se mantiene (`hidden`) como form value para no romper la lógica existente (`motivo === 'OTRO'` → muestra Transferir card).
+
+#### 4. Speech bienvenida — redacción CEO
+
+```html
+<!-- v3.10.43 (rechazado): placeholder feo "{Últimos 3}" -->
+"...le saluda {Agente}. ¿Me comunico con el titular de la línea que termina en {Últimos 3}? ¿Es correcto?"
+
+<!-- v3.10.44: CEO directive -->
+"...le saluda {Agente}. ¿Su consulta es por el numero que termina en {Telefono en consulta}? ¿Es correcto?"
+```
+
+**Transformación JS preservada:** `data-ph="telefono-last3"` sigue aplicando `val.replace(/\D/g, '').slice(-3)` — toma el número completo del input `script-telefono` y muestra últimos 3 dígitos. Solo cambia el texto del placeholder visible cuando está vacío (`{Últimos 3}` → `{Telefono en consulta}`).
+
+**Output ejemplo con Williams Huerta + 992319171:**
+> "Bienvenido a Movistar, le saluda Williams Huerta. ¿Su consulta es por el numero que termina en **171**? ¿Es correcto?"
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +11 nuevos tests v3.10.44 (HEADER, motivo-grid, 4 cards, 1+3 split, CSS active/disabled, JS initMotivoCards)
+- ✅ 562 → 573 tests PASS
+- ✅ Anti-regresión v3.10.31 preservada (THETERING, 5 opciones en select hidden)
+- ✅ Anti-regresión v3.10.43 BUG 1 actualizada a nueva redacción CEO
+
+---
+
 ## [3.10.43] - 2026-10-19 — 🐛 BUG FIXES (3 bugs reportados por CEO)
 
 ### BUG 1: Speech bienvenida — solo últimos 3 dígitos del teléfono + sin redundancia motivo
