@@ -1,8 +1,28 @@
-# CIMA v3.10.10 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.25 — Lista de Pendientes (Estado al cierre de sesión)
 
-**Fecha:** 2026-10-17 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
+**Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
 ## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6)
+
+## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.25) — 15 commits
+
+| Versión | Cambio | Commit |
+|---|---|---|
+| v3.10.11 | Eliminar código UBIGEO como primer caserío en CCPP_DATA (39 d6 contaminados) | 952d3a9 |
+| v3.10.12 | Eliminar detección de 2G (COMU-5672 / IPT) per CEO directive | f62f8b4 |
+| v3.10.13 | Recuperación end-to-end de 34 zonas de apagado (PDFs Movistar) | 848cc8a |
+| v3.10.14 | Botón ⚠️ solo se activa en búsqueda EXACTA | 1d4d545 |
+| v3.10.15 | Fix bug SANTIAGO DE SURCO 'estación base desactivada' falso | dd03916 |
+| v3.10.16 | Dialog ⚠️ se acomoda DENTRO del grid (intent 1) | 26bfc38 |
+| v3.10.17 | Dialog ⚠️ sale ENCIMA del botón (intent 2) | 84fed4b |
+| v3.10.18 | Dialog ⚠️ in-flow DENTRO del grid + contenido compacto (intent 3) | 50dfc35 |
+| v3.10.19 | Panel ⚠️ hijo de .row-ref-buttons (intent 4) | d7917f4 |
+| v3.10.20 | Panel ⚠️ sale ENCIMA + cierre inteligente (intent 5) | 07b0d6e |
+| v3.10.21 | Click-outside cierra el dialog (listener persistente) | 5006138 |
+| v3.10.22 | Output NO incluye REFERENCIA (geocoder no la reconoce) | 7109aad |
+| v3.10.23 | Grids colapsables premium con persistencia localStorage | 1616ed0 |
+| v3.10.24 | Grids balanceadas + eliminar raya del header | 80798bb |
+| v3.10.25 | Eliminar </div> extra en gridAddress (estructura desbalanceada) | 743886c |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|
@@ -79,55 +99,69 @@
 
 | Métrica | Valor |
 |---|---|
-| Items resueltos | 22 |
+| Items resueltos (sesión 18-19) | 37 (22 base + 15 nuevos) |
 | Items pendientes | 23 (1 crítico, 10 Marco, 7 deuda menor, 2 otros) |
 | Tiempo estimado para v3.11 | ~20-30h |
-| Líneas eliminadas (legacy) | 441 |
-| Líneas agregadas (features) | ~600 |
-| Commits en sesión | 10 |
-| Tests passing | 613 |
+| Líneas eliminadas (legacy) | 441 + limpieza v3.10.25 |
+| Líneas agregadas (features) | ~600 + grids colapsables |
+| Commits totales develop (v3.9.15 → v3.10.25) | 25 |
+| Tests passing | 474 + 63 + 14 = 551 |
+| Cobertura CCPPs del source | 234/239 exactos (98%) + 5 fuzzy (100%) |
 
 ## 🔗 Contexto para próximo chat
 
 **Para retomar el trabajo:**
 
-1. Leer `MEMORY.md` (línea ~70 checkpoint v3.10.10)
-2. Leer `docs/CHECKLIST_MENTIRAS.md` (24 confesiones)
-3. Leer `docs/FUENTES_ZONAS_APAGADAS.md` (trazabilidad)
-4. Ejecutar tests:
+1. Leer `MEMORY.md` (checkpoint v3.10.25 — actualizado en esta sesión)
+2. Leer `PENDIENTES.md` (este archivo — actualizado en esta sesión)
+3. Ejecutar tests:
    ```bash
    cd /home/braka/Systems/projects/work/cima/apps/cima-generador
-   python3 test_popup.py          # 489/489 PASS
-   python3 test_aggressive.py     # 61/61 PASS
-   python3 test_audit_brutal.py   # 0 issues críticos
+   python3 test_popup.py          # 474/474 PASS
+   python3 test_aggressive.py     # 63/63 PASS (234/234 ccpp_exacto)
+   python3 test_audit_brutal.py   # 55 OK + 2 mentiras (VERSION + M4)
    python3 test_browser_static.py # 14/0/2 PASS/FAIL/WARN
-   node /home/braka/Systems/projects/work/cima/benchmark_runtime.js  # 7.21μs/check
    ```
-5. **Próximo bloque sugerido:** R1 + R4 (cleanup masivo + descomponer showApagadoPanelInline)
+4. **Próximo bloque sugerido:** Push a develop remoto (CEO autoriza) o continuar con R1+R4 (legacy cleanup)
 
 ## 📁 Archivos de referencia
 
-- `apps/cima-generador/index.html` (1.5MB, 7,260 líneas)
-- `apps/cima-generador/CHANGELOG.md` (v3.10.0-v3.10.10)
-- `apps/cima-generador/VERSION` (3.10.10)
+- `apps/cima-generador/index.html` (1.1MB, 7,096 líneas)
+- `apps/cima-generador/CHANGELOG.md` (v3.10.0-v3.10.25)
+- `apps/cima-generador/VERSION` (3.10.25)
 - `apps/cima-generador/data/known_data_gaps.json`
-- `apps/cima-generador/docs/FUENTES_ZONAS_APAGADAS.md`
-- `apps/cima-generador/docs/CHECKLIST_MENTIRAS.md`
-- `apps/cima-generador/test_popup.py` (489 tests)
-- `apps/cima-generador/test_aggressive.py` (61 tests)
-- `apps/cima-generador/test_audit_brutal.py` (8 categorías, 61 OK)
+- `apps/cima-generador/data/zonas_apagadas.json` (consolidada 239 CCPPs, 1,821 d6)
+- `apps/cima-generador/test_popup.py` (474 tests)
+- `apps/cima-generador/test_aggressive.py` (63 tests)
+- `apps/cima-generador/test_audit_brutal.py` (8 categorías, 55 OK)
 - `apps/cima-generador/test_browser_static.py` (5 categorías, 14 PASS)
-- `apps/cima-generador/test_exhaustive_v3103.py` (Clara, 114 tests)
-- `benchmark_runtime.js` (medición Node.js runtime)
-- `apps/cima-generador/clean_ccpp_data.py` (limpieza CCPP_DATA)
-- `MEMORY.md` (checkpoint v3.10.10)
+- `MEMORY.md` (checkpoint v3.10.25)
 - `PENDIENTES.md` (este archivo)
 
 ## 🎯 Estado de branches
 
 | Branch | Estado | Notas |
 |---|---|---|
-| **develop** | v3.10.10 ✅ | 10 commits ahead de v3.9.15 |
-| **popup-deploy** | v3.10.10 ✅ | subtree split, listo para push |
+| **develop** | v3.10.25 ✅ | 15 commits ahead de v3.10.10 (25 total desde v3.9.15) |
+| **popup-deploy** | desactualizado | subtree split pendiente (regenerar antes de push) |
 | **main** | v3.10.5 (legacy divergente) | No tocar, sheets bridge |
 | **feat/apagado-inteligente** | v3.7.8 (deprecada) | CEO marcó como LOCAL ONLY |
+
+## 🆕 Cambios mayores sesión 2026-10-18/19
+
+1. **Eliminación de 2G/IPT** per CEO directive: scopes reducidos a 3 niveles (ccpp_exacto, ccpp_fuzzy, distrito_of)
+2. **Cobertura 234/239 CCPPs** (exactos) + 5 fuzzy = 100% del source
+3. **Botón ⚠️ inteligente**: solo se activa en match exacto, cierra con click-outside/Escape/clearAddress
+4. **Output maps**: NO incluye REFERENCIA (geocoder no la reconoce)
+5. **Grids colapsables premium**: toggle con animación, chevron rotatorio, persistencia localStorage
+6. **Grids balanceadas**: bug de `</div>` extra corregido
+
+## 📐 Decisiones arquitectónicas recientes
+
+| Decisión | Razón | Versión |
+|---|---|---|
+| Eliminar nivel ipt_distrito (2G) | CEO directive "fuera de scope por ahora" | v3.10.12 |
+| Botón ⚠️ solo en ccpp_exacto | UX: respuesta binaria, sin confusión | v3.10.14 |
+| Output sin REFERENCIA | Geocoder (Google Maps/Nominatim) no lo reconoce | v3.10.22 |
+| Grids colapsables | UX: supervisor enfoca una tarea a la vez | v3.10.23 |
+| Persistencia localStorage | Recordar preferencia entre sesiones | v3.10.23 |

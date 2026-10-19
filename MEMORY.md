@@ -56,15 +56,28 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-17 — v3.10.10 FIN SESIÓN (4 bloques completados)**. 
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.25 FIN SESIÓN (15 commits: v3.10.11 → v3.10.25)**.
 
 **Estado del popup:**
-- **Versión actual (develop):** v3.10.10
-- **Tests passing:** 613 (489 popup + 61 aggressive + 14 browser static + 49 audit brutal)
+- **Versión actual (develop):** v3.10.25
+- **Tests passing:** 551 (474 popup + 63 aggressive + 14 browser static + audit brutal con 2 mentiras históricas)
 - **Popup LIVE (origin/main):** v3.9.15 (push pendiente CEO)
-- **Branch popup-deploy:** v3.10.10 (subtree split, listo para push)
+- **Branch develop:** v3.10.25 (15 commits ahead de v3.10.10, 25 total desde v3.9.15)
+- **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
-**Logros de la sesión (v3.10.0 → v3.10.10):**
+**Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.25):**
+- ✅ v3.10.11: Eliminado código UBIGEO como primer caserío en CCPP_DATA (39 d6 contaminados)
+- ✅ v3.10.12: Eliminada detección de 2G (COMU-5672 / IPT) per CEO directive — 3 niveles: ccpp_exacto, ccpp_fuzzy, distrito_of
+- ✅ v3.10.13: Recuperación end-to-end de 34 zonas de apagado (PDFs Movistar) — 100% cobertura
+- ✅ v3.10.14: Botón ⚠️ solo se activa en búsqueda EXACTA (UX binario)
+- ✅ v3.10.15: Fix bug SANTIAGO DE SURCO "estación base desactivada" falso (districts_with_off contaminado, 1,824→188 d6)
+- ✅ v3.10.16-20: Dialog ⚠️ layout (5 intentos) → posición ENCIMA del botón con cap max-height 180px
+- ✅ v3.10.21: Click-outside cierra el dialog (listener persistente, antes `{once: true}` lo eliminaba tras 1 click)
+- ✅ v3.10.22: Output NO incluye REFERENCIA (geocoder no la reconoce, FIX #9 revertido)
+- ✅ v3.10.23: Grids colapsables premium (header clickable, chevron rotatorio, persistencia localStorage)
+- ✅ v3.10.24-25: Grids balanceadas (eliminado `</div>` extra en gridAddress, sin línea debajo del header)
+
+**Logros previos (v3.10.0 → v3.10.10):**
 - 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras
 - 4 bloques atacados end-to-end: 22 items resueltos
 - Shadowing fixed (441 líneas legacy eliminadas)
@@ -81,12 +94,15 @@ Memoria persistente. Última actualización: **2026-10-17 — v3.10.10 FIN SESI�
 - Disclaimer "interpretación no oficial" en anomalías
 
 **Para retomar en próximo chat:**
-1. Leer `PENDIENTES.md` (23 items restantes: 1 crítico + 10 Marco + 7 deuda menor + 2 otros)
-2. Próximo bloque sugerido: R1 (borrar 1100+ legacy) + R4 (descomponer showApagadoPanelInline 278 líneas)
+1. Leer `PENDIENTES.md` (23 items restantes: 1 crítico + 10 Marco + 7 deuda menor + 2 otros) — ACTUALIZADO
+2. Próximo bloque sugerido: Push a develop remoto (CEO autoriza) o continuar con R1+R4 (legacy cleanup)
 3. Verificar tests antes de continuar:
    ```bash
    cd apps/cima-generador
-   python3 test_popup.py test_aggressive.py test_audit_brutal.py test_browser_static.py
+   python3 test_popup.py           # 474/474 PASS
+   python3 test_aggressive.py      # 63/63 PASS (234/234 ccpp_exacto, 100% fuzzy)
+   python3 test_audit_brutal.py    # 55 OK + 2 mentiras (VERSION drift + M4 IPT fuera scope)
+   python3 test_browser_static.py  # 14/0/2 PASS/FAIL/WARN
    ```
 
 **Commits en esta sesión (10):**
