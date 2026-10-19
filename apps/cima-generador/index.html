@@ -740,10 +740,17 @@
     border-color: color-mix(in srgb, var(--text-faint) 75%, transparent);
     background: var(--glass-2-bg);
   }
+  /* v3.10.27: focus state LIMPIO — sin box-shadow halo (causaba "borde
+     cuadrado y redondo" visualmente raro cuando el ring no seguía bien
+     el border-radius). Solo borde más grueso + color neutro que resalta.
+     El border-radius del input (--radius-lg = 10px) se respeta siempre. */
   .field input:focus, .field textarea:focus {
-    border-color: color-mix(in srgb, var(--accent) 80%, transparent);
-    box-shadow: var(--shadow-focus-ring);
+    border-color: color-mix(in srgb, var(--text) 65%, transparent);
+    border-width: 1.5px;
+    padding: 5.5px 8.5px;          /* compensa 0.5px del border más grueso */
     background: var(--glass-3-bg);
+    box-shadow: var(--ring-hairline);
+    outline: none;
   }
   .field input.filled, .field textarea.filled {
     border-color: color-mix(in srgb, var(--green) 70%, transparent);
@@ -1834,9 +1841,11 @@
     color: var(--text);
   }
   .output-box.output-result.placeholder {
+    /* v3.10.27: REMOVIDO border-style dashed (CEO feedback: "se ve raro").
+       Ahora usa border sólido consistente con todos los demás inputs.
+       Mantiene bg glass sutil + color faint para comunicar "vacío". */
     background: var(--glass-1-bg);
     border-color: var(--glass-border);
-    border-style: dashed;
     color: var(--text-faint);
   }
   /* Con datos: gradiente glass verde + glow halo */
@@ -2502,13 +2511,15 @@
      El scale causaba vibración visual al hacer click. El feedback de click
      se mantiene via .cima-shake (clase JS explícita, sin animación continua). */
   /* v2.1.3: estado .idle = cobertura OK, sin alertas (default state)
-     v3.10.26: idle look más claro (border sólido + opacidad reducida)
-     para comunicar visualmente "no hay datos para mostrar". */
+     v3.10.27: idle look BLOQUEADO (opacity 0.5 + cursor not-allowed)
+     para comunicar visualmente "BLOQUEADO — sin datos para chequear".
+     El botón NO responde al click cuando está en este estado (JS early return). */
   .cobertura-btn--idle {
     background: color-mix(in srgb, var(--text-faint) 8%, var(--glass-2-bg));
     border-color: color-mix(in srgb, var(--text-faint) 40%, transparent);
     color: var(--text-faint);
-    opacity: 0.85;
+    opacity: 0.5;
+    cursor: not-allowed;
     animation: none;
   }
   .cobertura-btn--idle:hover,
@@ -2589,16 +2600,18 @@
      • Con alerta    → pulse verde "just-copied" (1100ms × 1 ciclo)
      • Toast inline  → mensaje que se desvanece (2.2s, fade 320ms)
      Diseño: feedback VISUAL sin tocar color/bg del estado base. */
+  /* v3.10.27: cima-shake reducido de amplitud 3px → 1px (barely perceptible).
+     CEO percibe la vibración como "se mueve sin datos". */
   .cobertura-btn.cima-shake {
     animation: cimaShake 0.28s ease !important;
   }
   @keyframes cimaShake {
     0%, 100% { transform: translateX(0); }
-    15%      { transform: translateX(-3px); }
-    40%      { transform: translateX(3px); }
-    65%      { transform: translateX(-2px); }
-    85%      { transform: translateX(2px); }
+    25%      { transform: translateX(-1px); }
+    50%      { transform: translateX(1px); }
+    75%      { transform: translateX(-1px); }
   }
+  /* v3.10.27: pulseCopied reducido de scale(1.18) → scale(1.04). */
   .cobertura-btn.cima-btn--just-copied {
     background: color-mix(in srgb, var(--green) 32%, var(--glass-2-bg)) !important;
     border-color: var(--green) !important;
@@ -2607,7 +2620,7 @@
   }
   @keyframes pulseCopied {
     0%   { transform: scale(1); }
-    40%  { transform: scale(1.18); }
+    40%  { transform: scale(1.04); }
     100% { transform: scale(1); }
   }
   /* Toast inline anclado al botón ⚠️ (portal pattern, position:fixed) */
@@ -2709,31 +2722,31 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent),
                 var(--ring-hairline);
   }
-  .btn-icon:active {
-    transform: scale(0.94);
-  }
+  /* v3.10.27: REMOVIDO .btn-icon:active { transform: scale(0.94); }
+     Sin vibración en click. CEO directive "elimina el hover active". */
   .btn-icon svg {
     width: 16px;
     height: 16px;
   }
   /* v2.1.4: btn-icon-clear — REVERTIDO a icon-only 36×36 (sin label "BORRAR").
-     Mismo tamaño y forma que .cobertura-btn para simetría.
-     v3.10.26: hover sutil (NO danger tint agresivo) — el cambio brusco a rojo
-     en hover daba falsa sensación de acción destructiva incluso cuando el
-     botón está activo. Ahora hover sutil: bg un poco más oscuro + border
-     más visible, color se mantiene neutro. Solo al click explícito (focus
-     o shake) se comunica danger. */
+     v3.10.27: DIFERENCIACIÓN VISUAL — el CEO reporta que los 2 botones
+     (clear + ⚠️) "se ven iguales". Diferenciamos:
+       • clear  → border DASHED (indica "acción rutinaria/limpieza")
+       • ⚠️     → border SOLID (indica "alerta operacional")
+       • clear  → color tint ligeramente más cálido
+     Esto los hace distinguibles incluso a primera vista. */
   .btn-icon-clear {
     background: var(--glass-2-bg);
     -webkit-backdrop-filter: var(--blur-md);
     backdrop-filter: var(--blur-md);
+    border: 1.5px dashed color-mix(in srgb, var(--text-faint) 45%, transparent);
     border-radius: var(--radius-pill);  /* explicito (override robusto) */
     width: 36px;
     min-width: 36px;
     height: 36px;
     padding: 0;
     color: var(--text-faint);
-    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    transition: background 0.18s ease, border-color 0.18s ease, border-style 0s, color 0.18s ease;
   }
   .btn-icon-clear svg {
     width: 14px;             /* papelera compacta */
@@ -2747,7 +2760,8 @@
      botón rutinario de limpiar). Color se mantiene neutral; el action
      destructive se comunica solo al click explícito via feedback. */
   .btn-icon-clear:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--text-faint) 60%, transparent);
+    border-color: color-mix(in srgb, var(--text-faint) 70%, transparent);
+    border-style: solid;                /* v3.10.27: dashed → solid en hover */
     color: var(--text);
     background: var(--glass-3-bg);
   }
@@ -2755,6 +2769,7 @@
     outline: none;
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-faint) 32%, transparent),
                 var(--ring-hairline);
+    border-style: solid;
     color: var(--text);
   }
   /* D-25: botón de limpiar deshabilitado cuando no hay datos */
@@ -2997,6 +3012,8 @@ font-size: 10px;
 
     /* ─── Botón ⚠️ (coberturaBtn) — 3 estados ───
        v3.10.26: SIN animaciones de pulso, SIN transform scale en :active.
+       v3.10.27: idle state más faded (opacity 0.5) + cursor not-allowed
+       para comunicar visualmente "BLOQUEADO — sin datos para chequear".
        Estados se comunican por color/border estáticos. */
     .cobertura-btn {
       display: inline-flex;
@@ -3026,7 +3043,8 @@ font-size: 10px;
       background: color-mix(in srgb, var(--text-faint) 8%, var(--glass-2-bg));
       border-color: color-mix(in srgb, var(--text-faint) 40%, transparent);
       color: var(--text-faint);
-      opacity: 0.85;
+      opacity: 0.5;                  /* v3.10.27: más claro que está inactivo */
+      cursor: not-allowed;            /* v3.10.27: comunica BLOQUEADO */
       animation: none;
     }
     .cobertura-btn.off {
@@ -3323,7 +3341,7 @@ font-size: 10px;
       <div class="output-row-wrap">
         <div class="output-row output-row--full">
           <div class="output-wrap">
-            <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">LLENAR DATOS</div>
+            <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">Aqui se llenaran los datos</div>
           </div>
         </div>
        </div>
@@ -3468,7 +3486,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.26</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.27</span>
     </span>
   </footer>
 </div>
@@ -5174,7 +5192,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.26] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.27] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -5188,10 +5206,12 @@ function zaCopyApagadoSpeech() {
     //   (B) hay alerta (chk !== null)         → abrir panel + copiar speech
     //   (C) no hay alerta para esta dirección → shake + toast "Sin alerta…"
 
-    // ─── (A) datos incompletos ───
+    // ─── (A) datos incompletos → BLOQUEADO (no response) ───
+    // v3.10.27 CEO directive: "incorrecto debe estar bloqueado". El botón
+    // ⚠️ NO responde cuando faltan DPT/PROV/DIST. Ni toast, ni shake, ni
+    // sonido. El estado visual (.cobertura-btn--idle) ya comunica que no
+    // hay datos para chequear. Click = no-op silencioso.
     if (!dep || !prov || !dist) {
-      shakeBtn(btn, 240);
-      showToast(btn, 'Selecciona depto + provincia + distrito', 'warn');
       return;
     }
 
@@ -5201,9 +5221,10 @@ function zaCopyApagadoSpeech() {
     // informativo-internos pero NO deben generar panel con speech de "estación
     // base desactivada" (era MENTIRA: mostraba SANTIAGO DE SURCO como apagado
     // cuando en realidad SANTIAGO DE SURCO no tiene CCPPs apagados).
+    // v3.10.27: feedback reducido (sin shake + sin toast 'warn' alarmista).
+    // Solo un micro-toast informativo tipo 'ok' para guiar al supervisor.
     if (!chk || chk.nivel !== 'ccpp_exacto') {
-      shakeBtn(btn, 220);
-      showToast(btn, 'Tipea el CCPP exacto del PDF para activar alerta', 'ok');
+      showToast(btn, 'Tipea el CCPP exacto para activar alerta', 'info');
       return;
     }
 
@@ -6505,7 +6526,7 @@ function updateAddress() {
     box.textContent = compact;        // compactada para 1 línea @ 36px
     box.classList.remove('placeholder');
   } else {
-    box.textContent = 'LLENAR DATOS';
+    box.textContent = 'Aqui se llenaran los datos';
     box.title = '';
     box.classList.add('placeholder');
     delete box.dataset.full;

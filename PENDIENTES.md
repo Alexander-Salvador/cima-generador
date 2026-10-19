@@ -1,10 +1,10 @@
-# CIMA v3.10.26 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.27 — Lista de Pendientes (Estado al cierre de sesión)
 
 **Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
-## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26 BUSQUEDA ADDRESS)
+## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-27 BUSQUEDA ADDRESS v2)
 
-## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.26) — 16 commits
+## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.27) — 17 commits
 
 | Versión | Cambio | Commit |
 |---|---|---|
@@ -23,7 +23,8 @@
 | v3.10.23 | Grids colapsables premium con persistencia localStorage | 1616ed0 |
 | v3.10.24 | Grids balanceadas + eliminar raya del header | 80798bb |
 | v3.10.25 | Eliminar </div> extra en gridAddress (estructura desbalanceada) | 743886c |
-| **v3.10.26** | **BUSQUEDA ADDRESS bugfixes**: cobertura-btn sin vibración + label NO rojo + sin :active scale + clear button hover sutil | TBD |
+| **v3.10.26** | **BUSQUEDA ADDRESS bugfixes**: cobertura-btn sin vibración + label NO rojo + sin :active scale + clear button hover sutil | 920a3f9 |
+| **v3.10.27** | **BLOQUEO + UX polish**: botón ⚠️ BLOQUEADO sin DPT/PROV/DIST + click feedback reducido + input focus limpio + RESULTADO texto "Aqui se llenaran los datos" + buttons diferenciados (clear dashed vs ⚠️ solid) | TBD |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|
