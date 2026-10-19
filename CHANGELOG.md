@@ -1,5 +1,30 @@
 # Changelog — cima-generador
 
+## [3.10.25] - 2026-10-19 — 🐛 FIX: HTML del gridAddress tenía `</div>` extra (estructura desbalanceada)
+
+**CEO directive:** "Mejoro pero aun tenemos problemas de width de las GRID no son iguales. Mira la foto completa veras que no son identicas"
+
+**Causa raíz:** cuando agregué el wrapper `<div class="grid-body">` en v3.10.23, añadí un `</div>` de más en el gridAddress. La estructura quedó con **26 aperturas de `<div>` pero 27 cierres de `</div>` (diff=-1)**. El `</div>` extra cerraba incorrectamente el `</section>` o `</grid-block>` antes de tiempo, haciendo que la gridAddress se "comiera" un div del padre y se expandiera más allá del 100% del .app.
+
+**Fix:** eliminado el `</div>` extra. Estructura final balanceada:
+- gridAddress: 26 open, 26 close (diff=0) ✓
+- gridTipif: 10 open, 10 close (diff=0) ✓
+
+### 🔧 Cambios
+
+- Removido `</div>` extra entre `output-row-wrap` cierre y `</section>` en gridAddress
+- Corregida indentación de los cierres para que coincida con la estructura
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **55 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.24] - 2026-10-19 — 🐛 FIX: grids desbalanceadas + eliminar raya debajo del header
 
 **CEO directive:** "Revisa ambas grid y verifica que no esten rotas veo una mas ancha que la otra ademas retira la ralla debajo del header BUSQUEFDA ADREES. Elimina esas rallas de los header"
