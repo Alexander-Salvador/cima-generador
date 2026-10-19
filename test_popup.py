@@ -2864,6 +2864,95 @@ def test(html_path):
         result.fail('v3.10.27 CSS btn-clear', 'btn-icon-clear con border dashed esperado')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.32 — HEADER Estructura de Atención v2 (matching imagen CEO)
+    # CEO directive: corrigió estructura visual — 4 secciones con headers
+    # de color (blue/green/orange/purple), 3 Bienvenida speeches,
+    # TIP callout "Personaliza tu llamada", CIERRE con ✅/❌/⭐.
+    # NO agresivos cambios a speeches (v3.10.31 fue rechazado).
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.32 — HEADER Estructura de Atención v2 (matching imagen CEO)')
+
+    # HTML: 4 secciones con headers de color (blue, green, orange, purple)
+    expected_sections = [
+        'BIENVENIDA E IDENTIFICACIÓN',
+        'MOTIVO DE LA LLAMADA',
+        'CONSULTA ADICIONAL + APP MOVISTAR',
+        'CIERRE + ENCUESTA'
+    ]
+    missing_sections = [s for s in expected_sections if s not in html]
+    if not missing_sections:
+        result.ok(f'v3.10.32 HTML: 4 secciones presentes ({", ".join(expected_sections)})')
+    else:
+        result.fail('v3.10.32 HTML sections', f'sections faltantes: {missing_sections}')
+
+    # CSS: section headers con color (blue, green, orange, purple)
+    for color in ['blue', 'green', 'orange', 'purple']:
+        if f'.script-section-header--{color}' in html:
+            result.ok(f'v3.10.32 CSS: .script-section-header--{color}')
+        else:
+            result.fail(f'v3.10.32 CSS {color}', f'.script-section-header--{color} missing')
+
+    # HTML: 3 Bienvenida speeches (Speech 1, 2, 3)
+    for i in [1, 2, 3]:
+        if f'data-script-id="bienvenida-{i}"' in html:
+            result.ok(f'v3.10.32 HTML: Speech {i} de Bienvenida presente')
+        else:
+            result.fail(f'v3.10.32 HTML speech {i}', f'bienvenida-{i} missing')
+
+    # HTML: script-hint boxes (Speech 1/2/3 con condición)
+    speech_hints = [
+        'Cuando el número y el motivo figuran en matriz',
+        'Cuando NO figura el número ni el motivo en matriz',
+        'Cuando figura el número, pero NO figura el motivo'
+    ]
+    missing_hints = [h for h in speech_hints if h not in html]
+    if not missing_hints:
+        result.ok('v3.10.32 HTML: 3 hints de Bienvenida con condiciones presentes')
+    else:
+        result.fail('v3.10.32 HTML hints', f'hints faltantes: {missing_hints}')
+
+    # HTML: TIP callout "Personaliza tu llamada"
+    if 'Personaliza tu llamada' in html and '¿Con quién tengo el gusto?' in html:
+        result.ok('v3.10.32 HTML: TIP callout "Personaliza tu llamada" + "¿Con quién tengo el gusto?"')
+    else:
+        result.fail('v3.10.32 HTML tip', 'TIP callout missing')
+
+    # HTML: badges ✅ ❌ ⭐ en CIERRE section
+    if 'script-badge--ok' in html and 'script-badge--fail' in html and 'script-badge--star' in html:
+        result.ok('v3.10.32 HTML: badges ✅ ❌ ⭐ en sección CIERRE')
+    else:
+        result.fail('v3.10.32 HTML badges', 'badges ok/fail/star missing')
+
+    # Speeches: bienvenida-1 texto original (NO modificado agresivamente)
+    # v3.10.31 agregó "TÉCNICO MÓVIL" y alteró puntuación — CEO corrigió.
+    # v3.10.32 vuelve al original: "Bienvenido a Movistar, te saluda..."
+    bienvenida1_match = re.search(
+        r'id="script-text-bienvenida-1"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if bienvenida1_match:
+        bienvenida1_text = bienvenida1_match.group(1)
+        if 'Bienvenido a Movistar' in bienvenida1_text and '¿es correcto?' in bienvenida1_text:
+            result.ok('v3.10.32 SPEECH: bienvenida-1 texto coincide con original CEO')
+        else:
+            result.fail('v3.10.32 SPEECH bienvenida-1', 'texto no coincide con original')
+    else:
+        result.fail('v3.10.32 SPEECH bienvenida-1', 'script-text-bienvenida-1 not found')
+
+    # CSS: .script-tip + .script-hint + .script-badge definidos
+    for cls in ['.script-tip', '.script-hint', '.script-badge']:
+        if cls in html:
+            result.ok(f'v3.10.32 CSS: {cls} definido')
+        else:
+            result.fail(f'v3.10.32 CSS {cls}', f'{cls} missing')
+
+    # HTML: ph-inline (placeholders estáticos que NO se reemplazan)
+    if '.ph-inline' in html and '<span class="ph-inline"' in html:
+        result.ok('v3.10.32 HTML: .ph-inline (instrucciones estáticas al agente)')
+    else:
+        result.fail('v3.10.32 HTML ph-inline', '.ph-inline missing')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.28 — Inputs filled clean + toast wording
     # CEO directive: "Cuando los inputs tienen contenido pasa lo mismo se ve
     # como un background cuadrado y bordes redondos rompiendose el estilo.
@@ -2952,16 +3041,21 @@ def test(html_path):
         result.fail('v3.10.30 HTML grid', 'id="gridScript" o id="gridAddress" missing')
 
     # HTML: 8 script cards presentes
-    expected_cards = [
-        'bienvenida', 'atencion-segura', 'motivo-comunicacion',
-        'deteccion-averia', 'retoma', 'consulta-adicional',
-        'app-movistar', 'encuesta'
+    # v3.10.32: cards renombradas según estructura del flujo de llamada
+    # (Bienvenida×3, Motivo×5, Consulta+App×2, Cierre×3, +Transferir)
+    expected_cards_v32 = [
+        'bienvenida-1', 'bienvenida-2', 'bienvenida-3',
+        'motivo-llamada', 'brinda-solucion', 'atencion-segura',
+        'tiempo-espera', 'retorno',
+        'consulta-adicional', 'educa-app',
+        'cierre-con-solucion', 'cierre-sin-solucion',
+        'encuesta', 'transferir'
     ]
-    missing_cards = [c for c in expected_cards if 'data-script-id="' + c + '"' not in html]
+    missing_cards = [c for c in expected_cards_v32 if 'data-script-id="' + c + '"' not in html]
     if not missing_cards:
-        result.ok(f'v3.10.30 HTML: 8 script cards presentes ({", ".join(expected_cards)})')
+        result.ok(f'v3.10.32 HTML: 14 script cards presentes ({len(expected_cards_v32)} totales)')
     else:
-        result.fail('v3.10.30 HTML cards', f'cards faltantes: {missing_cards}')
+        result.fail('v3.10.32 HTML cards', f'cards faltantes: {missing_cards}')
 
     # HTML: 4 inputs vars
     expected_vars = ['script-agente', 'script-cliente', 'script-telefono', 'script-motivo']
@@ -3074,18 +3168,26 @@ def test(html_path):
     else:
         result.fail('v3.10.31 JS OTRO', 'lógica OTRO missing')
 
-    # Speeches: bienvenida mejorado (contiene TÉCNICO MÓVIL)
-    if 'TÉCNICO MÓVIL' in html and 'script-text-bienvenida' in html:
-        bienvenida_match = re.search(
-            r'id="script-text-bienvenida"[^>]*>([^<]+(?:<[^/][^>]*>[^<]*</[^>]+>[^<]*)*)',
-            html, re.DOTALL
-        )
-        if bienvenida_match and 'TÉCNICO MÓVIL' in bienvenida_match.group(1):
-            result.ok('v3.10.31 SPEECH: bienvenida menciona canal TÉCNICO MÓVIL')
+    # Speeches: bienvenida (v3.10.32: ya no menciona TÉCNICO MÓVIL — CEO rechazó
+    # ese cambio agresivo en v3.10.31). Solo debe contener el texto original
+    # del CEO. Verificamos estructura: "Bienvenido a Movistar...te saluda...
+    # te comunicas por...de tu número...¿es correcto?"
+    # Esta es una anti-regression test para evitar cambios agresivos futuros.
+    bienvenida_match = re.search(
+        r'id="script-text-bienvenida-1"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if bienvenida_match:
+        bienvenida_text = bienvenida_match.group(1)
+        # CEO directive: NO debe contener "TÉCNICO MÓVIL" (era cambio agresivo v3.10.31)
+        if 'TÉCNICO MÓVIL' in bienvenida_text:
+            result.fail('v3.10.32 ANTI-anti', 'bienvenida NO debe mencionar TÉCNICO MÓVIL (CEO rechazó v3.10.31)')
+        elif 'Bienvenido a Movistar' in bienvenida_text and '¿es correcto?' in bienvenida_text:
+            result.ok('v3.10.32 SPEECH: bienvenida SIN TÉCNICO MÓVIL (CEO anti-regression)')
         else:
-            result.fail('v3.10.31 SPEECH bienvenida', 'bienvenida debe mencionar TÉCNICO MÓVIL')
+            result.fail('v3.10.32 SPEECH bienvenida', 'texto bienvenida no esperado')
     else:
-        result.fail('v3.10.31 SPEECH bienvenida', 'script-text-bienvenida o TÉCNICO MÓVIL missing')
+        result.fail('v3.10.32 SPEECH bienvenida', 'script-text-bienvenida-1 not found')
 
     # CSS: .script-card[hidden] { display: none }
     if '.script-card[hidden]' in html and 'display: none' in html:

@@ -1109,6 +1109,116 @@
   }
   /* v3.10.31: cards ocultas via atributo [hidden] (motivo OTRO toggle) */
   .script-card[hidden] { display: none; }
+  /* v3.10.32: SECTION HEADERS (4 categorías con colores CEO)
+     Patrón "▌ <Nombre>" con barra lateral de color para identificar
+     la fase del flujo: blue (Bienvenida), green (Motivo),
+     orange (Consulta+App), purple (Cierre+Encuesta). */
+  .script-section {
+    margin-top: var(--space-3);
+  }
+  .script-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0 6px 0;
+    margin-bottom: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    border-left: 4px solid var(--accent);
+    padding-left: 8px;
+    background: linear-gradient(to right, color-mix(in srgb, var(--accent) 6%, transparent), transparent 40%);
+  }
+  .script-section-header--blue { border-left-color: #3b82f6; }
+  .script-section-header--blue {
+    background: linear-gradient(to right, color-mix(in srgb, #3b82f6 8%, transparent), transparent 40%);
+  }
+  .script-section-header--green { border-left-color: #10b981; }
+  .script-section-header--green {
+    background: linear-gradient(to right, color-mix(in srgb, #10b981 8%, transparent), transparent 40%);
+  }
+  .script-section-header--orange { border-left-color: #f97316; }
+  .script-section-header--orange {
+    background: linear-gradient(to right, color-mix(in srgb, #f97316 8%, transparent), transparent 40%);
+  }
+  .script-section-header--purple { border-left-color: #8b5cf6; }
+  .script-section-header--purple {
+    background: linear-gradient(to right, color-mix(in srgb, #8b5cf6 8%, transparent), transparent 40%);
+  }
+  /* v3.10.32: Speech hint box (blue box en BIENVENIDA con Speech 1/2/3).
+     Contiene la condición ("Cuando el número y el motivo figuran en matriz")
+     y un icono SVG speech-bubble. */
+  .script-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: color-mix(in srgb, #3b82f6 14%, transparent);
+    color: #3b82f6;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .script-hint svg { width: 10px; height: 10px; flex-shrink: 0; }
+  /* v3.10.32: TIP callout (amber star + instrucción al agente). */
+  .script-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    background: color-mix(in srgb, #f59e0b 14%, transparent);
+    border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+    border-radius: var(--radius-lg);
+  }
+  .script-tip-icon {
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
+    color: #f59e0b;
+  }
+  .script-tip-body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .script-tip-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #b45309;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .script-tip-text {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0;
+  }
+  /* v3.10.32: badges inline (✅ ❌ ⭐) usados en CIERRE section */
+  .script-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .script-badge--ok { background: #10b981; }
+  .script-badge--fail { background: #ef4444; }
+  .script-badge--star { background: #f59e0b; color: #1f2937; }
   .script-card:hover { border-color: color-mix(in srgb, var(--text-faint) 50%, transparent); }
   .script-card-header {
     display: flex;
@@ -1180,6 +1290,21 @@
   .ph.filled {
     background: color-mix(in srgb, var(--green) 18%, transparent);
     color: var(--green);
+  }
+  /* v3.10.32: ph-inline — placeholders que NO se reemplazan (instrucciones
+     al agente). Mismo styling visual que .ph para consistencia, pero
+     permanecen estáticos (acción que el agente debe recordar hacer). */
+  .ph-inline {
+    display: inline-block;
+    padding: 1px 5px;
+    background: color-mix(in srgb, var(--text-faint) 14%, transparent);
+    color: var(--text-faint);
+    border-radius: 4px;
+    font-style: italic;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+    letter-spacing: 0;
   }
   /* "En proceso" — placeholder central del grid Tipificación (D-22) */
   .tipif-process {
@@ -3439,129 +3564,260 @@ font-size: 10px;
             </div>
           </div>
 
-         <!-- 8+1 script cards (flujo de llamada completo)
-              v3.10.31: speeches mejorados (puntuación completa, formas completas),
-              estructura de atención más robusta. Cards 4 (Detección) y 6
-              (Consulta adicional) se OCULTAN cuando motivo === OTRO. Card
-              9 (Transferir) aparece SOLO cuando motivo === OTRO. -->
-         <div class="script-card" data-script-id="bienvenida">
-           <div class="script-card-header">
-             <h4>1 · Bienvenida e Identificación</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('bienvenida')"
-                     aria-label="Copiar texto de Bienvenida">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+<!-- v3.10.32: 4 SECCIONES con headers de color (matching imagen CEO).
+              Estructura del flujo de llamada call center TÉCNICO MÓVIL.
+              Cada sección agrupa cards temáticamente con categorías:
+               - BIENVENIDA E IDENTIFICACIÓN (blue) → 3 speeches + TIP
+               - MOTIVO DE LA LLAMADA (green) → 5 cards
+               - CONSULTA ADICIONAL + APP (orange) → 2 cards
+               - CIERRE + ENCUESTA (purple) → 3 cards (✅/❌/⭐)
+              Más: card Transferir (OTRO) → visible solo si motivo === OTRO -->
+
+         <!-- ▌▌▌ SECCIÓN 1: BIENVENIDA E IDENTIFICACIÓN (BLUE) ▌▌▌ -->
+         <div class="script-section">
+           <div class="script-section-header script-section-header--blue">
+             BIENVENIDA E IDENTIFICACIÓN
            </div>
-           <p class="script-card-text" id="script-text-bienvenida">Bienvenido a Movistar. Te saluda <span class="ph" data-ph="agente">{Agente}</span>, del equipo de atención al cliente TÉCNICO MÓVIL. Te llamo desde nuestro canal de consulta al número <span class="ph" data-ph="telefono">{Telefono}</span>, sobre un caso de <span class="ph" data-ph="motivo">{Motivo}</span>. ¿Es correcto?</p>
+
+           <div class="script-card" data-script-id="bienvenida-1">
+             <div class="script-hint" aria-hidden="true">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                 Speech 1 · Cuando el número y el motivo figuran en matriz
+               </div>
+             <div class="script-card-header">
+               <h4>Bienvenida — caso completo</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('bienvenida-1')"
+                       aria-label="Copiar texto de Bienvenida caso completo">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-bienvenida-1">"Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">(1.er nombre y 1.er apellido del agente)</span>, te comunicas por <span class="ph" data-ph="motivo">(indicar el motivo)</span> de tu número <span class="ph" data-ph="telefono">(indicar el número)</span>, ¿es correcto?".</p>
+           </div>
+
+           <div class="script-card" data-script-id="bienvenida-2">
+             <div class="script-hint" aria-hidden="true">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                 Speech 2 · Cuando NO figura el número ni el motivo en matriz
+               </div>
+             <div class="script-card-header">
+               <h4>Bienvenida — sin datos</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('bienvenida-2')"
+                       aria-label="Copiar texto de Bienvenida sin datos">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-bienvenida-2">"Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">(1.er nombre y 1.er apellido del agente)</span>, ¿me brindas tu número en consulta y el motivo de tu llamada?"</p>
+           </div>
+
+           <div class="script-card" data-script-id="bienvenida-3">
+             <div class="script-hint" aria-hidden="true">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                 Speech 3 · Cuando figura el número, pero NO figura el motivo
+               </div>
+             <div class="script-card-header">
+               <h4>Bienvenida — solo número</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('bienvenida-3')"
+                       aria-label="Copiar texto de Bienvenida solo número">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-bienvenida-3">"Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">(1.er nombre y 1.er apellido del agente)</span>, te comunicas por tu número <span class="ph" data-ph="telefono">(indicar el número)</span>, ¿es correcto? ¿Me indicas el motivo de tu llamada?"</p>
+           </div>
+
+           <div class="script-tip" role="note">
+             <div class="script-tip-icon" aria-hidden="true">⭐</div>
+             <div class="script-tip-body">
+               <div class="script-tip-title">Personaliza tu llamada</div>
+               <p class="script-tip-text">"<span class="ph" data-ph="cliente">(nombre de cliente)</span>, ¿Con quién tengo el gusto?"</p>
+             </div>
+           </div>
          </div>
 
-         <div class="script-card" data-script-id="atencion-segura">
-           <div class="script-card-header">
-             <h4>2 · Atención segura</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('atencion-segura')"
-                     aria-label="Copiar texto de Atención segura">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+         <!-- ▌▌▌ SECCIÓN 2: MOTIVO DE LA LLAMADA (GREEN) ▌▌▌ -->
+         <div class="script-section">
+           <div class="script-section-header script-section-header--green">
+             MOTIVO DE LA LLAMADA
            </div>
-           <p class="script-card-text" id="script-text-atencion-segura"><span class="ph" data-ph="cliente">{Cliente}</span>, en caso de que se corte la llamada, puedo realizar la devolución al número <span class="ph" data-ph="telefono">{Telefono}</span>, o bien, podrías brindarme otro número de contacto para llamarte de nuevo.</p>
+
+           <div class="script-card" data-script-id="motivo-llamada">
+             <div class="script-card-header">
+               <h4>Sondea el problema o necesidad del cliente</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('motivo-llamada')"
+                       aria-label="Copiar Sondeo del problema">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-motivo-llamada">Sondea el problema o necesidad del cliente.</p>
+           </div>
+
+           <div class="script-card" data-script-id="brinda-solucion">
+             <div class="script-card-header">
+               <h4>Brinda solución</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('brinda-solucion')"
+                       aria-label="Copiar Brinda solución">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-brinda-solucion">Prioriza la solución de la causa raíz utilizando Genio y las herramientas disponibles. Si no brindas solución, resalta la gestión realizada y asegura la conformidad del cliente.</p>
+           </div>
+
+           <div class="script-card" data-script-id="atencion-segura">
+             <div class="script-card-header">
+               <h4>Atención segura</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('atencion-segura')"
+                       aria-label="Copiar Atención segura">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">(nombre de cliente)</span>, en caso se corte la llamada puedo realizar la devolución al número que me está llamando, o podría brindarme otro número de celular".</p>
+           </div>
+
+           <div class="script-card" data-script-id="tiempo-espera">
+             <div class="script-card-header">
+               <h4>Tiempo de espera</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('tiempo-espera')"
+                       aria-label="Copiar Tiempo de espera">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-tiempo-espera">"<span class="ph" data-ph="cliente">(Nombre de Cliente)</span>, por favor, permítame un momento en línea mientras valido su información <span class="ph-inline">(indica brevemente la acción a realizar)</span>".</p>
+             <p class="script-tip-text" style="margin-top:6px;font-size:10px;color:var(--text-faint);"><strong>Importante:</strong> En consultas complejas retoma cada 60 segundos.</p>
+           </div>
+
+           <div class="script-card" data-script-id="retorno">
+             <div class="script-card-header">
+               <h4>Retorno</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('retorno')"
+                       aria-label="Copiar Retorno">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-retorno">"<span class="ph" data-ph="cliente">(Nombre de Cliente)</span>, disculpa la demora y gracias por tu espera <span class="ph-inline">(informa la verificación o acción realizada)</span>".</p>
+           </div>
          </div>
 
-         <div class="script-card" data-script-id="motivo-comunicacion">
-           <div class="script-card-header">
-             <h4>3 · Motivo de comunicación</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('motivo-comunicacion')"
-                     aria-label="Copiar texto de Motivo de comunicación">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+         <!-- ▌▌▌ SECCIÓN 3: CONSULTA ADICIONAL + APP (ORANGE) ▌▌▌ -->
+         <div class="script-section">
+           <div class="script-section-header script-section-header--orange">
+             CONSULTA ADICIONAL + APP MOVISTAR
            </div>
-           <p class="script-card-text" id="script-text-motivo-comunicacion">¿En qué puedo ayudarte hoy, <span class="ph" data-ph="cliente">{Cliente}</span>?</p>
+
+           <div class="script-card" data-script-id="consulta-adicional">
+             <div class="script-card-header">
+               <h4>Consulta adicional</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('consulta-adicional')"
+                       aria-label="Copiar Consulta adicional">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-consulta-adicional">"¿Tienes alguna consulta adicional en la que te pueda ayudar?"</p>
+           </div>
+
+           <div class="script-card" data-script-id="educa-app">
+             <div class="script-card-header">
+               <h4>Educa al App y envía link por SMS</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('educa-app')"
+                       aria-label="Copiar Educa al App y envía link por SMS">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-educa-app">"<span class="ph" data-ph="cliente">(Nombre del cliente)</span>, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida".</p>
+           </div>
          </div>
 
-         <div class="script-card" data-script-id="deteccion-averia">
-           <div class="script-card-header">
-             <h4>4 · Detección de Avería</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('deteccion-averia')"
-                     aria-label="Copiar texto de Detección de Avería">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+         <!-- ▌▌▌ SECCIÓN 4: CIERRE + ENCUESTA (PURPLE) ▌▌▌ -->
+         <div class="script-section">
+           <div class="script-section-header script-section-header--purple">
+             CIERRE + ENCUESTA
            </div>
-           <p class="script-card-text" id="script-text-deteccion-averia">Ubica a tu cliente. Realiza sondeo de UBICACIÓN y DIRECCIÓN. Sigue el flujo Técnico Móvil.</p>
-         </div>
 
-         <div class="script-card" data-script-id="retoma">
-           <div class="script-card-header">
-             <h4>5 · Retoma + Agradece espera</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('retoma')"
-                     aria-label="Copiar texto de Retoma cada 60 segundos">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+           <div class="script-card" data-script-id="cierre-con-solucion">
+             <div class="script-card-header">
+               <span class="script-badge script-badge--ok" aria-label="Cierre con solución">✓</span>
+               <h4>Cierre con solución</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('cierre-con-solucion')"
+                       aria-label="Copiar Cierre con solución">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-cierre-con-solucion">"<span class="ph" data-ph="cliente">(Nombre del cliente)</span>, ya realizamos <span class="ph-inline">(detallar la solución)</span> por lo que hemos solucionado tu avería".</p>
            </div>
-           <p class="script-card-text" id="script-text-retoma">Retoma cada 60 segundos. Agradece siempre el tiempo en espera.</p>
-         </div>
 
-         <div class="script-card" data-script-id="consulta-adicional">
-           <div class="script-card-header">
-             <h4>6 · Consulta adicional</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('consulta-adicional')"
-                     aria-label="Copiar texto de Consulta adicional">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+           <div class="script-card" data-script-id="cierre-sin-solucion">
+             <div class="script-card-header">
+               <span class="script-badge script-badge--fail" aria-label="Cierre sin solución">✗</span>
+               <h4>Cierre sin solución</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('cierre-sin-solucion')"
+                       aria-label="Copiar Cierre sin solución">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-cierre-sin-solucion">"<span class="ph" data-ph="cliente">(Nombre del cliente)</span>, ya realizamos <span class="ph-inline">(detallar la atención)</span> esperamos haber orientado tu consulta de manera satisfactoria".</p>
            </div>
-           <p class="script-card-text" id="script-text-consulta-adicional"><span class="ph" data-ph="cliente">{Cliente}</span>, ¿tienes alguna consulta adicional en la que pueda ayudarte?</p>
-         </div>
 
-         <div class="script-card" data-script-id="app-movistar">
-           <div class="script-card-header">
-             <h4>7 · App Movistar</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('app-movistar')"
-                     aria-label="Copiar texto de App Movistar">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
+           <div class="script-card" data-script-id="encuesta">
+             <div class="script-card-header">
+               <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
+               <h4>Invita a encuesta</h4>
+               <button class="script-card-copy" type="button"
+                       onclick="copyScriptCard('encuesta')"
+                       aria-label="Copiar Speech de encuesta">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                   <rect x="9" y="9" width="11" height="11" rx="2"/>
+                   <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                 </svg>
+               </button>
+             </div>
+             <p class="script-card-text" id="script-text-encuesta">"Para finalizar, te agradeceré completar una breve encuesta sobre mi atención y en 48 horas, te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!"</p>
            </div>
-           <p class="script-card-text" id="script-text-app-movistar"><span class="ph" data-ph="cliente">{Cliente}</span>, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida.</p>
-         </div>
-
-         <div class="script-card" data-script-id="encuesta">
-           <div class="script-card-header">
-             <h4>8 · Encuesta</h4>
-             <button class="script-card-copy" type="button"
-                     onclick="copyScriptCard('encuesta')"
-                     aria-label="Copiar texto de Encuesta final">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                 <rect x="9" y="9" width="11" height="11" rx="2"/>
-                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-               </svg>
-             </button>
-           </div>
-           <p class="script-card-text" id="script-text-encuesta">Para finalizar, te agradezco completar una breve encuesta sobre mi atención en 48 horas. Te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!</p>
          </div>
 
          <!-- v3.10.31: CARD EXTRA — Transferir (solo visible cuando motivo === OTRO).
@@ -3583,9 +3839,9 @@ font-size: 10px;
            <p class="script-card-text" id="script-text-transferir"><span class="ph" data-ph="cliente">{Cliente}</span>, detectamos que tu consulta no corresponde al canal TÉCNICO MÓVIL. Vamos a transferir tu llamada con un asesor especializado para que te brinde la atención correcta. ¿Me lo permites, <span class="ph" data-ph="cliente">{Cliente}</span>?</p>
          </div>
 
-       </div>
-     </div>
-   </div>
+        </div>
+      </div>
+    </div>
 
   <!-- ═══════════ GRID 1: ADDRESS ═══════════ -->
    <div class="grid-block" id="gridAddress" data-grid="address">
@@ -3833,7 +4089,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.31</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.32</span>
     </span>
   </footer>
 </div>
@@ -5663,7 +5919,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.31] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.32] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
