@@ -3067,6 +3067,81 @@ def test(html_path):
     else:
         result.fail('v3.10.36 SPEECH tip', 'tip referencias missing')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.37 — ALERTAS ESTÁTICAS + DESPEDIDA GENERAL
+    # CEO directive: 'algunos textos que son unicamente de apoyo para el
+    # agente que no suman como un speech, pero que deben usarse y talvez
+    # es repitan para mantener su uso... no sera un speech textual sera
+    # como una sola row de alerta dentro del padre MOTIVO DE LLAMADA... Vamos
+    # a retirar estas 2 ✓ ✗ y la reemplazamos por un speech de despedida
+    # general'.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.37 — ALERTAS ESTÁTICAS + DESPEDIDA GENERAL')
+
+    # CSS: .script-alert rule definido
+    if '.script-alert {' in html and '.script-alert-icon' in html:
+        result.ok('v3.10.37 CSS: .script-alert + .script-alert-icon definidos')
+    else:
+        result.fail('v3.10.37 CSS .script-alert', '.script-alert CSS missing')
+
+    # HTML: 3 alerts estáticos en MOTIVO (retorno removido, reemplazado por alerts)
+    n_alerts_motivo = html.count('class="script-alert"')
+    if n_alerts_motivo >= 4:  # 3 en MOTIVO + 1 en CONSULTA = 4 total
+        result.ok(f'v3.10.37 HTML: {n_alerts_motivo} alerts estáticos (3 MOTIVO + 1 CONSULTA)')
+    else:
+        result.fail('v3.10.37 HTML alerts', f'≥4 alerts esperados, {n_alerts_motivo} encontrados')
+
+    # HTML: alert textos específicos del CEO presentes
+    expected_alerts = [
+        'disculpa la demora y gracias por tu espera',
+        'No olvides siempre pedir un momento en espera',
+        'Debemos ser emp\u00e1ticos y conectar con el cliente',
+        'consulta adicional en la que te pueda ayudar'
+    ]
+    missing_alerts = [a for a in expected_alerts if a not in html]
+    if not missing_alerts:
+        result.ok('v3.10.37 HTML: 4 alertas específicas del CEO presentes')
+    else:
+        result.fail('v3.10.37 HTML alerts textos', f'faltan: {missing_alerts}')
+
+    # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
+    if 'data-script-id="retorno"' not in html:
+        result.ok('v3.10.37 HTML: retorno card REMOVIDO (reemplazado por alerts)')
+    else:
+        result.fail('v3.10.37 HTML retorno regresión', 'retorno card debería estar eliminado')
+
+    # HTML: consulta-adicional card REMOVIDO (CEO: "no debe ser un speech debe ser igual un texto de apoyo")
+    if 'data-script-id="consulta-adicional"' not in html:
+        result.ok('v3.10.37 HTML: consulta-adicional card REMOVIDO (reemplazado por alert)')
+    else:
+        result.fail('v3.10.37 HTML consulta regresión', 'consulta-adicional debería estar eliminado')
+
+    # HTML: cierre-con-solucion y cierre-sin-solucion cards REMOVIDOS
+    if 'data-script-id="cierre-con-solucion"' not in html and 'data-script-id="cierre-sin-solucion"' not in html:
+        result.ok('v3.10.37 HTML: cierre-con-solucion + cierre-sin-solucion REMOVIDOS')
+    else:
+        result.fail('v3.10.37 HTML cierre regresión', 'cards ✓ ✗ deberían estar eliminados')
+
+    # HTML: NUEVO despedida card con speech específico del CEO
+    if 'data-script-id="despedida"' in html:
+        result.ok('v3.10.37 HTML: card "despedida" (NUEVO speech general)')
+    else:
+        result.fail('v3.10.37 HTML despedida', 'card despedida missing')
+    import re as re_mod
+    despedida_match = re_mod.search(
+        r'id="script-text-despedida"[^>]*>(.+?)</p>',
+        html,
+        re_mod.DOTALL
+    )
+    if despedida_match:
+        despedida_text = despedida_match.group(1)
+        if 'hemos realizado para ti' in despedida_text and 'proceso generado' in despedida_text and 'Ha sido un gusto' in despedida_text:
+            result.ok('v3.10.37 SPEECH: despedida con texto específico CEO')
+        else:
+            result.fail('v3.10.37 SPEECH despedida', 'texto no coincide con CEO directive')
+
+
+
 
 
     # ══════════════════════════════════════════════════════════════════════
@@ -3158,23 +3233,22 @@ def test(html_path):
         result.fail('v3.10.30 HTML grid', 'id="gridScript" o id="gridAddress" missing')
 
     # HTML: 8 script cards presentes
-    # v3.10.34: cards según estructura del flujo de llamada
-    # (Bienvenida×1 / Motivo×5 / Consulta+App×2 / Cierre×3 + +Transferir)
-    # v3.10.34: REMOVIDO 'con-quien', REMOVIDO 'sondea'/'v3.10.30 motivo-llamada',
-    # AÑADIDO 'sondeo-averias'.
-    expected_cards_v34 = [
+    # v3.10.37: REMOVIDOS 'retorno', 'consulta-adicional', 'cierre-con-solucion',
+    # 'cierre-sin-solucion'. AGREGADO 'despedida'. 3 alerts estáticos en
+    # MOTIVO reemplazan retorno. 1 alert estático en CONSULTA reemplaza consulta-adicional.
+    expected_cards_v37 = [
         'bienvenida',
         'sondea', 'sondeo-averias', 'atencion-segura',
-        'tiempo-espera', 'retorno',
-        'consulta-adicional', 'educa-app',
-        'cierre-con-solucion', 'cierre-sin-solucion',
+        'tiempo-espera',
+        'educa-app',
+        'despedida',
         'encuesta', 'transferir'
     ]
-    missing_cards = [c for c in expected_cards_v34 if 'data-script-id="' + c + '"' not in html]
+    missing_cards = [c for c in expected_cards_v37 if 'data-script-id="' + c + '"' not in html]
     if not missing_cards:
-        result.ok(f'v3.10.34 HTML: 12 script cards presentes ({len(expected_cards_v34)} totales)')
+        result.ok(f'v3.10.37 HTML: 9 script cards presentes ({len(expected_cards_v37)} totales)')
     else:
-        result.fail('v3.10.34 HTML cards', f'cards faltantes: {missing_cards}')
+        result.fail('v3.10.37 HTML cards', f'cards faltantes: {missing_cards}')
 
     # v3.10.34: con-quien REMOVIDO (CEO: innecesario)
     if 'data-script-id="con-quien"' not in html:
