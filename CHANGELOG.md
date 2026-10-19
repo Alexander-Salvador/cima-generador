@@ -1,5 +1,115 @@
 # Changelog — cima-generador
 
+## [3.10.30] - 2026-10-19 — 🎬 GRID 0 Script Llamada (template cards + vars + live replace)
+
+**CEO directive:** "Vamos a agregar un grid mas arriba de busqueda address" con 8 secciones del flujo de llamada call center técnico MOVIL: Bienvenida e Identificación, Atención segura, Motivo de comunicación, Detección de Avería, Retoma, Consulta adicional, App Movistar, Encuesta.
+
+### 🎯 Diseño implementado
+
+```
+┌─ GRID 0: SCRIPT LLAMADA (colapsable, default ARRIBA de Búsqueda Address) ─┐
+│ ▼ Script Llamada                                                            │
+│                                                                              │
+│ ┌── Variables de la llamada ──────────────────────────────────────────┐    │
+│ │ [Agente: (nombre)] [Cliente: (nombre)]                             │    │
+│ │ [Teléfono: (número)] [Motivo: (motivo)]                          │    │
+│ └────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+│ ┌── 1 · Bienvenida e Identificación ────────────[📋 Copy]─────────────┐    │
+│ │ Bienvenido a Movistar, te saluda {Agente}, te comunicas por       │    │
+│ │ {Motivo} de tu numero {Telefono}, ¡Es correcto?                   │    │
+│ └────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+│ ... (7 cards más)                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 🔧 Componentes
+
+#### 1. Top variables (4 inputs)
+- **Agente**, **Cliente**, **Teléfono**, **Motivo**
+- Persistencia en `localStorage` (key: `cima_script_vars_v1`)
+- Listener `input` → trigger `updateScriptPlaceholders()`
+
+#### 2. 8 Script Cards (flujo de llamada)
+
+| # | Sección | Placeholders usados |
+|---|---|---|
+| 1 | Bienvenida e Identificación | `{Agente}` `{Motivo}` `{Telefono}` |
+| 2 | Atención segura | `{Cliente}` `{Telefono}` |
+| 3 | Motivo de comunicación | `{Cliente}` |
+| 4 | Detección de Avería | — (texto fijo) |
+| 5 | Retoma + Agradece espera | — (texto fijo) |
+| 6 | Consulta adicional | `{Cliente}` |
+| 7 | App Movistar | `{Cliente}` |
+| 8 | Encuesta | — (texto fijo) |
+
+#### 3. Live placeholder replace
+- Cada `{Placeholder}` se renderiza como `<span class="ph" data-ph="agente">{Agente}</span>`
+- Cuando var lleno: span se vuelve **verde** (`.filled`) + muestra el valor
+- Cuando var vacío: span vuelve a `{Agente}` con color **accent**
+- Reemplazo en VIVO en TODAS las cards al escribir en cualquier var
+
+#### 4. Copy-to-clipboard
+- Cada card tiene botón `.script-card-copy` (icon-only 24×24)
+- Click → copia texto con vars reemplazadas → feedback `.is-copied` (verde 2s)
+- Fallback `document.execCommand('copy')` para file:// / contextos sin clipboard API
+- Screen reader: `announce('Script copiado al portapapeles')`
+
+### 🔧 CSS tokens nuevos
+
+```css
+.script-card {  /* card de cada paso */
+  background: var(--glass-1-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+.script-vars { /* contenedor de 4 inputs */
+  background: var(--glass-1-bg);
+  border: 1px solid var(--glass-border);
+}
+.ph {  /* placeholder highlight in script text */
+  display: inline-block;
+  padding: 1px 5px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border-radius: 4px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.ph.filled {  /* when value present */
+  background: color-mix(in srgb, var(--green) 18%, transparent);
+  color: var(--green);
+}
+.script-card-copy {
+  width: 24px; height: 24px;
+  border-radius: var(--radius-pill);
+  /* hover: color accent */
+}
+.script-card-copy.is-copied {
+  background: green tint;
+  border-color: green;
+  color: green;
+}
+```
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **498/498 PASS** (+11 nuevos tests v3.10.30) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (976,369 chars JS) |
+| HTML structure | 71 `<div>` open = 71 close (balanced) |
+| HTML size | 1,123,789 → 1,143,227 bytes (+19,438) |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: Resultado observable es contrato. El CEO testeó cada paso del flujo de llamada y pidió que fuera un grid dedicado para visibilidad.
+- **L-067/068/069**: complejidad visual escala peor. 8 cards simples (sin animaciones pesadas) > 1 grid complejo con jerarquías.
+- **DRY**: 4 vars se llenan UNA vez → TODAS las cards se actualizan. Sin duplicación de inputs.
+
 ## [3.10.29] - 2026-10-19 — 🔒 Botón ⚠️ totalmente BLOCKED + 🎯 RESULTADO hover limpio
 
 **CEO directive:** "El button de zona de apagado sigue mal, le doy click a pesar de que no hay zona de apagado y emite output, ESCRIBE EL CCPP EXACTO DEL PDF <- incorrecto este boton solo debe funcionar cuando se detecta zona de apagado exacta y guiar. Input de RESULTADO al psar el mouse por encima como hover se ve un background cuadrado que rompe estetica del borde redondo."

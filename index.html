@@ -1042,6 +1042,115 @@
   .grid-block.is-collapsed #apagadoSpeechPanel {
     display: none !important;
   }
+  /* ══════════════════════════════════════════════════════════════════════
+     v3.10.30: GRID 0 — SCRIPT LLAMADA
+     Card-based script template system. Cada card es un paso del flujo
+     de llamada (Bienvenida, Atención segura, etc.) con copy-to-clipboard.
+     Top vars (Agente, Cliente, Teléfono, Motivo) auto-reemplazan los
+     placeholders en TODAS las cards via JS live update.
+     ══════════════════════════════════════════════════════════════════════ */
+  .script-vars {
+    margin-bottom: var(--space-2);
+    padding: 8px 10px;
+    background: var(--glass-1-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+  }
+  .script-vars .field-row { gap: 6px; margin-bottom: 6px; }
+  .script-vars .field-row:last-child { margin-bottom: 0; }
+  .script-vars .field label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+    margin-bottom: 2px;
+  }
+  .script-vars .field input {
+    padding: 4px 8px;
+    font-size: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .script-card {
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: var(--glass-1-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    transition: border-color 0.18s var(--motion-ease);
+  }
+  .script-card:hover { border-color: color-mix(in srgb, var(--text-faint) 50%, transparent); }
+  .script-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .script-card-header h4 {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .script-card-copy {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: var(--glass-2-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    color: var(--text-faint);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+  .script-card-copy:hover:not(:disabled) {
+    background: var(--glass-3-bg);
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--accent);
+  }
+  .script-card-copy svg { width: 11px; height: 11px; }
+  .script-card-copy.is-copied {
+    background: color-mix(in srgb, var(--green) 30%, var(--glass-2-bg));
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .script-card-text {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text);
+    margin: 0;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  /* Placeholder highlight (in script text): monospace pill, accent color.
+     Cuando filled (.filled) cambia a verde (single source of truth). */
+  .ph {
+    display: inline-block;
+    padding: 1px 5px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    border-radius: 4px;
+    font-weight: 600;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+    letter-spacing: 0;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .ph.filled {
+    background: color-mix(in srgb, var(--green) 18%, transparent);
+    color: var(--green);
+  }
   /* "En proceso" — placeholder central del grid Tipificación (D-22) */
   .tipif-process {
     display: flex;
@@ -3249,6 +3358,171 @@ font-size: 10px;
 
   <div id="alertBox" class="alert"></div>
 
+  <!-- ═══════════ GRID 0: SCRIPT LLAMADA (v3.10.30) — Template card-based
+       para call center técnico MOVIL. 8 secciones del flujo de llamada con
+       copy-to-clipboard. Variables arriba (Agente, Cliente, Teléfono, Motivo)
+       auto-reemplazan {placeholders} en TODAS las cards via JS live update.
+       Persistencia en localStorage (cima_script_vars_v1). ═══════════ -->
+   <div class="grid-block" id="gridScript" data-grid="script">
+     <div class="section">
+       <button type="button" class="grid-toggle" id="gridScript-toggle"
+               aria-expanded="true" aria-controls="gridScript-body">
+         <h3>Script Llamada</h3>
+         <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+           <polyline points="6 9 12 15 18 9"/>
+         </svg>
+       </button>
+       <div class="grid-body" id="gridScript-body">
+
+         <!-- TOP: Variables (filled once, all scripts auto-update live) -->
+         <div class="script-vars" role="group" aria-label="Variables de la llamada">
+           <div class="field-row row-2">
+             <div class="field">
+               <label for="script-agente">Agente</label>
+               <input id="script-agente" type="text" placeholder="(nombre del agente)" autocomplete="off" maxlength="80" data-script-var="agente">
+             </div>
+             <div class="field">
+               <label for="script-cliente">Cliente</label>
+               <input id="script-cliente" type="text" placeholder="(nombre del cliente)" autocomplete="off" maxlength="80" data-script-var="cliente">
+             </div>
+           </div>
+           <div class="field-row row-2">
+             <div class="field">
+               <label for="script-telefono">Teléfono</label>
+               <input id="script-telefono" type="text" placeholder="(número)" autocomplete="off" maxlength="40" data-script-var="telefono">
+             </div>
+             <div class="field">
+               <label for="script-motivo">Motivo</label>
+               <input id="script-motivo" type="text" placeholder="(motivo de la llamada)" autocomplete="off" maxlength="120" data-script-var="motivo">
+             </div>
+           </div>
+         </div>
+
+         <!-- 8 script cards (flujo de llamada completo) -->
+         <div class="script-card" data-script-id="bienvenida">
+           <div class="script-card-header">
+             <h4>1 · Bienvenida e Identificación</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('bienvenida')"
+                     aria-label="Copiar texto de Bienvenida">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-bienvenida">Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">{Agente}</span>, te comunicas por <span class="ph" data-ph="motivo">{Motivo}</span> de tu numero <span class="ph" data-ph="telefono">{Telefono}</span>, ¡Es correcto?</p>
+         </div>
+
+         <div class="script-card" data-script-id="atencion-segura">
+           <div class="script-card-header">
+             <h4>2 · Atención segura</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('atencion-segura')"
+                     aria-label="Copiar texto de Atención segura">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-atencion-segura"><span class="ph" data-ph="cliente">{Cliente}</span>, en caso de corte la llamada puedo realizar la devolución al número <span class="ph" data-ph="telefono">{Telefono}</span>, o podría brindarme otro número de contacto.</p>
+         </div>
+
+         <div class="script-card" data-script-id="motivo-comunicacion">
+           <div class="script-card-header">
+             <h4>3 · Motivo de comunicación</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('motivo-comunicacion')"
+                     aria-label="Copiar texto de Motivo de comunicación">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-motivo-comunicacion">¿En qué puedo ayudarte <span class="ph" data-ph="cliente">{Cliente}</span>?</p>
+         </div>
+
+         <div class="script-card" data-script-id="deteccion-averia">
+           <div class="script-card-header">
+             <h4>4 · Detección de Avería</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('deteccion-averia')"
+                     aria-label="Copiar texto de Detección de Avería">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-deteccion-averia">Ubica a tu cliente — sondeo UBICACIÓN y DIRECCIÓN. Sigue flujo Técnico Móvil.</p>
+         </div>
+
+         <div class="script-card" data-script-id="retoma">
+           <div class="script-card-header">
+             <h4>5 · Retoma + Agradece espera</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('retoma')"
+                     aria-label="Copiar texto de Retoma cada 60 segundos">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-retoma">Retoma cada 60 segundos. Agradece el tiempo en espera.</p>
+         </div>
+
+         <div class="script-card" data-script-id="consulta-adicional">
+           <div class="script-card-header">
+             <h4>6 · Consulta adicional</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('consulta-adicional')"
+                     aria-label="Copiar texto de Consulta adicional">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-consulta-adicional"><span class="ph" data-ph="cliente">{Cliente}</span>, ¿tienes alguna consulta adicional en la que pueda ayudarte?</p>
+         </div>
+
+         <div class="script-card" data-script-id="app-movistar">
+           <div class="script-card-header">
+             <h4>7 · App Movistar</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('app-movistar')"
+                     aria-label="Copiar texto de App Movistar">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-app-movistar"><span class="ph" data-ph="cliente">{Cliente}</span>, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida.</p>
+         </div>
+
+         <div class="script-card" data-script-id="encuesta">
+           <div class="script-card-header">
+             <h4>8 · Encuesta</h4>
+             <button class="script-card-copy" type="button"
+                     onclick="copyScriptCard('encuesta')"
+                     aria-label="Copiar texto de Encuesta final">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                 <rect x="9" y="9" width="11" height="11" rx="2"/>
+                 <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+               </svg>
+             </button>
+           </div>
+           <p class="script-card-text" id="script-text-encuesta">Para finalizar, te agradezco completar una breve encuesta sobre mi atención en 48 horas; te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!</p>
+         </div>
+
+       </div>
+     </div>
+   </div>
+
   <!-- ═══════════ GRID 1: ADDRESS ═══════════ -->
    <div class="grid-block" id="gridAddress" data-grid="address">
      <div class="section">
@@ -3495,7 +3769,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.29</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.30</span>
     </span>
   </footer>
 </div>
@@ -3781,6 +4055,111 @@ function showInlineEmpty(el) {
   setTimeout(function () {
     el.classList.remove('empty-shake');
   }, 240); // 240ms (era TIMINGS.EMPTY_SHAKE = 1500ms)
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// v3.10.30: SCRIPT LLAMADA — template cards + vars + live placeholder replace
+// Cada .script-card muestra un paso del flujo de llamada. Variables arriba
+// (Agente, Cliente, Teléfono, Motivo) auto-reemplazan {placeholders} en
+// TODAS las cards via input event. Copy button copia el texto con valores
+// ya reemplazados al clipboard. Vars persisten en localStorage.
+// ═══════════════════════════════════════════════════════════════════════
+
+const SCRIPT_VARS_STORAGE_KEY = 'cima_script_vars_v1';
+
+function loadScriptVars() {
+  try {
+    var raw = localStorage.getItem(SCRIPT_VARS_STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) || {};
+  } catch (e) { return {}; }
+}
+
+function saveScriptVars(vars) {
+  try {
+    localStorage.setItem(SCRIPT_VARS_STORAGE_KEY, JSON.stringify(vars));
+  } catch (e) {
+    // localStorage deshabilitado (modo privado) — no-op.
+  }
+}
+
+function getScriptVar(name) {
+  var el = $('script-' + name);
+  return el ? (el.value || '').trim() : '';
+}
+
+function setScriptVar(name, value) {
+  var el = $('script-' + name);
+  if (el) el.value = value || '';
+}
+
+// v3.10.30: reemplaza {placeholders} en TODAS las cards. Cuando el var está
+// lleno: span se vuelve verde (.filled) y muestra el valor. Cuando está
+// vacío: span vuelve a mostrar {Placeholder} con color accent.
+function updateScriptPlaceholders() {
+  var vars = {
+    agente: getScriptVar('agente'),
+    cliente: getScriptVar('cliente'),
+    telefono: getScriptVar('telefono'),
+    motivo: getScriptVar('motivo')
+  };
+  // Persistir
+  saveScriptVars(vars);
+
+  document.querySelectorAll('.script-card-text').forEach(function (el) {
+    el.querySelectorAll('.ph').forEach(function (span) {
+      var key = span.dataset.ph;
+      var val = vars[key] || '';
+      var origText = span.dataset.orig || span.textContent;
+      if (val) {
+        span.textContent = val;
+        span.classList.add('filled');
+      } else {
+        span.textContent = origText;
+        span.classList.remove('filled');
+      }
+    });
+    // Guardar texto RESUELTO (con vars reemplazadas) en dataset.full.
+    // Si todas las vars están vacías, dataset.full queda igual al textContent
+    // (que sigue mostrando {placeholders}).
+    el.dataset.full = el.textContent;
+  });
+}
+
+// v3.10.30: copy script card al clipboard. Fallback para file:// o browsers
+// sin clipboard API. Feedback visual vía class .is-copied en el botón (2s).
+function copyScriptCard(id) {
+  var textEl = $('script-text-' + id);
+  if (!textEl) return;
+  // textContent incluye vars ya reemplazadas (gracias a updateScriptPlaceholders).
+  var txt = (textEl.dataset && textEl.dataset.full) || textEl.textContent || '';
+  if (!txt) return;
+  var btn = document.querySelector('.script-card[data-script-id="' + id + '"] .script-card-copy');
+  function showOk() {
+    if (btn) {
+      btn.classList.add('is-copied');
+      setTimeout(function () { btn.classList.remove('is-copied'); }, 2000);
+    }
+    announce('Script copiado al portapapeles');
+  }
+  function fallback() {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showOk();
+    } catch (e) { /* no-op */ }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(showOk, fallback);
+  } else {
+    fallback();
+  }
 }
 
 function copyText(text, okLabel, btn) {
@@ -5201,7 +5580,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.29] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.30] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -6762,6 +7141,24 @@ document.addEventListener('DOMContentLoaded', function () {
   setupAutocomplete();  // D-12: keyboard + ARIA + dropdown custom
   setupEtiquetas();    // v3.0 TIPIFICACIÓN: input etiquetas + chips categoría
   setupGridToggles();  // v3.10.23: grids colapsables premium
+
+  // v3.10.30: SCRIPT LLAMADA — init
+  // 1) Guardar texto original de cada .ph (para restore cuando var está vacío)
+  document.querySelectorAll('.script-card-text .ph').forEach(function (span) {
+    if (!span.dataset.orig) span.dataset.orig = span.textContent;
+  });
+  // 2) Restaurar vars desde localStorage
+  var savedVars = loadScriptVars();
+  ['agente', 'cliente', 'telefono', 'motivo'].forEach(function (name) {
+    if (savedVars[name]) setScriptVar(name, savedVars[name]);
+  });
+  // 3) Wire up input listeners → live replace
+  ['agente', 'cliente', 'telefono', 'motivo'].forEach(function (name) {
+    var el = $('script-' + name);
+    if (el) el.addEventListener('input', updateScriptPlaceholders);
+  });
+  // 4) Render inicial (reemplaza vars persistidas si existen)
+  updateScriptPlaceholders();
   // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
   renderTipifs();        // Inicializa grid 2 (vacío)
   initPopupMode();      // D-8: responsive desktop + botón X cerrar

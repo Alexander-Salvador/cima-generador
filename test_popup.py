@@ -2931,6 +2931,92 @@ def test(html_path):
         result.fail('v3.10.29 CSS hover', '.output-box.output-result:hover CSS missing')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.30 — GRID 0 SCRIPT LLAMADA
+    # CEO directive: "agregar un grid mas arriba de busqueda address" con
+    # 8 secciones del flujo de llamada: bienvenida, atención segura, motivo
+    # comunicación, detección avería, retoma, consulta adicional, app, encuesta.
+    # Top vars (Agente, Cliente, Teléfono, Motivo) auto-reemplazan {placeholders}
+    # en TODAS las cards via JS live update. Persistencia en localStorage.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.30 — GRID 0 Script Llamada (8 cards + vars + live replace)')
+
+    # HTML: grid existe y está ARRIBA de gridAddress
+    if 'id="gridScript"' in html and 'id="gridAddress"' in html:
+        script_pos = html.find('id="gridScript"')
+        address_pos = html.find('id="gridAddress"')
+        if script_pos < address_pos:
+            result.ok('v3.10.30 HTML: gridScript ARRIBA de gridAddress (orden correcto)')
+        else:
+            result.fail('v3.10.30 HTML orden', 'gridScript debe estar antes de gridAddress')
+    else:
+        result.fail('v3.10.30 HTML grid', 'id="gridScript" o id="gridAddress" missing')
+
+    # HTML: 8 script cards presentes
+    expected_cards = [
+        'bienvenida', 'atencion-segura', 'motivo-comunicacion',
+        'deteccion-averia', 'retoma', 'consulta-adicional',
+        'app-movistar', 'encuesta'
+    ]
+    missing_cards = [c for c in expected_cards if 'data-script-id="' + c + '"' not in html]
+    if not missing_cards:
+        result.ok(f'v3.10.30 HTML: 8 script cards presentes ({", ".join(expected_cards)})')
+    else:
+        result.fail('v3.10.30 HTML cards', f'cards faltantes: {missing_cards}')
+
+    # HTML: 4 inputs vars
+    expected_vars = ['script-agente', 'script-cliente', 'script-telefono', 'script-motivo']
+    missing_vars = [v for v in expected_vars if 'id="' + v + '"' not in html]
+    if not missing_vars:
+        result.ok('v3.10.30 HTML: 4 vars inputs (agente/cliente/telefono/motivo)')
+    else:
+        result.fail('v3.10.30 HTML vars', f'vars faltantes: {missing_vars}')
+
+    # CSS: .script-card + .ph + .script-vars definidas
+    if '.script-card {' in html:
+        result.ok('v3.10.30 CSS: .script-card rule presente')
+    else:
+        result.fail('v3.10.30 CSS .script-card', '.script-card CSS missing')
+    if re.search(r'\.ph\s*\{', html):
+        result.ok('v3.10.30 CSS: .ph (placeholder highlight) rule presente')
+    else:
+        result.fail('v3.10.30 CSS .ph', '.ph CSS missing')
+
+    # JS: copyScriptCard + updateScriptPlaceholders funciones definidas
+    if 'function copyScriptCard(' in html:
+        result.ok('v3.10.30 JS: copyScriptCard() función definida')
+    else:
+        result.fail('v3.10.30 JS copy', 'copyScriptCard() missing')
+    if 'function updateScriptPlaceholders(' in html:
+        result.ok('v3.10.30 JS: updateScriptPlaceholders() función definida')
+    else:
+        result.fail('v3.10.30 JS update', 'updateScriptPlaceholders() missing')
+
+    # JS: localStorage persistence
+    if "SCRIPT_VARS_STORAGE_KEY" in html and 'cima_script_vars_v1' in html:
+        result.ok('v3.10.30 JS: localStorage persistence (SCRIPT_VARS_STORAGE_KEY)')
+    else:
+        result.fail('v3.10.30 JS storage', 'localStorage persistence missing')
+
+    # JS: input listeners wireados
+    if "el.addEventListener('input', updateScriptPlaceholders)" in html:
+        result.ok('v3.10.30 JS: input listeners → updateScriptPlaceholders')
+    else:
+        result.fail('v3.10.30 JS listeners', 'input listeners missing')
+
+    # HTML: script-card-copy botones (8 cards × 1 button)
+    n_copy_buttons = html.count('class="script-card-copy"')
+    if n_copy_buttons >= 8:
+        result.ok(f'v3.10.30 HTML: {n_copy_buttons} botones copy-to-clipboard')
+    else:
+        result.fail('v3.10.30 HTML buttons', f'8 esperados, {n_copy_buttons} encontrados')
+
+    # HTML: grid collapsibility (sigue patrón v3.10.23)
+    if 'id="gridScript-toggle"' in html and 'id="gridScript-body"' in html:
+        result.ok('v3.10.30 HTML: gridScript colapsable (toggle + body)')
+    else:
+        result.fail('v3.10.30 HTML collapse', 'toggle/body missing')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.3 — STOP CHECK visual para COMU-5672 + Santa Rosa de Loreto
     # CEO directive: "como solucionamos los RIESGOS CONOCIDOS?"
     # Soluciones: stop check prominente + distrito nuevo 160405 + anomalías
