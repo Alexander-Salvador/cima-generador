@@ -2978,6 +2978,53 @@ def test(html_path):
     else:
         result.fail('v3.10.34 HTML copy buttons regresión', '0 esperados')
 
+    # ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    # v3.10.35 — OPTIMIZACIÓN: single header (sin duplicado)
+    # CEO directive: 'ya que hay doble header BIENVENIDA E IDENTIFICACION +
+    # BIENVENIDA + SPEECH debe hacerse 1 solo para no estirar tanto espacio
+    # corrige de manera lineal para todos los textos y al minimizarse se
+    # debe marcar como listo o hecho'.
+    # ╗═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.35 — OPTIMIZACIÓN single header + ✓ Hecho indicator')
+
+    # HTML: NO debe haber <h4> dentro de .script-card (CEO: 'doble header')
+    # Anti-regression: scripts-card-header (wrapper con h4) REMOVIDO
+    # Contamos cuántos <h4> quedan dentro de .script-card
+    import re as re_mod
+    n_h4_in_cards = len(re_mod.findall(
+        r'<div class="script-card"[^>]*>\s*<div class="script-card-body">(?:[^<]*<[^/][^>]*>)*?[^<]*<h4>',
+        html
+    ))
+    if n_h4_in_cards == 0:
+        result.ok('v3.10.35 HTML: 0 <h4> duplicados dentro de .script-card (single header)')
+    else:
+        result.fail('v3.10.35 HTML regresión', f'{n_h4_in_cards} <h4> dentro de script-card (debe ser 0)')
+
+    # CSS: .script-card.is-collapsed::after con 'Hecho' indicator
+    if '.script-card.is-collapsed::after' in html and 'Hecho' in html:
+        result.ok('v3.10.35 CSS: .script-card.is-collapsed::after con "Hecho" indicator')
+    else:
+        result.fail('v3.10.35 CSS hecho', '.script-card.is-collapsed::after "Hecho" missing')
+
+    # HTML: section headers siguen presentes (single header por sección)
+    section_headers = [
+        'Bienvenida e identificación',
+        'Motivo de la llamada',
+        'Consulta adicional + App Movistar',
+        'Cierre + Encuesta'
+    ]
+    missing_section_headers = [s for s in section_headers if s not in html]
+    if not missing_section_headers:
+        result.ok('v3.10.35 HTML: 4 section headers (single per sección) presentes')
+    else:
+        result.fail('v3.10.35 HTML sections', f'section headers faltantes: {missing_section_headers}')
+
+    # CSS: badges (✓ ✗ ⭐) preservados en Cierre
+    if 'script-badge--ok' in html and 'script-badge--fail' in html and 'script-badge--star' in html:
+        result.ok('v3.10.35 CSS: badges ✓/✗/⭐ preservados en Cierre')
+    else:
+        result.fail('v3.10.35 CSS badges regresión', 'badges ok/fail/star missing')
+
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.28 — Inputs filled clean + toast wording
     # CEO directive: "Cuando los inputs tienen contenido pasa lo mismo se ve
