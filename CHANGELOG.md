@@ -1,5 +1,65 @@
 # Changelog — cima-generador
 
+## [3.10.26] - 2026-10-19 — 🐛 FIX: BUSQUEDA ADDRESS — eliminar vibración + label ROJO + optimizar botones
+
+**CEO directive:** "primero arreglaremos el bug de BUSQUEDA ADDRESS:
+- El boton zona de apagado vibra y se mueve aun sin datos, elimina toda animacion mientras no se gatille correctamente con la busqueda correcta.
+- Al darle clicks a los inputs de BUSQUEDA ADDRESS el title del input cambia a color ROJO junto al INPUT, elimina el hover active al darle click.
+- Optimiza los botones de clear y zona de apagado para mejor experiencia de uso visual."
+
+### 🎯 Causa raíz
+
+1. **Vibración del botón ⚠️**: tres fuentes de movimiento visual se sumaban en el botón de zona de apagado:
+   - `animation: pulseDanger 2.4s` / `pulseWarn 2.8s` con `transform: scale(1.025)` → breathing constante
+   - `:active { transform: scale(0.94) }` → scale en cada click
+   - `box-shadow: 0 0 0 7px` expansion → halo expandiéndose
+2. **Label ROJO en focus**: `.field:focus-within > label { color: var(--accent); }` donde `--accent: #dc2626` (rojo). El label se ponía rojo al click en cualquier input.
+3. **`:active` con scale en inputs**: `transform: scale(0.985)` causaba shift visual al hacer click.
+
+### 🔧 Cambios
+
+#### Cobertura-btn (botón ⚠️ zonas de apagado)
+
+| Cambio | Detalle |
+|---|---|
+| `animation: pulseDanger/pulseWarn` REMOVIDOS | Estados `.off`/`.warn` ahora estáticos (color comunica) |
+| `:active { transform: scale(0.94) }` REMOVIDO | Sin vibración en click |
+| `@keyframes pulseDanger/pulseWarn/pulseFuzzy` ELIMINADOS | Sin uso (referencias en comentarios sin @) |
+| `.cobertura-btn.fuzzy` vacío | Sin uso desde v3.10.12 |
+| `.cobertura-btn--idle` opacity 0.85 | Comunica visualmente "no hay alerta" |
+
+#### Inputs BUSQUEDA ADDRESS
+
+| Cambio | Detalle |
+|---|---|
+| `.field:focus-within > label { color: var(--accent) }` REMOVIDO | Label mantiene color neutro en focus |
+| `.field input:active { transform: scale(0.985) }` REMOVIDO | Sin shift visual al click |
+| `:hover` preservado | Pre-feedback sutil (bg + border), no en click |
+
+#### Botones (clear + ⚠️)
+
+| Botón | Antes | Ahora |
+|---|---|---|
+| `.btn-icon-clear:hover` | danger tint rojo agresivo (border + color + bg) | Sutil: bg `--glass-3-bg` + border `--text-faint 60%` + color `--text` |
+| `.btn-icon-clear:focus-visible` | danger 28% ring | `--text-faint 32%` ring neutral |
+| `.cobertura-btn` transition | incluía `transform` | Solo background/border/color (sin transform) |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** (2 actualizados: animation removed + fuzzy removed) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 2 mentiras pre-existentes (VERSION drift resuelto en este commit + M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (HTML size estable ~1.1MB) |
+
+### 📐 Lecciones aplicadas
+
+- **L-067/068/069**: complejidad visual escala peor que la funcional. 3 fuentes de vibración se sumaban — CEO lo detectó como "se mueve sin datos".
+- **CRIT-009 (Avanzado+)**: estado comunicable por color estático es MÁS premium que animación de pulso. iOS/Material Design usan color/opacity, no breathing.
+- **L-079**: "Iterar = fallar". Las animaciones de pulso se agregaron como mejora visual en v3.8.0, pero el CEO nunca las pidió — solo las toleró hasta probarlas.
+
 ## [3.10.25] - 2026-10-19 — 🐛 FIX: HTML del gridAddress tenía `</div>` extra (estructura desbalanceada)
 
 **CEO directive:** "Mejoro pero aun tenemos problemas de width de las GRID no son iguales. Mira la foto completa veras que no son identicas"

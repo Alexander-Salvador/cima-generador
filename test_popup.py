@@ -203,7 +203,9 @@ def test(html_path):
         'getUbigeoCodesForAddress function': 'function getUbigeoCodesForAddress' in html,
         'renderCoberturaButton function': 'function renderCoberturaButton' in html,
         'coberturaBtn element': 'id="coberturaBtn"' in html,
-        'pulseDanger keyframes': '@keyframes pulseDanger' in html,
+        # v3.10.26: pulseDanger keyframes REMOVIDOS (CEO vibra). Estado se
+        # comunica por color estático sin animación continua.
+        'pulseDanger ELIMINADO (v3.10.26)': '@keyframes pulseDanger' not in html,
         'checkZonaApagada function': 'function checkZonaApagada' in html,
         # v2.0.8: schema ccpp_keys + districts_with_off
         'ccpp_keys Set': 'ccpp_keys: new Set(' in html,
@@ -338,21 +340,26 @@ def test(html_path):
         else:
             result.fail('.cobertura-btn border-radius', 'pill esperado en v2.1.4')
 
-    # v2.1.4: .cobertura-btn.off ya no controla display (siempre visible);
-    # validamos la animation (alerta ámbar iOS-style) en su lugar.
-    # v3.8.0: .off y .warn son visualmente IGUALES (ámbar unificado).
-    # El selector CSS puede ser .off solo, o .off,.warn combinado.
+    # v2.1.4: .cobertura-btn.off ya no controla display (siempre visible).
+    # v3.10.26: REMOVIDA animation pulseWarn/pulseDanger del estado .off.
+    # CEO directive: "elimina toda animacion mientras no se gatille
+    # correctamente con la busqueda correcta". Estado se comunica por
+    # color estático (ROJO confirmado / AMARILLO preventivo).
+    # v3.8.0: .off y .warn son visualmente distintos (off=rojo, warn=amber).
     css_off_match = re.search(
         r'\.cobertura-btn\.off[^{}]*\{([^}]+)\}',
         html
     )
     if css_off_match:
         css_off_body = css_off_match.group(1)
-        # v3.8.0: coberturaBtn unificado a AMBER, animation = pulseWarn
+        # v3.10.26: validamos que NO haya animation de pulso (estado comunicable
+        # sin vibración). animation: none es el caso válido.
         if 'animation:' in css_off_body and ('pulseWarn' in css_off_body or 'pulseDanger' in css_off_body):
-            result.ok('.cobertura-btn.off animation: pulseWarn AMBER (v3.8.0 unificado)')
+            result.fail('.cobertura-btn.off animation', 'pulseWarn/pulseDanger REMOVIDOS en v3.10.26 (CEO vibra)')
+        elif 'animation:' in css_off_body and ('none' in css_off_body):
+            result.ok('.cobertura-btn.off animation: none (v3.10.26 sin vibración)')
         else:
-            result.fail('.cobertura-btn.off animation', 'pulseWarn/pulseDanger esperado')
+            result.fail('.cobertura-btn.off animation', 'animation: none esperado en v3.10.26')
     else:
         result.fail('.cobertura-btn.off CSS', 'no encontrado')
 
@@ -2768,10 +2775,12 @@ def test(html_path):
         result.fail('v3.10.2 JS confianza', f'solo {confianza_count} ocurrencias de confianza')
 
     # CSS: .cobertura-btn.fuzzy
+    # v3.10.26: REMOVIDO .cobertura-btn.fuzzy + @keyframes pulseFuzzy
+    # (sin uso desde v3.10.12). El nivel fuzzy ya no se renderiza en el botón.
     if re.search(r'\.cobertura-btn\.fuzzy\s*\{', html):
-        result.ok('v3.10.2 CSS: .cobertura-btn.fuzzy estilo')
+        result.fail('v3.10.26 CSS fuzzy', '.cobertura-btn.fuzzy REMOVIDO en v3.10.26 (sin uso)')
     else:
-        result.fail('v3.10.2 CSS fuzzy', '.cobertura-btn.fuzzy CSS missing')
+        result.ok('v3.10.26: .cobertura-btn.fuzzy ELIMINADO (sin uso desde v3.10.12)')
 
     # CSS: panel de fuzzy
     if re.search(r'\.apagado-panel-fuzzy\s*\{', html):
@@ -2780,10 +2789,11 @@ def test(html_path):
         result.fail('v3.10.2 CSS panel fuzzy', '.apagado-panel-fuzzy missing')
 
     # CSS: pulseFuzzy animation
+    # v3.10.26: REMOVIDO @keyframes pulseFuzzy (sin uso).
     if re.search(r'@keyframes\s+pulseFuzzy', html):
-        result.ok('v3.10.2 CSS: pulseFuzzy animation')
+        result.fail('v3.10.26 pulseFuzzy', 'pulseFuzzy REMOVIDO en v3.10.26')
     else:
-        result.fail('v3.10.2 CSS pulseFuzzy', '@keyframes pulseFuzzy missing')
+        result.ok('v3.10.26: @keyframes pulseFuzzy ELIMINADO (sin uso)')
 
     # HTML: panel con fuzzy_matches rendering
     if re.search(r'apagado-panel-fuzzy-item', html):

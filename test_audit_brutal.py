@@ -144,12 +144,15 @@ print('  TEST 1: MENTIRAS — claims vs realidad')
 print('─'*70)
 aud_m = BrutalAuditor("MENTIRAS")
 
-# M1: VERSION coherente
+# M1: VERSION coherente (v3.10.26 — generalizado para evitar drift futuro)
 version_file = (Path(__file__).parent / 'VERSION').read_text().strip()
 footer_match = re.search(r'id="footerVersion"[^>]*>([^<]+)<', html)
 footer_version = footer_match.group(1).strip() if footer_match else None
+# Normalizar: footer incluye prefijo "v", VERSION no
+version_normalized = version_file.lstrip('v')
+footer_normalized = footer_version.lstrip('v') if footer_version else ''
 
-if version_file == '3.10.4' and footer_version == 'v3.10.4':
+if version_normalized and footer_normalized and version_normalized == footer_normalized:
     aud_m.ok_msg('M1', f'VERSION={version_file}, footer={footer_version} (coherente)')
 else:
     aud_m.mentira('M1', f'VERSION={version_file} pero footer={footer_version} (incoherente)')
