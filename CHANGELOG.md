@@ -1,5 +1,46 @@
 # Changelog — cima-generador
 
+## [3.10.18] - 2026-10-19 — 📐 Dialog ⚠️ in-flow DENTRO del grid + contenido compacto
+
+**CEO directive:** "Regreso a su estado inicial sigue incorrecto recuerda que nada debe exceder el ancho y alto maximo del GRID donde este el contenido ubicalo bien en el codigo y que se renderice dentro, se preciso mejora el contenido del dialog"
+
+**Fix definitivo:** el panel del botón ⚠️ se renderiza **DENTRO** del grid de Búsqueda Address, **DEBAJO** del botón (in-flow, position: static), con `max-height: 140px` + `overflow-y: auto` para que el contenido largo scrollee internamente sin estirar el grid. Contenido del dialog compactado (fonts 9.5-10.5px, line-clamp: 3 en el speech).
+
+### 🔧 Cambios CSS
+
+| Selector | Cambio |
+|---|---|
+| `.cobertura-wrap` | `display: flex; flex-direction: column; align-items: flex-end;` — wrap vertical, panel hijo directo |
+| `.apagado-speech-panel` | `position: static; width: 100%; max-width: 100%` — in-flow, dentro del wrap |
+| `.apagado-speech-panel` | `max-height: 140px; overflow-y: auto` — cap estricto, scroll interno |
+| `.apagado-panel-header` | más compacto (margin 4px, padding 4px, font 10.5px) |
+| `.apagado-panel-meta` | 9.5px (antes 10px) |
+| `.apagado-panel-severidad` | 10px, margin-bottom 4px (antes 8px) |
+| `.apagado-panel-speech` | 10.5px, **line-clamp: 3** con ellipsis (texto largo no estira) |
+| `.apagado-panel-icon` | 12px (antes 13px) |
+
+### 🔧 Cambio JS
+
+- `panel.scrollIntoView()` eliminado (panel in-flow, no necesita scroll).
+
+### 🎯 Resultado
+
+- Panel **dentro** del .grid-block de Búsqueda Address, sin salirse
+- Width 100% del .cobertura-wrap (no excede el grid)
+- max-height 140px con scroll interno
+- Speech con `line-clamp: 3` → máx 3 líneas visibles con ellipsis
+- NO estira el grid, NO rompe max-height del contenedor
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.17] - 2026-10-19 — 📐 FIX: dialog ⚠️ sale ENCIMA del botón sin estirar el grid (popup 480px)
 
 **CEO directive:** "Sigue roto ahora estira el contenido debe salir encima recuerda que estamos en modo responsive popup"

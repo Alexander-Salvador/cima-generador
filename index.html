@@ -1653,15 +1653,25 @@
     width: 100%;
   }
   /* v3.9.12: wrapper del botón ⚠ — ancla el panel speech.
-     v3.10.17: vuelve a inline-flex (panel se posiciona absolute arriba del botón).
-     En modo responsive popup (480px) el panel sale ENCIMA del ⚠, no estira
-     el grid de Búsqueda Address, y se capa con max-height + overflow-y para
-     no romper el layout vertical. */
+     v3.10.18: vuelve a display: block. El panel se renderiza DENTRO del
+     .cobertura-wrap, DEBAJO del botón ⚠, in-flow. No position absolute,
+     no sale fuera del grid. max-height estricto + overflow-y para no
+     estirar el grid de Búsqueda Address en popup 480px. */
   .cobertura-wrap {
     position: relative;
     flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: auto;
+  }
+  .cobertura-wrap > #coberturaBtn {
+    flex: 0 0 auto;
+  }
+  .cobertura-wrap > .apagado-speech-panel {
+    flex: 0 0 auto;
+    align-self: stretch;
+    margin-top: 6px;
   }
 
 /* v2.1.7: output-wrap SIN max-height (igual que v2.1.4). El cap viene del .output-box
@@ -1845,19 +1855,20 @@
   }
 
   .apagado-speech-panel {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    /* v3.9.12: anclado al wrapper del botón ⚠ (.cobertura-wrap) — small
-       container ~36px. El panel sale ENCIMA del botón (position: absolute).
-       v3.10.17: en modo responsive popup (480px), con max-height + overflow-y
-       para que el contenido largo scrollee internamente sin estirar el grid
-       de Búsqueda Address. */
-    right: 0;
-    width: 320px;
-    max-width: calc(100vw - 16px);
+    /* v3.10.18: position static (in-flow) — el panel se renderiza DENTRO
+       del .cobertura-wrap, DEBAJO del botón ⚠. NO position absolute, NO
+       sale fuera del grid de Búsqueda Address. max-height estricto para
+       no estirar el grid en popup 480px. */
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     margin: 0;
-    padding: 10px 12px 11px;
+    padding: 8px 10px 9px;
     background:
       linear-gradient(180deg,
         color-mix(in srgb, var(--surface) 80%, transparent) 0%,
@@ -1866,18 +1877,17 @@
     backdrop-filter: blur(18px) saturate(1.6);
     color: var(--text, #f2f0ed);
     border: 1px solid color-mix(in srgb, var(--border-strong) 60%, transparent);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow:
-      0 10px 28px rgba(0,0,0,0.26),
-      0 3px 10px rgba(0,0,0,0.16),
+      0 4px 10px rgba(0,0,0,0.18),
       inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
-    font-size: 11px;
-    line-height: 1.38;
-    /* v3.10.17: cap de altura para que el panel no rompa el grid en popup
-       480px. Si excede, scroll interno. */
-    max-height: 200px;
+    font-size: 10.5px;
+    line-height: 1.32;
+    /* v3.10.18: cap estricto para no estirar el grid. Si excede, scroll
+       interno. width/height nunca exceden el wrap. */
+    max-height: 140px;
     overflow-y: auto;
-    z-index: 60;
+    z-index: auto;
     animation: apagadoPanelIn 0.22s var(--motion-spring-soft);
     pointer-events: auto;
   }
@@ -1887,13 +1897,13 @@
   }
   .apagado-speech-panel[hidden] { display: none !important; }
 
-  /* HEADER minimal — solo "⚠ COMU-XXXX", 1 línea */
+  /* HEADER minimal — 1 línea: [icono] COMU-XXXX · fecha */
   .apagado-speech-panel .apagado-panel-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 0 0 7px 0;
-    padding: 0 0 6px 0;
+    gap: 5px;
+    margin: 0 0 4px 0;
+    padding: 0 0 4px 0;
     border-bottom: 1px solid color-mix(in srgb, var(--border-strong) 32%, transparent);
     color: var(--text-dim, #9ca3af);
     text-transform: none;
@@ -1902,37 +1912,34 @@
   .apagado-speech-panel .apagado-panel-com {
     color: var(--zone-ipt);
     font-weight: 700;
-    font-size: 11px;
+    font-size: 10.5px;
     letter-spacing: 0;
     flex-shrink: 0;
   }
   .apagado-speech-panel[data-com="COMU-5514"] .apagado-panel-com {
     color: var(--zone-amber);
   }
-  /* v3.10.0: icono de severidad al inicio del header. Color según nivel. */
   .apagado-speech-panel .apagado-panel-icon {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1;
     flex-shrink: 0;
   }
   .apagado-speech-panel[data-nivel="ccpp_exacto"] .apagado-panel-icon { color: var(--zone-ipt); }
   .apagado-speech-panel[data-nivel="ccpp_fuzzy"] .apagado-panel-icon { color: #ea7c3c; }
-  /* v3.10.12: ELIMINADA regla para data-nivel="ipt_distrito" (2G fuera de scope). */
   .apagado-speech-panel[data-nivel="distrito_of"] .apagado-panel-icon { color: var(--zone-amber); }
-  /* v3.10.0: meta inline (versión + fecha) — texto dim, no compite con COMU. */
   .apagado-speech-panel .apagado-panel-meta {
-    font-size: 10px;
+    font-size: 9.5px;
     color: var(--text-dim, #9ca3af);
     margin-left: auto;
     letter-spacing: 0.01em;
     font-weight: 500;
     text-transform: none;
   }
-  /* v3.10.0: línea de severidad — explica en 1 línea qué significa el nivel. */
+  /* SEVERIDAD — 1 línea, compacto */
   .apagado-speech-panel .apagado-panel-severidad {
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
     padding: 0;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.005em;
     text-transform: uppercase;
@@ -1940,19 +1947,25 @@
   }
   .apagado-speech-panel[data-nivel="ccpp_exacto"] .apagado-panel-severidad { color: var(--zone-ipt); }
   .apagado-speech-panel[data-nivel="ccpp_fuzzy"] .apagado-panel-severidad { color: #ea7c3c; }
-  /* v3.10.12: ELIMINADA regla para data-nivel="ipt_distrito" (2G fuera de scope). */
   .apagado-speech-panel[data-nivel="distrito_of"] .apagado-panel-severidad { color: var(--zone-amber); }
 
-  /* SPEECH BODY — sin cambios de font-size para evitar overflow */
+  /* SPEECH BODY — compacto. v3.10.18: line-clamp a 3 líneas con ellipsis.
+     Si el texto es más largo, el max-height del panel + overflow-y
+     permiten scroll interno. */
   .apagado-speech-panel .apagado-panel-speech {
-    font-size: 11px;
-    line-height: 1.4;
+    font-size: 10.5px;
+    line-height: 1.32;
     color: var(--text, #f2f0ed);
     white-space: pre-wrap;
     margin: 0;
     word-wrap: break-word;
     font-weight: 420;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   /* v3.9.8: BOLD para info clave del speech — fechas y referencias 2G/4G.
      Enfatizamos con peso bold + tono rojo sutil para resaltar al leerse
@@ -4978,10 +4991,9 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   panel.setAttribute('data-com', comunicadoLabel);
   panel.setAttribute('data-nivel', currentCheck ? currentCheck.nivel : '');
   panel.hidden = false;
-  // v3.10.17: panel vuelve a position: absolute (sale ENCIMA del botón ⚠).
-  // En popup mode 480px, el botón puede estar en la parte inferior del form,
-  // así que necesitamos scrollIntoView para que el panel sea visible.
-  try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+  // v3.10.18: panel in-flow (position: static). NO scrollIntoView.
+  // Se renderiza DENTRO del .cobertura-wrap, DEBAJO del botón ⚠, sin
+  // estrirar el grid de Búsqueda Address (max-height 140px, overflow-y auto).
 
   // Handler local (un solo listener, no acumulamos)
   panel._clickHandler = function(e) {
