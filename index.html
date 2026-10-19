@@ -1652,24 +1652,16 @@
   .row-ref-buttons .field-ref input {
     width: 100%;
   }
-  /* v3.9.12: wrapper del botón ⚠ — ancla el panel speech que se renderiza
-     DEBAJO del botón (dentro del grid de Búsqueda Address, no flotando encima).
-     v3.10.16: flex-wrap + flex-basis 100% para que el panel baje a la siguiente
-     línea sin romper el layout horizontal del botón X + ⚠. */
+  /* v3.9.12: wrapper del botón ⚠ — ancla el panel speech.
+     v3.10.17: vuelve a inline-flex (panel se posiciona absolute arriba del botón).
+     En modo responsive popup (480px) el panel sale ENCIMA del ⚠, no estira
+     el grid de Búsqueda Address, y se capa con max-height + overflow-y para
+     no romper el layout vertical. */
   .cobertura-wrap {
     position: relative;
     flex-shrink: 0;
-    display: flex;
-    flex-wrap: wrap;
+    display: inline-flex;
     align-items: center;
-    flex-basis: auto;
-  }
-  .cobertura-wrap > #coberturaBtn {
-    flex: 0 0 auto;
-  }
-  .cobertura-wrap > .apagado-speech-panel {
-    flex: 0 0 100%;
-    width: 100%;
   }
 
 /* v2.1.7: output-wrap SIN max-height (igual que v2.1.4). El cap viene del .output-box
@@ -1853,18 +1845,18 @@
   }
 
   .apagado-speech-panel {
-    position: relative;
-    /* v3.10.16: el panel se acomoda DEBAJO del botón ⚠ dentro del wrapper
-       (.cobertura-wrap), no flotando encima. Mantiene el grid de Búsqueda
-       Address sin romper su max-height / overflow. */
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    width: 100%;
-    max-width: 100%;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    /* v3.9.12: anclado al wrapper del botón ⚠ (.cobertura-wrap) — small
+       container ~36px. El panel sale ENCIMA del botón (position: absolute).
+       v3.10.17: en modo responsive popup (480px), con max-height + overflow-y
+       para que el contenido largo scrollee internamente sin estirar el grid
+       de Búsqueda Address. */
+    right: 0;
+    width: 320px;
+    max-width: calc(100vw - 16px);
     box-sizing: border-box;
-    margin: 8px 0 0 0;
+    margin: 0;
     padding: 10px 12px 11px;
     background:
       linear-gradient(180deg,
@@ -1876,13 +1868,13 @@
     border: 1px solid color-mix(in srgb, var(--border-strong) 60%, transparent);
     border-radius: 12px;
     box-shadow:
-      0 6px 16px rgba(0,0,0,0.22),
-      0 2px 6px rgba(0,0,0,0.12),
+      0 10px 28px rgba(0,0,0,0.26),
+      0 3px 10px rgba(0,0,0,0.16),
       inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
     font-size: 11px;
     line-height: 1.38;
-    /* v3.10.16: cap de altura para que el panel no rompa el grid de Búsqueda
-       Address. Si el contenido excede, scroll interno. */
+    /* v3.10.17: cap de altura para que el panel no rompa el grid en popup
+       480px. Si excede, scroll interno. */
     max-height: 200px;
     overflow-y: auto;
     z-index: 60;
@@ -4986,8 +4978,10 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   panel.setAttribute('data-com', comunicadoLabel);
   panel.setAttribute('data-nivel', currentCheck ? currentCheck.nivel : '');
   panel.hidden = false;
-  // v3.10.16: panel ahora se renderiza DEBAJO del botón ⚠ dentro del wrapper,
-  // in-flow. No necesita scrollIntoView (estaba pensado para el caso absolute).
+  // v3.10.17: panel vuelve a position: absolute (sale ENCIMA del botón ⚠).
+  // En popup mode 480px, el botón puede estar en la parte inferior del form,
+  // así que necesitamos scrollIntoView para que el panel sea visible.
+  try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
 
   // Handler local (un solo listener, no acumulamos)
   panel._clickHandler = function(e) {

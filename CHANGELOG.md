@@ -1,5 +1,39 @@
 # Changelog — cima-generador
 
+## [3.10.17] - 2026-10-19 — 📐 FIX: dialog ⚠️ sale ENCIMA del botón sin estirar el grid (popup 480px)
+
+**CEO directive:** "Sigue roto ahora estira el contenido debe salir encima recuerda que estamos en modo responsive popup"
+
+**v3.10.16 tenía el problema inverso:** el panel con `width: 100%` estiraba el grid de Búsqueda Address. En modo responsive popup (480px), el panel DEBE salir ENCIMA del botón ⚠️ (position: absolute) con `max-height` para que el contenido largo no rompa el layout.
+
+### 🔧 Cambios
+
+| Aspecto | v3.10.16 | v3.10.17 (ahora) |
+|---|---|---|
+| `.cobertura-wrap` | `flex-wrap: wrap` (panel iba abajo) | `inline-flex` (panel flota arriba) |
+| `.apagado-speech-panel` position | `relative` (in-flow) | `absolute; bottom: calc(100% + 8px)` (encima del botón) |
+| `.apagado-speech-panel` width | `100%` (estiraba) | `320px; max-width: calc(100vw - 16px)` |
+| `.apagado-speech-panel` max-height | `200px; overflow-y: auto` | `200px; overflow-y: auto` (mantenido) |
+| `panel.scrollIntoView()` | eliminado | restaurado (popup mode 480px → scroll al panel) |
+
+### 🎯 Comportamiento final
+
+- Panel sale **ENCIMA** del botón ⚠️ (position: absolute)
+- Width 320px, max-width viewport-16px (responsive)
+- max-height 200px con scroll interno si el contenido es largo
+- En popup 480px, scrollIntoView al abrir para que sea visible
+- NO estira el grid de Búsqueda Address
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.16] - 2026-10-19 — 📐 FIX: dialog del botón ⚠️ se acomoda DENTRO del grid Búsqueda Address
 
 **CEO directive:** "sale muy arriba rompiendo el maximo del contenedor grid BUSQUEDA ADDRESS acomodalo"
