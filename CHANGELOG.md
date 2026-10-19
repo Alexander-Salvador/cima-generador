@@ -1,5 +1,41 @@
 # Changelog — cima-generador
 
+## [3.10.21] - 2026-10-19 — 🐛 FIX click-outside no cerraba el dialog (listener `{once: true}` se eliminaba tras 1 click)
+
+**CEO directive:** "Se abre el dialog pero al darle click fuera del dialog este debe cerrarse."
+
+**Bug:** el listener `zaOutsideClick` se registraba con `{ once: true }`, lo que significa que **se eliminaba después del primer click**. Resultado: el primer click fuera del panel funcionaba, pero el segundo y siguientes no disparaban el handler. Como el primer click era típicamente el que abría el panel (dentro del setTimeout 0), el handler se eliminaba antes de poder cerrar en clicks posteriores.
+
+**Fix:** el listener ahora es **persistente** (sin `{ once: true }`). Se registra al abrir el panel y se elimina solo cuando se cierra (`zaCloseApagadoTooltip`). El setTimeout(0) sigue evitando que el click que abrió el panel se procese como "click outside".
+
+### 🔧 Cambios en `zaOutsideClick`
+
+| Antes | Ahora |
+|---|---|
+| `{ once: true }` (un solo uso) | persistente (cada click dispara) |
+| Lógica compleja con re-bind | simple: si panel visible + click fuera → cerrar |
+| Verificaba también tooltip legacy (ya no existe) | solo verifica el panel inline |
+
+### 🎯 Comportamiento final
+
+| Acción | Resultado |
+|---|---|
+| Click fuera del panel | ✅ Cierra (en CUALQUIER momento) |
+| Click dentro del panel | ✅ No cierra |
+| Click en botón ⚠️ | ✅ Toggle (lo cierra si está abierto) |
+| Tecla Escape | ✅ Cierra |
+| Botón X (borrar dirección) | ✅ Cierra + limpia |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.20] - 2026-10-19 — 📐 Panel ⚠️ sale ENCIMA (position: absolute) + cierre inteligente
 
 **CEO directive:** "Cuando le doy click ocupa espacio y tira el contenido para abajo, al darle click el contenido debe salir encima y funciona de manera inteligente: Una vez el dialog abierto, al darle click a cualquier lugar debe ocultarse o cerrarse. Si se borra la direccion debe ocultarse o cerrarse."
