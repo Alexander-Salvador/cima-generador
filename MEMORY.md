@@ -56,16 +56,16 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-19 — v3.10.27 FIN SESIÓN (17 commits: v3.10.11 → v3.10.27)**.
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.28 FIN SESIÓN (18 commits: v3.10.11 → v3.10.28)**.
 
 **Estado del popup:**
-- **Versión actual (develop):** v3.10.27
-- **Tests passing:** 559 (482 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
+- **Versión actual (develop):** v3.10.28
+- **Tests passing:** 562 (485 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
 - **Popup LIVE (origin/main):** v3.9.15 (push pendiente CEO)
-- **Branch develop:** v3.10.27 (27 commits desde v3.9.15)
+- **Branch develop:** v3.10.28 (28 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
-**Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.27):**
+**Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.28):**
 - ✅ v3.10.11: Eliminado código UBIGEO como primer caserío en CCPP_DATA (39 d6 contaminados)
 - ✅ v3.10.12: Eliminada detección de 2G (COMU-5672 / IPT) per CEO directive — 3 niveles: ccpp_exacto, ccpp_fuzzy, distrito_of
 - ✅ v3.10.13: Recuperación end-to-end de 34 zonas de apagado (PDFs Movistar) — 100% cobertura
@@ -76,8 +76,9 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.27 FIN SESI�
 - ✅ v3.10.22: Output NO incluye REFERENCIA (geocoder no la reconoce, FIX #9 revertido)
 - ✅ v3.10.23: Grids colapsables premium (header clickable, chevron rotatorio, persistencia localStorage)
 - ✅ v3.10.24-25: Grids balanceadas (eliminado `</div>` extra en gridAddress, sin línea debajo del header)
-- ✅ **v3.10.26: BÚSQUEDA ADDRESS bugfixes** — (1) Cobertura-btn sin vibración (animations + :active scale + keyframes removed), (2) Label NO se pone ROJO en focus, (3) :active scale en inputs removed, (4) btn-icon-clear hover sutil, (5) cobertura-btn idle con opacity 0.85.
-- ✅ **v3.10.27: BLOQUEO + UX polish** — (1) ⚠️ button BLOQUEADO cuando faltan DPT/PROV/DIST (early return + opacity 0.5 + cursor not-allowed), (2) click feedback animations reducidas (cima-shake 3px→1px, pulseCopied scale 1.18→1.04), (3) input focus limpio sin halo box-shadow, (4) RESULTADO texto "Aqui se llenaran los datos" + removido border-style dashed, (5) btn-icon-clear border DASHED (vs ⚠️ SOLID) para diferenciación visual clara. CEO testeó en navegador real y reportó 5 bugs residuales.
+- ✅ **v3.10.26: BÚSQUEDA ADDRESS bugfixes** — (1) Cobertura-btn sin vibración, (2) Label NO ROJO en focus, (3) :active scale removed, (4) btn-icon-clear hover sutil, (5) cobertura-btn idle opacity 0.85.
+- ✅ **v3.10.27: BLOQUEO + UX polish** — Botón ⚠️ BLOQUEADO sin DPT/PROV/DIST, click feedback reducido, input focus limpio, RESULTADO "Aqui se llenaran los datos" + sin dashed, buttons diferenciados (clear dashed vs ⚠️ solid).
+- ✅ **v3.10.28: Inputs filled clean + toast wording** — (1) REMOVIDO box-shadow halo `--shadow-focus-green` (causaba "square bg + round border" en filled inputs), ahora solo `box-shadow: ring-hairline` inset sutil. (2) Toast wording mejorado: "Tipea el CCPP..." → "Escribe el CCPP exacto del PDF..." (español estándar + referencia al source).
 
 **Logros previos (v3.10.0 → v3.10.10):**
 - 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras

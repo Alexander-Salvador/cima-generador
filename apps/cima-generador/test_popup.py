@@ -2864,6 +2864,42 @@ def test(html_path):
         result.fail('v3.10.27 CSS btn-clear', 'btn-icon-clear con border dashed esperado')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.28 — Inputs filled clean + toast wording
+    # CEO directive: "Cuando los inputs tienen contenido pasa lo mismo se ve
+    # como un background cuadrado y bordes redondos rompiendose el estilo.
+    # ...el boton de zona de apagado al darle click emite un mensaje ROTO:
+    # tipea el CCPP para activar la alerta."
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.28 — .filled clean (sin halo) + toast wording')
+
+    # CSS: .field input.filled SIN box-shadow halo (3px green ring)
+    # El CEO percibía el halo como "background cuadrado" rodeando el input.
+    # Removemos comentarios CSS antes de chequear para evitar falsos positivos.
+    css_filled_match = re.search(r'\.field input\.filled,\s*\.field textarea\.filled\s*\{([^}]+)\}', html)
+    if css_filled_match:
+        filled_body = re.sub(r'/\*[\s\S]*?\*/', '', css_filled_match.group(1))  # strip comments
+        if 'shadow-focus-green' in filled_body:
+            result.fail('v3.10.28 CSS .filled', 'box-shadow halo shadow-focus-green debe estar REMOVIDO')
+        elif 'box-shadow:' in filled_body and 'ring-hairline' in filled_body:
+            result.ok('v3.10.28 CSS: .filled SIN halo (solo ring-hairline inset sutil)')
+        else:
+            result.fail('v3.10.28 CSS .filled', '.filled CSS no esperado')
+    else:
+        result.fail('v3.10.28 CSS .filled', '.field input.filled CSS missing')
+
+    # JS: toast wording mejorado (Tipea → Escribe + del PDF)
+    if "showToast(btn, 'Escribe el CCPP exacto del PDF para activar alerta'" in html:
+        result.ok('v3.10.28 JS: toast wording "Escribe el CCPP exacto del PDF" (no "Tipea")')
+    else:
+        result.fail('v3.10.28 JS toast', 'toast wording actualizado esperado')
+
+    # Anti-regression: NO debe quedar el wording viejo "Tipea el CCPP exacto"
+    if "showToast(btn, 'Tipea el CCPP exacto" in html:
+        result.fail('v3.10.28 JS toast regresión', 'wording viejo "Tipea" aún presente')
+    else:
+        result.ok('v3.10.28 JS: wording viejo "Tipea" REMOVIDO')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.3 — STOP CHECK visual para COMU-5672 + Santa Rosa de Loreto
     # CEO directive: "como solucionamos los RIESGOS CONOCIDOS?"
     # Soluciones: stop check prominente + distrito nuevo 160405 + anomalías
