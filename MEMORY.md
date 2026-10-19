@@ -56,14 +56,14 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-19 — v3.10.49 FIN SESIÓN (45 commits: v3.10.11 → v3.10.49)**.
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.50 FIN SESIÓN (46 commits: v3.10.11 → v3.10.50)**.
 
 ## 🧹 Estado Git verificado (2026-10-19)
 
 ```
 ✅ Working tree clean
-✅ Branch: develop @ 7b1040e (v3.10.49)
-✅ VERSION file: 3.10.49 (coherente con footer + console.log)
+✅ Branch: develop @ 2f0177a (v3.10.50)
+✅ VERSION file: 3.10.50 (coherente con footer + console.log)
 ✅ 1 worktree: /home/braka/Systems/projects/work/cima
 ✅ 0 stashes
 ✅ 0 untracked files
@@ -80,28 +80,29 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.49 FIN SESI�
 ### Estado del Remoto (post-push CEO 2026-10-19)
 
 ```
-✅ origin/develop @ 7b1040e (v3.10.49) — synced
-✅ origin/main    @ 86c19bb (v3.10.49) — synced (popup LIVE)
-✅ GitHub Pages build status: built (35s, commit 86c19bb)
-✅ last-modified: 2026-10-19 22:30:47 UTC
+✅ origin/develop @ 2f0177a (v3.10.50) — synced
+✅ origin/main    @ 4fa12e4 (v3.10.50) — synced (popup LIVE)
+✅ GitHub Pages build status: built (43s, commit 4fa12e4)
+✅ last-modified: 2026-10-19 22:45:51 UTC
 ```
 
-✅ **2 pushes exitosos.** CEO autorizó 2 deploys en sesión 2026-10-19:
+✅ **3 pushes exitosos.** CEO autorizó 3 deploys en sesión 2026-10-19:
 1. v3.10.48 (post speech AI 2026)
 2. v3.10.49 (post desglose MOTIVO)
+3. v3.10.50 (post 3 BUG FIXES: CTRL+SHIFT+R + default collapsed + no auto-desglose)
 
-**Deploy pipeline ejecutado (v3.10.49):**
-1. `git push origin develop:develop` → 1 commit pusheado (fd96e7d..7b1040e)
-2. `git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy` → 289 commits, HEAD 86c19bb
-3. `git push -f origin popup-deploy:main` → force-push (6f8870f..86c19bb)
-4. GitHub Pages auto-rebuild: status `built`, duration 35s
-5. Verificación LIVE: https://alexander-salvador.github.io/cima-generador/ → footer v3.10.49 ✓
+**Deploy pipeline ejecutado (v3.10.50):**
+1. `git push origin develop:develop` → 1 commit pusheado (f3bab61..2f0177a)
+2. `git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy` → 291 commits, HEAD 4fa12e4
+3. `git push -f origin popup-deploy:main` → force-push (86c19bb..4fa12e4)
+4. GitHub Pages auto-rebuild: status `built`, duration 43s
+5. Verificación LIVE: https://alexander-salvador.github.io/cima-generador/ → footer v3.10.50 ✓
 
 **Estado del popup:**
-- **Versión actual (develop + popup LIVE):** v3.10.49
-- **Tests passing:** 602 (595 previos + 7 nuevos v3.10.49)
-- **Popup LIVE (origin/main):** v3.10.49 — verificado en vivo
-- **Branch develop:** v3.10.49 (45 commits desde v3.9.15)
+- **Versión actual (develop + popup LIVE):** v3.10.50
+- **Tests passing:** 607 (602 previos + 5 nuevos v3.10.50)
+- **Popup LIVE (origin/main):** v3.10.50 — verificado en vivo
+- **Branch develop:** v3.10.50 (46 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
 **Nota técnica — bug push refspec:**
@@ -141,6 +142,7 @@ El `.git/config` original tenía `push = refs/heads/*:refs/remotes/origin/*` (bu
 - ✅ **v3.10.47: BUG FIX CRÍTICO: grids mismo ancho (jerarquía DOM)** — CEO: "las 3 grid deben tener el mismo ancho" en modo popup. Causa raíz descubierta con BeautifulSoup: v3.10.44 (refactor MOTIVO cards) introdujo 1 `</div>` extra en L4013 que cerraba prematuramente `<div class="app">` ANTES de que abrieran gridAddress y gridTipif. Resultado: gridScript 453px (hijo de .app con padding) vs gridAddress/gridTipif 465px (huérfanos hijos de .popup-frame). Fix: eliminar el `</div>` extra → 3 grids hijos de .app → width uniforme 453px. Tests con BeautifulSoup parser real (+2 nuevos).
 - ✅ **v3.10.48: SPEECHES nutridos AI 2026 (variación + consecutivas)** — (1) MOTIVO tiempo-espera: agregada continuación "Apenas tenga novedades, le comento cómo seguimos." (2) DESPEDIDA CEO directive "consecutiva la atencion": "Perfecto {Cliente}, ya tenemos listo el (proceso generado). Sigamos las indicaciones..." en lugar de 2 mensajes separados. (3) Variación {Cliente} (no siempre al inicio): atencion-segura al medio, sondea al final, sondeo-averias tras "Comprendo", educa-app tras intro empática, encuesta al inicio, transferir 1 sola mención (antes 2). Frases empáticas: "Pensando en su comodidad", "Para resolver más rápido", "Comprendo", "Entiendo", "Perfecto".
 - ✅ **v3.10.49: DESGLOSE del flow al click en MOTIVO** — CEO: "al darle click a el MOTIVO recien se desglozara toda la info correspondiente al motivo". Click en MOTIVO card activa ejecuta automáticamente: (1) Expandir GRID 0 si está colapsado (`toggleGrid('gridScript', false)`). (2) Expandir TODAS las script-cards colapsadas + limpiar persistencia. (3) Scroll suave a `gridScript-body`. (4) Highlight visual temporal (1.8s pulse sage vía `@keyframes motivoFlashPulse` + border sage 60%). Map MOTIVO → script-ids: MOVIL=8 cards (bienvenida/atencion-segura/sondea/sondeo-averias/tiempo-espera/educa-app/despedida/encuesta), OTRO=3 (transferir), AVERIA=6, GTR=5. Función `desgloseMotivoFlow(value)` + `getMotivoFlowCards(value)`.
+- ✅ **v3.10.50: 3 BUG FIXES** — CEO: (1) "CTRL+SHIFT+R no funciona — algo bloquea la funcion". FIX: handler movido FUERA de `initPopupMode` (era solo popup mode) → handler GLOBAL con `{ capture: true }` + `stopPropagation` + `stopImmediatePropagation` (intercepta antes que browser). Ahora funciona en popup + standalone. (2) "Al abrir y actualiza la web salen todos los datos desplegados deben estar minimizados". FIX: `applyScriptCollapsedStates()` colapsa TODAS las script-cards por default si no hay estado persistido (`stateKeys.length === 0`). Primera visita: todo colapsado. CTRL+SHIFT+R: borra persistencia → próximo load colapsado. (4) "Al darle click al MOTIVO → Tecnico Movil ← recien debe desplegarse la informacion". FIX: verificado que `desgloseMotivoFlow()` solo se llama en 1 lugar → el click handler de MOTIVO card activa (1 llamada real). NO auto en init.
 
 **Logros previos (v3.10.0 → v3.10.10):**
 - 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras
