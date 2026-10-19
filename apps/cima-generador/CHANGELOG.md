@@ -1,5 +1,59 @@
 # Changelog — cima-generador
 
+## [3.10.15] - 2026-10-19 — 🐛 FIX: SANTIAGO DE SURCO aparecía como "estación base desactivada" (FALSO)
+
+**CEO directive:** "El boton sigue funcionando mal en cualquier direccion a pesar de no activarse al darle click muestra informacion incorrecta. Distrito con zonas de apagado (preventivo). Le informamos que, a partir del 11 de septiembre la estación base de Movistar en SANTIAGO DE SURCO, LIMA será desactivada."
+
+**Bug doble encontrado:**
+
+### Bug 1: `districts_with_off` contaminado con 1,636 d6 sin CCPPs reales
+
+El Set `districts_with_off` tenía **1,824 d6** (incluía 1,798 IPT/2G + 1,636 distritos contaminados del UBIGEO completo — entre ellos SANTIAGO DE SURCO, MIRAFLORES, BARRANCO, etc.). Esto hacía que `checkZonaApagada()` retornara `distrito_of` para CUALQUIER distrito de Lima, Arequipa, Cusco, etc. — aunque NO tuvieran CCPPs apagados.
+
+**Fix:** regenerar `districts_with_off` con SOLO los **188 d6** que tienen al menos 1 CCPP exacto confirmado en `ccpp_keys` (data metadata real, no contaminada).
+
+```
+ANTES: 1,824 d6 (contaminados con UBIGEO + IPT)
+AHORA:   188 d6 (solo CCPPs exactos confirmados)
+```
+
+### Bug 2: El handler `onClickCobertura` abría el panel con `distrito_of`
+
+El handler abría el panel con CUALQUIER check (no solo `ccpp_exacto`). Cuando el supervisor seleccionaba LIMA > LIMA > SANTIAGO DE SURCO y hacía click en ⚠️, el panel se abría con el speech `comu5514_postventa_marcaje` mostrando "estación base desactivada en SANTIAGO DE SURCO, LIMA" — **MENTIRA** (SANTIAGO DE SURCO no tiene ningún CCPP apagado).
+
+**Fix:** el handler solo abre el panel si `chk.nivel === 'ccpp_exacto'`. Si es `distrito_of` o `ccpp_fuzzy`, muestra toast "Tipea el CCPP exacto del PDF para activar alerta".
+
+```js
+// v3.10.15
+if (!chk || chk.nivel !== 'ccpp_exacto') {
+  shakeBtn(btn, 220);
+  showToast(btn, 'Tipea el CCPP exacto del PDF para activar alerta', 'ok');
+  return;
+}
+```
+
+### 🎯 Comportamiento final
+
+| Escenario | Botón ⚠️ | Click → |
+|---|---|---|
+| CCPP exacto (ej. YUNGUY en IHUARI) | 🔴 activado | Panel COMU-5514 |
+| CCPP con typo (≥0.75) | ⚪ IDLE | Toast "tipea CCPP exacto" |
+| CCPP no exacto en distrito con zonas | ⚪ IDLE | Toast "tipea CCPP exacto" |
+| Solo distrito seleccionado (sin CCPP) | ⚪ IDLE | Toast "tipea CCPP exacto" |
+| Distrito sin CCPPs apagados (ej. SANTIAGO DE SURCO) | ⚪ IDLE | Toast "tipea CCPP exacto" (sin MENTIRA) |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** (234/234 ccpp_exacto, 100% fuzzy 234/234) |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4 IPT fuera de scope intencional) |
+| `test_browser_static.py` | **14/0/2** (warnings legacy — plan R1) |
+| Simulación SANTIAGO DE SURCO | `null` ✓ (no distrito_of) |
+| Simulación IHUARI+YUNGUY | `ccpp_exacto` ✓ |
+| `node --check` | EXIT 0 |
+
 ## [3.10.14] - 2026-10-19 — 🎯 Botón ⚠️ SOLO se activa en búsqueda EXACTA
 
 **CEO directive:** "Ahora vamos a mejorar el boton de zonas de apagado, que se active en la busqueda exacta no antes."

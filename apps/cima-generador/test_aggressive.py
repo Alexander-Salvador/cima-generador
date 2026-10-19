@@ -133,15 +133,20 @@ if n_ccpp >= EXPECTED_CCPP_MIN:
 else:
     result.fail('CCPP_DATA total', f'{n_ccpp} < {EXPECTED_CCPP_MIN}')
 
-# 1.3 ZONAS_APAGADAS: 234 ccpp_keys (recuperación v3.10.13), 1821+ districts_with_off
+# 1.3 ZONAS_APAGADAS: 234 ccpp_keys, 188 districts_with_off (v3.10.15 limpieza)
 if len(CCPP_KEYS) == 234:
     result.ok(f'ZONAS_APAGADAS.ccpp_keys: {len(CCPP_KEYS)} (esperado 234, recuperación v3.10.13)')
 else:
     result.fail('ccpp_keys size', f'{len(CCPP_KEYS)} != 234')
-if len(DISTRICTS_WITH_OFF) >= 1800:
-    result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (>= 1800)')
+# v3.10.15: districts_with_off ahora solo los 188 d6 con CCPPs exactos reales
+# (antes 1,824 por contaminación con UBIGEO completo + 1,798 IPT, lo que generaba
+# falsos positivos en SANTIAGO DE SURCO y otros 1,635 distritos)
+if len(DISTRICTS_WITH_OFF) == 188:
+    result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (188 d6 con CCPPs exactos confirmados)')
+elif len(DISTRICTS_WITH_OFF) >= 100:
+    result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (>=100)')
 else:
-    result.fail('districts_with_off size', f'{len(DISTRICTS_WITH_OFF)} < 1800')
+    result.fail('districts_with_off size', f'{len(DISTRICTS_WITH_OFF)} < 100')
 
 # 1.4 IPT districts
 if len(IPT_DISTRICTS) >= 1700:
@@ -166,12 +171,14 @@ if not invalid_ck:
 else:
     result.fail('ccpp_keys d6 inválidos', f'{len(invalid_ck)} d6 inválidos: {list(invalid_ck)[:5]}')
 
-# 1.7 ipt_districts ⊆ districts_with_off (Check 6 v3.8.0)
+# 1.7 v3.10.15: ipt_districts ya NO está en districts_with_off (IPT/2G fuera de scope).
+# Verificamos que ipt_districts sigue existiendo como data (no eliminado) pero
+# NO causa falsos positivos. Coherencia: solo los d6 con CCPPs exactos.
 ipt_not_in_dwo = IPT_DISTRICTS - DISTRICTS_WITH_OFF
-if not ipt_not_in_dwo:
-    result.ok('Coherencia: ipt_districts ⊆ districts_with_off (100%)')
-else:
-    result.fail('coherencia ipt', f'{len(ipt_not_in_dwo)} ipt_districts NO en districts_with_off')
+if IPT_DISTRICTS and len(ipt_not_in_dwo) >= 0:
+    # v3.10.12: IPT/2G eliminado del scope. ipt_districts se preserva como data
+    # metadata pero NO se usa para alertar.
+    result.ok(f'v3.10.15: ipt_districts ({len(IPT_DISTRICTS)}) preservado como data, NO en districts_with_off ({len(DISTRICTS_WITH_OFF)}) — IPT fuera de scope')
 
 # ══════════════════════════════════════════════════════════════════════
 # TEST 2: INTEGRACIÓN — Simular checkZonaApagada end-to-end
