@@ -1124,6 +1124,35 @@
     border-color: color-mix(in srgb, var(--green) 30%, var(--glass-border));
   }
   .script-card.is-collapsed .script-card-body { display: none; }
+  /* v3.10.37: script-alert — fila estática de APOYO al agente (recordatorios,
+     tips, reflexiones). NO es un speech (no tiene {Cliente} placeholder
+     reemplazable) y NO se collapsa. Es estática para mantener su uso.
+     Ejemplo: 'No olvides pedir un momento en espera...' */
+  .script-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 6px 10px;
+    margin-top: 6px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    font-size: 10px;
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .script-alert-icon {
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .script-alert-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
   /* v3.10.35: cuando card está collapsed, mostrar ✓ "listo/hecho" inline.
      El badge aparece en top-right de la card, confirmando al agente
      que ese paso fue completado. */
@@ -3653,67 +3682,71 @@ font-size: 10px;
              
               <div class="script-card-body">
                 <p class="script-card-text" id="script-text-tiempo-espera">"<span class="ph" data-ph="cliente">{Cliente}</span>, por favor, permítame un momento en línea mientras valido su información <span class="ph-inline">(indica brevemente la acción a realizar)</span>".</p>
-                <p style="margin-top:6px;font-size:10px;color:var(--text-faint);"><strong>Importante:</strong> En consultas complejas retoma cada 60 segundos.</p>
               </div>
            </div>
 
-           <div class="script-card" data-script-id="retorno">
-             
-              <div class="script-card-body">
-                <p class="script-card-text" id="script-text-retorno">"<span class="ph" data-ph="cliente">{Cliente}</span>, disculpa la demora y gracias por tu espera <span class="ph-inline">(informa la verificación o acción realizada)</span>".</p>
-              </div>
+           <!-- v3.10.37: RETORNO removido como card. CEO: "no sera un speech
+                textual sera como una sola row de alerta". 3 alerts estáticos
+                de APOYO al agente (no se collapsan, no son speech). -->
+           <div class="script-alert" role="note">
+             <span class="script-alert-icon" aria-hidden="true">⚠</span>
+             <span class="script-alert-text">"<span class="ph-inline">(nombre de cliente)</span>, disculpa la demora y gracias por tu espera <span class="ph-inline">(informa la verificación o acción realizada)</span>"</span>
+           </div>
+           <div class="script-alert" role="note">
+             <span class="script-alert-icon" aria-hidden="true">⚠</span>
+             <span class="script-alert-text">No olvides siempre pedir un momento en espera indicando el motivo y agradecer la retoma.</span>
+           </div>
+           <div class="script-alert" role="note">
+             <span class="script-alert-icon" aria-hidden="true">⚠</span>
+             <span class="script-alert-text">Debemos ser empáticos y conectar con el cliente.</span>
            </div>
          </div>
 
-         <!-- ▌▌▌ SECCIÓN 3: Consulta adicional + App (ORANGE) ▌▌▌ -->
+<!-- ▌▌▌ SECCIÓN 3: Consulta adicional + App (ORANGE) ▌▌▌
+               v3.10.37: "consulta-adicional" removida como card.
+               CEO: "esto no debe ser un speech debe ser igual un texto de
+               apoyo para recordar al agente. estatico mejor estilizado
+               y no debe minimizarse". Ahora es alert row. -->
          <div class="script-section">
            <div class="script-section-header script-section-header--orange">
              Consulta adicional + App Movistar
            </div>
 
-           <div class="script-card" data-script-id="consulta-adicional">
-             
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-consulta-adicional">"¿Tienes alguna consulta adicional en la que te pueda ayudar?"</p>
-             </div>
+           <div class="script-alert" role="note">
+             <span class="script-alert-icon" aria-hidden="true">⚠</span>
+             <span class="script-alert-text">¿Tienes alguna consulta adicional en la que te pueda ayudar?</span>
            </div>
 
            <div class="script-card" data-script-id="educa-app">
              
-             <div class="script-card-body">
-               <p class="script-card-text" id="script-text-educa-app">"<span class="ph" data-ph="cliente">{Cliente}</span>, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida".</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-educa-app">"<span class="ph" data-ph="cliente">{Cliente}</span>, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida".</p>
+              </div>
            </div>
          </div>
 
-         <!-- ▌▌▌ SECCIÓN 4: Cierre + Encuesta (PURPLE) ▌▌▌ -->
+<!-- ▌▌▌ SECCIÓN 4: Cierre + Encuesta (PURPLE) ▌▌▌
+               v3.10.37: REMOVIDAS cierre-con-solucion + cierre-sin-solucion.
+               CEO: "Vamos a retirar estas 2 ✓ ✗ y la reemplazamos por un
+               speech de despedida general". -->
          <div class="script-section">
            <div class="script-section-header script-section-header--purple">
              Cierre + Encuesta
            </div>
 
-           <div class="script-card" data-script-id="cierre-con-solucion">
+           <div class="script-card" data-script-id="despedida">
              
-             <div class="script-card-body">
-                <span class="script-badge script-badge--ok" aria-label="Cierre con solución">✓</span>
-               <p class="script-card-text" id="script-text-cierre-con-solucion">"<span class="ph" data-ph="cliente">{Cliente}</span>, ya realizamos <span class="ph-inline">(detallar la solución)</span> por lo que hemos solucionado tu avería".</p>
-             </div>
-           </div>
-
-           <div class="script-card" data-script-id="cierre-sin-solucion">
-             
-             <div class="script-card-body">
-                <span class="script-badge script-badge--fail" aria-label="Cierre sin solución">✗</span>
-               <p class="script-card-text" id="script-text-cierre-sin-solucion">"<span class="ph" data-ph="cliente">{Cliente}</span>, ya realizamos <span class="ph-inline">(detallar la atención)</span> esperamos haber orientado tu consulta de manera satisfactoria".</p>
-             </div>
+              <div class="script-card-body">
+                <p class="script-card-text" id="script-text-despedida">"<span class="ph" data-ph="cliente">{Cliente}</span>, hemos realizado para ti el <span class="ph-inline">(proceso generado)</span>, por ello solo faltaría que sigamos las indicaciones para ver una mejora en el servicio. Ha sido un gusto de mi parte poder atenderte".</p>
+              </div>
            </div>
 
            <div class="script-card" data-script-id="encuesta">
              
-             <div class="script-card-body">
+              <div class="script-card-body">
                 <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
-               <p class="script-card-text" id="script-text-encuesta">"Para finalizar, te agradeceré completar una breve encuesta sobre mi atención y en 48 horas, te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!"</p>
-             </div>
+                <p class="script-card-text" id="script-text-encuesta">"Para finalizar, te agradeceré completar una breve encuesta sobre mi atención y en 48 horas, te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!"</p>
+              </div>
            </div>
          </div>
 
@@ -3978,7 +4011,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.36</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.37</span>
     </span>
   </footer>
 </div>
@@ -5830,7 +5863,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.36] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.37] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');

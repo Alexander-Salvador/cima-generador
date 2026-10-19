@@ -1,5 +1,132 @@
 # Changelog — cima-generador
 
+## [3.10.37] - 2026-10-19 — 💡 Alertas estáticas + Despedida general (speech ↔speech premium)
+
+**CEO directive:** "hay algunos textos que son unicamente de apoyo para el agente que no suman como un speech, pero que deben usarse y talvez es repitan para mantener su uso. Luis, disculpa la demora y gracias por tu espera (informa la verificación o acción realizada) <- no sera un speech textual sera como una sola row de alerta dentro del padre MOTIVO DE LLAMADA. No olvides siempre pedir un momento en espera indicando el motivo y agradecer la retoma <- Debemos ser empáticos y conectar con el cliente. CONSULTA ADICIONAL: ¿Tienes alguna consulta adicional en la que te pueda ayudar? <- esto no debe ser un speech debe ser igual un texto de apoyo para recordar al agente. estatico mejor estilizado y no debe minimizarse. CIERRE: Vamos a retirar estas 2 ✓ ✗ y la reemplazamos por un speech de despedida general: {Cliente}, hemos realizado para ti el {proceso generado}, por ello solo faltaría que sigamos las indicaciones para ver una mejora en el servicio, ha sido un gusto de mi parte poder atenderte."
+
+### 🎯 Causa raíz (2 tipos de contenido: speech ↔speech apoyo)
+
+| Tipo | Comportamiento | Ejemplo |
+|---|---|---|
+| **Speech** | Reemplaza `{Cliente}` con valor + click → collapse | "Bienvenido a Movistar, te saluda {Agente}..." |
+| **Apoyo (alert)** | Estático, NO collapsa, NO speech, recordatorio visible | "Disculpa la demora y gracias por tu espera" |
+
+El CEO quiere diferenciar claramente: los SPEECHES son para leer al cliente, las ALERTAS son recordatorios visuales para el agente.
+
+### 🔧 Cambios
+
+#### 1. CSS nuevo: `.script-alert`
+
+```css
+/* v3.10.37: alertas estáticas — filas de APOYO al agente */
+.script-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.script-alert-icon {
+  font-size: 12px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.script-alert-text {
+  flex: 1 1 auto;
+}
+```
+
+**Diferencia con `.script-card`:**
+- NO tiene `cursor: pointer` (no clickable)
+- NO tiene `is-collapsed` state
+- NO tiene `<script-card-body>` wrapper
+- Es **inline** dentro del section, NO collapsable
+
+#### 2. MOTIVO DE LA LLAMADA: retorno reemplazado por 3 alerts
+
+```html
+<!-- ANTES (v3.10.36): retorno era un card con click-to-collapse -->
+<div class="script-card" data-script-id="retorno">
+  <div class="script-card-body">
+    <p>"...disculpa la demora y gracias por tu espera..."</p>
+  </div>
+</div>
+
+<!-- AHORA (v3.10.37): 3 alerts estáticos de APOYO -->
+<div class="script-alert" role="note">
+  <span class="script-alert-icon">⚠</span>
+  <span class="script-alert-text">"(nombre de cliente), disculpa la demora y gracias por tu espera (informa la verificación o acción realizada)"</span>
+</div>
+<div class="script-alert" role="note">
+  <span class="script-alert-icon">⚠</span>
+  <span class="script-alert-text">No olvides siempre pedir un momento en espera indicando el motivo y agradecer la retoma.</span>
+</div>
+<div class="script-alert" role="note">
+  <span class="script-alert-icon">⚠</span>
+  <span class="script-alert-text">Debemos ser empáticos y conectar con el cliente.</span>
+</div>
+```
+
+#### 3. CONSULTA ADICIONAL: card → alert
+
+```html
+<!-- ANTES (v3.10.36): card collapsable -->
+<div class="script-card" data-script-id="consulta-adicional">...</div>
+
+<!-- AHORA (v3.10.37): alert estático, NO collapsa -->
+<div class="script-alert" role="note">
+  <span class="script-alert-icon">⚠</span>
+  <span class="script-alert-text">¿Tienes alguna consulta adicional en la que te pueda ayudar?</span>
+</div>
+```
+
+#### 4. CIERRE: 2 cards ✓ ✗ → 1 card despedida
+
+```html
+<!-- ANTES (v3.10.36): cierre-con-solucion + cierre-sin-solucion -->
+<div class="script-card" data-script-id="cierre-con-solucion">
+  <span class="script-badge--ok">✓</span>
+  <p>"...ya realizamos (detallar la solución) por lo que hemos solucionado tu avería".</p>
+</div>
+<div class="script-card" data-script-id="cierre-sin-solucion">
+  <span class="script-badge--fail">✗</span>
+  <p>"...ya realizamos (detallar la atención) esperamos haber orientado tu consulta..."</p>
+</div>
+
+<!-- AHORA (v3.10.37): NUEVO despedida general (1 card) -->
+<div class="script-card" data-script-id="despedida">
+  <div class="script-card-body">
+    <p>"{Cliente}, hemos realizado para ti el (proceso generado), por ello solo
+    faltaría que sigamos las indicaciones para ver una mejora en el servicio.
+    Ha sido un gusto de mi parte poder atenderte".</p>
+  </div>
+</div>
+```
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **536/536 PASS** (+8 nuevos tests v3.10.37, 1 actualizado) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,072 chars JS) |
+| HTML balanced | 85 `<div>` open = 85 close (-2 vs v3.10.36) |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: Tipos de contenido separados. Speech (para leer al cliente) vs Apoyo (recordatorios visuales). Diferente comportamiento, diferente styling.
+- **L-067/068/069**: no todo es collapsable. Los recordatorios del agente deben quedarse SIEMPRE VISIBLES para reforzar su uso.
+
+---
+
 ## [3.10.36] - 2026-10-19 — 📋 MOVER Atención segura a BIENVENIDA + REFINAR Sondeo identificación AVERIAS
 
 **CEO directive:** "Vamos a subir la atencion segura a BEINVENIDA E IDENTIFICACION. Motivo de la llamada: Sondeo de identificacion de AVERIAS... mejorar"

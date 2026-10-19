@@ -56,13 +56,13 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-19 — v3.10.36 FIN SESIÓN (26 commits: v3.10.11 → v3.10.36)**.
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.37 FIN SESIÓN (27 commits: v3.10.11 → v3.10.37)**.
 
 **Estado del popup:**
-- **Versión actual (develop):** v3.10.36
-- **Tests passing:** 617 (528 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
+- **Versión actual (develop):** v3.10.37
+- **Tests passing:** 625 (536 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
 - **Popup LIVE (origin/main):** v3.9.15 (push pendiente CEO)
-- **Branch develop:** v3.10.36 (36 commits desde v3.9.15)
+- **Branch develop:** v3.10.37 (37 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
 **Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.30):**
@@ -87,6 +87,7 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.36 FIN SESI�
 - ✅ **v3.10.34: HEADER refinado (click-to-collapse + nuevos speeches)** — (1) "Luis, ¿Con quién tengo el gusto?" REMOVIDO (CEO: innecesario). (2) Click-to-done reemplazado por click-to-COLLAPSE: card click → `.is-collapsed` (body hidden, padding reducido, border verde) → contenido contained en section parent. Persiste en `cima_script_collapsed_v1`. (3) MOTIVO Sondea speech específico CEO: "{Cliente}, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta." (4) NUEVO card "Sondeo de identificación de AVERIAS" con 3 pasos: dpto+prov+dist → dirección (mz/lote/av/urb) → referencia.
 - ✅ **v3.10.35: OPTIMIZACIÓN single header (sin duplicado) + ✓ Hecho indicator** — (1) Eliminado `<h4>` duplicado de las 12 cards (CEO: "ya que hay doble header... debe hacerse 1 solo"). Single source of truth: section header es el ÚNICO header por sección. (2) NUEVO `.script-card.is-collapsed::after { content: "✓ Hecho" }` — cuando la card está minimized, marca visualmente que ese paso se hizo. (3) Badges ✓/✗/★ de Cierre preservados dentro del body. Aplicado linealmente a todas las cards.
 - ✅ **v3.10.36: MOVER Atención segura a BIENVENIDA + REFINAR Sondeo identificación AVERIAS** — (1) "atencion-segura" movida de MOTIVO a BIENVENIDA (flujo natural: bienvenida → callback number → motive query). (2) Sondeo identificación AVERIAS speech unificado de 3 frases → 1 párrafo integrado: "Comprendo {Cliente}, debido al inconveniente... me confirmas en qué departamento... provincia y distrito... me indicas también la dirección... con eso podré avanzar con la búsqueda." (3) Tip agregado: "En caso no encontremos al cliente, solicitamos referencias."
+- ✅ **v3.10.37: Alertas estáticas + Despedida general (speech ↔speech premium)** — (1) Diferenciación clara entre **speech** (reemplaza {Cliente}, click→collapse) y **apoyo** (alert estático, NO collapsa). (2) CSS nuevo `.script-alert`: fila de apoyo con ⚠ icon + bg accent. (3) 3 alerts estáticos en MOTIVO (reemplazan retorno card): "disculpa la demora y gracias por tu espera", "No olvides siempre pedir un momento en espera...", "Debemos ser empáticos y conectar con el cliente". (4) Consulta adicional card → alert (NO collapsa). (5) Cierre: REMOVIDAS ✓ ✗ cards, AGREGADO `despedida` con speech general: "{Cliente}, hemos realizado para ti el (proceso generado), por ello solo faltaría que sigamos las indicaciones para ver una mejora en el servicio. Ha sido un gusto de mi parte poder atenderte".
 
 **Logros previos (v3.10.0 → v3.10.10):**
 - 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras
