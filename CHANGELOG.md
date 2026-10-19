@@ -1,5 +1,136 @@
 # Changelog — cima-generador
 
+## [3.10.33] - 2026-10-19 — 🎯 HEADER Estructura de Atención v3 (simplificación inteligente)
+
+**CEO directive:** "Vamos a mejorarlo de manera inteligente. EL HEADER DEL GRID arreglalo ya te dije que no es SCRIPT LLAMADA. Bienvenida e identificacion es el header de las opciones y abajo debe tener solo 1 speech no 3, usaremos 1 general que sera este: Bienvenido a Movistar, te saluda {Agente}, te comunicas por {Motivo} de tu numero {Telefono}, ¡Es correcto? <- arregla comas puntas etc que sea bien escrito. Cuando se le de click a 1 se ocultara como si ya estuviera realizado minimizandose con un check. <- debemos eliminar el icono de copiar no es necesario. Vamos a retirar los subtiles de SPEECH 2"
+
+### 🎯 Causa raíz (5 simplificaciones inteligentes)
+
+| # | Mejora | Antes (v3.10.32) | Ahora (v3.10.33) |
+|---|---|---|---|
+| 1 | **Grid header** | "Script Llamada" | **"Llamada"** (corto, claro) |
+| 2 | **Bienvenida speeches** | 3 variaciones (Speech 1/2/3) | **1 SOLO speech general** |
+| 3 | **Speech punctuation** | `, ¡Es correcto?` | `. ¿Es correcto?` (puntos completos) |
+| 4 | **Copy icons** | Botón copy en cada card | **REMOVED** (no necesarios) |
+| 5 | **Click-to-done** | Cards estáticas (solo copy) | **Click en card → ✓ done + colapsa + persiste** |
+
+### 🔧 Cambios
+
+#### 1. Grid header renombrado
+```html
+<!-- ANTES -->
+<h3>Script Llamada</h3>
+
+<!-- AHORA -->
+<h3>Llamada</h3>
+```
+
+#### 2. Bienvenida consolidada (1 sola)
+
+```html
+<!-- ANTES: 3 cards (bienvenida-1, bienvenida-2, bienvenida-3) con hint boxes -->
+
+<!-- AHORA: 2 cards (bienvenida + con-quien) sin hints -->
+<div class="script-card" data-script-id="bienvenida">
+  <div class="script-card-header"><h4>Bienvenida</h4></div>
+  <p class="script-card-text">
+    "Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">{Agente}</span>.
+    Te comunicas por <span class="ph" data-ph="motivo">{Motivo}</span>
+    de tu número <span class="ph" data-ph="telefono">{Telefono}</span>.
+    ¿Es correcto?"
+  </p>
+</div>
+<div class="script-card" data-script-id="con-quien">
+  <div class="script-card-header"><h4>Personaliza tu llamada</h4></div>
+  <p class="script-card-text">"<span class="ph" data-ph="cliente">{Cliente}</span>, ¿Con quién tengo el gusto?"</p>
+</div>
+```
+
+#### 3. Puntuación arreglada (CEO: "comas puntas etc")
+
+| Antes | Ahora |
+|---|---|
+| `te saluda {Agente}, te comunicas por {Motivo} de tu numero {Telefono}, ¡Es correcto?` | `te saluda {Agente}. Te comunicas por {Motivo} de tu número {Telefono}. ¿Es correcto?` |
+
+Cambios: comas → puntos después de cada cláusula, "numero" → "número" (tilde), "¡Es correcto?" → "¿Es correcto?" (estilo periodístico estándar).
+
+#### 4. Copy icons REMOVIDOS (todos los cards)
+
+```html
+<!-- ANTES: cada card tenía -->
+<button class="script-card-copy" onclick="copyScriptCard('bienvenida-1')">
+  <svg>...copy icon...</svg>
+</button>
+
+<!-- AHORA: sin botón de copiar, cards son solo lectura -->
+```
+
+Función `copyScriptCard()` también removida.
+
+#### 5. Click-to-done (nuevo UX pattern)
+
+```js
+// v3.10.33: cada card es clickeable → toggle done
+function toggleScriptDone(id) {
+  var card = document.querySelector('.script-card[data-script-id="' + id + '"]');
+  var done = loadScriptDone();
+  if (done[id]) {
+    delete done[id];
+    card.classList.remove('is-done');
+  } else {
+    done[id] = true;
+    card.classList.add('is-done');
+  }
+  saveScriptDone(done);
+}
+```
+
+```css
+.script-card {
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, opacity 0.22s;
+}
+.script-card.is-done {
+  background: green tint;
+  border-color: green;
+  opacity: 0.65;
+}
+.script-card.is-done::before {
+  content: "✓";
+  position: absolute; top: 6px; right: 8px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--green); color: white;
+  /* ✓ verde sobre la card done */
+}
+```
+
+Persistencia: `localStorage.cima_script_done_v1` (set de IDs done).
+
+**UX:** El agente marca cada paso como "ya realizado" mientras avanza por la llamada. Click de nuevo → unmark.
+
+#### 6. Anti-regression: bienvenida SIN TÉCNICO MÓVIL
+
+Test existente garantiza que el saludo de bienvenida NUNCA contendrá "TÉCNICO MÓVIL" (CEO rechazó v3.10.31).
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **522/522 PASS** (+5 nuevos tests v3.10.33, 4 actualizados) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,430 chars JS) |
+| HTML balanced | 89 `<div>` open = 89 close |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: Resultado observable es contrato. El CEO probó v3.10.32 en navegador real y reportó 5 mejoras específicas con texto exacto.
+- **L-079**: "Iterar = fallar". Las 3 variaciones de Bienvenida (v3.10.32) eran sobre-ingeniería — 1 sola versión general cubre todos los casos en la práctica.
+- **Simplicity > Features**: copy buttons REMOVIDOS porque no eran necesarios. click-to-done SIMPLIFICA el UX (no agrega features, reduce).
+
+---
+
 ## [3.10.32] - 2026-10-19 — 🎬 HEADER Estructura de Atención v2 (matching imagen CEO)
 
 **CEO directive:** "No, te equivocaste alteraste demasiado los textos perdiendo sentido: mira la imagen y corrige". El CEO rechazó los cambios agresivos de v3.10.31 (que habían modificado speeches perdiendo el sentido original). v3.10.32 reorganiza la estructura para coincidir EXACTAMENTE con el flujo de llamada de la imagen del CEO.
