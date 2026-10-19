@@ -1,5 +1,52 @@
 # Changelog — cima-generador
 
+## [3.10.28] - 2026-10-19 — 🎯 Inputs filled limpios + 💬 Toast wording
+
+**CEO directive:** "Cuando los inputs tienen contenido pasa lo mismo se ve como un background cuadrado y bordes redondos rompiendose el estilo. Cuando los inputs dpt, provi, distri estan llenos pero no hay zona de apagado el boton de zona de apagado al darle click emite un mensaje ROTO: tipea el CCPP para activar la alerta."
+
+### 🎯 Causa raíz (2 bugs)
+
+| Bug | Causa | Síntoma CEO |
+|---|---|---|
+| 1. Inputs filled "square + round" | `box-shadow: var(--shadow-focus-green)` = halo 3px verde rodeando el input | El halo se percibía como "background cuadrado" + border 1px (round) = "square bg + round border" |
+| 2. Toast wording ROTO | "Tipea el CCPP exacto para activar alerta" — "Tipea" es slang informal, falta contexto del source | CEO percibía el mensaje como mal escrito / ROTO |
+
+### 🔧 Cambios
+
+#### 1. Inputs filled LIMPIOS (sin halo)
+
+| Antes | Ahora |
+|---|---|
+| `border-color: --green 70%` + `box-shadow: 3px green halo` (causaba "square bg") | `border-color: --green 70%` + `box-shadow: ring-hairline` (inset 1px sutil, sin halo) |
+
+El `--shadow-focus-green` (3px halo verde) era visualmente equivalente a un "segundo border" grueso alrededor del input. CEO lo percibía como "background cuadrado" porque el halo es muy grueso. Ahora solo `box-shadow: ring-hairline` (1px inset highlight) — limpio.
+
+#### 2. Toast wording
+
+| Antes | Ahora |
+|---|---|
+| "Tipea el CCPP exacto para activar alerta" | **"Escribe el CCPP exacto del PDF para activar alerta"** |
+
+- "Tipea" → "Escribe" (español estándar, no slang)
+- "del PDF" agregado (referencia al source Movistar COMU-5514)
+- Más claro para el supervisor
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **485/485 PASS** (+3 nuevos tests v3.10.28) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (971,904 chars JS) |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: "Resultado observable es el contrato de aceptación". El CEO testeó en navegador real y detectó 2 bugs visuales sutiles que ningún test automatizado habría encontrado.
+- **L-079**: "Iterar = fallar". El box-shadow halo fue agregado en v3.7.9 sin pensar en cómo se vería con el border-radius del input.
+- **Wording matters**: "Tipea" vs "Escribe" + "del PDF" — el mensaje informativo debe ser claro y dar contexto.
+
 ## [3.10.27] - 2026-10-19 — 🔒 BLOQUEO botón ⚠️ + 🎯 Input focus limpio + 📝 RESULTADO texto + 🎨 Buttons diferenciados
 
 **CEO directive:** "Los botones clear y zona de apagado siguen iguales, y zona de apagado sigue vibrando a pesar de no tener datos y al darle click dice 'SELECCIONA DPT, PROVINCIA, DISTRITO' <- incorrecto debe estar bloqueado. Otro bugs detectado al darle clicks a los inputs, noto que no estan correctamente creados ya que se hacen un borde cuadrado y redondo como si no estuviera estilizado correctamente. El INPUT de RESULTADO <- debe decir 'Aqui se llenaran los datos'."
