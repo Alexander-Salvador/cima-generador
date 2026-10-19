@@ -950,6 +950,71 @@
   .grid-block {
     margin-bottom: 4px;
   }
+  /* v3.10.23: header clickable (toggle) — anima max-height + opacity, chevron rota.
+     Premium: easing var(--motion-spring-soft), sombra sutil al hover. */
+  .grid-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    padding: 8px 4px 8px 0;
+    margin: 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.18s var(--motion-ease);
+  }
+  .grid-toggle:hover { opacity: 0.78; }
+  .grid-toggle:active { opacity: 0.6; }
+  .grid-toggle h3 {
+    margin: 0;
+    flex: 1 1 auto;
+    pointer-events: none;     /* evita selección de texto al click */
+  }
+  .grid-toggle:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+  .grid-chevron {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--text-dim, #9ca3af);
+    transition: transform 0.32s var(--motion-spring-soft);
+  }
+  .grid-block.is-collapsed .grid-chevron {
+    transform: rotate(-90deg);
+  }
+  /* body del grid — anima max-height + opacity para colapsar/expandir.
+     max-height grande (ej. 1200px) cubre el contenido real; al colapsar,
+     va a max-height 0 + opacity 0 + padding 0. */
+  .grid-body {
+    overflow: hidden;
+    max-height: 1200px;
+    opacity: 1;
+    transition:
+      max-height 0.36s var(--motion-spring-soft),
+      opacity 0.22s var(--motion-ease),
+      margin 0.22s var(--motion-ease);
+  }
+  .grid-block.is-collapsed .grid-body {
+    max-height: 0;
+    opacity: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none;
+  }
+  /* Cuando está colapsado, el botón ⚠ del grid address podría no funcionar.
+     Si el panel está abierto al colapsar, lo cerramos. */
+  .grid-block.is-collapsed #apagadoSpeechPanel {
+    display: none !important;
+  }
   /* "En proceso" — placeholder central del grid Tipificación (D-22) */
   .tipif-process {
     display: flex;
@@ -3181,9 +3246,16 @@ font-size: 10px;
   <div id="alertBox" class="alert"></div>
 
   <!-- ═══════════ GRID 1: ADDRESS ═══════════ -->
-  <div class="grid-block" id="gridAddress">
-    <div class="section">
-      <h3>Búsqueda Address</h3>
+   <div class="grid-block" id="gridAddress" data-grid="address">
+     <div class="section">
+       <button type="button" class="grid-toggle" id="gridAddress-toggle"
+               aria-expanded="true" aria-controls="gridAddress-body">
+         <h3>Búsqueda Address</h3>
+         <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+           <polyline points="6 9 12 15 18 9"/>
+         </svg>
+       </button>
+       <div class="grid-body" id="gridAddress-body">
 
       <div class="field-row row-3" role="group" aria-label="Ubicación geográfica">
         <div class="field ac-field">
@@ -3277,14 +3349,23 @@ font-size: 10px;
             <div id="outAddress" class="output-box placeholder output-result" role="status" aria-live="polite" aria-atomic="true" onclick="copyOutput('outAddress')" title="">LLENAR DATOS</div>
           </div>
         </div>
+       </div>
+       </div>
       </div>
 </div>
   </div>
 
   <!-- ═══════════ GRID 2: TIPIFICACIÓN (v3.0 — TX = Transferencia con skills Movistar) ═══════════ -->
-  <div class="grid-block" id="gridTipif">
-    <div class="section">
-      <h3>Tipificación</h3>
+   <div class="grid-block" id="gridTipif" data-grid="tipif">
+     <div class="section">
+       <button type="button" class="grid-toggle" id="gridTipif-toggle"
+               aria-expanded="true" aria-controls="gridTipif-body">
+         <h3>Tipificación</h3>
+         <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+           <polyline points="6 9 12 15 18 9"/>
+         </svg>
+       </button>
+       <div class="grid-body" id="gridTipif-body">
 
       <!-- FILA 1: 3 action-buttons (RESET · APN · CASO) — copy al click
            v3.2 segmented control: single glass container con dividers internos.
@@ -3398,12 +3479,13 @@ font-size: 10px;
              Las 2 opciones (TX OPER TO OPER + TX DIRECTA) viven en el DOM
              desde el inicio. Empty state inicial: solo labels, sin codes.
              Cuando user selecciona del dropdown → codes se rellenan. -->
-        <div class="etiqueta-preview" id="etiquetaPreview">
-          <div class="etiqueta-preview-skills" id="etiquetaPreviewSkills"></div>
+         <div class="etiqueta-preview" id="etiquetaPreview">
+           <div class="etiqueta-preview-skills" id="etiquetaPreviewSkills"></div>
+         </div>
         </div>
-      </div>
-    </div>
-  </div>
+       </div>
+     </div>
+   </div>
 
   <footer>
     <span class="footer-line footer-credit">
@@ -6596,6 +6678,71 @@ function updateOutput() {
   updateClearButtonState();  // D-25: re-evaluar al cambiar cualquier input
 }
 
+// v3.10.23: GRID COLLAPSIBLE PREMIUM — toggle en el header, animación suave,
+// persistencia en localStorage. El header completo es clickable; chevron rota.
+const GRID_STORAGE_KEY = 'cima_grid_states_v1';
+
+function loadGridStates() {
+  try {
+    var raw = localStorage.getItem(GRID_STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveGridStates(states) {
+  try {
+    localStorage.setItem(GRID_STORAGE_KEY, JSON.stringify(states));
+  } catch (e) {
+    // localStorage puede estar deshabilitado (modo privado, etc.) — no-op.
+  }
+}
+
+function toggleGrid(gridId, forceState) {
+  var grid = document.getElementById(gridId);
+  if (!grid) return;
+  var toggle = grid.querySelector('.grid-toggle');
+  var body = grid.querySelector('.grid-body');
+  if (!toggle || !body) return;
+  var willCollapse = (typeof forceState === 'boolean')
+    ? forceState
+    : !grid.classList.contains('is-collapsed');
+  grid.classList.toggle('is-collapsed', willCollapse);
+  toggle.setAttribute('aria-expanded', willCollapse ? 'false' : 'true');
+  // Si colapsa y el panel ⚠ del grid address está abierto, cerrarlo
+  if (willCollapse && typeof zaCloseApagadoTooltip === 'function') {
+    zaCloseApagadoTooltip();
+  }
+  // Persistir
+  var states = loadGridStates();
+  states[gridId] = willCollapse ? 'collapsed' : 'expanded';
+  saveGridStates(states);
+}
+
+function setupGridToggles() {
+  var states = loadGridStates();
+  document.querySelectorAll('.grid-block[data-grid]').forEach(function (grid) {
+    var gridId = grid.id;
+    var toggle = grid.querySelector('.grid-toggle');
+    if (!toggle) return;
+    // Aplicar estado persistido
+    if (states[gridId] === 'collapsed') {
+      grid.classList.add('is-collapsed');
+      toggle.setAttribute('aria-expanded', 'false');
+    } else {
+      grid.classList.remove('is-collapsed');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+    // Click handler (solo en el toggle, no en el body)
+    toggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      toggleGrid(gridId);
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   ADDRESS_INPUTS.forEach(function (id) {
     var el = $(id);
@@ -6604,6 +6751,7 @@ document.addEventListener('DOMContentLoaded', function () {
   updateClearButtonState();  // D-25: estado inicial (todos vacíos)
   setupAutocomplete();  // D-12: keyboard + ARIA + dropdown custom
   setupEtiquetas();    // v3.0 TIPIFICACIÓN: input etiquetas + chips categoría
+  setupGridToggles();  // v3.10.23: grids colapsables premium
   // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
   renderTipifs();        // Inicializa grid 2 (vacío)
   initPopupMode();      // D-8: responsive desktop + botón X cerrar

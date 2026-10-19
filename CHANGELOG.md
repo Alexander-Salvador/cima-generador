@@ -1,5 +1,53 @@
 # Changelog — cima-generador
 
+## [3.10.23] - 2026-10-19 — ✨ GRIDS colapsables (toggle premium inteligente con persistencia)
+
+**CEO directive:** "Vamos a agregar la funcion a las GRID que se puedan minimizar de manera premiun inteligente"
+
+**Feature:** cada grid (Búsqueda Address, Tipificación) tiene ahora un header clickable con chevron que rota. Click en el header minimiza/maximiza el grid con animación suave. Estado se persiste en `localStorage` para que la próxima sesión recuerde la preferencia del supervisor.
+
+### 🔧 Cambios HTML
+
+- Header de cada grid reemplazado por `<button class="grid-toggle">` (accesible, con `aria-expanded` y `aria-controls`)
+- Contenido del grid envuelto en `<div class="grid-body">`
+- SVG chevron rotatorio (180° / -90°)
+
+### 🔧 Cambios CSS
+
+| Selector | Estilo |
+|---|---|
+| `.grid-toggle` | button full-width, hover opacity 0.78, focus-visible outline accent |
+| `.grid-chevron` | transición `transform 0.32s var(--motion-spring-soft)` |
+| `.grid-body` | transición `max-height 0.36s, opacity 0.22s, margin 0.22s` |
+| `.grid-block.is-collapsed .grid-body` | `max-height: 0; opacity: 0; pointer-events: none` |
+| `.grid-block.is-collapsed .grid-chevron` | `transform: rotate(-90deg)` |
+| `.grid-block.is-collapsed #apagadoSpeechPanel` | `display: none` (auto-cierra el panel ⚠) |
+
+### 🔧 Cambios JS
+
+- `loadGridStates()` / `saveGridStates(states)` — lectura/escritura en `localStorage` con key `cima_grid_states_v1`
+- `toggleGrid(gridId, forceState?)` — alterna o fuerza estado
+- `setupGridToggles()` — agrega listeners, aplica estado persistido al cargar
+
+### 🎯 Comportamiento
+
+- ✅ Click en el header de cualquier grid → colapsa/expande
+- ✅ Chevron rota 180° al colapsar
+- ✅ Animación suave (`max-height` + `opacity` + `margin` simultáneos)
+- ✅ Estado se guarda en localStorage (sobrevive recargas)
+- ✅ Si Address está colapsado, el panel ⚠ se cierra automáticamente
+- ✅ `aria-expanded` actualizado para accesibilidad (screen readers)
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **55 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.22] - 2026-10-19 — 🐛 FIX output NO debe incluir REFERENCIA (el geocoder no la reconoce)
 
 **CEO directive:** "Resultado no debe trackear la REFERENCIA que se ingrese ya que el maps no lo reconoce."
