@@ -1,5 +1,36 @@
 # Changelog — cima-generador
 
+## [3.10.16] - 2026-10-19 — 📐 FIX: dialog del botón ⚠️ se acomoda DENTRO del grid Búsqueda Address
+
+**CEO directive:** "sale muy arriba rompiendo el maximo del contenedor grid BUSQUEDA ADDRESS acomodalo"
+
+**Problema:** el panel de speech del botón ⚠️ usaba `position: absolute; bottom: calc(100% + 8px)`, lo que lo posicionaba ARRIBA del botón, fuera del contenedor de Búsqueda Address. Esto rompía visualmente la grilla y el contenido se cortaba contra el borde superior.
+
+**Solución:** el panel ahora se renderiza DEBAJO del botón ⚠️, dentro del wrapper `.cobertura-wrap` (que a su vez está dentro del grid de Búsqueda Address), respetando los límites del contenedor.
+
+### 🔧 Cambios CSS
+
+| Selector | Antes | Ahora |
+|---|---|---|
+| `.cobertura-wrap` | `display: inline-flex` | `display: flex; flex-wrap: wrap` (panel baja a la siguiente línea con `flex-basis: 100%`) |
+| `.apagado-speech-panel` | `position: absolute; bottom: calc(100% + 8px); right: 0; width: 320px` | `position: relative; width: 100%; max-width: 100%; margin-top: 8px` |
+| `.apagado-speech-panel` | sin max-height (crecía sin límite) | `max-height: 200px; overflow-y: auto` (cap con scroll interno) |
+| `.apagado-speech-panel` | `box-shadow: 0 10px 28px ...` (sombra fuerte flotante) | `box-shadow: 0 6px 16px ...` (sombra más sutil in-flow) |
+
+### 🔧 Cambio JS
+
+- Eliminada llamada `panel.scrollIntoView()` (ya no es necesaria con panel in-flow).
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** (234/234 ccpp_exacto, 100% fuzzy) |
+| `test_audit_brutal.py` | **56 OK** + 2 mentiras (VERSION drift + M4 IPT fuera de scope intencional) |
+| `test_browser_static.py` | **14/0/2** (warnings legacy — plan R1) |
+| `node --check` | EXIT 0 |
+
 ## [3.10.15] - 2026-10-19 — 🐛 FIX: SANTIAGO DE SURCO aparecía como "estación base desactivada" (FALSO)
 
 **CEO directive:** "El boton sigue funcionando mal en cualquier direccion a pesar de no activarse al darle click muestra informacion incorrecta. Distrito con zonas de apagado (preventivo). Le informamos que, a partir del 11 de septiembre la estación base de Movistar en SANTIAGO DE SURCO, LIMA será desactivada."
