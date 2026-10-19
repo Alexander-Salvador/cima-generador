@@ -1,8 +1,8 @@
-# CIMA v3.10.30 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.31 — Lista de Pendientes (Estado al cierre de sesión)
 
 **Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
-## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-30 BUSQUEDA ADDRESS v5 + GRID 0 Script)
+## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-31 BUSQUEDA ADDRESS v6 + GRID 0 Script v2)
 
 ## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.30) — 20 commits
 
@@ -27,7 +27,8 @@
 | **v3.10.27** | **BLOQUEO + UX polish**: botón ⚠️ BLOQUEADO sin DPT/PROV/DIST + click feedback reducido + input focus limpio + RESULTADO texto "Aqui se llenaran los datos" + buttons diferenciados (clear dashed vs ⚠️ solid) | 7a39e0a |
 | **v3.10.28** | **Inputs filled clean + toast wording**: REMOVIDO box-shadow halo `--shadow-focus-green` (causaba square+round en filled) + toast "Tipea..." → "Escribe el CCPP exacto del PDF..." | 2bc3636 |
 | **v3.10.29** | **Botón ⚠️ totalmente BLOCKED + RESULTADO hover clean**: showToast REMOVIDO completamente en no-match (silent early return) + CCPP placeholder "(elegir CCPP exacto del PDF)" + REMOVIDO box-shadow halo en `.output-box.output-result:hover` | 51df668 |
-| **v3.10.30** | **GRID 0 Script Llamada**: nuevo grid colapsable ARRIBA de Búsqueda Address con 8 secciones del flujo (Bienvenida, Atención segura, Motivo, Detección, Retoma, Consulta, App, Encuesta) + 4 vars (Agente/Cliente/Teléfono/Motivo) auto-reemplazan `{placeholders}` en TODAS las cards via JS live update + persistencia localStorage | TBD |
+| **v3.10.30** | **GRID 0 Script Llamada**: nuevo grid colapsable ARRIBA de Búsqueda Address con 8 secciones del flujo (Bienvenida, Atención segura, Motivo, Detección, Retoma, Consulta, App, Encuesta) + 4 vars (Agente/Cliente/Teléfono/Motivo) auto-reemplazan `{placeholders}` en TODAS las cards via JS live update + persistencia localStorage | 5a83757 |
+| **v3.10.31** | **HEADER Estructura de Atención mejorada**: phone label "TELÉFONO EN CONSULTA" + motivo `<select>` con 5 opciones (INTERNET/LLAMADAS/SMS/THETERING/OTRO) + speeches con puntuación completa + canal TÉCNICO MÓVIL explícito + flujo OTRO diferenciado (oculta 4+6, muestra card 9 Transferir) | TBD |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|
