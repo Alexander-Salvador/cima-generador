@@ -1863,10 +1863,13 @@
     color: var(--text);
   }
   .output-box.output-result:hover:not(.placeholder) {
+    /* v3.10.29: REMOVIDO box-shadow 3px green halo (mismo bug que
+       .field input.filled v3.10.28). CEO percibía el halo como "background
+       cuadrado" rodeando al output-box, rompiendo la estética del borde
+       redondo. Ahora solo border-color verde más intenso + ring-hairline
+       inset 1px (clean hover, sin halo square). */
     border-color: var(--green-light, var(--green));
-    box-shadow:
-      0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent),
-      var(--ring-hairline);
+    box-shadow: var(--ring-hairline);
   }
   /* v2.1.3 CRIT-009: removido .output-box.output-result.empty-shake (cambio de color a danger).
      El shake ahora es SOLO animación (micro-translateX sutil), sin alterar bg/border/color. */
@@ -3295,7 +3298,7 @@ font-size: 10px;
         <div class="field ac-field">
           <label for="ccpp">CCPP / Caserío</label>
           <div class="ac-wrap">
-            <input id="ccpp" type="text" placeholder="(tras elegir distrito)" autocomplete="off" spellcheck="false"
+            <input id="ccpp" type="text" placeholder="(elegir CCPP exacto del PDF)" autocomplete="off" spellcheck="false"
                    data-ac="ccpp" aria-autocomplete="list" aria-expanded="false" maxlength="120">
             <div class="ac-dropdown" id="ac-ccpp" role="listbox" hidden></div>
           </div>
@@ -3492,7 +3495,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.28</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.29</span>
     </span>
   </footer>
 </div>
@@ -5198,7 +5201,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.28] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.29] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -5228,13 +5231,14 @@ function zaCopyApagadoSpeech() {
     // base desactivada" (era MENTIRA: mostraba SANTIAGO DE SURCO como apagado
     // cuando en realidad SANTIAGO DE SURCO no tiene CCPPs apagados).
     // v3.10.27: feedback reducido (sin shake + sin toast 'warn' alarmista).
-    // v3.10.28: wording mejorado ("Tipea el CCPP..." era ROTO según CEO).
-    //              → "Escribe el CCPP exacto del PDF para activar alerta".
-    // "Escribe" es español estándar (vs "tipea" informal).
-    // "del PDF" referencia el source (Movistar COMU-5514) para dar contexto.
+    // v3.10.28: wording del toast.
+    // v3.10.29: REMOVIDO toast completamente. CEO: "el boton solo debe
+    //              funcionar cuando se detecta zona de apagado exacta y
+    //              guiar". El botón BLOQUEADO sin response. La guía es
+    //              visual (botón gris = sin alerta, sin toast, sin shake).
+    //              El placeholder del input CCPP comunica la acción esperada.
     if (!chk || chk.nivel !== 'ccpp_exacto') {
-      showToast(btn, 'Escribe el CCPP exacto del PDF para activar alerta', 'info');
-      return;
+      return;  // SILENT — no toast, no shake, no response
     }
 
     // ─── (B) HAY alerta EXACTA: toggle panel + copiar ───
