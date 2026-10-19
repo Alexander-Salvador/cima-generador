@@ -1,5 +1,75 @@
 # Changelog — cima-generador
 
+## [3.10.12] - 2026-10-19 — 🧹 ELIMINACIÓN DETECCIÓN DE 2G (COMU-5672 / IPT)
+
+**CEO directive:** "borra todo lo relacionado al 2G, no es necesario en este momento. Mantenemos nuestra base intacta (dpt/provincias/distritos/centros poblados) — solo eliminamos la detección de 2G."
+
+**Alcance:** la lógica y UI de detección de apagado 2G departamental (COMU-5672 / Apagado Zonas IPT) queda fuera de scope del popup. La data (UBIGEO, CCPP_DATA, `districts_with_off`, `ipt_districts`) se preserva intacta — solo se elimina el camino de UI/lógica que disparaba alertas/UI por esa condición.
+
+### 🗑️ Eliminado (sin romper nada)
+
+| Elemento | Razón |
+|---|---|
+| Rama `nivel: 'ipt_distrito'` en `checkZonaApagada` | Era la única fuente de alerta 2G |
+| Rama `nivel: 'ipt_distrito'` en `showApagadoPanelInline` | Renderizaba panel 5672 (estaciones 2G) |
+| Sub-rama `isIPT` dentro de `distrito_of` | Fallback para "backward compat" 5672 — simplificado a 5514 |
+| Speeches `ipt_visor_4g`, `ipt_visor_sin_4g`, `ipt_postventa_4g`, `ipt_postventa_sin_4g` | Solo aplicaban a 2G |
+| Entrada `COMU-5672` en `comunicados` y `flujos_postventa` | No se referencian más |
+| `stopCheckHtml` (banner naranja "STOP — VERIFICAR CON CLIENTE") | Solo aplicaba a IPT |
+| `disclaimerHtml` (texto MTC/OSIPTEL) | Solo aplicaba a IPT |
+| CSS `.ac-item-ipt`, `.dist-ipt-warn`, `.ccpp-ipt-warn`, `.apagado-panel-stopcheck`, `.apagado-panel-disclaimer`, `@keyframes stopcheckPulse` | Selectores sin markup que los use |
+| Tokens `--zone-ipt-soft*`, `--zone-off*` | Sin consumidores activos |
+| Regla CSS `data-nivel="ipt_distrito"` para icon/severidad | Nivel eliminado |
+| Clases `ipt` en `renderCoberturaButton` reset | 3 estados ahora: idle/off/warn/fuzzy |
+| Clases `ipt` en `acRender` para distrito dropdown | Marcar rojo-IPT eliminado |
+| Clases `ipt` en `zaUpdateCcppInputZoneClass` y `zaUpdateDistInputZoneClass` (ambas za* y originales) | Lógica de pintado IPTa → null |
+| Comentarios engañosos que hablan de "COMU-5672", "2G", "ipt_distrito" | Código muerto |
+
+### ✅ Preservado (base intacta)
+
+| Elemento | Por qué |
+|---|---|
+| `const UBIGEO` (25 deptos × 196 prov × 1,892 dist) | Base geográfica |
+| `const CCPP_DATA` (43,068 caseríos en 1,886 dist) | Base CCPP |
+| `ZONAS_APAGADAS.ccpp_keys` (200 CCPP exactos COMU-5514) | Estaciones base |
+| `ZONAS_APAGADAS.districts_with_off` (1,824 d6 con CCPPs exactos) | Distritos preventivos |
+| `ZONAS_APAGADAS_STATE.ipt_districts` (1,798 d6 IPT) | Data metadata (no se renderiza) |
+| `ZONAS_APAGADAS_STATE.intel.ipt_metadata_by_district` | Data metadata (no se renderiza) |
+| `anomalias_departamentales` (validación cruzada) | Trazabilidad |
+
+### 🎯 Comportamiento por zona (post v3.10.12)
+
+| Input | Antes | Ahora |
+|---|---|---|
+| `010105 / VITUYA` (CCPP exacto COMU-5514) | 🔴 ccpp_exacto | 🔴 ccpp_exacto (sin cambios) |
+| `020110 / CHACHAN` (typo, fuzzy) | 🟠 ccpp_fuzzy (COMU-5514) | 🟠 ccpp_fuzzy (sin cambios) |
+| `020110 / <CCPP cualquiera>` (distrito_of COMU-5514) | 🟡 distrito_of (5514) | 🟡 distrito_of (sin cambios) |
+| `010101 / CHACHAPOYAS` (antes `ipt_distrito` COMU-5672) | 🟠 ipt_distrito + STOP CHECK + disclaimer MTC/OSIPTEL | 🟡 distrito_of (preventivo, sin STOP CHECK, sin disclaimer) |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** (0 failed, 0 warnings) |
+| `test_aggressive.py` | **63/63 PASS** (200/200 ccpp_exacto, 100% fuzzy rate) |
+| `test_audit_brutal.py` | **58 OK + 1 mentira histórica** (VERSION drift) |
+| `test_browser_static.py` | **14/0/2** (warnings legacy — plan R1) |
+| `node --check` | EXIT 0 (sintaxis válida) |
+| `ccpp_exacto` (200 CCPPs COMU-5514) | 100% detección preservada |
+| `ccpp_fuzzy` (typo CHACHAN) | 100% match rate |
+| `node.js simulación` | 3 niveles (ccpp_exacto, ccpp_fuzzy, distrito_of) |
+
+### 📐 Arquitectura final (v3.10.12)
+
+```
+checkZonaApagada(dep, prov, dist, ccpp) → 3 niveles:
+  ├─ ccpp_exacto: ccpp_keys.has(d6:CCPP) → 🔴 COMU-5514 ALTA
+  ├─ ccpp_fuzzy:  Levenshtein ≥ 0.75     → 🟠 COMU-5514 MEDIA
+  └─ distrito_of: districts_with_off.has(d6) → 🟡 COMU-5514 PREVENTIVA
+
+(Sin nivel ipt_distrito. Sin stopCheck. Sin disclaimer MTC/OSIPTEL.)
+```
+
 ## [3.10.11] - 2026-10-18 — 🐛 FIX bug dropdown CCPP: prefijo UBIGEO como primer caserío
 
 **Síntoma CEO:** "en CCPP/CASERIO tenemos siempre al inicio un numero dentro del dropdown 030215".

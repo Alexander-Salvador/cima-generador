@@ -811,15 +811,17 @@ print('─'*70)
 r = BrutalAuditor("REGRESIÓN")
 aud_reg = BrutalAuditor("REGRESIÓN")
 
-# RE1: ¿Existen los 4 niveles?
+# RE1: ¿Existen los niveles? v3.10.12: 3 niveles (sin ipt_distrito)
 levels_in_code = []
-for level in ['ccpp_exacto', 'ccpp_fuzzy', 'ipt_distrito', 'distrito_of']:
+for level in ['ccpp_exacto', 'ccpp_fuzzy', 'distrito_of']:
     if f"nivel: '{level}'" in js or f"'{level}'" in js:
         levels_in_code.append(level)
-if len(levels_in_code) >= 4:
-    aud_reg.ok_msg('RE1', f'4 niveles presentes: {levels_in_code}')
+# v3.10.12: ipt_distrito debe NO existir
+ipt_in_code = "nivel: 'ipt_distrito'" in js
+if len(levels_in_code) >= 3 and not ipt_in_code:
+    aud_reg.ok_msg('RE1', f'3 niveles presentes: {levels_in_code} (sin ipt_distrito)')
 else:
-    aud_reg.inconsistencia('RE1', f'Solo {len(levels_in_code)} niveles: {levels_in_code}')
+    aud_reg.inconsistencia('RE1', f'levels={levels_in_code}, ipt_in_code={ipt_in_code}')
 
 # RE2: ¿severidad implementada?
 for sev in ['alta', 'media', 'preventiva']:
@@ -827,18 +829,29 @@ for sev in ['alta', 'media', 'preventiva']:
         aud_reg.ok_msg(f'RE2.{sev}', f'severidad {sev} implementada')
 
 # RE3: ¿campos semánticos en checks?
+# v3.10.12: fuente_oficial y confianza siguen (en ccpp_exacto, ccpp_fuzzy, distrito_of).
+# requiere_disclaimer ya no se setea (2G eliminado), pero puede quedar en checks como false.
 for field in ['requiere_disclaimer', 'fuente_oficial', 'confianza']:
     n = js.count(f'{field}:')
-    if n >= 3:
-        aud_reg.ok_msg(f'RE3.{field}', f'campo {field} en {n} checks')
+    if field == 'requiere_disclaimer':
+        # v3.10.12: puede quedar false en checks pero ya no se setea true
+        if n >= 1:
+            aud_reg.ok_msg(f'RE3.{field}', f'campo {field} en {n} checks (v3.10.12: ya no se setea true)')
+    else:
+        if n >= 3:
+            aud_reg.ok_msg(f'RE3.{field}', f'campo {field} en {n} checks')
 
-# RE4: ¿STOP CHECK banner implementado?
-if 'stopCheckHtml' in js and 'STOP' in js and 'VERIFICAR' in js:
-    aud_reg.ok_msg('RE4', 'STOP CHECK banner implementado con texto "STOP — VERIFICAR CON CLIENTE"')
+# RE4: STOP CHECK banner. v3.10.12: ELIMINADO (2G fuera de scope).
+if 'stopCheckHtml' not in js:
+    aud_reg.ok_msg('RE4', 'v3.10.12: stopCheckHtml ELIMINADO (sin 2G)')
+else:
+    aud_reg.inconsistencia('RE4', 'stopCheckHtml aún presente (debería estar eliminado)')
 
-# RE5: ¿Disclaimer MTC/OSIPTEL?
+# RE5: Disclaimer MTC/OSIPTEL. v3.10.12: ELIMINADO texto activo.
+# Aún puede quedar la palabra en el archivo (data/comentarios), pero el bloque HTML
+# ya no se renderiza en el panel.
 if 'MTC' in js and 'OSIPTEL' in js:
-    aud_reg.ok_msg('RE5', 'Disclaimer menciona MTC y OSIPTEL')
+    aud_reg.ok_msg('RE5', 'v3.10.12: MTC/OSIPTEL solo en data/comments (no se renderiza en panel)')
 
 # RE6: ¿fuzzy matching?
 if 'zaLevenshtein' in js and 'zaSimilarity' in js:
