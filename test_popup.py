@@ -3017,6 +3017,89 @@ def test(html_path):
         result.fail('v3.10.30 HTML collapse', 'toggle/body missing')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.31 — HEADER Estructura de Atención mejorada
+    # CEO directive: "Mejora los speech Inteligentes... completo correcto
+    # coma, puntos etc dales forma sin romperlos. Las preguntas Iniciales
+    # de rellenado inteligente deben tener aun mas inteligente, nuestro
+    # canal de atencion es solo preguntas de TECNICA MOVIL, si el cliente
+    # consulta por otro motivo lo debemos transferir. En telefono debe
+    # ser 'TELEFONO EN CONSULTA' en MOTIVO debe ir INTERNET, LLAMADAS,
+    # SMS, THETERING, OTRO <- LA OPCION de otro cambiara los speech ya
+    # que el flujo es distinto, no hacemos deteccion de averia ni
+    # consulta adicional."
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.31 — HEADER Estructura de Atención mejorada')
+
+    # HTML: phone label "TELÉFONO EN CONSULTA"
+    if '<label for="script-telefono">TELÉFONO EN CONSULTA</label>' in html:
+        result.ok('v3.10.31 HTML: phone label "TELÉFONO EN CONSULTA"')
+    else:
+        result.fail('v3.10.31 HTML phone label', 'TELÉFONO EN CONSULTA esperado')
+
+    # HTML: motivo es SELECT (no input)
+    if re.search(r'<select\s+id="script-motivo"[^>]*>', html):
+        result.ok('v3.10.31 HTML: motivo es <select> (no input)')
+    else:
+        result.fail('v3.10.31 HTML motivo', 'select element esperado para motivo')
+
+    # HTML: motivo select tiene 5 opciones (INTERNET, LLAMADAS, SMS, THETERING, OTRO)
+    expected_motivos = ['INTERNET', 'LLAMADAS', 'SMS', 'THETERING', 'OTRO']
+    missing_motivos = [m for m in expected_motivos if f'value="{m}"' not in html]
+    if not missing_motivos:
+        result.ok(f'v3.10.31 HTML: motivo select con 5 opciones ({", ".join(expected_motivos)})')
+    else:
+        result.fail('v3.10.31 HTML motivo options', f'faltantes: {missing_motivos}')
+
+    # HTML: card 9 "Transferir" presente
+    if 'data-script-id="transferir"' in html:
+        result.ok('v3.10.31 HTML: card 9 "Transferir" presente')
+    else:
+        result.fail('v3.10.31 HTML transfer', 'card transferir missing')
+
+    # HTML: card transferir está oculta por default (atributo hidden)
+    if re.search(r'<div\s+class="script-card[^"]*script-card--transfer[^"]*"[^>]*\s+hidden>', html):
+        result.ok('v3.10.31 HTML: card "Transferir" oculta por default (atributo hidden)')
+    else:
+        result.fail('v3.10.31 HTML transfer hidden', 'card transferir debe estar hidden por default')
+
+    # JS: helper toggleScriptCard presente
+    if 'function toggleScriptCard(' in html:
+        result.ok('v3.10.31 JS: toggleScriptCard() helper presente')
+    else:
+        result.fail('v3.10.31 JS helper', 'toggleScriptCard() missing')
+
+    # JS: lógica OTRO (motivo === OTRO → toggle cards)
+    if re.search(r"isOtro\s*=\s*\(vars\.motivo\s*===\s*['\"]OTRO['\"]\)", html):
+        result.ok('v3.10.31 JS: lógica OTRO (motivo === OTRO toggle)')
+    else:
+        result.fail('v3.10.31 JS OTRO', 'lógica OTRO missing')
+
+    # Speeches: bienvenida mejorado (contiene TÉCNICO MÓVIL)
+    if 'TÉCNICO MÓVIL' in html and 'script-text-bienvenida' in html:
+        bienvenida_match = re.search(
+            r'id="script-text-bienvenida"[^>]*>([^<]+(?:<[^/][^>]*>[^<]*</[^>]+>[^<]*)*)',
+            html, re.DOTALL
+        )
+        if bienvenida_match and 'TÉCNICO MÓVIL' in bienvenida_match.group(1):
+            result.ok('v3.10.31 SPEECH: bienvenida menciona canal TÉCNICO MÓVIL')
+        else:
+            result.fail('v3.10.31 SPEECH bienvenida', 'bienvenida debe mencionar TÉCNICO MÓVIL')
+    else:
+        result.fail('v3.10.31 SPEECH bienvenida', 'script-text-bienvenida o TÉCNICO MÓVIL missing')
+
+    # CSS: .script-card[hidden] { display: none }
+    if '.script-card[hidden]' in html and 'display: none' in html:
+        result.ok('v3.10.31 CSS: .script-card[hidden] { display: none }')
+    else:
+        result.fail('v3.10.31 CSS hidden', '.script-card[hidden] display: none esperado')
+
+    # CSS: select styling (.script-vars .field select)
+    if re.search(r'\.script-vars\s+\.field\s+select\s*\{', html):
+        result.ok('v3.10.31 CSS: select styling presente')
+    else:
+        result.fail('v3.10.31 CSS select', '.script-vars .field select CSS missing')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.3 — STOP CHECK visual para COMU-5672 + Santa Rosa de Loreto
     # CEO directive: "como solucionamos los RIESGOS CONOCIDOS?"
     # Soluciones: stop check prominente + distrito nuevo 160405 + anomalías

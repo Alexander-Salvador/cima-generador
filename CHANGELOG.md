@@ -1,5 +1,93 @@
 # Changelog — cima-generador
 
+## [3.10.31] - 2026-10-19 — 🎯 HEADER Estructura de Atención mejorada + Motivo select
+
+**CEO directive:** "Mejora los speech Inteligentes <- completos correcto coma, puntos etc dales forma sin romperlos. Las preguntas Iniciales de rellenado inteligente deben tener aun mas inteligente, nuestro canal de atencion es solo preguntas de TECNICA MOVIL, si el cliente consulta por otro motivo lo debemos transferir. En telefono debe ser 'TELEFONO EN CONSULTA' en MOTIVO debe ir INTERNET, LLAMADAS, SMS, THETERING, OTRO <- LA OPCION de otro cambiara los speech ya que el flujo es distinto, no hacemos deteccion de averia ni consulta adicional."
+
+### 🎯 Causa raíz (4 mejoras)
+
+| # | Mejora | Antes | Ahora |
+|---|---|---|---|
+| 1 | **Phone label** | "Teléfono" | **"TELÉFONO EN CONSULTA"** (label específica para evitar ambigüedad) |
+| 2 | **Motivo tipo** | `<input type="text">` libre | **`<select>` con 5 opciones** (INTERNET, LLAMADAS, SMS, THETERING, OTRO) |
+| 3 | **Speeches formato** | Puntuación inconsistente, frases cortadas | **Puntuación completa**, comas/puntos bien colocados, formas completas |
+| 4 | **Flujo OTRO** | No diferenciado | **Transferir card aparece** + Detección + Consulta adicional **se ocultan** |
+
+### 🔧 Cambios
+
+#### 1. Teléfono label renombrado
+```html
+<label for="script-telefono">TELÉFONO EN CONSULTA</label>
+<input id="script-telefono" type="text" placeholder="(número en consulta)" ...>
+```
+
+#### 2. Motivo = SELECT con 5 opciones
+```html
+<select id="script-motivo" data-script-var="motivo">
+  <option value="">— Seleccionar —</option>
+  <option value="INTERNET">INTERNET</option>
+  <option value="LLAMADAS">LLAMADAS</option>
+  <option value="SMS">SMS</option>
+  <option value="THETERING">THETERING</option>
+  <option value="OTRO">OTRO (transferir)</option>
+</select>
+```
+
+#### 3. Speeches mejorados (8 cards + 1 nueva)
+
+| Card | Cambio |
+|---|---|
+| 1. Bienvenida | "Bienvenido a Movistar. Te saluda {Agente}, **del equipo de atención al cliente TÉCNICO MÓVIL**. Te llamo desde nuestro canal de consulta al número {Telefono}, sobre un caso de {Motivo}. ¿Es correcto?" |
+| 2. Atención segura | "En caso de **que se corte** la llamada, puedo realizar la devolución **o bien podrías brindarme otro número de contacto para llamarte de nuevo**." (puntuación completa) |
+| 3. Motivo | "¿En qué puedo ayudarte **hoy**, {Cliente}?" |
+| 4. Detección | "Ubica a tu cliente. **Realiza sondeo** de UBICACIÓN y DIRECCIÓN. **Sigue el flujo** Técnico Móvil." |
+| 5. Retoma | "Retoma cada 60 segundos. Agradece **siempre** el tiempo en espera." |
+| 6. Consulta adicional | (sin cambios — ya estaba bien) |
+| 7. App Movistar | (sin cambios — ya estaba bien) |
+| 8. Encuesta | "Para finalizar, te agradezco **completar** una breve encuesta **sobre mi atención en 48 horas**." |
+| **9. Transferir (NUEVA)** | "{Cliente}, **detectamos que tu consulta no corresponde al canal TÉCNICO MÓVIL**. Vamos a transferir tu llamada con un asesor especializado para que te brinde la atención correcta. ¿Me lo permites, {Cliente}?" |
+
+#### 4. Flujo OTRO (lógica JS)
+
+```js
+// v3.10.31: toggle de cards según motivo
+var isOtro = (vars.motivo === 'OTRO');
+toggleScriptCard('deteccion-averia', !isOtro);  // 4 oculta si OTRO
+toggleScriptCard('consulta-adicional', !isOtro); // 6 oculta si OTRO
+toggleScriptCard('transferir', isOtro);          // 9 visible si OTRO
+```
+
+| Motivo | Cards 1, 2, 3, 5, 7, 8 | Card 4 (Detección) | Card 6 (Consulta) | Card 9 (Transferir) |
+|---|:---:|:---:|:---:|:---:|
+| INTERNET, LLAMADAS, SMS, THETERING | ✅ | ✅ | ✅ | ❌ |
+| OTRO | ✅ | ❌ | ❌ | ✅ |
+| (vacío) | ✅ | ✅ | ✅ | ❌ |
+
+#### 5. CSS select styling (chevron + glass)
+```css
+.script-vars .field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;..."); /* chevron SVG inline */
+  padding-right: 22px;
+}
+```
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **508/508 PASS** (+10 nuevos tests v3.10.31) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (977,192 chars JS) |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: Resultado observable es contrato. CEO testeó cada speech y pidió formato profesional con puntuación completa.
+- **L-067/068/069**: select nativo + glass styling (sin librería externa) — simplicity over heavy UI framework.
+- **Domain logic**: el canal TÉCNICO MÓVIL solo resuelve INTERNET/LLAMADAS/SMS/THETHERING. OTRO = transferir. La UI debe reflejar el flujo del negocio.
+
 ## [3.10.30] - 2026-10-19 — 🎬 GRID 0 Script Llamada (template cards + vars + live replace)
 
 **CEO directive:** "Vamos a agregar un grid mas arriba de busqueda address" con 8 secciones del flujo de llamada call center técnico MOVIL: Bienvenida e Identificación, Atención segura, Motivo de comunicación, Detección de Avería, Retoma, Consulta adicional, App Movistar, Encuesta.
