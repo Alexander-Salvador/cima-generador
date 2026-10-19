@@ -1936,11 +1936,11 @@ def test(html_path):
     else:
         result.fail('JS confirmed apply', 'no aplica ccpp-off-confirmed')
 
-    # JS logic: distrito IPT → AMARILLO
-    if "ccppEl.classList.add('ccpp-off-ipt')" in html:
-        result.ok('v3.5.5 JS: aplica ccpp-off-ipt (AMARILLO) para IPT')
+    # v3.10.14: ELIMINADO ccpp-off-ipt preventivo. Solo match EXACTO pinta el input.
+    if "ccppEl.classList.add('ccpp-off-ipt')" not in html:
+        result.ok('v3.10.14: ccpp-off-ipt ELIMINADO (sin distrito_of preventivo en input)')
     else:
-        result.fail('JS ipt apply', 'no aplica ccpp-off-ipt')
+        result.fail('v3.10.14 regresión', 'ccpp-off-ipt aún en HTML (debe estar eliminado)')
 
     # JS logic: limpia clases antes
     if "ccppEl.classList.remove('ccpp-off-confirmed', 'ccpp-off-ipt')" in html:
