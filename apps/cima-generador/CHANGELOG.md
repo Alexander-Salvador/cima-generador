@@ -1,5 +1,63 @@
 # Changelog — cima-generador
 
+## [3.10.41] - 2026-10-19 — 💚 Alertas amables 2026 (sage + AI moderna)
+
+**CEO directive:** "arreglaremos estas alertas en general las de ese tipo, estan mal diseñadas en ROJO deben ser mas agradables a la vista ya que son recordatorios de atencion para el agente en 1 sola row, mejora la font que se entienda mas. adicional mejora el texto con AI moderna avanza 2026"
+
+### 🎯 Causa raíz
+
+Las 4 alertas estáticas (3 en MOTIVO + 1 en CONSULTA) usaban `--accent: #dc2626` (rojo intenso) → agresivo, fatiga visual, contradice el rol de "recordatorio positivo". CEO pidió: tono amable, 1 row, font clara, copy modernizado.
+
+### 🔧 Cambios
+
+#### 1. CSS `.script-alert` — sage verde Apple 2026
+
+```css
+/* v3.10.37 (rechazado por CEO): rojo intenso */
+background: color-mix(in srgb, var(--accent) 10%, transparent);  /* #dc2626 */
+border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+font-size: 10px;
+line-height: 1.4;
+align-items: flex-start;  /* multi-line */
+
+/* v3.10.41: sage verde amable + single row + font clara */
+background: linear-gradient(135deg,
+  color-mix(in srgb, #10b981 6%, var(--surface)) 0%,
+  color-mix(in srgb, #06b6d4 4%, var(--surface)) 100%);
+border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
+font-size: 11.5px;
+font-weight: 500;
+line-height: 1.5;
+align-items: center;  /* single row */
+```
+
+#### 2. Icon emoji: ⚠ → 💡
+
+CEO no pidió cambio de emoji pero el rojo + ⚠ reforzaba el tono agresivo. 💡 (idea/tip) es universalmente positivo en 2026 UX.
+
+#### 3. Textos AI moderna 2026 (4 alerts)
+
+| # | Antes (v3.10.37) | Ahora (v3.10.41) |
+|---|---|---|
+| 1 | "(nombre de cliente), disculpa la demora y gracias por tu espera (informa la verificación o acción realizada)" | "{Cliente}, gracias por tu paciencia. Te comento: (verificación o acción realizada)." |
+| 2 | "No olvides siempre pedir un momento en espera indicando el motivo y agradecer la retoma." | "Antes de ausentarte, indica el motivo y al retornar, agradece la espera del cliente." |
+| 3 | "Debemos ser empáticos y conectar con el cliente." | "Conecta desde la empatía: escucha activa, tono cálido, soluciones claras." |
+| 4 | "¿Tienes alguna consulta adicional en la que te pueda ayudar?" | "Antes de cerrar, confirma si hay algo más en lo que puedas acompañarle." |
+
+**Patrón copy AI 2026 aplicado:**
+- Imperativo impersonal → segunda persona directa
+- "debemos ser" / "no olvides" → accionable específico
+- Disculpas defensivas ("disculpa la demora") → agradecimiento proactivo ("gracias por tu paciencia")
+- Cerrar frases con `.` (no `?` retórico) cuando es instrucción al agente
+
+### 🧪 Tests
+
+- ✅ `test_popup.py` actualizado con `expected_alerts` AI 2026
+- ✅ Count `class="script-alert"` ≥ 4 preservado
+- ✅ Regresión: retorno card, consulta-adicional card, cierre-con-solucion/sin-solucion cards siguen REMOVIDOS
+
+---
+
 ## [3.10.39] - 2026-10-19 — 🍎 Collapsed card APPLE 2026 PREMIUM STYLE
 
 **CEO directive:** "Voy viendo el rediseño y no me agrada cambialo a otro diferente necesito premiun real en 2026. APPLE styles"
