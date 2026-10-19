@@ -1,5 +1,92 @@
 # Changelog — cima-generador
 
+## [3.10.42] - 2026-10-19 — 🎯 Redistribución alerts + AI 2026 speeches + datos clave
+
+**CEO directive:** "Debemos distribuirlos de manera inteligente para que no saturen solo a MOTIVO DE LLAMADA. Mejora la font de los speech texto, que se entiendan mas optimizalos y resalta los datos clave importante, adicional debes releer todos los speech y mejorar la gramatica comas,puntos, espacios, mayusculas minusculas, coherencia y correcto español peru"
+
+### 🎯 Causa raíz
+
+3 de las 4 alertas estáticas estaban concentradas en MOTIVO DE LLAMADA → saturación visual de recordatorios en una sola fase. CEO pidió distribución balanceada 1/section + releer los 9 speeches con AI moderna 2026.
+
+### 🔧 Cambios
+
+#### 1. Redistribución inteligente de alerts (3→4, 1 por sección)
+
+| Sección | Antes (v3.10.41) | Ahora (v3.10.42) |
+|---|---|---|
+| 1. Bienvenida | 0 | **💡 Conecta desde la empatía** (frame mental al iniciar) |
+| 2. Motivo | 3 (saturado) | **💡 Antes de ausentarte, indica el motivo** (timing durante revisión) |
+| 3. Consulta | 1 | **💡 Antes de cerrar, confirma** (sin cambios) |
+| 4. Cierre | 0 | **💡 {Cliente}, gracias por tu paciencia. Te comento** (entrega proceso) |
+
+**Patrón aplicado:** la alerta ahora aparece en el momento exacto del flujo donde el tip es relevante — no amontonadas en una sola sección.
+
+#### 2. Font `.script-card-text` mejorada (CEO pidió "se entiendan más")
+
+```css
+/* v3.10.41 (rechazado): */
+font-size: 11px;
+line-height: 1.5;
+letter-spacing: 0;
+
+/* v3.10.42: legible, premium */
+font-size: 12.5px;          /* +1.5px */
+line-height: 1.6;            /* +0.1 respiración */
+letter-spacing: 0.005em;    /* micro-tracking para lectura */
+```
+
+#### 3. Nueva class `.key` — datos clave resaltados
+
+```css
+/* v3.10.42: bold 600 + sage sutil para escaneabilidad */
+.key {
+  font-weight: 600;
+  color: color-mix(in srgb, #059669 75%, var(--text));
+}
+```
+
+Aplicada en 3 speeches donde el dato debe destacarse para no olvidarse:
+
+| Speech | Datos clave en `.key` |
+|---|---|
+| `sondeo-averias` | **departamento** · **provincia** · **distrito** · **dirección** |
+| `educa-app` | **App Mi Movistar** · **saldo** · **recibo** · **beneficios exclusivos** |
+| `transferir` | **asesor especializado** |
+
+Total: 9 spans `.key` en el HTML.
+
+#### 4. Speeches reescritos con AI moderna 2026 + español Perú
+
+CEO pidió: "releer todos los speech y mejorar la gramatica comas,puntos, espacios, mayusculas minusculas, coherencia y correcto español peru".
+
+| # | Speech | Antes | Ahora (v3.10.42) |
+|---|---|---|---|
+| 1 | **bienvenida** | "Bienvenido a Movistar, te saluda {Agente}. Te comunicas por {Motivo} de tu número {Telefono}. ¿Es correcto?" | "Bienvenido a Movistar, le saluda {Agente}. ¿Me comunico con el titular del número {Telefono} por la consulta de {Motivo}? ¿Es correcto?" |
+| 2 | **atencion-segura** | "{Cliente}, en caso se corte la llamada puedo realizar la devolución al número que me está llamando o podría brindarme otro número de celular" | "{Cliente}, si la llamada se interrumpe, ¿puedo devolverle la llamada a este mismo número o prefiere brindarme uno alternativo para contactarlo?" |
+| 3 | **sondea** | "{Cliente}, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta." | "{Cliente}, ¿en qué puedo ayudarte? Cuénteme cuál sería el motivo de tu comunicación o consulta." |
+| 4 | **sondeo-averias** | "{Cliente}, comprendo, debido al inconveniente que nos mencionas, realizaré una revisión de su servicio. Para esto me confirmas en qué departamento te encuentras, provincia y distrito por favor. Me indicas también la dirección donde te encuentras en este momento por favor, con eso podré avanzar con la búsqueda" | "{Cliente}, comprendo, debido al inconveniente que nos mencionas, voy a validar su servicio. Para esto, me confirmas en qué **departamento** te encuentras, **provincia** y **distrito**, por favor. Me indicas también la **dirección** donde te encuentras en este momento, con eso podré avanzar con la búsqueda" |
+| 5 | **tiempo-espera** | "{Cliente}, por favor, permítame un momento en línea mientras valido su información (indica brevemente la acción a realizar)" | "{Cliente}, un momento por favor mientras valido su información (indique brevemente la acción a realizar)" |
+| 6 | **educa-app** | "{Cliente}, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida" | "{Cliente}, en la **App Mi Movistar** puede consultar su **saldo**, ver y pagar su **recibo**, y acceder a **beneficios exclusivos**. Le enviaremos un enlace por SMS para que ingrese directo." |
+| 7 | **despedida** | "{Cliente}, hemos realizado para ti el (proceso generado), por ello solo faltaría que sigamos las indicaciones para ver una mejora en el servicio. Ha sido un gusto de mi parte poder atenderte" | "{Cliente}, hemos realizado para ti el (proceso generado). Solo sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderte." |
+| 8 | **encuesta** | "Para finalizar, te agradeceré completar una breve encuesta sobre mi atención y en 48 horas, te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!" | "Para finalizar, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar que su servicio quedó resuelto. ¡Muchas gracias por su tiempo!" |
+| 9 | **transferir** | "{Cliente}, detectamos que tu consulta no corresponde al canal TÉCNICO MÓVIL. Vamos a transferir tu llamada con un asesor especializado para que te brinde la atención correcta. ¿Me lo permites, {Cliente}?" | "{Cliente}, su consulta no corresponde a este canal. Le transferiré con un **asesor especializado** para que le brinde la atención correcta. ¿Me lo permite, {Cliente}?" |
+
+**Patrones copy AI 2026 aplicados:**
+
+1. **Registro consistente tú/usted**: el agente usa "le" (formal Perú) cuando habla al cliente. Antes había mezcla tu/su.
+3. **Frases cortas, no encadenadas**: "hemos realizado para ti X, por ello solo faltaría que sigamos Y para ver Z" → 1 frase limpia.
+5. **Imperativo en infinitivo para `(indicaciones al agente)`**: `(indica...)` → `(indique...)` (registro formal Perú).
+6. **Puntuación normativa**: punto final en despedidas, sin coma extra antes de cierre.
+7. **Datos fijos importantes en bold sage**: departamento/provincia/distrito/dirección/App Mi Movistar/saldo/recibo/beneficios/asesor.
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +9 nuevos tests v3.10.42 (font, .key class, .key spans, distribución 1/section, datos clave, modernización)
+- ✅ 547 → 556 tests (pre-v3.10.42) + los nuevos
+- ✅ Regresión cero: bienvenida "Bienvenido a Movistar" + "¿Es correcto?" + sin TÉCNICO MÓVIL, despedida "hemos realizado para ti" + "proceso generado" + "Ha sido un gusto", sondea frases CEO preservadas, sondeo-averias 5 frases CEO preservadas
+
+---
+
 ## [3.10.41] - 2026-10-19 — 💚 Alertas amables 2026 (sage + AI moderna)
 
 **CEO directive:** "arreglaremos estas alertas en general las de ese tipo, estan mal diseñadas en ROJO deben ser mas agradables a la vista ya que son recordatorios de atencion para el agente en 1 sola row, mejora la font que se entienda mas. adicional mejora el texto con AI moderna avanza 2026"

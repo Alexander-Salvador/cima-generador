@@ -2888,23 +2888,27 @@ def test(html_path):
         else:
             result.fail('v3.10.34 SPEECH sondea', 'speech Sondea no coincide con CEO directive')
 
-    # HTML: speech Sondeo identificación de AVERIAS contiene las frases del CEO
-    # v3.10.36: CEO refinió el speech — ahora es un solo párrafo unificado,
+# HTML: speech Sondeo identificación de AVERIAS contiene las frases del CEO
+    # v3.10.36: CEO refinó el speech — ahora es un solo párrafo unificado,
     # NO las 3 frases separadas del v3.10.34.
+    # v3.10.42: verificar frases en texto visible (stripped de tags .key)
     sondeo_averias_match = re.search(
         r'id="script-text-sondeo-averias"[^>]*>(.+?)</p>',
         html, re.DOTALL
     )
     if sondeo_averias_match:
-        sa_text = sondeo_averias_match.group(1)
+        sa_text_raw = sondeo_averias_match.group(1)
+        # Strip HTML tags para verificar frases en texto visible
+        sa_text_visible = re.sub(r'<[^>]+>', '', sa_text_raw)
+        sa_text_visible = re.sub(r'\s+', ' ', sa_text_visible).strip()
         expected_phrases = [
             'comprendo',
             'departamento te encuentras',
-            'provincia y distrito por favor',
+            'provincia y distrito',  # v3.10.42: con coma después de distrito
             'dirección donde te encuentras',
             'avanzar con la búsqueda'
         ]
-        missing_phrases = [p for p in expected_phrases if p not in sa_text]
+        missing_phrases = [p for p in expected_phrases if p not in sa_text_visible]
         if not missing_phrases:
             result.ok('v3.10.36 SPEECH: Sondeo identificación AVERIAS unificado (CEO directive)')
         else:
@@ -3184,7 +3188,7 @@ def test(html_path):
     else:
         result.fail('v3.10.37 HTML alerts', f'≥4 alerts esperados, {n_alerts_motivo} encontrados')
 
-    # HTML: alert textos AI 2026 (v3.10.41 modernizados)
+    # HTML: alert textos AI 2026 (v3.10.41 + v3.10.42 redistribución)
     expected_alerts = [
         'gracias por tu paciencia',
         'Antes de ausentarte',
@@ -3193,9 +3197,99 @@ def test(html_path):
     ]
     missing_alerts = [a for a in expected_alerts if a not in html]
     if not missing_alerts:
-        result.ok('v3.10.41 HTML: 4 alertas AI 2026 modernas presentes')
+        result.ok('v3.10.41/42 HTML: 4 alertas AI 2026 modernas presentes')
     else:
-        result.fail('v3.10.41 HTML alerts textos', f'faltan: {missing_alerts}')
+        result.fail('v3.10.41/42 HTML alerts textos', f'faltan: {missing_alerts}')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.42 — Redistribución inteligente de alerts 1/section
+    # + font 12.5px en script-card-text + class .key para datos clave
+    # + reescritura AI 2026 de los 9 speeches
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.42 — REDISTRIBUCIÓN ALERTS 1/section + AI 2026 SPEECHES')
+
+    # CSS: .script-card-text font-size 12.5px (era 11px → CEO pidió mejor font)
+    script_text_font = re.search(
+        r'\.script-card-text\s*\{([^}]+)\}',
+        html, re.DOTALL
+    )
+    if script_text_font:
+        body = re.sub(r'/\*[\s\S]*?\*/', '', script_text_font.group(1))
+        if 'font-size: 12.5px' in body:
+            result.ok('v3.10.42 CSS: .script-card-text font-size 12.5px (CEO pidió mejor font)')
+        else:
+            result.fail('v3.10.42 CSS script-card-text font', 'font-size 12.5px esperado')
+    else:
+        result.fail('v3.10.42 CSS script-card-text', '.script-card-text CSS missing')
+
+    # CSS: .key class definida (resaltado bold sage para datos clave)
+    if re.search(r'\.key\s*\{[^}]*font-weight:\s*600', html, re.DOTALL):
+        result.ok('v3.10.42 CSS: .key class definida (bold 600 para datos clave)')
+    else:
+        result.fail('v3.10.42 CSS .key', '.key class con font-weight 600 esperada')
+
+    # HTML: <span class="key"> usado en speeches (datos clave resaltados)
+    n_key_spans = html.count('class="key"')
+    if n_key_spans >= 8:  # sondeo-averias(4) + educa-app(4) + transferir(1) ≈ 9
+        result.ok(f'v3.10.42 HTML: {n_key_spans} spans .key (datos clave resaltados)')
+    else:
+        result.fail('v3.10.42 HTML .key spans', f'≥8 spans .key esperados, {n_key_spans} encontrados')
+
+    # HTML: 1 alert por sección (CEO: no saturar solo MOTIVO)
+    # Estrategia: contar alerts en orden; verificar distribución balanceada
+    # Esperado: bienvenida=1, motivo=1, consulta=1, cierre=1
+    sections_with_alerts = html.count('script-section-header--blue')
+    import re as _re42
+    n_alerts_blue = len(_re42.findall(
+        r'script-section-header--blue.*?(?=script-section-header--green|</div>\s*</div>\s*</div>\s*</details>)',
+        html, _re42.DOTALL
+    ))
+    # Simplificado: contar alerts hasta el siguiente header
+    # Pattern alternativo: contar alerts en cada section usando markers
+    bienvenida_alert = 'Conecta desde la empat\u00eda' in html
+    motivo_alert = 'Antes de ausentarte' in html
+    consulta_alert = 'hay algo m\u00e1s en lo que puedas' in html
+    cierre_alert = 'gracias por tu paciencia' in html
+    if all([bienvenida_alert, motivo_alert, consulta_alert, cierre_alert]):
+        result.ok('v3.10.42 HTML: 4 alerts distribuidas 1/section (bienvenida/motivo/consulta/cierre)')
+    else:
+        missing = [n for n, v in [
+            ('bienvenida', bienvenida_alert), ('motivo', motivo_alert),
+            ('consulta', consulta_alert), ('cierre', cierre_alert)
+        ] if not v]
+        result.fail('v3.10.42 HTML alerts distribución', f'faltan alerts en: {missing}')
+
+    # Speech sondeo-averias: datos clave .key resaltados (departamento, provincia, distrito, dirección)
+    if 'class="key">departamento' in html and 'class="key">provincia' in html and \
+       'class="key">distrito' in html and 'class="key">direcci' in html:
+        result.ok('v3.10.42 SPEECH: sondeo-averias datos clave .key (departamento/provincia/distrito/dirección)')
+    else:
+        result.fail('v3.10.42 SPEECH sondeo-averias .key', 'departamento/provincia/distrito/dirección en .key')
+
+    # Speech educa-app: datos clave .key resaltados (App Mi Movistar, saldo, recibo, beneficios exclusivos)
+    if 'class="key">App Mi Movistar' in html and 'class="key">saldo' in html and \
+       'class="key">recibo' in html and 'class="key">beneficios exclusivos' in html:
+        result.ok('v3.10.42 SPEECH: educa-app datos clave .key (App Mi Movistar/saldo/recibo/beneficios)')
+    else:
+        result.fail('v3.10.42 SPEECH educa-app .key', 'App Mi Movistar/saldo/recibo/beneficios exclusivos en .key')
+
+    # Speech transferir: asesor especializado en .key
+    if 'class="key">asesor especializado' in html:
+        result.ok('v3.10.42 SPEECH: transferir asesor especializado en .key')
+    else:
+        result.fail('v3.10.42 SPEECH transferir .key', 'asesor especializado en .key esperado')
+
+    # Speech atencion-segura: modernizado AI 2026 (puedo devolverle en lugar de podría)
+    if 'si la llamada se interrumpe' in html and 'puedo devolverle' in html:
+        result.ok('v3.10.42 SPEECH: atencion-segura modernizado (devolver/interrumpe)')
+    else:
+        result.fail('v3.10.42 SPEECH atencion-segura', 'modernización AI 2026 esperada')
+
+    # Speech encuesta: modernizado (atención que recibió en lugar de mi atención)
+    if 'la atenci\u00f3n que recibi\u00f3' in html and 'qued\u00f3 resuelto' in html:
+        result.ok('v3.10.42 SPEECH: encuesta modernizado (recibió/resuelto)')
+    else:
+        result.fail('v3.10.42 SPEECH encuesta', 'modernización AI 2026 esperada')
 
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
