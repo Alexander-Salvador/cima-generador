@@ -1,8 +1,8 @@
-# CIMA v3.10.37 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.39 — Lista de Pendientes (Estado al cierre de sesión)
 
 **Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
-## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-37 BUSQUEDA ADDRESS v12 + GRID 0 Script v8)
+## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-39 BUSQUEDA ADDRESS v13 + GRID 0 Script v10)
 
 ## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.30) — 20 commits
 
@@ -34,7 +34,8 @@
 | **v3.10.34** | **HEADER refinado (click-to-collapse + nuevos speeches)**: "con-quien" REMOVIDO + click-to-done reemplazado por click-to-collapse (body hidden) + MOTIVO Sondea con speech específico + NUEVO Sondeo identificación AVERIAS (3 pasos) | c3cc117 |
 | **v3.10.35** | **OPTIMIZACIÓN single header (sin duplicado) + ✓ Hecho indicator**: eliminado `<h4>` duplicado de las 12 cards (CEO: doble header) + section header es el ÚNICO header por sección + nuevo `.is-collapsed::after { content: "✓ Hecho" }` para marcar pasos completados | 485bcf8 |
 | **v3.10.36** | **MOVER Atención segura a BIENVENIDA + REFINAR Sondeo identificación AVERIAS**: "atencion-segura" movida de MOTIVO a BIENVENIDA (flujo natural) + Sondeo AVERIAS speech unificado de 3 frases a 1 párrafo integrado + tip referencias | c77d8a6 |
-| **v3.10.37** | **Alertas estáticas + Despedida general**: CSS `.script-alert` para filas de apoyo (NO collapsa, NO clickable). 3 alerts en MOTIVO reemplazan retorno. Consulta adicional card → alert. Cierre: removidas ✓ ✗ cards, agregada `despedida` con speech general | TBD |
+| **v3.10.37** | **Alertas estáticas + Despedida general**: CSS `.script-alert` para filas de apoyo (NO collapsa, NO clickable). 3 alerts en MOTIVO reemplazan retorno. Consulta adicional card → alert. Cierre: removidas ✓ ✗ cards, agregada `despedida` con speech general | 05d013c |
+| **v3.10.39** | **Collapsed card APPLE 2026 PREMIUM STYLE**: pill shape (border-radius 999px) + glassmorphism (backdrop-filter blur 12px) + spring transition + gradient pill badge (✓ Hecho) + "Toca para abrir ▴" hint + hover lift+glow. REMOVIDO border-left 3px feo + uppercase feo | TBD |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|

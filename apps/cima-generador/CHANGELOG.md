@@ -1,5 +1,145 @@
 # Changelog — cima-generador
 
+## [3.10.39] - 2026-10-19 — 🍎 Collapsed card APPLE 2026 PREMIUM STYLE
+
+**CEO directive:** "Voy viendo el rediseño y no me agrada cambialo a otro diferente necesito premiun real en 2026. APPLE styles"
+
+### 🎯 Causa raíz
+
+El rediseño de v3.10.38 (border-left verde 3px + "Click para expandir" + "✓ HECHO" uppercase) no era suficientemente premium para Apple 2026 aesthetics. CEO pidió redesign completo con look Apple real.
+
+### 🔧 Cambios (Apple 2026 design language)
+
+#### 1. Pill shape (border-radius: 999px)
+
+```css
+/* v3.10.38 (rechazado): rectangular con border-left */
+.script-card.is-collapsed {
+  padding: 9px 14px;
+  border-radius: var(--radius-lg);  /* rectangular */
+  border-left: 3px solid var(--green);  /* feo */
+}
+
+/* v3.10.39: pill shape Apple-style */
+.script-card.is-collapsed {
+  border-radius: 999px;  /* totalmente redondeado */
+  padding: 8px 14px;
+  min-height: 36px;
+}
+```
+
+#### 2. Glassmorphism (Apple Liquid Glass 2026)
+
+```css
+/* Backdrop-filter con saturate (Apple signature effect) */
+-webkit-backdrop-filter: blur(12px) saturate(1.4);
+backdrop-filter: blur(12px) saturate(1.4);
+
+/* Soft green gradient background */
+background: linear-gradient(135deg,
+  color-mix(in srgb, #10b981 8%, var(--glass-2-bg)) 0%,
+  color-mix(in srgb, #059669 4%, var(--glass-1-bg)) 100%);
+```
+
+#### 3. Apple Reminders-style badge (gradient pill)
+
+```css
+.script-card.is-collapsed::before {
+  content: "✓ Hecho";
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-size: 10.5px;
+  font-weight: 600;  /* semibold (Apple-style) */
+  border-radius: 999px;
+  box-shadow:
+    0 1px 3px rgba(16, 185, 129, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);  /* Apple glass inset */
+}
+```
+
+#### 4. "Toca para abrir ▴" hint (Apple Reminders UX)
+
+```css
+.script-card.is-collapsed::after {
+  content: "Toca para abrir ▴";
+  font-size: 9.5px;
+  color: var(--text-faint);
+  font-style: italic;
+  flex: 1 1 auto;
+  text-align: right;
+  opacity: 0.85;
+}
+```
+
+#### 5. Spring transition (Apple feel)
+
+```css
+transition: all 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* iOS-style spring curve: overshoot + settle */
+```
+
+#### 6. Hover lift + glow (Apple micro-interaction)
+
+```css
+.script-card.is-collapsed:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, #10b981 42%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 16px rgba(16, 185, 129, 0.18);  /* soft glow */
+}
+.script-card.is-collapsed:hover::before {
+  background: linear-gradient(135deg, #34d399, #10b981);  /* lighter gradient */
+  box-shadow:
+    0 2px 6px rgba(16, 185, 129, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.script-card.is-collapsed:hover::after {
+  color: var(--text);
+  opacity: 1;
+}
+```
+
+### 📐 Layout final (collapsed card)
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  ✓ Hecho        Toca para abrir ▴                         │
+│  [gradient bg]                                              │
+│  [pill shape · 999px]                                       │
+└────────────────────────────────────────────────────────────┘
+```
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **547/547 PASS** (+11 nuevos tests v3.10.39) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,072 chars JS) |
+| HTML balanced | 85 `<div>` open = 85 close |
+
+### 🎨 Anti-regression (v3.10.38 feo patterns eliminados)
+
+- ❌ `border-left: 3px solid var(--green)` (era feo)
+- ❌ `padding: 5px 10px` (era muy fino)
+- ❌ `text-transform: uppercase` (era TODO MAYÚSCULAS, Apple usa semibold normal)
+- ❌ "Click para expandir" (Apple es English: "Toca para abrir")
+- ❌ `box-shadow: 0 1px 3px rgba(...)` (genérico, no Apple-style)
+
+### 📐 Lecciones aplicadas
+
+- **CEO design taste matters**: cuando el CEO dice "no me agrada", rediseñar con Apple 2026 real (no fake "Apple-like").
+- **Glass + spring + pill = Apple feel**: blur(12px) saturate(1.4) + cubic-bezier(0.34, 1.56, 0.64, 1) + border-radius: 999px = iOS 26 vibe.
+- **Spanish vs English en UI**: Apple UI usa "Toca para abrir" (ES para LATAM market), no "Click para expandir".
+
+---
+
 ## [3.10.37] - 2026-10-19 — 💡 Alertas estáticas + Despedida general (speech ↔speech premium)
 
 **CEO directive:** "hay algunos textos que son unicamente de apoyo para el agente que no suman como un speech, pero que deben usarse y talvez es repitan para mantener su uso. Luis, disculpa la demora y gracias por tu espera (informa la verificación o acción realizada) <- no sera un speech textual sera como una sola row de alerta dentro del padre MOTIVO DE LLAMADA. No olvides siempre pedir un momento en espera indicando el motivo y agradecer la retoma <- Debemos ser empáticos y conectar con el cliente. CONSULTA ADICIONAL: ¿Tienes alguna consulta adicional en la que te pueda ayudar? <- esto no debe ser un speech debe ser igual un texto de apoyo para recordar al agente. estatico mejor estilizado y no debe minimizarse. CIERRE: Vamos a retirar estas 2 ✓ ✗ y la reemplazamos por un speech de despedida general: {Cliente}, hemos realizado para ti el {proceso generado}, por ello solo faltaría que sigamos las indicaciones para ver una mejora en el servicio, ha sido un gusto de mi parte poder atenderte."
