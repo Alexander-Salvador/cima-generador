@@ -3306,16 +3306,22 @@ def test(html_path):
         bb_text_raw = bienvenida_bug_match.group(1)
         bb_text_visible = re.sub(r'<[^>]+>', '', bb_text_raw)
         bb_text_visible = re.sub(r'\s+', ' ', bb_text_visible).strip()
-        if 'l\u00ednea que termina en' in bb_text_visible and \
+        if 'Su consulta es por el numero que termina en' in bb_text_visible and \
            'por la consulta de' not in bb_text_visible and \
-           'data-ph="telefono-last3"' in bb_text_raw:
-            result.ok('v3.10.43 BUG 1: bienvenida usa telefono-last3 + sin "por la consulta de"')
+           'data-ph="telefono-last3"' in bb_text_raw and \
+           'Telefono en consulta' in bb_text_raw:
+            result.ok('v3.10.43+44 BUG 1: bienvenida "Su consulta es por el numero que termina en" + telefono-last3')
         else:
             issues = []
-            if 'l\u00ednea que termina en' not in bb_text_visible: issues.append('falta "línea que termina en"')
-            if 'por la consulta de' in bb_text_visible: issues.append('NO debe contener "por la consulta de"')
-            if 'data-ph="telefono-last3"' not in bb_text_raw: issues.append('falta data-ph="telefono-last3"')
-            result.fail('v3.10.43 BUG 1 bienvenida', f'issues: {issues}')
+            if 'Su consulta es por el numero que termina en' not in bb_text_visible:
+                issues.append('falta "Su consulta es por el numero que termina en"')
+            if 'por la consulta de' in bb_text_visible:
+                issues.append('NO debe contener "por la consulta de"')
+            if 'data-ph="telefono-last3"' not in bb_text_raw:
+                issues.append('falta data-ph="telefono-last3"')
+            if 'Telefono en consulta' not in bb_text_raw:
+                issues.append('falta placeholder "Telefono en consulta"')
+            result.fail('v3.10.43+44 BUG 1 bienvenida', f'issues: {issues}')
     else:
         result.fail('v3.10.43 BUG 1', 'script-text-bienvenida not found')
 
@@ -3371,6 +3377,88 @@ def test(html_path):
             result.fail('v3.10.43 BUG 3 .script-alert', 'font-size 10.5px + max-width 96% esperados')
     else:
         result.fail('v3.10.43 BUG 3 alert', '.script-alert CSS missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.44 — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS (Apple 2026)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.44 — HEADER estructura + MOTIVO cards visuales')
+
+    # HEADER GRID 0 dice "Estructura de Llamada" (no "Llamada")
+    if '>Estructura de Llamada<' in html:
+        result.ok('v3.10.44 HEADER: GRID 0 dice "Estructura de Llamada"')
+    else:
+        result.fail('v3.10.44 HEADER', 'HEADER GRID 0 debe decir "Estructura de Llamada"')
+
+    # HTML: motivo-grid container presente
+    if 'class="motivo-grid"' in html and 'role="radiogroup"' in html:
+        result.ok('v3.10.44 HTML: .motivo-grid container (role=radiogroup)')
+    else:
+        result.fail('v3.10.44 HTML motivo-grid', '.motivo-grid radiogroup esperado')
+
+    # HTML: 4 motivo cards total (1 active + 3 disabled) — solo contar en HTML
+    # (no en CSS que tiene los selectores)
+    n_active = len(re.findall(r'class="motivo-card motivo-card--active"', html))
+    n_disabled = len(re.findall(r'class="motivo-card motivo-card--disabled"', html))
+    if n_active == 1 and n_disabled == 3:
+        result.ok(f'v3.10.44 HTML: 1 card activa + 3 cards desactivadas (4 totales)')
+    else:
+        result.fail('v3.10.44 HTML cards count', f'1 active + 3 disabled esperados, {n_active} active + {n_disabled} disabled encontrados')
+
+    # HTML: card activa dice "Técnico Móvil"
+    if 'data-motivo-value="MOVIL"' in html and 'Técnico Móvil' in html and \
+       'Internet · Llamadas · SMS · Tethering' in html:
+        result.ok('v3.10.44 HTML: card activa = "Técnico Móvil" con sub-label 4 motivos')
+    else:
+        result.fail('v3.10.44 HTML active card', 'Técnico Móvil con Internet/Llamadas/SMS/Tethering esperado')
+
+    # HTML: 3 cards desactivadas (Otras Consultas, Avería Masiva, GTR Crítico)
+    disabled_labels = ['Otras Consultas', 'Avería Masiva', 'GTR Crítico']
+    missing_disabled = [d for d in disabled_labels if d not in html]
+    if not missing_disabled:
+        result.ok('v3.10.44 HTML: 3 cards desactivadas (Otras Consultas/Avería Masiva/GTR Crítico)')
+    else:
+        result.fail('v3.10.44 HTML disabled cards', f'faltan labels: {missing_disabled}')
+
+    # HTML: badge "Próximamente" en cards desactivadas
+    n_prox = html.count('Próximamente')
+    if n_prox >= 3:
+        result.ok(f'v3.10.44 HTML: {n_prox} badges "Próximamente" en cards desactivadas')
+    else:
+        result.fail('v3.10.44 HTML badge', f'≥3 badges "Próximamente" esperados, {n_prox} encontrados')
+
+    # CSS: .motivo-card glass + transition
+    motivo_card_css = re.search(r'\.motivo-card\s*\{([^}]+)\}', html, re.DOTALL)
+    if motivo_card_css and 'background:' in motivo_card_css.group(1) and \
+       'transition:' in motivo_card_css.group(1):
+        result.ok('v3.10.44 CSS: .motivo-card glass + transition')
+    else:
+        result.fail('v3.10.44 CSS motivo-card', 'background glass + transition esperados')
+
+    # CSS: .motivo-card--disabled estilo (opacity + cursor: not-allowed)
+    motivo_disabled_css = re.search(r'\.motivo-card--disabled\s*\{([^}]+)\}', html, re.DOTALL)
+    if motivo_disabled_css and 'opacity:' in motivo_disabled_css.group(1) and \
+       'not-allowed' in motivo_disabled_css.group(1):
+        result.ok('v3.10.44 CSS: .motivo-card--disabled opacity + cursor not-allowed')
+    else:
+        result.fail('v3.10.44 CSS disabled', 'opacity + not-allowed esperados')
+
+    # CSS: .motivo-card--active[aria-checked="true"] (gradient sage cuando seleccionada)
+    if '.motivo-card--active[aria-checked="true"]' in html:
+        result.ok('v3.10.44 CSS: .motivo-card--active[aria-checked=true] gradient sage')
+    else:
+        result.fail('v3.10.44 CSS active checked', 'gradient sage en estado seleccionado esperado')
+
+    # JS: initMotivoCards() función definida
+    if 'function initMotivoCards()' in html:
+        result.ok('v3.10.44 JS: initMotivoCards() función definida')
+    else:
+        result.fail('v3.10.44 JS initMotivoCards', 'función initMotivoCards esperada')
+
+    # JS: initMotivoCards() llamada en DOMContentLoaded
+    if re.search(r'initMotivoCards\(\)', html):
+        result.ok('v3.10.44 JS: initMotivoCards() invocada en init')
+    else:
+        result.fail('v3.10.44 JS init call', 'initMotivoCards() debe invocarse en DOMContentLoaded')
 
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:

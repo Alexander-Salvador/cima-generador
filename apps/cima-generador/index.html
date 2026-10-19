@@ -1099,6 +1099,114 @@
     border-color: color-mix(in srgb, var(--text) 65%, transparent);
     background-color: var(--glass-3-bg);
   }
+  /* v3.10.44: MOTIVO grid — 4 cards visuales premium Apple 2026.
+     1 activa (Técnico Móvil) + 3 desactivadas (Próximamente).
+     Glass effect, pill-shape sutil, spring transition. */
+  .motivo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .motivo-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--glass-1-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.22s var(--motion-ease);
+    position: relative;
+    min-height: 44px;
+  }
+  .motivo-card-icon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .motivo-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .motivo-card-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    letter-spacing: 0.005em;
+  }
+  .motivo-card-sub {
+    font-size: 9px;
+    color: var(--text-faint);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+  }
+  /* Estado ACTIVO — glass premium con accent sage + check visible */
+  .motivo-card--active:hover {
+    border-color: color-mix(in srgb, #10b981 50%, transparent);
+    background: linear-gradient(135deg,
+      color-mix(in srgb, #10b981 8%, var(--glass-2-bg)) 0%,
+      color-mix(in srgb, #059669 4%, var(--glass-1-bg)) 100%);
+    transform: translateY(-1px);
+  }
+  .motivo-card--active[aria-checked="true"] {
+    border-color: color-mix(in srgb, #10b981 70%, transparent);
+    background: linear-gradient(135deg,
+      color-mix(in srgb, #10b981 16%, var(--glass-2-bg)) 0%,
+      color-mix(in srgb, #059669 8%, var(--glass-1-bg)) 100%);
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .motivo-card-check {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .motivo-card--active[aria-checked="true"] .motivo-card-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+  /* Estado DESACTIVADO — opacidad 0.5, no-allowed, badge "Próximamente" */
+  .motivo-card--disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: color-mix(in srgb, var(--text) 3%, var(--glass-1-bg));
+  }
+  .motivo-card--disabled:hover {
+    opacity: 0.7;
+  }
+  .motivo-card-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 7.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 5px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-faint) 20%, transparent);
+    color: var(--text-faint);
+    line-height: 1.2;
+  }
   .script-card {
     margin-top: 6px;
     padding: 8px 10px;
@@ -3664,16 +3772,16 @@ font-size: 10px;
        localStorage. Variables arriba (Agente, Cliente, Teléfono, Motivo)
        auto-reemplazan {placeholders} en TODAS las cards via JS live update.
        Persistencia: cima_script_vars_v1 + cima_script_done_v1. ═══════════ -->
-   <div class="grid-block" id="gridScript" data-grid="script">
-     <div class="section">
-       <button type="button" class="grid-toggle" id="gridScript-toggle"
-               aria-expanded="true" aria-controls="gridScript-body">
-         <h3>Llamada</h3>
-         <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-           <polyline points="6 9 12 15 18 9"/>
-         </svg>
-       </button>
-       <div class="grid-body" id="gridScript-body">
+<div class="grid-block" id="gridScript" data-grid="script">
+      <div class="section">
+        <button type="button" class="grid-toggle" id="gridScript-toggle"
+                aria-expanded="true" aria-controls="gridScript-body">
+          <h3>Estructura de Llamada</h3>
+          <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="grid-body" id="gridScript-body">
 
 <!-- TOP: Variables (filled once, all scripts auto-update live)
                v3.10.31: Teléfono renombrado a "TELÉFONO EN CONSULTA" + Motivo
@@ -3698,15 +3806,54 @@ font-size: 10px;
               </div>
               <div class="field">
                 <label for="script-motivo">Motivo</label>
-                <select id="script-motivo" data-script-var="motivo" autocomplete="off">
+<select id="script-motivo" data-script-var="motivo" autocomplete="off" hidden>
                   <option value="">— Seleccionar —</option>
-                  <option value="INTERNET">INTERNET</option>
-                  <option value="LLAMADAS">LLAMADAS</option>
+                  <option value="MOVIL">Técnico Móvil</option>
+                  <option value="INTERNET">Internet</option>
+                  <option value="LLAMADAS">Llamadas</option>
                   <option value="SMS">SMS</option>
-                  <option value="THETERING">THETERING</option>
-                  <option value="OTRO">OTRO (transferir)</option>
+                  <option value="THETERING">Tethering</option>
+                  <option value="OTRO">Otras Consultas (transferir)</option>
                 </select>
+                <!-- v3.10.44: MOTIVO rediseñado como 4 cards visuales (Apple 2026).
+                     1 activa (Técnico Móvil) + 3 desactivadas (próximamente).
+                     Click en card activa → selecciona. Click en desactivada → toast. -->
+                <div class="motivo-grid" role="radiogroup" aria-label="Motivo de la llamada">
+                  <button type="button" class="motivo-card motivo-card--active" data-motivo-value="MOVIL" role="radio" aria-checked="false">
+                    <span class="motivo-card-icon" aria-hidden="true">📱</span>
+                    <span class="motivo-card-body">
+                      <span class="motivo-card-label">Técnico Móvil</span>
+                      <span class="motivo-card-sub">Internet · Llamadas · SMS · Tethering</span>
+                    </span>
+                    <span class="motivo-card-check" aria-hidden="true">✓</span>
+                  </button>
+                  <button type="button" class="motivo-card motivo-card--disabled" data-motivo-preview="OTRAS" disabled aria-disabled="true">
+                    <span class="motivo-card-icon" aria-hidden="true">🔀</span>
+                    <span class="motivo-card-body">
+                      <span class="motivo-card-label">Otras Consultas</span>
+                      <span class="motivo-card-sub">Tema externo · Transferido</span>
+                    </span>
+                    <span class="motivo-card-badge">Próximamente</span>
+                  </button>
+                  <button type="button" class="motivo-card motivo-card--disabled" data-motivo-preview="AVERIA" disabled aria-disabled="true">
+                    <span class="motivo-card-icon" aria-hidden="true">📡</span>
+                    <span class="motivo-card-body">
+                      <span class="motivo-card-label">Avería Masiva</span>
+                      <span class="motivo-card-sub">Cambio de speech operativo</span>
+                    </span>
+                    <span class="motivo-card-badge">Próximamente</span>
+                  </button>
+                  <button type="button" class="motivo-card motivo-card--disabled" data-motivo-preview="GTR" disabled aria-disabled="true">
+                    <span class="motivo-card-icon" aria-hidden="true">⚡</span>
+                    <span class="motivo-card-body">
+                      <span class="motivo-card-label">GTR Crítico</span>
+                      <span class="motivo-card-sub">Cambio de speech crítico</span>
+                    </span>
+                    <span class="motivo-card-badge">Próximamente</span>
+                  </button>
+                </div>
               </div>
+            </div>
             </div>
           </div>
 
@@ -3733,10 +3880,12 @@ font-size: 10px;
             <div class="script-card" data-script-id="bienvenida">
               
                <div class="script-card-body">
-                 <!-- v3.10.43: BUG FIX — Solo últimos 3 dígitos del teléfono
-                      (privacidad + identificación). "por la consulta de {Motivo}"
-                      REMOVIDO porque ya se trackea en MOTIVO DE LLAMADA. -->
-                 <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, le saluda <span class="ph" data-ph="agente">{Agente}</span>. ¿Me comunico con el titular de la línea que termina en <span class="ph" data-ph="telefono-last3">{Últimos 3}</span>? ¿Es correcto?"</p>
+                 <!-- v3.10.44: Speech bienvenida — CEO directive.
+                      "¿Su consulta es por el numero que termina en {Telefono en consulta}?
+                      ¿Es correcto?" — placeholder dice "Telefono en consulta"
+                      (no "Últimos 3"), toma el número del input y muestra
+                      últimos 3 dígitos via telefono-last3 transformation. -->
+                 <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, le saluda <span class="ph" data-ph="agente">{Agente}</span>. ¿Su consulta es por el numero que termina en <span class="ph" data-ph="telefono-last3">{Telefono en consulta}</span>? ¿Es correcto?"</p>
                </div>
             </div>
 
@@ -3838,7 +3987,7 @@ font-size: 10px;
           </div>
 
          <!-- v3.10.31: CARD EXTRA — Transferir (solo visible cuando motivo === OTRO).
-              El canal TÉCNICO MÓVIL solo resuelve INTERNET/LLAMADAS/SMS/THETHERING.
+              El canal TÉCNICO MÓVIL solo resuelve INTERNET/LLAMADAS/SMS/THETERING.
               Si el cliente consulta por OTRO motivo, transferimos al área
               especializada sin hacer averías ni consulta adicional. -->
 <div class="script-card script-card--transfer" data-script-id="transferir" hidden>
@@ -4098,7 +4247,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.43</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.44</span>
     </span>
   </footer>
 </div>
@@ -4535,6 +4684,67 @@ function initScriptCardClick() {
       var id = card.dataset.scriptId;
       if (id) toggleScriptCardCollapse(id);
     });
+  });
+}
+
+// v3.10.44: MOTIVO CARDS — click en card activa selecciona + sync con select
+// oculto. Click en card desactivada muestra toast "Próximamente".
+function initMotivoCards() {
+  var motivoSelect = $('script-motivo');
+  if (!motivoSelect) return;
+
+  // Card activa — click selecciona
+  document.querySelectorAll('.motivo-card--active').forEach(function (card) {
+    card.addEventListener('click', function () {
+      var value = card.dataset.motivoValue;
+      motivoSelect.value = value;
+      // Update visual state (aria-checked)
+      document.querySelectorAll('.motivo-card--active').forEach(function (c) {
+        c.setAttribute('aria-checked', 'false');
+      });
+      card.setAttribute('aria-checked', 'true');
+      // Disparar update placeholders (usa el mismo handler que change del select)
+      var ev = new Event('change', { bubbles: true });
+      motivoSelect.dispatchEvent(ev);
+      motivoSelect.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  });
+
+  // Cards desactivadas — click muestra toast
+  document.querySelectorAll('.motivo-card--disabled').forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      e.preventDefault();
+      var label = card.querySelector('.motivo-card-label');
+      var labelText = label ? label.textContent : 'esta categoría';
+      // Toast simple en console + anuncio accesible
+      announce('Categoría "' + labelText + '" próximamente disponible');
+      // Mini feedback visual (toast nativo popup, no añadir DOM)
+      try {
+        var n = card.querySelector('.motivo-card-badge');
+        if (n) {
+          var orig = n.textContent;
+          n.textContent = 'Pronto ✨';
+          setTimeout(function () { n.textContent = orig; }, 1400);
+        }
+      } catch (e) {}
+    });
+  });
+
+  // Sync inicial: si el select tiene valor, marcar la card correspondiente
+  syncMotivoCardsFromSelect();
+}
+
+// v3.2.0: sincroniza aria-checked de las cards con el valor del select
+function syncMotivoCardsFromSelect() {
+  var motivoSelect = $('script-motivo');
+  if (!motivoSelect) return;
+  var currentVal = motivoSelect.value;
+  document.querySelectorAll('.motivo-card--active').forEach(function (card) {
+    if (card.dataset.motivoValue === currentVal) {
+      card.setAttribute('aria-checked', 'true');
+    } else {
+      card.setAttribute('aria-checked', 'false');
+    }
   });
 }
 
@@ -5956,7 +6166,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.43] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.44] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -7538,6 +7748,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // 5) v3.10.34: click-to-collapse — aplicar estados persistidos + wire up listeners
   applyScriptCollapsedStates();
   initScriptCardClick();
+  // v3.10.44: motivo cards visuales (Técnico Móvil + 3 desactivadas)
+  initMotivoCards();
   // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
   renderTipifs();        // Inicializa grid 2 (vacío)
   initPopupMode();      // D-8: responsive desktop + botón X cerrar
