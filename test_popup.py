@@ -2863,109 +2863,120 @@ def test(html_path):
     else:
         result.fail('v3.10.27 CSS btn-clear', 'btn-icon-clear con border dashed esperado')
 
-    # ══════════════════════════════════════════════════════════════════════
-    # v3.10.33 — HEADER Estructura de Atención v3 (simplificación inteligente)
-    # CEO directive: "Vamos a mejorarlo de manera inteligente. EL HEADER DEL
-    # GRID arreglalo ya te dije que no es SCRIPT LLAMADA. Bienvenida e
-    # identificacion es el header de las opciones y abajo debe tener solo 1
-    # speech no 3... arregla comas puntas etc... Cuando se le de click a 1
-    # se ocultara como si ya estuviera realizado minimizandose con un check.
-    # <- debemos eliminar el icono de copiar no es necesario. Vamos a retirar
-    # los subtiles de SPEECH 2"
-    # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.10.33 — HEADER simplificado (1 speech + click-to-done)')
+    # ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    # v3.10.34 — HEADER refinado (click-to-collapse + nuevos speeches MOTIVO)
+    # CEO directives:
+    # - 'Luis, ¿Con quién tengo el gusto?' lo eliminamos es innecesario
+    # - 'Si le damos click... se debe minizar para no ocupar espacio se debe
+    #   contener en su padre BIENVENIDA E IDENTIFICACION'
+    # - MOTIVO Sondea speech: '{Cliente}, ¿en qué puedo ayudarte? Cuál sería
+    #   el motivo de tu comunicación o consulta.'
+    # - Sondeo de identificación de AVERIAS: departamento/provincia/distrito,
+    #   luego dirección, luego referencia
+    # ╗═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.34 — HEADER refinado (click-to-collapse + nuevos speeches)')
 
-    # HTML: grid header NO es "Script Llamada" (CEO directive)
-    if '>Script Llamada<' in html:
-        result.fail('v3.10.33 HEADER regresión', 'grid header NO debe ser "Script Llamada"')
-    elif '>Llamada<' in html:
-        result.ok('v3.10.33 HTML: grid header "Llamada" (no "Script Llamada")')
+    # HTML: speech Sondea contiene el speech específico del CEO
+    sondea_match = re.search(
+        r'id="script-text-sondea"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if sondea_match:
+        sondea_text = sondea_match.group(1)
+        if '¿en qué puedo ayudarte' in sondea_text and 'motivo de tu comunicación o consulta' in sondea_text:
+            result.ok('v3.10.34 SPEECH: Sondea con speech específico CEO')
+        else:
+            result.fail('v3.10.34 SPEECH sondea', 'speech Sondea no coincide con CEO directive')
+
+    # HTML: speech Sondeo identificación de AVERIAS contiene los 3 pasos
+    sondeo_averias_match = re.search(
+        r'id="script-text-sondeo-averias"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if sondeo_averias_match:
+        sa_text = sondeo_averias_match.group(1)
+        expected_phrases = [
+            'departamento te encuentras',
+            'provincia y distrito por favor',
+            'dirección donde te encuentras',
+            'mz, lote, avenida, urb',
+            'alguna referencia'
+        ]
+        missing_phrases = [p for p in expected_phrases if p not in sa_text]
+        if not missing_phrases:
+            result.ok('v3.10.34 SPEECH: Sondeo identificación AVERIAS con 3 pasos completos')
+        else:
+            result.fail('v3.10.34 SPEECH sondeo-averias', f'faltan: {missing_phrases}')
     else:
-        result.fail('v3.10.33 HTML header', 'grid header debe ser "Llamada"')
+        result.fail('v3.10.34 SPEECH sondeo-averias', 'script-text-sondeo-averias not found')
 
-    # HTML: Bienvenida tiene SOLO 1 speech (no 3 variaciones)
-    # Anti-regression: bienvenida-1, bienvenida-2, bienvenida-3 NO deben existir
-    for old_id in ['bienvenida-1', 'bienvenida-2', 'bienvenida-3']:
-        if f'data-script-id="{old_id}"' in html:
-            result.fail('v3.10.33 anti-regression', f'{old_id} debería estar consolidado')
-    if 'data-script-id="bienvenida"' in html and 'data-script-id="con-quien"' in html:
-        result.ok('v3.10.33 HTML: Bienvenida consolidada (1 speech + 1 ¿Con quién tengo el gusto?)')
+    # HTML: card sondeo-averias presente
+    if 'data-script-id="sondeo-averias"' in html:
+        result.ok('v3.10.34 HTML: card "sondeo-averias" presente')
     else:
-        result.fail('v3.10.33 HTML bienvenida', 'bienvenida y con-quien deben existir')
+        result.fail('v3.10.34 HTML sondeo-averias', 'card missing')
 
-    # HTML: speech Bienvenida con puntuación arreglada
+    # CSS: .is-collapsed state (click-to-collapse)
+    if '.script-card.is-collapsed' in html:
+        result.ok('v3.10.34 CSS: .script-card.is-collapsed (estado collapse)')
+    else:
+        result.fail('v3.10.34 CSS .is-collapsed', '.script-card.is-collapsed missing')
+
+    # CSS: .script-card-body wrapper para collapse
+    if '.script-card-body' in html and '.script-card.is-collapsed .script-card-body' in html:
+        result.ok('v3.10.34 CSS: .script-card-body wrapper + display:none on collapsed')
+    else:
+        result.fail('v3.10.34 CSS body', '.script-card-body + display:none on collapsed')
+
+    # JS: click-to-collapse functions
+    if 'function toggleScriptCardCollapse(' in html:
+        result.ok('v3.10.34 JS: toggleScriptCardCollapse() función definida')
+    else:
+        result.fail('v3.10.34 JS toggle', 'toggleScriptCardCollapse() missing')
+    if 'function applyScriptCollapsedStates(' in html:
+        result.ok('v3.10.34 JS: applyScriptCollapsedStates() carga estados persistidos')
+    else:
+        result.fail('v3.10.34 JS apply collapsed', 'applyScriptCollapsedStates() missing')
+
+    # JS: localStorage collapse persistence
+    if 'SCRIPT_COLLAPSED_STORAGE_KEY' in html and 'cima_script_collapsed_v1' in html:
+        result.ok('v3.10.34 JS: localStorage collapse persistence (cima_script_collapsed_v1)')
+    else:
+        result.fail('v3.10.34 JS collapse storage', 'cima_script_collapsed_v1 missing')
+
+    # Anti-regression: v3.10.33 is-done REMOVIDO (reemplazado por is-collapsed)
+    if '.script-card.is-done' not in html:
+        result.ok('v3.10.34: .is-done (v3.10.33) REMOVIDO — reemplazado por .is-collapsed')
+    else:
+        result.fail('v3.10.34 anti-is-done regresión', '.is-done debería estar eliminado')
+
+    # Anti-regression: bienvenida NO debe mencionar TÉCNICO MÓVIL (CEO v3.10.31)
     bienvenida_match = re.search(
         r'id="script-text-bienvenida"[^>]*>(.+?)</p>',
         html, re.DOTALL
     )
     if bienvenida_match:
         bienvenida_text = bienvenida_match.group(1)
-        # CEO directive: puntuación completa con puntos (no comas)
-        expected_substrings = ['Bienvenido a Movistar', 'te saluda', 'Te comunicas por', 'de tu número', '¿Es correcto?']
-        missing_substrings = [s for s in expected_substrings if s not in bienvenida_text]
-        if not missing_substrings:
-            result.ok('v3.10.33 SPEECH: bienvenida con puntuación completa (puntos, ¿Es correcto?)')
+        if 'TÉCNICO MÓVIL' in bienvenida_text:
+            result.fail('v3.10.34 ANTI-anti', 'bienvenida NO debe mencionar TÉCNICO MÓVIL')
+        elif 'Bienvenido a Movistar' in bienvenida_text and '¿Es correcto?' in bienvenida_text:
+            result.ok('v3.10.34 SPEECH: bienvenida SIN TÉCNICO MÓVIL (anti-regression)')
         else:
-            result.fail('v3.10.33 SPEECH bienvenida', f'falta: {missing_substrings}')
-
-    # HTML: 4 secciones con headers de color (lowercase como CEO)
-    expected_sections = [
-        'Bienvenida e identificación',
-        'Motivo de la llamada',
-        'Consulta adicional + App Movistar',
-        'Cierre + Encuesta'
-    ]
-    missing_sections = [s for s in expected_sections if s not in html]
-    if not missing_sections:
-        result.ok(f'v3.10.33 HTML: 4 secciones (lowercase) presentes')
+            result.fail('v3.10.34 SPEECH bienvenida', 'texto bienvenida no esperado')
     else:
-        result.fail('v3.10.33 HTML sections', f'sections faltantes: {missing_sections}')
+        result.fail('v3.10.34 SPEECH bienvenida', 'script-text-bienvenida not found')
 
-    # CSS: section headers con color (blue, green, orange, purple) preserved
-    for color in ['blue', 'green', 'orange', 'purple']:
-        if f'.script-section-header--{color}' in html:
-            result.ok(f'v3.10.33 CSS: .script-section-header--{color}')
-        else:
-            result.fail(f'v3.10.33 CSS {color}', f'.script-section-header--{color} missing')
+    # Anti-regression: copyScriptCard() REMOVIDO (CEO directive v3.10.33)
+    if 'function copyScriptCard(' not in html:
+        result.ok('v3.10.34: copyScriptCard() ELIMINADO (CEO directive preservada)')
+    else:
+        result.fail('v3.10.34 JS copy regresión', 'copyScriptCard() debería estar eliminado')
 
-    # HTML: SPEECH 1/2/3 hint boxes REMOVIDOS (CEO directive)
-    for hint_text in ['Speech 1 · Cuando', 'Speech 2 · Cuando', 'Speech 3 · Cuando']:
-        if hint_text in html:
-            result.fail('v3.10.33 hint regresión', f'{hint_text} debería estar removido')
-    if 'Speech 1' not in html and 'Speech 2' not in html and 'Speech 3' not in html:
-        result.ok('v3.10.33 HTML: hints "Speech 1/2/3" REMOVIDOS')
-
-    # HTML: badges ✅ ❌ ⭐ preserved
-    if 'script-badge--ok' in html and 'script-badge--fail' in html and 'script-badge--star' in html:
-        result.ok('v3.10.33 HTML: badges ✅ ❌ ⭐ preservados')
+    # Anti-regression: 0 copy buttons (CEO directive v3.10.33)
+    if html.count('class="script-card-copy"') == 0:
+        result.ok('v3.10.34 HTML: 0 botones copy (CEO directive preservada)')
     else:
-        result.fail('v3.10.33 HTML badges regresión', 'badges ok/fail/star missing')
-
-    # CSS: .is-done state (click-to-done)
-    if '.script-card.is-done' in html:
-        result.ok('v3.10.33 CSS: .script-card.is-done (estado done con ✓)')
-    else:
-        result.fail('v3.10.33 CSS .is-done', '.script-card.is-done missing')
-
-    # JS: click-to-done functions
-    if 'function toggleScriptDone(' in html:
-        result.ok('v3.10.33 JS: toggleScriptDone() función definida')
-    else:
-        result.fail('v3.10.33 JS toggle', 'toggleScriptDone() missing')
-    if 'function initScriptCardClick(' in html:
-        result.ok('v3.10.33 JS: initScriptCardClick() wire up listeners')
-    else:
-        result.fail('v3.10.33 JS init click', 'initScriptCardClick() missing')
-    if 'function applyScriptDoneStates(' in html:
-        result.ok('v3.10.33 JS: applyScriptDoneStates() carga estados persistidos')
-    else:
-        result.fail('v3.10.33 JS apply done', 'applyScriptDoneStates() missing')
-
-    # JS: localStorage done persistence
-    if 'SCRIPT_DONE_STORAGE_KEY' in html and 'cima_script_done_v1' in html:
-        result.ok('v3.10.33 JS: localStorage done persistence (cima_script_done_v1)')
-    else:
-        result.fail('v3.10.33 JS done storage', 'cima_script_done_v1 missing')
+        result.fail('v3.10.34 HTML copy buttons regresión', '0 esperados')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.28 — Inputs filled clean + toast wording
@@ -3056,22 +3067,29 @@ def test(html_path):
         result.fail('v3.10.30 HTML grid', 'id="gridScript" o id="gridAddress" missing')
 
     # HTML: 8 script cards presentes
-    # v3.10.33: cards según estructura del flujo de llamada
-    # (Bienvenida×2: bienvenida + con-quien / Motivo×5 / Consulta+App×2 /
-    #  Cierre×3 + +Transferir)
-    expected_cards_v33 = [
-        'bienvenida', 'con-quien',
-        'sondea', 'brinda-solucion', 'atencion-segura',
+    # v3.10.34: cards según estructura del flujo de llamada
+    # (Bienvenida×1 / Motivo×5 / Consulta+App×2 / Cierre×3 + +Transferir)
+    # v3.10.34: REMOVIDO 'con-quien', REMOVIDO 'sondea'/'v3.10.30 motivo-llamada',
+    # AÑADIDO 'sondeo-averias'.
+    expected_cards_v34 = [
+        'bienvenida',
+        'sondea', 'sondeo-averias', 'atencion-segura',
         'tiempo-espera', 'retorno',
         'consulta-adicional', 'educa-app',
         'cierre-con-solucion', 'cierre-sin-solucion',
         'encuesta', 'transferir'
     ]
-    missing_cards = [c for c in expected_cards_v33 if 'data-script-id="' + c + '"' not in html]
+    missing_cards = [c for c in expected_cards_v34 if 'data-script-id="' + c + '"' not in html]
     if not missing_cards:
-        result.ok(f'v3.10.33 HTML: 13 script cards presentes ({len(expected_cards_v33)} totales)')
+        result.ok(f'v3.10.34 HTML: 12 script cards presentes ({len(expected_cards_v34)} totales)')
     else:
-        result.fail('v3.10.33 HTML cards', f'cards faltantes: {missing_cards}')
+        result.fail('v3.10.34 HTML cards', f'cards faltantes: {missing_cards}')
+
+    # v3.10.34: con-quien REMOVIDO (CEO: innecesario)
+    if 'data-script-id="con-quien"' not in html:
+        result.ok('v3.10.34 HTML: "con-quien" card REMOVIDO (CEO directive)')
+    else:
+        result.fail('v3.10.34 HTML regresión', '"con-quien" debería estar eliminado')
 
     # HTML: 4 inputs vars
     expected_vars = ['script-agente', 'script-cliente', 'script-telefono', 'script-motivo']
