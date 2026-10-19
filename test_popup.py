@@ -3184,18 +3184,18 @@ def test(html_path):
     else:
         result.fail('v3.10.37 HTML alerts', f'≥4 alerts esperados, {n_alerts_motivo} encontrados')
 
-    # HTML: alert textos específicos del CEO presentes
+    # HTML: alert textos AI 2026 (v3.10.41 modernizados)
     expected_alerts = [
-        'disculpa la demora y gracias por tu espera',
-        'No olvides siempre pedir un momento en espera',
-        'Debemos ser emp\u00e1ticos y conectar con el cliente',
-        'consulta adicional en la que te pueda ayudar'
+        'gracias por tu paciencia',
+        'Antes de ausentarte',
+        'Conecta desde la empat\u00eda',
+        'hay algo m\u00e1s en lo que puedas'
     ]
     missing_alerts = [a for a in expected_alerts if a not in html]
     if not missing_alerts:
-        result.ok('v3.10.37 HTML: 4 alertas específicas del CEO presentes')
+        result.ok('v3.10.41 HTML: 4 alertas AI 2026 modernas presentes')
     else:
-        result.fail('v3.10.37 HTML alerts textos', f'faltan: {missing_alerts}')
+        result.fail('v3.10.41 HTML alerts textos', f'faltan: {missing_alerts}')
 
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
