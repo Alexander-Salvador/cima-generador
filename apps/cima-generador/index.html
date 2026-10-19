@@ -4988,40 +4988,30 @@ function showApagadoPanelInline(btn, currentCheck, addrCtx) {
   };
   panel.addEventListener('click', panel._clickHandler);
 
-  // Cerrar al click fuera del panel y grid, o ESC
+  // v3.10.21: cerrar al click fuera del panel y grid, o ESC.
+  // Listener PERSISTENTE (sin {once: true}) para que se dispare en CADA
+  // click posterior. Se elimina solo cuando se cierra el panel.
+  // El setTimeout(0) evita que el click que ABRIÓ el panel se procese
+  // como "click outside" inmediatamente.
   setTimeout(function() {
-    document.addEventListener('click', zaOutsideClick, { once: true, capture: true });
-    document.addEventListener('keydown', zaEscListener, { once: true });
+    document.addEventListener('click', zaOutsideClick, { capture: true });
+    document.addEventListener('keydown', zaEscListener);
   }, 0);
 }
 
 function zaOutsideClick(e) {
-  // v3.8.0 (FIX 3): si el panel INLINE está visible, click dentro del
-  // panel no debe cerrarlo. Click en el botón ⚠️ o en el speech cierra
-  // otros casos.
+  // v3.10.21: click-outside listener persistente.
+  // 1) Si el panel NO está visible → ignorar.
+  // 2) Si el click es dentro del panel → ignorar.
+  // 3) Si el click es en el botón ⚠️ → ignorar (su handler decide).
+  // 4) Si el click es en cualquier otra parte → cerrar panel.
   var panel = document.getElementById('apagadoSpeechPanel');
-  if (panel && !panel.hidden) {
-    if (panel.contains(e.target)) {
-      // re-bind para próximo click dentro del panel
-      document.addEventListener('click', zaOutsideClick, { once: true, capture: true });
-      return;
-    }
-    // Si el click fue en el botón cobertura, dejar que su handler decida
-    var btn = document.getElementById('coberturaBtn');
-    if (btn && btn.contains(e.target)) return;
-  }
-  // Legacy: tooltip flotante
-  var t = document.getElementById('apagadoTooltipActive');
-  if (t && !t.contains(e.target)) {
-    var btn2 = document.getElementById('coberturaBtn');
-    if (!(btn2 && btn2.contains(e.target))) {
-      zaCloseApagadoTooltip();
-    }
-  } else if (!t && (!panel || panel.hidden)) {
-    return;
-  }
-  // Si llegamos aquí y no hay panel/tooltip visible, no hacer nada
-  if (!t && (!panel || panel.hidden)) return;
+  if (!panel || panel.hidden) return;
+  if (panel.contains(e.target)) return;
+  var btn = document.getElementById('coberturaBtn');
+  if (btn && btn.contains(e.target)) return;
+  // Click fuera: cerrar.
+  zaCloseApagadoTooltip();
 }
 
 function zaEscListener(e) {
