@@ -1124,19 +1124,20 @@
     border-color: color-mix(in srgb, var(--green) 30%, var(--glass-border));
   }
   .script-card.is-collapsed .script-card-body { display: none; }
-  .script-card.is-collapsed .script-card-header::after {
-    content: "▾";
-    margin-left: auto;
+  /* v3.10.35: cuando card está collapsed, mostrar ✓ "listo/hecho" inline.
+     El badge aparece en top-right de la card, confirmando al agente
+     que ese paso fue completado. */
+  .script-card.is-collapsed::after {
+    content: "✓ Hecho";
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
     color: var(--green);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-  }
-  .script-card:not(.is-collapsed) .script-card-header::after {
-    content: "▴";
-    margin-left: auto;
-    color: var(--text-faint);
-    font-size: 11px;
-    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
   /* v3.10.32: SECTION HEADERS (4 categorías con colores CEO)
      Patrón "▌ <Nombre>" con barra lateral de color para identificar
@@ -3608,9 +3609,7 @@ font-size: 10px;
            </div>
 
            <div class="script-card" data-script-id="bienvenida">
-             <div class="script-card-header">
-               <h4>Bienvenida</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, te saluda <span class="ph" data-ph="agente">{Agente}</span>. Te comunicas por <span class="ph" data-ph="motivo">{Motivo}</span> de tu número <span class="ph" data-ph="telefono">{Telefono}</span>. ¿Es correcto?"</p>
              </div>
@@ -3624,36 +3623,28 @@ font-size: 10px;
            </div>
 
            <div class="script-card" data-script-id="sondea">
-             <div class="script-card-header">
-               <h4>Sondea el problema o necesidad del cliente</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-sondea">"<span class="ph" data-ph="cliente">{Cliente}</span>, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta."</p>
              </div>
            </div>
 
            <div class="script-card" data-script-id="sondeo-averias">
-             <div class="script-card-header">
-               <h4>Sondeo de identificación de AVERIAS</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-sondeo-averias">"<span class="ph" data-ph="cliente">{Cliente}</span>, me indicas en qué departamento te encuentras, provincia y distrito por favor. Gracias. Ahora me indicarias por favor cuál es tu dirección donde te encuentras en este momento, para verificar la cobertura de la zona, mz, lote, avenida, urb. Bien, por último me bríndame alguna referencia."</p>
              </div>
            </div>
 
            <div class="script-card" data-script-id="atencion-segura">
-             <div class="script-card-header">
-               <h4>Atención segura</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">{Cliente}</span>, en caso se corte la llamada puedo realizar la devolución al número que me está llamando o podría brindarme otro número de celular".</p>
              </div>
            </div>
 
            <div class="script-card" data-script-id="tiempo-espera">
-             <div class="script-card-header">
-               <h4>Tiempo de espera</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-tiempo-espera">"<span class="ph" data-ph="cliente">{Cliente}</span>, por favor, permítame un momento en línea mientras valido su información <span class="ph-inline">(indica brevemente la acción a realizar)</span>".</p>
                <p style="margin-top:6px;font-size:10px;color:var(--text-faint);"><strong>Importante:</strong> En consultas complejas retoma cada 60 segundos.</p>
@@ -3661,9 +3652,7 @@ font-size: 10px;
            </div>
 
            <div class="script-card" data-script-id="retorno">
-             <div class="script-card-header">
-               <h4>Retorno</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-retorno">"<span class="ph" data-ph="cliente">{Cliente}</span>, disculpa la demora y gracias por tu espera <span class="ph-inline">(informa la verificación o acción realizada)</span>".</p>
              </div>
@@ -3677,18 +3666,14 @@ font-size: 10px;
            </div>
 
            <div class="script-card" data-script-id="consulta-adicional">
-             <div class="script-card-header">
-               <h4>Consulta adicional</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-consulta-adicional">"¿Tienes alguna consulta adicional en la que te pueda ayudar?"</p>
              </div>
            </div>
 
            <div class="script-card" data-script-id="educa-app">
-             <div class="script-card-header">
-               <h4>Educa al App y envía link por SMS</h4>
-             </div>
+             
              <div class="script-card-body">
                <p class="script-card-text" id="script-text-educa-app">"<span class="ph" data-ph="cliente">{Cliente}</span>, recuerda que en la App Mi Movistar puedes consultar tu saldo, cuánto debes, ver y pagar tu recibo, además de encontrar beneficios exclusivos para nuestros clientes. Te enviaremos un enlace por SMS para que resuelvas tus consultas de forma más rápida".</p>
              </div>
@@ -3702,31 +3687,25 @@ font-size: 10px;
            </div>
 
            <div class="script-card" data-script-id="cierre-con-solucion">
-             <div class="script-card-header">
-               <span class="script-badge script-badge--ok" aria-label="Cierre con solución">✓</span>
-               <h4>Cierre con solución</h4>
-             </div>
+             
              <div class="script-card-body">
+                <span class="script-badge script-badge--ok" aria-label="Cierre con solución">✓</span>
                <p class="script-card-text" id="script-text-cierre-con-solucion">"<span class="ph" data-ph="cliente">{Cliente}</span>, ya realizamos <span class="ph-inline">(detallar la solución)</span> por lo que hemos solucionado tu avería".</p>
              </div>
            </div>
 
            <div class="script-card" data-script-id="cierre-sin-solucion">
-             <div class="script-card-header">
-               <span class="script-badge script-badge--fail" aria-label="Cierre sin solución">✗</span>
-               <h4>Cierre sin solución</h4>
-             </div>
+             
              <div class="script-card-body">
+                <span class="script-badge script-badge--fail" aria-label="Cierre sin solución">✗</span>
                <p class="script-card-text" id="script-text-cierre-sin-solucion">"<span class="ph" data-ph="cliente">{Cliente}</span>, ya realizamos <span class="ph-inline">(detallar la atención)</span> esperamos haber orientado tu consulta de manera satisfactoria".</p>
              </div>
            </div>
 
            <div class="script-card" data-script-id="encuesta">
-             <div class="script-card-header">
-               <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
-               <h4>Invita a encuesta</h4>
-             </div>
+             
              <div class="script-card-body">
+                <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
                <p class="script-card-text" id="script-text-encuesta">"Para finalizar, te agradeceré completar una breve encuesta sobre mi atención y en 48 horas, te contactaremos para confirmar tu experiencia final con la solución que te brindé. ¡Muchas gracias por tu tiempo!"</p>
              </div>
            </div>
@@ -3737,9 +3716,7 @@ font-size: 10px;
               Si el cliente consulta por OTRO motivo, transferimos al área
               especializada sin hacer averías ni consulta adicional. -->
          <div class="script-card script-card--transfer" data-script-id="transferir" hidden>
-           <div class="script-card-header">
-             <h4>Transferir (canal no TÉCNICO MÓVIL)</h4>
-           </div>
+           
            <div class="script-card-body">
              <p class="script-card-text" id="script-text-transferir"><span class="ph" data-ph="cliente">{Cliente}</span>, detectamos que tu consulta no corresponde al canal TÉCNICO MÓVIL. Vamos a transferir tu llamada con un asesor especializado para que te brinde la atención correcta. ¿Me lo permites, <span class="ph" data-ph="cliente">{Cliente}</span>?</p>
            </div>
@@ -3995,7 +3972,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.34</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.35</span>
     </span>
   </footer>
 </div>
@@ -5847,7 +5824,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.34] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.35] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');

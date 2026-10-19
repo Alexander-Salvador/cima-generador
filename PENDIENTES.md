@@ -1,8 +1,8 @@
-# CIMA v3.10.34 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.35 — Lista de Pendientes (Estado al cierre de sesión)
 
 **Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
-## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-34 BUSQUEDA ADDRESS v9 + GRID 0 Script v5)
+## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-35 BUSQUEDA ADDRESS v10 + GRID 0 Script v6)
 
 ## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.30) — 20 commits
 
@@ -31,7 +31,8 @@
 | **v3.10.31** | **HEADER Estructura de Atención mejorada**: phone label "TELÉFONO EN CONSULTA" + motivo `<select>` con 5 opciones (INTERNET/LLAMADAS/SMS/THETERING/OTRO) + speeches con puntuación completa + canal TÉCNICO MÓVIL explícito + flujo OTRO diferenciado (oculta 4+6, muestra card 9 Transferir) | 2d45f91 |
 | **v3.10.32** | **HEADER Estructura de Atención v2 (matching imagen CEO)**: CEO rechazó v3.10.31 (textos agresivos perdieron sentido). Restaurada estructura matching imagen: 4 secciones con headers de color (blue/green/orange/purple), 3 Bienvenida speeches con hint boxes, TIP callout "Personaliza tu llamada", badges ✅/❌/⭐ en CIERRE. Speech original restaurado sin cambios agresivos. Anti-regression test. | 3df74ee |
 | **v3.10.33** | **HEADER simplificación inteligente**: grid header "Llamada" + Bienvenida consolidada (1 speech general) + puntuación arreglada (puntos, ¿Es correcto?) + copy icons REMOVIDOS + click-to-done UX (cards → toggle ✓ done + colapsa + localStorage) + anti-regression SIN TÉCNICO MÓVIL | 4e3dffd |
-| **v3.10.34** | **HEADER refinado (click-to-collapse + nuevos speeches)**: "con-quien" REMOVIDO + click-to-done reemplazado por click-to-collapse (body hidden) + MOTIVO Sondea con speech específico + NUEVO Sondeo identificación AVERIAS (3 pasos) | TBD |
+| **v3.10.34** | **HEADER refinado (click-to-collapse + nuevos speeches)**: "con-quien" REMOVIDO + click-to-done reemplazado por click-to-collapse (body hidden) + MOTIVO Sondea con speech específico + NUEVO Sondeo identificación AVERIAS (3 pasos) | c3cc117 |
+| **v3.10.35** | **OPTIMIZACIÓN single header (sin duplicado) + ✓ Hecho indicator**: eliminado `<h4>` duplicado de las 12 cards (CEO: doble header) + section header es el ÚNICO header por sección + nuevo `.is-collapsed::after { content: "✓ Hecho" }` para marcar pasos completados | TBD |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|

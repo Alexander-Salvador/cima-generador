@@ -1,5 +1,98 @@
 # Changelog — cima-generador
 
+## [3.10.35] - 2026-10-19 — 🎯 OPTIMIZACIÓN: single header (sin duplicado) + ✓ Hecho indicator
+
+**CEO directive:** "Vamos a Optimizar ya que hay doble header BIENVENIDA E IDENTIFICACION BIENVENIDA + SPEECH debe hacerse 1 solo para no estirar tanto espacio corrige de manera lineal para todos los textos y al minimizarse se debe marcar como listo o hecho"
+
+### 🎯 Causa raíz
+
+Cada `.script-card` tenía un header duplicado:
+- **Section header**: "Bienvenida e identificación" (en cada sección)
+- **Card header `<h4>`**: "Bienvenida", "Sondea el problema...", "Brinda solución", etc.
+
+Esto estiraba el espacio innecesariamente. El CEO pidió:
+- **UN SOLO header por sección** (eliminar el card-level h4)
+- **Aplicar linealmente a todos los textos** (todas las cards sin h4)
+- **Al minimizarse → marcar como "listo/hecho"** (✓ Hecho indicator)
+
+### 🔧 Cambios
+
+#### 1. Eliminado `<h4>` de todas las cards
+
+```html
+<!-- ANTES: 12 headers duplicados (1 por card) -->
+<div class="script-card" data-script-id="bienvenida">
+  <div class="script-card-header">
+    <h4>Bienvenida</h4>  <!-- ← ELIMINADO -->
+  </div>
+  <div class="script-card-body">
+    <p class="script-card-text">"Bienvenido a Movistar..."</p>
+  </div>
+</div>
+
+<!-- AHORA: 0 headers duplicados (solo section header) -->
+<div class="script-card" data-script-id="bienvenida">
+  <div class="script-card-body">
+    <p class="script-card-text">"Bienvenido a Movistar..."</p>
+  </div>
+</div>
+```
+
+Aplicado a **TODAS las 12 cards** (Bienvenida, Motivo×5, Consulta+App×2, Cierre×3, Transferir).
+
+#### 2. ✓ "Hecho" indicator en cards colapsadas
+
+```css
+/* v3.10.35: cuando card está collapsed, mostrar ✓ "Hecho" inline */
+.script-card.is-collapsed::after {
+  content: "✓ Hecho";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+```
+
+Cuando el agente click → card collapse + body hidden + ✓ "Hecho" aparece al lado del contenedor. El card sigue visible pero marca que ese paso se hizo.
+
+#### 3. Single header preservado
+
+| Section | Header (single) |
+|---|---|
+| Bienvenida e identificación | ✅ (mantenido) |
+| Motivo de la llamada | ✅ (mantenido) |
+| Consulta adicional + App Movistar | ✅ (mantenido) |
+| Cierre + Encuesta | ✅ (mantenido) |
+
+#### 4. Badges Cierre preservados (✓ ✗ ★)
+
+Los badges `script-badge--ok`, `--fail`, `--star` se preservan dentro del body (ya no son headers duplicados). Indican visualmente el TIPO de cierre (con solución / sin solución / encuesta).
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **525/525 PASS** (+4 nuevos tests v3.10.35) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,072 chars JS) |
+| HTML balanced | 87 `<div>` open = 87 close (-12 from v3.10.34) |
+| HTML size | -900 chars (más compacto) |
+
+### 📐 Lecciones aplicadas
+
+- **L-067/068/069**: complejidad visual escala peor. Eliminar headers redundantes mejora la densidad de información.
+- **Single source of truth**: section header es la ÚNICA fuente de "qué es este grupo". Cards muestran solo el contenido.
+- **Visual indicators**: cuando una card se colapsa, debe comunicar su estado ("Hecho") sin ocupar más espacio.
+
+---
+
 ## [3.10.34] - 2026-10-19 — 🎯 HEADER refinado (click-to-collapse + nuevos speeches MOTIVO)
 
 **CEO directive:** "Estamos cerca. En BIENVENIDA Y IDENTIFICACION Solo mantenemos 1 speech -> Bienvenido a Movistar, te saluda Williams Huerta. Te comunicas por INTERNET de tu número 992319171. ¿Es correcto? Luis, ¿Con quién tengo el gusto? <- lo eliminamos es inncesario. Si le damos click a 'Bienvenido a Movistar...' <- se debe minizar para no ocupar espacio se debe contener en su padre BIENVENIDA E IDENTIFICACION. MOTIVO DE LA LLAMADA — Sondea el problema o necesidad del cliente debe decir el speech: {cliente} en que puedo ayudarte? cual seria el motivo de tu comunicacion o consulta. Sondeo de identificacion de AVERIAS para esto debe preguntar {Cliente}, me indicas en que departamento te encuentras?, provincia y distrito por favor! Gracias, ahora me indicarias por favor cual es tu direccion donde te encuentras en este momento? para verificar la cobertura de la zona, mz, lote, avenida, urb. Bien por ultimo me bríndame alguna referencia?"

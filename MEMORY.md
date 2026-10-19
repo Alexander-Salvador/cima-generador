@@ -56,13 +56,13 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-19 — v3.10.34 FIN SESIÓN (24 commits: v3.10.11 → v3.10.34)**.
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.35 FIN SESIÓN (25 commits: v3.10.11 → v3.10.35)**.
 
 **Estado del popup:**
-- **Versión actual (develop):** v3.10.34
-- **Tests passing:** 610 (521 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
+- **Versión actual (develop):** v3.10.35
+- **Tests passing:** 614 (525 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
 - **Popup LIVE (origin/main):** v3.9.15 (push pendiente CEO)
-- **Branch develop:** v3.10.34 (34 commits desde v3.9.15)
+- **Branch develop:** v3.10.35 (35 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
 **Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.30):**
@@ -85,6 +85,7 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.34 FIN SESI�
 - ✅ **v3.10.32: HEADER Estructura de Atención v2** — CEO rechazó v3.10.31 (textos agresivos perdieron sentido). Restaurada estructura matching imagen: 4 secciones con headers de color (blue Bienvenida / green Motivo / orange Consulta+App / purple Cierre), 3 Bienvenida speeches con hint boxes, TIP callout "Personaliza tu llamada", badges ✅/❌/⭐ en CIERRE. Speech original del CEO restaurado sin cambios agresivos. Anti-regression test agregado.
 - ✅ **v3.10.33: HEADER Estructura de Atención v3 (simplificación inteligente)** — (1) Grid header renombrado "Script Llamada" → "Llamada". (2) Bienvenida consolidada: 1 SOLO speech general (no 3 variaciones). (3) Puntuación arreglada: comas → puntos, "numero" → "número", "¿Es correcto?" (CEO directive). (4) Copy icons REMOVIDOS de todas las cards + función `copyScriptCard()` eliminada. (5) Click-to-done UX: cada card clickeable → toggle ✓ verde done + colapsa + persiste en `localStorage.cima_script_done_v1`. (6) Anti-regression test: bienvenida SIN "TÉCNICO MÓVIL".
 - ✅ **v3.10.34: HEADER refinado (click-to-collapse + nuevos speeches)** — (1) "Luis, ¿Con quién tengo el gusto?" REMOVIDO (CEO: innecesario). (2) Click-to-done reemplazado por click-to-COLLAPSE: card click → `.is-collapsed` (body hidden, padding reducido, border verde) → contenido contained en section parent. Persiste en `cima_script_collapsed_v1`. (3) MOTIVO Sondea speech específico CEO: "{Cliente}, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta." (4) NUEVO card "Sondeo de identificación de AVERIAS" con 3 pasos: dpto+prov+dist → dirección (mz/lote/av/urb) → referencia.
+- ✅ **v3.10.35: OPTIMIZACIÓN single header (sin duplicado) + ✓ Hecho indicator** — (1) Eliminado `<h4>` duplicado de las 12 cards (CEO: "ya que hay doble header... debe hacerse 1 solo"). Single source of truth: section header es el ÚNICO header por sección. (2) NUEVO `.script-card.is-collapsed::after { content: "✓ Hecho" }` — cuando la card está minimized, marca visualmente que ese paso se hizo. (3) Badges ✓/✗/★ de Cierre preservados dentro del body. Aplicado linealmente a todas las cards.
 
 **Logros previos (v3.10.0 → v3.10.10):**
 - 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras
