@@ -3460,6 +3460,60 @@ def test(html_path):
     else:
         result.fail('v3.10.44 JS init call', 'initMotivoCards() debe invocarse en DOMContentLoaded')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.45 — BUG FIXES (layout + telefono-last3)
+    # CEO: "Formato roto. No se hizo cambios correctos, las opciones deben
+    # estar dentro de MOTIVO. En el speech dice {telefono en consulta} no
+    # esta tomando realmente la indicacion que te di el numero que ya esta
+    # ingresado en la plantilla inicial."
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.45 — BUG FIXES: layout MOTIVO full-width + telefono-last3 alias')
+
+    # BUG 1 LAYOUT: MOTIVO en row-1 (no comparte row con TELÉFONO)
+    # Estructura HTML esperada:
+    #   <div class="field-row row-1"><div class="field">script-telefono</div></div>
+    #   <div class="field-row row-1"><div class="field">script-motivo + cards</div></div>
+    layout_ok = (
+        re.search(
+            r'<div\s+class="field-row\s+row-1">\s*<div\s+class="field">\s*<label\s+for="script-telefono"',
+            html, re.DOTALL
+        ) is not None and
+        re.search(
+            r'<div\s+class="field-row\s+row-1">\s*<div\s+class="field">\s*<label\s+for="script-motivo"',
+            html, re.DOTALL
+        ) is not None
+    )
+    if layout_ok:
+        result.ok('v3.10.45 BUG 1: MOTIVO y TELÉFONO en row-1 separados (full-width cada uno)')
+    else:
+        result.fail('v3.10.45 BUG 1 layout', 'MOTIVO y TELÉFONO deben estar en field-row row-1 separados')
+
+    # CSS: .row-1 = single column full width
+    if re.search(r'\.row-1\s*\{[^}]*grid-template-columns:\s*1fr\s*;?\s*\}', html):
+        result.ok('v3.10.45 CSS: .row-1 { grid-template-columns: 1fr } (full-width)')
+    else:
+        result.fail('v3.10.45 CSS .row-1', '.row-1 con grid-template-columns 1fr esperado')
+
+    # BUG 2 JS: vars incluye 'telefono-last3' alias
+    vars_check = re.search(
+        r"var\s+vars\s*=\s*\{[^}]*['\"]telefono-last3['\"]\s*:",
+        html, re.DOTALL
+    )
+    if vars_check:
+        result.ok('v3.10.45 BUG 2 JS: vars[\'telefono-last3\'] alias (toma input telefono)')
+    else:
+        result.fail('v3.10.45 BUG 2 JS', 'vars["telefono-last3"] alias esperado')
+
+    # Anti-regresión: speech bienvenida sigue con "Su consulta es por el numero que termina en"
+    bienvenida_re = re.search(
+        r'id="script-text-bienvenida"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if bienvenida_re and 'Su consulta es por el numero que termina en' in re.sub(r'<[^>]+>', '', bienvenida_re.group(1)):
+        result.ok('v3.10.45 ANTI-regresión: speech bienvenida mantiene redacción CEO')
+    else:
+        result.fail('v3.10.45 anti-regresion', 'speech bienvenida debe mantener "Su consulta es por el numero..."')
+
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
         result.ok('v3.10.37 HTML: retorno card REMOVIDO (reemplazado por alerts)')
