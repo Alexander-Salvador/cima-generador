@@ -80,18 +80,30 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.48 FIN SESI�
 ### Estado del Remoto (post-push CEO 2026-10-19)
 
 ```
-origin/develop @ d68e24b (v3.10.48) — synced
-origin/main    @ [pending] (v3.10.48 subtree-split → popup LIVE)
+✅ origin/develop @ 6f1aee0 (v3.10.48) — synced
+✅ origin/main    @ 6f8870f (v3.10.48) — synced (popup LIVE)
+✅ GitHub Pages build status: built (39s, commit 6f8870f)
+✅ last-modified: 2026-10-19 21:32:28 UTC
 ```
 
-✅ **Push autorizado.** CEO autorizó explícitamente: "Commitea todo completo, actualiza memory, git head y pusheas a remoto ... y verificas que se actualice correctamente en github pages".
+✅ **Push exitoso.** CEO autorizó explícitamente: "Commitea todo completo, actualiza memory, git head y pusheas a remoto ... y verificas que se actualice correctamente en github pages".
+
+**Deploy pipeline ejecutado:**
+1. `git push origin develop:develop` → 10 commits pusheados a origin/develop (db3ef98..6f1aee0)
+2. `git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy` → 287 commits procesados, HEAD 6f8870f
+3. `git push -f origin popup-deploy:main` → force-push a origin/main (c71fd60..6f8870f)
+4. GitHub Pages auto-rebuild: status `built`, duration 39s
+5. Verificación LIVE: https://alexander-salvador.github.io/cima-generador/ → footer v3.10.48 ✓
 
 **Estado del popup:**
 - **Versión actual (develop + popup LIVE):** v3.10.48
 - **Tests passing:** 595 (577 popup + 18 nuevos v3.10.47-48)
-- **Popup LIVE (origin/main):** v3.10.48 (subtree-split push)
+- **Popup LIVE (origin/main):** v3.10.48 — verificado en vivo
 - **Branch develop:** v3.10.48 (44 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
+
+**Nota técnica — bug push refspec:**
+El `.git/config` original tenía `push = refs/heads/*:refs/remotes/origin/*` (bug histórico que enviaba pushes a `refs/remotes/origin/*` en vez de `refs/heads/*`). Corregido a `refs/heads/*:refs/heads/*` durante este deploy. Esto resolvió el síntoma L-013/L-014 del MEMORY histórico.
 
 **Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.30):**
 - ✅ v3.10.11: Eliminado código UBIGEO como primer caserío en CCPP_DATA (39 d6 contaminados)
