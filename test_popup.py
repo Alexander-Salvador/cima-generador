@@ -244,11 +244,12 @@ def test(html_path):
         dist_items = re.findall(r'"([^"]+)"', sizes.group(2))
         total_zones = int(sizes.group(3))
         total_districts = int(sizes.group(4))
-        # v3.10.12: ccpp_keys 200 (CCPP exactos COMU-5514 estaciones base).
+        # v3.10.13: ccpp_keys 234 (CCPP exactos COMU-5514 estaciones base, recuperación
+        # end-to-end de 32 CCPPs del data consolidada + 2 sin match CCPP_DATA).
         # districts_with_off: SOLO CCPP exactos (sin IPT/2G). Antes incluía 1798 IPT.
-        if len(ccpp_items) == 200: result.ok(f'ccpp_keys size = {len(ccpp_items)} (200 expected, cleaned v3.8.0)')
+        if len(ccpp_items) == 234: result.ok(f'ccpp_keys size = {len(ccpp_items)} (234 expected, recuperación v3.10.13)')
         elif len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 legacy, NOT cleaned)')
-        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 200 cleaned or 239 legacy)')
+        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 234 recovered or 239 legacy)')
         if len(dist_items) >= 100: result.ok(f'districts_with_off size = {len(dist_items)} (>=100, sin IPT)')
         if total_zones >= 200: result.ok(f'total_zones = {total_zones} (>=200)')
         else: result.fail(f'total_zones', f'{total_zones} (expected >=200)')

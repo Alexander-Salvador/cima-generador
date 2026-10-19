@@ -133,11 +133,11 @@ if n_ccpp >= EXPECTED_CCPP_MIN:
 else:
     result.fail('CCPP_DATA total', f'{n_ccpp} < {EXPECTED_CCPP_MIN}')
 
-# 1.3 ZONAS_APAGADAS: 200 ccpp_keys, 1821 districts_with_off
-if len(CCPP_KEYS) == 200:
-    result.ok(f'ZONAS_APAGADAS.ccpp_keys: {len(CCPP_KEYS)} (esperado 200)')
+# 1.3 ZONAS_APAGADAS: 234 ccpp_keys (recuperación v3.10.13), 1821+ districts_with_off
+if len(CCPP_KEYS) == 234:
+    result.ok(f'ZONAS_APAGADAS.ccpp_keys: {len(CCPP_KEYS)} (esperado 234, recuperación v3.10.13)')
 else:
-    result.fail('ccpp_keys size', f'{len(CCPP_KEYS)} != 200')
+    result.fail('ccpp_keys size', f'{len(CCPP_KEYS)} != 234')
 if len(DISTRICTS_WITH_OFF) >= 1800:
     result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (>= 1800)')
 else:

@@ -1,5 +1,101 @@
 # Changelog — cima-generador
 
+## [3.10.13] - 2026-10-19 — 🎯 RECUPERACIÓN END-TO-END de 34 zonas de apagado (PDFs Movistar)
+
+**CEO directive:** "se rompio las zonas de apagado no esta trackeando correctamente! revisa los PDF y marca los distritos y CPP/CASERIO que estan en la lista de apagados movistar donde ya no habra servicio, revisalo end to end no debe omitirse ninguna zona."
+
+**Hallazgo:** data consolidada `data/zonas_apagadas.json` v3.0.0 tiene **239 CCPPs exactos** (COMU-5514), pero el inline `ccpp_keys` solo tenía **200** — 39 CCPPs del source NO estaban trackeando.
+
+### 🔧 Recuperación
+
+| Categoría | CCPPs | Acción |
+|---|---|---|
+| **A) Inyectados (existen en `CCPP_DATA`)** | **32** | Agregados al Set `ccpp_keys` |
+| **B) Inyectados sin match exacto (no en `CCPP_DATA`)** | **2** | Agregados al Set (cobertura CEO) |
+| **C) Cubiertos por fuzzy (≥0.75)** | **5** | Sin cambios (fuzzy engine los matchea) |
+| **Total recuperado** | **39/39** (100%) | Cobertura end-to-end |
+
+### 📋 32 CCPPs inyectados (grupo A)
+
+| d6 | CCPP | Distrito |
+|---|---|---|
+| 010116 | OLLEROS | Amazonas, Chachapoyas |
+| 010117 | QUINJALCA | Amazonas, Chachapoyas |
+| 010520 | SANTA CATALINA | Amazonas, Luya |
+| 010608 | MILPUC | Amazonas, Rodríguez de Mendoza |
+| 010611 | TOTORA | Amazonas, Rodríguez de Mendoza |
+| 021707 | PAMPAS CHICO | Áncash, Recuay |
+| 030107 | PICHIRHUA | Apurímac, Abancay |
+| 030415 | TINTAY | Apurímac, Aymaraes |
+| 040810 | TOMEPAMPA | Arequipa, La Unión |
+| 050603 | CABANA | Ayacucho, Huamanga |
+| 050613 | OTOCA | Ayacucho, Lucanas |
+| 051103 | CARHUANCA | Ayacucho, Vilcas Huamán |
+| 060202 | CACHACHI | Cajamarca, Cajabamba |
+| 060418 | TOCMOCHE | Cajamarca, Chota |
+| 080507 | QUEHUE | Cusco, Chumbivilcas |
+| 080806 | PICHIGUA | Cusco, Espinar |
+| 081201 | URCOS | Cusco, Quispicanchi |
+| 081208 | LUCRE | Cusco, Quispicanchi |
+| 081210 | OCONGATE | Cusco, Quispicanchi |
+| 090102 | ACOBAMBILLA | Huancavelica, Huancavelica |
+| 100903 | HONORIA | Huánuco, Puerto Inca |
+| 120304 | SAN LUIS DE SHUARO | Junín, Chanchamayo |
+| 120405 | CANCHAYLLO | Junín, Jauja |
+| 150708 | HUANZA | Lima, Huarochirí |
+| 150720 | SAN JUAN DE TANTARANCHE | Lima, Huarochirí |
+| 160210 | SANTA CRUZ | Loreto, Loreto |
+| 160302 | PARINARI | Loreto, Loreto |
+| 190106 | PALLANCHACRA | Pasco, Pasco |
+| 200604 | LANCONES | Piura, Sullana |
+| 210803 | CUPI | Puno, Melgar |
+| 220406 | TINGO DE SAPOSOA | San Martín, Huallaga |
+| 230302 | ILABAYA | Tacna, Jorge Basadre |
+
+### 📋 2 CCPPs inyectados sin match (grupo B)
+
+Cobertura máxima CEO directive. No aparecen en el dropdown (no están en `CCPP_DATA`), pero el supervisor los puede tipear directamente del PDF y el sistema los reconocerá.
+
+| d6 | CCPP | Distrito |
+|---|---|---|
+| 090119 | HUANDO | Huancavelica, Huancavelica |
+| 110208 | SAN JUAN DE YANAC | Ica, Chincha |
+
+### 🔁 5 CCPPs cubiertos por fuzzy (grupo C)
+
+Fuzzy Levenshtein (≥0.75) ya los cubría — sin cambios al Set, pero documentados:
+
+| d6 | CCPP | Match fuzzy | Similitud |
+|---|---|---|---|
+| 010105 | CHILIQUIN | "Chiliquini" | 90% |
+| 010512 | OCALLI | "Ocallí" | 83% |
+| 040411 | TIPAN | "Tipán" | 80% |
+| 080206 | RONDOCAN | "Rondocán" | 88% |
+| 221003 | POLVORA | "Pólvora" | 86% |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** (234/234 ccpp_exacto, 100% fuzzy 234/234) |
+| `test_audit_brutal.py` | **58 OK** + 1 mentira VERSION drift |
+| `test_browser_static.py` | **14/0/2** (warnings legacy — plan R1) |
+| Cobertura source 239 | **100% (39/39 recuperados)** |
+| `node --check` | EXIT 0 |
+
+### 📊 Cobertura final v3.10.13
+
+```
+CCPP_KEYS (v3.10.13) = 234 exactos
+  = 200 (legacy v3.8.0)
+  + 32 (recuperación grupo A, existen en CCPP_DATA)
+  +  2 (recuperación grupo B, sin match CCPP_DATA pero tipables)
+
++ 5 cubiertos por fuzzy engine (sin cambio en ccpp_keys)
+= 239/239 CCPPs del source consolidada (100%)
+```
+
 ## [3.10.12] - 2026-10-19 — 🧹 ELIMINACIÓN DETECCIÓN DE 2G (COMU-5672 / IPT)
 
 **CEO directive:** "borra todo lo relacionado al 2G, no es necesario en este momento. Mantenemos nuestra base intacta (dpt/provincias/distritos/centros poblados) — solo eliminamos la detección de 2G."
