@@ -362,9 +362,15 @@ curl -sI https://alexander-salvador.github.io/cima-generador/
 
 ---
 
-## 📍 Política CEO (alineada 2026-10-15)
+## 📍 Política CEO (alineada 2026-10-15, refactor 2026-10-19)
 
-✅ **CIMA NO tiene restricción de push.** Push a remoto es parte del flujo normal de sesión.
+⚠️ **CRIT-022 — CUALQUIER push a `origin/*` requiere OK EXPLÍCITO del CEO.**
+
+- Lección 2026-10-19: Una autorización inicial ("pusheas a remoto") NO cubre futuras acciones. Cada push necesita confirmación verbal del CEO.
+- Procedimiento correcto: cambios locales → commit local → pedir OK → push solo después de OK.
+- Hacer 3 pushes seguidos sin pedir OK fue un ERROR de procedimiento.
+
+✅ **CIMA NO tiene restricción de push** UNA VEZ que CEO da OK explícito por push.
 
 - Branch de trabajo local: `develop` (CIMA repo aggregated)
 - **Repos remotos autorizados:**
@@ -372,7 +378,8 @@ curl -sI https://alexander-salvador.github.io/cima-generador/
   - **NO** `https://github.com/Alexander-Salvador/cima.git` (CEO nunca confirmó; fue una creación errada de Thavren)
 - Push a `origin develop` permitido — pero usar `develop:develop` refspec explícito
 - Cada sesión: commit local + push develop + (cuando popup cambia) subtree split + force-push a main
-- ✅ Permitido: `git log`, `git status`, `git diff`, `git add`, `git commit`, `git reset`, `git push origin develop:develop`
+- ✅ Permitido: `git log`, `git status`, `git diff`, `git add`, `git commit`, `git reset`, `git push origin develop:develop` (todos estos sin OK, son read/operaciones locales)
+- ❌ Push a `origin/main` (subtree-split force-push) → REQUIERE OK del CEO
 
 > ⚠️ **CRIT-003 LEYENDAS (Thavren):**
 >
@@ -387,6 +394,8 @@ curl -sI https://alexander-salvador.github.io/cima-generador/
 > 5. **GitHub Pages**: requiere `index.html` en **root** del branch configurado (`main`). Subdirectorios NO se sirven automáticamente. Si popup vive en `apps/cima-generador/`, subtree split + force-push al main es el patrón. **v3.4.4 LIVE:** force-push exitoso el 2026-10-15 con CEO directive. Popup HEAD en origin/main: `cd997c4`.
 >
 > 6. **Refspec explícito en primer push de branch**: usar `local:remote` con `:` para evitar el bug que enviaba pushes a `refs/remotes/origin/*` en vez de `refs/heads/*`.
+>
+> 7. **v3.10.50 LECCIÓN PROCEDIMIENTO**: Cada push requiere OK explícito del CEO. NO asumir autorizaciones pasadas. Después de hacer cambios locales, pedir confirmación verbal antes de CUALQUIER push (develop, main, tags).
 
 > 🛑 **Cleanup pendientes del CEO:**
 >
