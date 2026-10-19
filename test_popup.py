@@ -3068,6 +3068,99 @@ def test(html_path):
         result.fail('v3.10.36 SPEECH tip', 'tip referencias missing')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.38 — Collapsed card diseño coherente
+    # CEO directive: 'Al darle click a los speech textuales se minimizan
+    # pero esteticamente mal diseñados y de tamaño, optimizalos dales mas
+    # coherencia'.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.39 — Collapsed card APPLE 2026 PREMIUM STYLE')
+
+    # CEO directive: "no me agrada cambialo a otro diferente necesito
+    # premium real en 2026. APPLE styles"
+    import re as re_mod
+
+    # CSS: pill shape (border-radius 999px = fully rounded Apple-style)
+    collapsed_match = re_mod.search(
+        r'\.script-card\.is-collapsed\s*\{([^}]+)\}',
+        html
+    )
+    if collapsed_match:
+        body = re_mod.sub(r'/\*[\s\S]*?\*/', '', collapsed_match.group(1))
+        if 'border-radius: 999px' in body and 'backdrop-filter' in body:
+            result.ok('v3.10.39 CSS: pill shape (999px) + glassmorphism (backdrop-filter)')
+        else:
+            result.fail('v3.10.39 CSS pill', 'border-radius 999px + backdrop-filter esperado')
+
+    # CSS: linear-gradient (Apple-style gradient backgrounds)
+    if 'linear-gradient(135deg' in body and '#10b981' in body and '#059669' in body:
+        result.ok('v3.10.39 CSS: linear-gradient(135deg) verde (#10b981 → #059669)')
+    else:
+        result.fail('v3.10.39 CSS gradient', 'linear-gradient verde esperado')
+
+    # CSS: spring transition (cubic-bezier Apple spring)
+    if 'cubic-bezier(0.34, 1.56, 0.64, 1)' in body or 'cubic-bezier(0.34, 1.56, 0.64, 1)' in html:
+        result.ok('v3.10.39 CSS: spring transition cubic-bezier(0.34, 1.56, 0.64, 1)')
+    else:
+        result.fail('v3.10.39 CSS spring', 'spring transition esperado')
+
+    # CSS: "✓ Hecho" pill badge (multiline regex)
+    before_match = re_mod.search(
+        r'\.script-card\.is-collapsed::before\s*\{([^}]+)\}',
+        html,
+        re_mod.DOTALL
+    )
+    if before_match:
+        before_body = re_mod.sub(r'/\*[\s\S]*?\*/', '', before_match.group(1))
+        if 'linear-gradient' in before_body and '#10b981' in before_body and 'border-radius: 999px' in before_body:
+            result.ok('v3.10.39 CSS: ::before "✓ Hecho" gradient pill (999px radius)')
+        else:
+            result.fail('v3.10.39 CSS before badge', '::before gradient pill esperado')
+
+    # CSS: "Toca para abrir ▴" hint (Apple Reminders style)
+    if 'Toca para abrir' in html and '▴' in html:
+        result.ok('v3.10.39 CSS: ::after "Toca para abrir ▴" hint (Apple Reminders)')
+    else:
+        result.fail('v3.10.39 CSS after hint', '"Toca para abrir ▴" hint esperado')
+
+    # CSS: hover lift + glow (Apple-style micro-interaction)
+    if '.script-card.is-collapsed:hover' in html and 'translateY(-1px)' in html and 'cubic-bezier' in html:
+        result.ok('v3.10.39 CSS: hover lift (-1px) + spring + glow box-shadow')
+    else:
+        result.fail('v3.10.39 CSS hover', 'hover lift + glow esperado')
+
+    # CSS: inset highlight (Apple glass effect)
+    if 'inset 0 1px 0 rgba(255, 255, 255' in body:
+        result.ok('v3.10.39 CSS: inset highlight blanco (Apple glass effect)')
+    else:
+        result.fail('v3.10.39 CSS inset', 'inset highlight esperado')
+
+    # Anti-regression: border-left 3px REMOVIDO (era v3.10.38 feo)
+    if 'border-left: 3px solid var(--green)' not in body:
+        result.ok('v3.10.39 anti-regression: border-left 3px REMOVIDO (v3.10.38 feo)')
+    else:
+        result.fail('v3.10.39 anti-border regresión', 'border-left 3px debería estar removido')
+
+    # Anti-regression: NO debe quedar "padding: 5px 10px" (era v3.10.34 feo)
+    if 'padding: 5px 10px' not in body:
+        result.ok('v3.10.39: viejo "padding: 5px 10px" REMOVIDO')
+    else:
+        result.fail('v3.10.39 anti-padding regresión', 'padding 5px 10px debería estar removido')
+
+    # CSS: ✓ body hidden when collapsed (CRITICAL)
+    if '.script-card.is-collapsed .script-card-body { display: none' in html:
+        result.ok('v3.10.39 CSS: .script-card-body hidden when collapsed (CRITICAL)')
+    else:
+        result.fail('v3.10.39 CSS body hidden', 'body hidden rule missing')
+
+    # CSS: text-shadow "✓ HECHO" all-caps REMOVIDO (v3.10.38 feo)
+    if 'text-transform: uppercase' not in body:
+        result.ok('v3.10.39: "text-transform: uppercase" REMOVIDO (era feo en v3.10.38)')
+    else:
+        result.fail('v3.10.39 anti-uppercase regresión', 'uppercase debería estar removido')
+
+
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.37 — ALERTAS ESTÁTICAS + DESPEDIDA GENERAL
     # CEO directive: 'algunos textos que son unicamente de apoyo para el
     # agente que no suman como un speech, pero que deben usarse y talvez

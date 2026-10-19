@@ -1115,16 +1115,87 @@
   .script-card:active { transform: scale(0.99); }
   /* v3.10.31: cards ocultas via atributo [hidden] (motivo OTRO toggle) */
   .script-card[hidden] { display: none; }
-  /* v3.10.34: estado COLLAPSED — card minimizado (solo título visible).
-     Reemplaza v3.10.33 is-done. El agente click → reduce el espacio usado.
-     Click again → expand. Persiste en localStorage. */
+  /* v3.10.39: Collapsed card — APPLE 2026 PREMIUM STYLE.
+     CEO: "no me agrada cambialo a otro diferente necesito premium real en
+     2026. APPLE styles". Diseño inspirado en iOS 26 / visionOS / macOS
+     Sequoia: pill-shape, glassmorphism con backdrop-filter, spring
+     transitions (cubic-bezier), gradient pill badge con glow, hover lift
+     + glow. Coherente con el design system premium del popup. */
   .script-card.is-collapsed {
-    padding: 5px 10px;
-    background: color-mix(in srgb, var(--green) 5%, var(--glass-1-bg));
-    border-color: color-mix(in srgb, var(--green) 30%, var(--glass-border));
+    /* Pill shape (Apple-style fully rounded) */
+    border-radius: 999px;
+    padding: 8px 14px;
+    min-height: 36px;
+
+    /* Soft green gradient (Apple Reminders done-state vibe) */
+    background: linear-gradient(135deg,
+      color-mix(in srgb, #10b981 8%, var(--glass-2-bg)) 0%,
+      color-mix(in srgb, #059669 4%, var(--glass-1-bg)) 100%);
+
+    /* Glassmorphism (v3.10.39 Apple 2026) */
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    backdrop-filter: blur(12px) saturate(1.4);
+
+    /* Premium border + inset highlight (Apple glass effect) */
+    border: 1px solid color-mix(in srgb, #10b981 28%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 1px 2px rgba(16, 185, 129, 0.06);
+
+    /* Smooth spring transition (Apple feel) */
+    transition: all 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
   .script-card.is-collapsed .script-card-body { display: none; }
-  /* v3.10.37: script-alert — fila estática de APOYO al agente (recordatorios,
+  /* v3.10.39: "✓ Hecho" gradient pill badge (Apple Reminders style) */
+  .script-card.is-collapsed::before {
+    content: "✓ Hecho";
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-radius: 999px;
+    box-shadow:
+      0 1px 3px rgba(16, 185, 129, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    flex-shrink: 0;
+  }
+  /* v3.10.39: "Toca para abrir ▴" hint (right side, subtle italic) */
+  .script-card.is-collapsed::after {
+    content: "Toca para abrir ▴";
+    font-size: 9.5px;
+    color: var(--text-faint);
+    font-style: italic;
+    flex: 1 1 auto;
+    text-align: right;
+    opacity: 0.85;
+  }
+  /* v3.10.39: Hover — lift + glow (Apple spring feel) */
+  .script-card.is-collapsed:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, #10b981 42%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 6px 16px rgba(16, 185, 129, 0.18);
+  }
+  .script-card.is-collapsed:hover::before {
+    background: linear-gradient(135deg, #34d399, #10b981);
+    box-shadow:
+      0 2px 6px rgba(16, 185, 129, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  }
+  .script-card.is-collapsed:hover::after {
+    color: var(--text);
+    opacity: 1;
+  }
+    /* v3.10.37: script-alert — fila estática de APOYO al agente (recordatorios,
      tips, reflexiones). NO es un speech (no tiene {Cliente} placeholder
      reemplazable) y NO se collapsa. Es estática para mantener su uso.
      Ejemplo: 'No olvides pedir un momento en espera...' */
@@ -1152,21 +1223,6 @@
   .script-alert-text {
     flex: 1 1 auto;
     min-width: 0;
-  }
-  /* v3.10.35: cuando card está collapsed, mostrar ✓ "listo/hecho" inline.
-     El badge aparece en top-right de la card, confirmando al agente
-     que ese paso fue completado. */
-  .script-card.is-collapsed::after {
-    content: "✓ Hecho";
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    color: var(--green);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
   /* v3.10.32: SECTION HEADERS (4 categorías con colores CEO)
      Patrón "▌ <Nombre>" con barra lateral de color para identificar
@@ -4011,7 +4067,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.37</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.39</span>
     </span>
   </footer>
 </div>
@@ -5863,7 +5919,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.37] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.39] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
