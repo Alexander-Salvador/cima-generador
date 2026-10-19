@@ -411,10 +411,15 @@
     letter-spacing: 0.12em;
     color: var(--text);
     font-weight: 800;
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--glass-border-strong);
     line-height: 1.2;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter var", "Inter", system-ui, sans-serif;
+  }
+  /* v3.10.24: dentro del grid-toggle, el h3 NO debe tener border-bottom
+     (la línea/raya horizontal debajo del header). El h3 hereda solo
+     estilos de tipografía, no la decoración. */
+  .grid-toggle h3 {
+    border-bottom: 0;
+    padding-bottom: 0;
   }
   /* ══════════════════════════════════════════════════════════════════════
      FIELDS OPTIMIZADOS (D-25 + Liquid Glass 2026)
@@ -949,6 +954,11 @@
      ══════════════════════════════════════════════════════════════════════ */
   .grid-block {
     margin-bottom: 4px;
+    /* v3.10.24: forzar width 100% para que ambas grids tengan el mismo
+       ancho (no dependan del contenido interno). Box-sizing border-box
+       para que el padding del .section no expanda el section. */
+    width: 100%;
+    box-sizing: border-box;
   }
   /* v3.10.23: header clickable (toggle) — anima max-height + opacity, chevron rota.
      Premium: easing var(--motion-spring-soft), sombra sutil al hover. */

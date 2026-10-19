@@ -1,5 +1,38 @@
 # Changelog — cima-generador
 
+## [3.10.24] - 2026-10-19 — 🐛 FIX: grids desbalanceadas + eliminar raya debajo del header
+
+**CEO directive:** "Revisa ambas grid y verifica que no esten rotas veo una mas ancha que la otra ademas retira la ralla debajo del header BUSQUEFDA ADREES. Elimina esas rallas de los header"
+
+### 🐛 Bug 1: Línea/raya debajo del header
+
+`.section h3` tenía `border-bottom: 1px solid var(--glass-border-strong)` que generaba una línea horizontal debajo del título "BÚSQUEDA ADDRESS" / "TIPIFICACIÓN". Con el nuevo `grid-toggle` (button), el h3 ya no debe tener decoración de separación — solo tipografía.
+
+**Fix:** eliminado `border-bottom` y `padding-bottom` del h3 cuando está dentro de `.grid-toggle` (regla específica `.grid-toggle h3 { border-bottom: 0; padding-bottom: 0; }`).
+
+### 🐛 Bug 2: Grids desbalanceadas (una más ancha que la otra)
+
+Las dos grids (Búsqueda Address + Tipificación) tenían anchos diferentes porque ni `.grid-block` ni `.section` tenían `width: 100%` explícito — dependían del contenido interno. La grid con contenido más ancho (Búsqueda Address con todos los campos) se expandía más que la otra (Tipificación con botones más estrechos).
+
+**Fix:** forzar `width: 100%` + `box-sizing: border-box` en `.grid-block` para que ambas grids ocupen exactamente el mismo ancho (el del padre `.app`).
+
+### 🔧 Cambios CSS
+
+| Selector | Cambio |
+|---|---|
+| `.grid-toggle h3` | `border-bottom: 0; padding-bottom: 0` (elimina la raya) |
+| `.grid-block` | `width: 100%; box-sizing: border-box` (ancho consistente) |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **474/474 PASS** |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | **55 OK** + 2 mentiras (VERSION drift + M4) |
+| `test_browser_static.py` | **14/0/2** |
+| `node --check` | EXIT 0 |
+
 ## [3.10.23] - 2026-10-19 — ✨ GRIDS colapsables (toggle premium inteligente con persistencia)
 
 **CEO directive:** "Vamos a agregar la funcion a las GRID que se puedan minimizar de manera premiun inteligente"
