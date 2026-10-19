@@ -1,5 +1,98 @@
 # Changelog — cima-generador
 
+## [3.10.46] - 2026-10-19 — 🐛 BUG FIXES: grid widths + CTRL+SHIFT+R + speeches CEO
+
+**CEO directives (4 bugs):**
+1. "Al hacer control shift + r, se deben borrar todos los datos ingresados por el agente en la plantilla."
+2. "Arreglar estos speech: 'Carlos, si la llamada se interrumpe...'. [nueva redacción] 'si la llamada llegara a cortarse, ¡puedo devolverle la llamada al numero de su consulta o prefiere brindarme un numero adicional para contactarlo?'."
+3. "La encuensta: En 48 horas lo contactaremos para para confirmar su experiencia final con la solucion que le brinde."
+4. "Se rompieron las dimenciones de las GRID - BUSQUEDA ADDRESS Y TIPIFICACION, tienen un ancho diferente a ESTRUCTURA DE LLAMADA."
+
+### 🔧 Cambios
+
+#### BUG 1 — CTRL+SHIFT+R limpia la plantilla
+
+```js
+// v3.10.46: handler global CTRL+SHIFT+R
+document.addEventListener('keydown', function (e) {
+  if (!(e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r'))) return;
+  e.preventDefault();  // NO recarga la página
+  clearScriptTemplate();
+});
+
+function clearScriptTemplate() {
+  // 1. Limpiar inputs
+  ['agente', 'cliente', 'telefono'].forEach(name => setScriptVar(name, ''));
+  // 2. Reset select motivo
+  motivoSelect.value = '';
+  motivoSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  // 3. Borrar localStorage persistido
+  localStorage.removeItem('cima_script_vars_v1');
+  // 4. Refrescar placeholders
+  updateScriptPlaceholders();
+  // 5. Sync visual motivo cards
+  syncMotivoCardsFromSelect();
+  // 6. Anuncio accesible
+  announce('Plantilla limpiada — todos los datos del agente reiniciados');
+}
+```
+
+`e.preventDefault()` evita el reload del browser (comportamiento default de CTRL+R / CTRL+SHIFT+R).
+
+#### BUG 4 — Grids mismo ancho (`.script-vars` sin panel)
+
+```css
+/* v3.10.42 (rechazado por CEO): panel interno con padding/background/border
+   consumía ~22px de ancho — inputs más estrechos que Búsqueda Address / Tipificación. */
+.script-vars {
+  margin-bottom: var(--space-2);
+  padding: 8px 10px;            /* ← eliminado */
+  border: 1px solid var(--glass-border);  /* ← eliminado */
+  border-radius: var(--radius-lg);      /* ← eliminado */
+  background: var(--glass-1-bg);        /* ← eliminado */
+}
+
+/* v3.10.46: solo spacing wrapper — inputs viven directamente en .section
+   con el mismo ancho que en los otros 2 grids. */
+.script-vars {
+  margin-bottom: var(--space-2);
+}
+```
+
+Los inputs ya tienen sus propios estilos glass; el wrapper es solo spacing.
+
+#### BUG 2 — Speech `atencion-segura` (CEO directive)
+
+```html
+<!-- v3.10.42 (rechazado): -->
+"{Cliente}, si la llamada se interrumpe, ¿puedo devolverle la llamada a este mismo número o prefiere brindarme uno alternativo para contactarlo?"
+
+<!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
+     ¡puedo devolverle la llamada al numero de su consulta o prefiere
+     brindarme un numero adicional para contactarlo?" -->
+"{Cliente}, si la llamada llegara a cortarse, ¿puedo devolverle la llamada al número de su consulta o prefiere brindarme un número adicional para contactarlo?"
+```
+
+#### BUG 3 — Speech `encuesta` (CEO directive)
+
+```html
+<!-- v3.10.42 (rechazado): -->
+"...confirmar que su servicio quedó resuelto."
+
+<!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
+     confirmar su experiencia final con la solucion que le brinde." -->
+"...confirmar su experiencia final con la solución que le brindé."
+```
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +6 nuevos tests v3.10.46
+- ✅ 577 → 583 tests PASS
+- ✅ Anti-regresión: `.section` mantiene border (grids Address/Tipif intactos)
+- ✅ Tests existentes actualizados a nueva redacción CEO
+
+---
+
 ## [3.10.45] - 2026-10-19 — 🐛 BUG FIXES: layout MOTIVO full-width + telefono-last3 alias
 
 **CEO directive:** "Formato roto [...] No se hizo cambios correctos, las opciones deben estar dentro de MOTIVO. En el speech dice {telefono en consulta} no esta tomando realmente la indicacion que te di el numero que ya esta ingresado en la plantilla inicial."

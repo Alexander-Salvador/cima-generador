@@ -1050,12 +1050,13 @@
      Top vars (Agente, Cliente, Teléfono, Motivo) auto-reemplazan los
      placeholders en TODAS las cards via JS live update.
      ══════════════════════════════════════════════════════════════════════ */
+  /* v3.10.46: BUG FIX — .script-vars sin padding/background/border.
+     El panel interno consumía ~22px de ancho (10px padding + 2px border),
+     haciendo los inputs de ESTRUCTURA DE LLAMADA visiblemente más estrechos
+     que los inputs de Búsqueda Address y Tipificación. Los inputs ya tienen
+     sus propios estilos glass; el wrapper es solo spacing. */
   .script-vars {
     margin-bottom: var(--space-2);
-    padding: 8px 10px;
-    background: var(--glass-1-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
   }
   .script-vars .field-row { gap: 6px; margin-bottom: 6px; }
   .script-vars .field-row:last-child { margin-bottom: 0; }
@@ -3897,7 +3898,10 @@ font-size: 10px;
             <div class="script-card" data-script-id="atencion-segura">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">{Cliente}</span>, si la llamada se interrumpe, ¿puedo devolverle la llamada a este mismo número o prefiere brindarme uno alternativo para contactarlo?"</p>
+                 <!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
+                      ¡puedo devolverle la llamada al numero de su consulta o
+                      prefiere brindarme un numero adicional para contactarlo?" -->
+                 <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">{Cliente}</span>, si la llamada llegara a cortarse, ¿puedo devolverle la llamada al número de su consulta o prefiere brindarme un número adicional para contactarlo?"</p>
                </div>
             </div>
           </div>
@@ -3986,7 +3990,9 @@ font-size: 10px;
               
                <div class="script-card-body">
                  <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
-                 <p class="script-card-text" id="script-text-encuesta">"Para finalizar, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar que su servicio quedó resuelto. ¡Muchas gracias por su tiempo!"</p>
+                 <!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
+                confirmar su experiencia final con la solucion que le brinde." -->
+                <p class="script-card-text" id="script-text-encuesta">"Para finalizar, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar su experiencia final con la solución que le brindé. ¡Muchas gracias por su tiempo!"</p>
                </div>
             </div>
           </div>
@@ -4252,7 +4258,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.45</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.46</span>
     </span>
   </footer>
 </div>
@@ -6176,7 +6182,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.45] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.46] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -8088,6 +8094,40 @@ function initPopupMode() {
       window.close();
     });
   }
+
+  // v3.10.46: CTRL+SHIFT+R — limpia todos los datos de la plantilla (inputs,
+  // motivo, vars persistidas). NO recarga la página (preventDefault evita el
+  // reload del browser). Funciona en popup mode y standalone.
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r'))) return;
+    e.preventDefault();
+    clearScriptTemplate();
+  });
+}
+
+// v3.10.46: limpia los inputs del template (Agente/Cliente/Teléfono/Motivo),
+// borra vars persistidas en localStorage y refresca los placeholders.
+function clearScriptTemplate() {
+  // Limpiar inputs
+  ['agente', 'cliente', 'telefono'].forEach(function (name) {
+    setScriptVar(name, '');
+  });
+  // Reset select motivo (no afecta las cards visuales)
+  var motivoSelect = $('script-motivo');
+  if (motivoSelect) {
+    motivoSelect.value = '';
+    motivoSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  // Limpiar localStorage persistido
+  try { localStorage.removeItem('cima_script_vars_v1'); } catch (e) {}
+  // Refrescar placeholders (vuelve a {Placeholder} cuando var vacío)
+  updateScriptPlaceholders();
+  // Sync visual de las motivo cards (desmarcar aria-checked)
+  if (typeof syncMotivoCardsFromSelect === 'function') {
+    syncMotivoCardsFromSelect();
+  }
+  // Anuncio accesible
+  announce('Plantilla limpiada — todos los datos del agente reiniciados');
 }
 </script>
 </body>
