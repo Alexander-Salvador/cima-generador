@@ -3901,7 +3901,8 @@ font-size: 10px;
                  <!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
                       ¡puedo devolverle la llamada al numero de su consulta o
                       prefiere brindarme un numero adicional para contactarlo?" -->
-                 <p class="script-card-text" id="script-text-atencion-segura">"<span class="ph" data-ph="cliente">{Cliente}</span>, si la llamada llegara a cortarse, ¿puedo devolverle la llamada al número de su consulta o prefiere brindarme un número adicional para contactarlo?"</p>
+                 <!-- v3.10.48: nombre al medio (no al inicio) + frase empática introductoria -->
+                  <p class="script-card-text" id="script-text-atencion-segura">"Pensando en su comodidad, si la llamada llegara a cortarse, ¿puedo devolverle la llamada <span class="ph" data-ph="cliente">{Cliente}</span> al número de su consulta, o prefiere brindarme uno adicional para contactarlo?"</p>
                </div>
             </div>
           </div>
@@ -3924,14 +3925,16 @@ font-size: 10px;
             <div class="script-card" data-script-id="sondea">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-sondea">"<span class="ph" data-ph="cliente">{Cliente}</span>, ¿en qué puedo ayudarte? Cuénteme cuál sería el motivo de tu comunicación o consulta."</p>
+                 <!-- v3.10.48: nombre al final de la frase introductoria -->
+                  <p class="script-card-text" id="script-text-sondea">"¿En qué puedo ayudarle hoy? Cuénteme <span class="ph" data-ph="cliente">{Cliente}</span> cuál sería el motivo de su comunicación o consulta."</p>
                </div>
             </div>
 
             <div class="script-card" data-script-id="sondeo-averias">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-sondeo-averias">"<span class="ph" data-ph="cliente">{Cliente}</span>, comprendo, debido al inconveniente que nos mencionas, voy a validar su servicio. Para esto, me confirmas en qué <span class="key">departamento</span> te encuentras, <span class="key">provincia</span> y <span class="key">distrito</span>, por favor. Me indicas también la <span class="key">dirección</span> donde te encuentras en este momento, con eso podré avanzar con la búsqueda".</p>
+                 <!-- v3.10.48: nombre después de "Comprendo" (no al inicio) -->
+                  <p class="script-card-text" id="script-text-sondeo-averias">"Comprendo <span class="ph" data-ph="cliente">{Cliente}</span>, debido al inconveniente que nos mencionas, voy a validar su servicio. Para esto, me confirmas en qué <span class="key">departamento</span> te encuentras, <span class="key">provincia</span> y <span class="key">distrito</span>, por favor. Me indicas también la <span class="key">dirección</span> donde te encuentras en este momento, con eso podré avanzar con la búsqueda".</p>
                  <p style="margin-top:6px;font-size:10.5px;color:var(--text-faint);"><strong>Tip:</strong> En caso no encontremos al cliente, solicitamos referencias.</p>
                </div>
             </div>
@@ -3939,7 +3942,9 @@ font-size: 10px;
             <div class="script-card" data-script-id="tiempo-espera">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-tiempo-espera">"<span class="ph" data-ph="cliente">{Cliente}</span>, un momento por favor mientras valido su información <span class="ph-inline">(indique brevemente la acción a realizar)</span>".</p>
+                 <!-- v3.10.48: nombre al medio + CEO directive "luego tiene que seguir"
+                       (continuación explícita con "Apenas tenga novedades...") -->
+                  <p class="script-card-text" id="script-text-tiempo-espera">"Un momento por favor mientras valido su información <span class="ph" data-ph="cliente">{Cliente}</span> <span class="ph-inline">(indique brevemente la acción a realizar)</span>. Apenas tenga novedades, le comento cómo seguimos."</p>
                </div>
             </div>
           </div>
@@ -3960,7 +3965,8 @@ font-size: 10px;
             <div class="script-card" data-script-id="educa-app">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-educa-app">"<span class="ph" data-ph="cliente">{Cliente}</span>, en la <span class="key">App Mi Movistar</span> puede consultar su <span class="key">saldo</span>, ver y pagar su <span class="key">recibo</span>, y acceder a <span class="key">beneficios exclusivos</span>. Le enviaremos un enlace por SMS para que ingrese directo."</p>
+                 <!-- v3.10.48: nombre al medio + frase introductoria empática -->
+                  <p class="script-card-text" id="script-text-educa-app">"Para resolver más rápido, <span class="ph" data-ph="cliente">{Cliente}</span>, en la <span class="key">App Mi Movistar</span> puede consultar su <span class="key">saldo</span>, ver y pagar su <span class="key">recibo</span>, y acceder a <span class="key">beneficios exclusivos</span>. Le enviaremos un enlace por SMS para que ingrese directo."</p>
                </div>
             </div>
           </div>
@@ -3982,7 +3988,10 @@ font-size: 10px;
             <div class="script-card" data-script-id="despedida">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-despedida">"<span class="ph" data-ph="cliente">{Cliente}</span>, hemos realizado para ti el <span class="ph-inline">(proceso generado)</span>. Solo sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderte."</p>
+                 <!-- v3.10.48: CEO directive — "consecutiva la atencion"
+                       Flujo continuo: "Perfecto {Cliente}, ya tenemos listo..."
+                       en lugar de 2 mensajes separados ("hemos realizado para ti" + "solo sigamos"). -->
+                  <p class="script-card-text" id="script-text-despedida">"Perfecto <span class="ph" data-ph="cliente">{Cliente}</span>, ya tenemos listo el <span class="ph-inline">(proceso generado)</span>. Sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderle."</p>
                </div>
             </div>
 
@@ -3992,7 +4001,8 @@ font-size: 10px;
                  <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
                  <!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
                 confirmar su experiencia final con la solucion que le brinde." -->
-                <p class="script-card-text" id="script-text-encuesta">"Para finalizar, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar su experiencia final con la solución que le brindé. ¡Muchas gracias por su tiempo!"</p>
+                <!-- v3.10.48: nombre al inicio (no estaba antes), frase más cordial -->
+                 <p class="script-card-text" id="script-text-encuesta">"Antes de cerrar <span class="ph" data-ph="cliente">{Cliente}</span>, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar su experiencia final con la solución que le brindé. ¡Muchas gracias por su tiempo!"</p>
                </div>
             </div>
           </div>
@@ -4004,7 +4014,9 @@ font-size: 10px;
 <div class="script-card script-card--transfer" data-script-id="transferir" hidden>
             
             <div class="script-card-body">
-              <p class="script-card-text" id="script-text-transferir"><span class="ph" data-ph="cliente">{Cliente}</span>, su consulta no corresponde a este canal. Le transferiré con un <span class="key">asesor especializado</span> para que le brinde la atención correcta. ¿Me lo permite, <span class="ph" data-ph="cliente">{Cliente}</span>?</p>
+              <!-- v3.10.48: nombre 1 sola vez al medio (antes 2 veces al inicio y final)
+                       + frase empática introductoria "Entiendo..." -->
+              <p class="script-card-text" id="script-text-transferir">"Entiendo <span class="ph" data-ph="cliente">{Cliente}</span>, esta consulta la resuelve mejor un área especializada. Le transferiré con un <span class="key">asesor especializado</span> para que le brinde la atención correcta. ¿Me permite transferirló?"</p>
 </div>
 </div>
 
@@ -4257,7 +4269,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.47</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.48</span>
     </span>
   </footer>
 </div>
@@ -6181,7 +6193,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.47] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.48] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');

@@ -2882,16 +2882,20 @@ def test(html_path):
         html, re.DOTALL
     )
     if sondea_match:
-        sondea_text = sondea_match.group(1)
-        if '¿en qué puedo ayudarte' in sondea_text and 'motivo de tu comunicación o consulta' in sondea_text:
-            result.ok('v3.10.34 SPEECH: Sondea con speech específico CEO')
+        sondea_text_raw = sondea_match.group(1)
+        sondea_text_visible = re.sub(r'<[^>]+>', '', sondea_text_raw)
+        sondea_text_visible = re.sub(r'\s+', ' ', sondea_text_visible).strip()
+        # v3.10.48: nombre al final de la frase introductoria
+        if 'En qu\u00e9 puedo ayudarle' in sondea_text_visible and 'motivo de su comunicaci\u00f3n' in sondea_text_visible:
+            result.ok('v3.10.48 SPEECH: Sondea (nombre al final + "puedo ayudarle")')
         else:
-            result.fail('v3.10.34 SPEECH sondea', 'speech Sondea no coincide con CEO directive')
+            result.fail('v3.10.48 SPEECH sondea', 'speech Sondea debe tener "puedo ayudarle" + "motivo de su comunicación"')
 
 # HTML: speech Sondeo identificación de AVERIAS contiene las frases del CEO
     # v3.10.36: CEO refinó el speech — ahora es un solo párrafo unificado,
     # NO las 3 frases separadas del v3.10.34.
     # v3.10.42: verificar frases en texto visible (stripped de tags .key)
+    # v3.10.48: nombre después de "Comprendo" (no al inicio)
     sondeo_averias_match = re.search(
         r'id="script-text-sondeo-averias"[^>]*>(.+?)</p>',
         html, re.DOTALL
@@ -2902,7 +2906,7 @@ def test(html_path):
         sa_text_visible = re.sub(r'<[^>]+>', '', sa_text_raw)
         sa_text_visible = re.sub(r'\s+', ' ', sa_text_visible).strip()
         expected_phrases = [
-            'comprendo',
+            'Comprendo',  # v3.10.48: mayúscula porque va después de {Cliente}
             'departamento te encuentras',
             'provincia y distrito',  # v3.10.42: con coma después de distrito
             'dirección donde te encuentras',
@@ -3060,8 +3064,9 @@ def test(html_path):
     )
     if sa_match:
         sa_text = sa_match.group(1)
-        if 'comprendo' in sa_text and 'avanzar con la búsqueda' in sa_text:
-            result.ok('v3.10.36 SPEECH: Sondeo identificación AVERIAS unificado (1 párrafo)')
+        # v3.10.48: nombre después de "Comprendo" (mayúscula)
+        if 'Comprendo' in sa_text and 'avanzar con la búsqueda' in sa_text:
+            result.ok('v3.10.36+48 SPEECH: Sondeo identificación AVERIAS unificado (1 párrafo + "Comprendo")')
         else:
             result.fail('v3.10.36 SPEECH sondeo-averias', 'speech no unificado')
 
@@ -3281,14 +3286,13 @@ def test(html_path):
         result.fail('v3.10.42 SPEECH transferir .key', 'asesor especializado en .key esperado')
 
     # Speech atencion-segura: v3.10.46 CEO directive
-    # "si la llamada llegara a cortarse, ¿puedo devolverle la llamada al
-    #  numero de su consulta o prefiere brindarme un numero adicional...?"
-    if 'si la llamada llegara a cortarse' in html and \
-       'n\u00famero de su consulta' in html and \
-       'n\u00famero adicional' in html:
-        result.ok('v3.10.46 SPEECH: atencion-segura redacción CEO (cortarse/su consulta/adicional)')
+    # v3.10.48: nombre al medio ("devolverle la llamada {Cliente}")
+    if 'Pensando en su comodidad' in html and \
+       'si la llamada llegara a cortarse' in html and \
+       'n\u00famero de su consulta' in html:
+        result.ok('v3.10.48 SPEECH: atencion-segura (Pensando en su comodidad + nombre al medio)')
     else:
-        result.fail('v3.10.46 SPEECH atencion-segura', 'redacción CEO esperada')
+        result.fail('v3.10.48 SPEECH atencion-segura', 'redacción CEO + nombre al medio esperado')
 
     # Speech encuesta: v3.10.46 CEO directive
     # "En 48 horas lo contactaremos para confirmar su experiencia final
@@ -3616,6 +3620,116 @@ def test(html_path):
     else:
         result.fail('v3.10.47 DOM .app', 'div.app no encontrado')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.48 — Speech NUTridos AI 2026 (variación {Cliente} + consecutivas)
+    # CEO: "utilizar mas frases empaticas, cordiales, agradables y no
+    # siempre decirle el nombre podemos personalizar poner el nombre en
+    # diversas partes donde corresponda para que no se sienta una
+    # saturacion y los datos sean inteligentes"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.48 — SPEECHES nutridos AI 2026 (variación {Cliente})')
+
+    # BUG 1: MOTIVO tiempo-espera tiene continuación ("Apenas tenga novedades...")
+    espera_match = re.search(
+        r'id="script-text-tiempo-espera"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if espera_match:
+        espera_text_raw = espera_match.group(1)
+        espera_visible = re.sub(r'<[^>]+>', '', espera_text_raw)
+        espera_visible = re.sub(r'\s+', ' ', espera_visible).strip()
+        if 'Apenas tenga novedades' in espera_visible and 'c\u00f3mo seguimos' in espera_visible:
+            result.ok('v3.10.48 BUG 1: tiempo-espera tiene continuación (Apenas tenga novedades)')
+        else:
+            result.fail('v3.10.48 BUG 1 tiempo-espera', 'continuación "Apenas tenga novedades..." esperada')
+    else:
+        result.fail('v3.10.48 BUG 1', 'script-text-tiempo-espera not found')
+
+    # BUG 2: DESPEDIDA consecutiva (no 2 mensajes separados)
+    desp_match = re.search(
+        r'id="script-text-despedida"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if desp_match:
+        desp_text_raw = desp_match.group(1)
+        desp_visible = re.sub(r'<[^>]+>', '', desp_text_raw)
+        desp_visible = re.sub(r'\s+', ' ', desp_visible).strip()
+        # CEO directive: consecutiva, no "hemos realizado para ti" + "solo sigamos"
+        if ('hemos realizado para ti' not in desp_visible and
+            'Perfecto' in desp_visible and
+            'ya tenemos listo' in desp_visible):
+            result.ok('v3.10.48 BUG 2: despedida consecutiva (Perfecto + ya tenemos listo, sin "hemos realizado")')
+        else:
+            result.fail('v3.10.48 BUG 2 despedida', 'redacción consecutiva CEO esperada')
+    else:
+        result.fail('v3.10.48 BUG 2', 'script-text-despedida not found')
+
+    # BUG 3: Variación {Cliente} — no siempre al inicio
+    speeches_with_cliente = {
+        'sondeo-averias': 'despu\u00e9s de "Comprendo"',
+        'atencion-segura': 'despu\u00e9s de "devolverle la llamada"',
+        'sondea': 'despu\u00e9s de "Cu\u00e9nteme"',
+        'educa-app': 'despu\u00e9s de intro emp\u00e1tica',
+        'tiempo-espera': 'despu\u00e9s de "valido su informaci\u00f3n"'
+    }
+
+    for script_id, position_desc in speeches_with_cliente.items():
+        match = re.search(
+            rf'id="script-text-{script_id}"[^>]*>(.+?)</p>',
+            html, re.DOTALL
+        )
+        if match:
+            raw = match.group(1)
+            visible = re.sub(r'<[^>]+>', '', raw)
+            visible = re.sub(r'\s+', ' ', visible).strip()
+            cliente_pos = visible.find('{Cliente}')
+            if cliente_pos == -1:
+                result.fail(f'v3.10.48 BUG 3 {script_id}', 'no contiene {Cliente}')
+            elif cliente_pos >= 8:  # ≥8 chars antes = no al inicio
+                result.ok(f'v3.10.48 BUG 3: {script_id} tiene {{Cliente}} {position_desc}')
+            else:
+                result.fail(f'v3.10.48 BUG 3 {script_id}',
+                            f'{{Cliente}} al inicio (pos {cliente_pos}), CEO pidió variación')
+
+    # BUG 3: encuesta AHORA tiene {Cliente} (antes no lo tenía)
+    encuesta_match = re.search(
+        r'id="script-text-encuesta"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if encuesta_match:
+        enc_raw = encuesta_match.group(1)
+        if 'data-ph="cliente"' in enc_raw and 'Antes de cerrar' in enc_raw:
+            result.ok('v3.10.48 BUG 3: encuesta tiene {Cliente} agregado ("Antes de cerrar {Cliente}")')
+        else:
+            result.fail('v3.10.48 BUG 3 encuesta', '{Cliente} agregado + "Antes de cerrar" esperado')
+
+    # BUG 3: transferir solo 1 {Cliente} (antes tenía 2)
+    transfer_match = re.search(
+        r'id="script-text-transferir"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if transfer_match:
+        tr_raw = transfer_match.group(1)
+        n_cliente = tr_raw.count('data-ph="cliente"')
+        if n_cliente == 1:
+            result.ok('v3.10.48 BUG 3: transferir solo 1 {Cliente} (antes 2)')
+        else:
+            result.fail('v3.10.48 BUG 3 transferir', f'1 {Cliente} esperado, {n_cliente} encontrados')
+
+    # Anti-regresión: bienvenida mantiene "Bienvenido a Movistar" + "¿Es correcto?"
+    bienvenida_match = re.search(
+        r'id="script-text-bienvenida"[^>]*>(.+?)</p>',
+        html, re.DOTALL
+    )
+    if bienvenida_match:
+        bien_raw = bienvenida_match.group(1)
+        bien_visible = re.sub(r'<[^>]+>', '', bien_raw)
+        bien_visible = re.sub(r'\s+', ' ', bien_visible).strip()
+        if 'Bienvenido a Movistar' in bien_visible and '\u00bfEs correcto?' in bien_visible:
+            result.ok('v3.10.48 ANTI-regresión: bienvenida mantiene "Bienvenido a Movistar" + "¿Es correcto?"')
+        else:
+            result.fail('v3.10.48 anti-regresion bienvenida', 'speech bienvenida debe mantener "Bienvenido a Movistar"')
+
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
         result.ok('v3.10.37 HTML: retorno card REMOVIDO (reemplazado por alerts)')
@@ -3647,10 +3761,16 @@ def test(html_path):
     )
     if despedida_match:
         despedida_text = despedida_match.group(1)
-        if 'hemos realizado para ti' in despedida_text and 'proceso generado' in despedida_text and 'Ha sido un gusto' in despedida_text:
-            result.ok('v3.10.37 SPEECH: despedida con texto específico CEO')
+        # v3.10.48: CEO directive "consecutiva la atencion" — flujo continuo
+        # "Perfecto {Cliente}, ya tenemos listo el (proceso generado).
+        #  Sigamos las indicaciones..."
+        if ('Perfecto' in despedida_text and
+            'ya tenemos listo' in despedida_text and
+            'proceso generado' in despedida_text and
+            'Ha sido un gusto' in despedida_text):
+            result.ok('v3.10.48 SPEECH: despedida CEO directive "consecutiva" (Perfecto + ya tenemos listo)')
         else:
-            result.fail('v3.10.37 SPEECH despedida', 'texto no coincide con CEO directive')
+            result.fail('v3.10.48 SPEECH despedida', 'CEO directive "consecutiva" esperada')
 
 
 
