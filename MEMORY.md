@@ -58,6 +58,46 @@ apps/cima-generador/
 
 Memoria persistente. Última actualización: **2026-10-19 — v3.10.39 FIN SESIÓN (29 commits: v3.10.11 → v3.10.39)**.
 
+## 🧹 Estado Git verificado (2026-10-19)
+
+```
+✅ Working tree clean
+✅ Branch: develop @ 5470c42 (v3.10.39)
+✅ VERSION file: 3.10.39 (coherente con footer + console.log)
+✅ 1 worktree: /home/braka/Systems/projects/work/cima
+✅ 0 stashes
+✅ 0 untracked files
+```
+
+### Branches activas
+
+| Branch | Estado | Notas |
+|---|---|---|
+| `develop` | ✅ activo | LATEST (v3.10.39) |
+| `main` | ⚠️ obsoleto | 165 commits detrás — contiene v3.10.4 era sheets bridge (deprecated, no integrar) |
+
+### Fugas LIMPIAS (v3.10.40 housekeeping)
+
+Eliminadas las siguientes branches que NO integraban cambios útiles a `develop`:
+
+| Branch eliminada | Razón | Commits eliminados |
+|---|---|---|
+| `popup-deploy` | Auxiliar para force-push a origin/main (deprecated — ahora usamos subtree split) | 93 commits (v3.10.0-v3.10.4 era) — todos duplicados en develop con hashes diferentes |
+| `popup-deploy-v3103` | Mismo workflow (v3.10.3 base) | 92 commits duplicados en develop |
+| `popup-deploy-v3104` | Mismo workflow (v3.10.4 base) | 93 commits duplicados en develop |
+| `feat/apagado-inteligente` | LOCAL ONLY (per MEMORY.md), work fully integrated | 0 commits ahead, 76 commits behind |
+
+Verificación pre-delete: sus mensajes de commit matchean con commits ya presentes en `develop`. Confirmado: ninguna pérdida de información.
+
+### Estado del Remoto
+
+```
+origin/develop @ db3ef98 (v3.9.15) — 165 commits behind local
+origin/main    @ c71fd60 (v3.9.15) — 165 commits behind local
+```
+
+⚠️ **Push no autorizado.** El CEO nunca ha autorizado push a origin/develop ni origin/main. Mantener Popup LIVE en v3.9.15 hasta autorización explícita.
+
 **Estado del popup:**
 - **Versión actual (develop):** v3.10.39
 - **Tests passing:** 636 (547 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
