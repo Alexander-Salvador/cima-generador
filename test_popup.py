@@ -3280,17 +3280,24 @@ def test(html_path):
     else:
         result.fail('v3.10.42 SPEECH transferir .key', 'asesor especializado en .key esperado')
 
-    # Speech atencion-segura: modernizado AI 2026 (puedo devolverle en lugar de podría)
-    if 'si la llamada se interrumpe' in html and 'puedo devolverle' in html:
-        result.ok('v3.10.42 SPEECH: atencion-segura modernizado (devolver/interrumpe)')
+    # Speech atencion-segura: v3.10.46 CEO directive
+    # "si la llamada llegara a cortarse, ¿puedo devolverle la llamada al
+    #  numero de su consulta o prefiere brindarme un numero adicional...?"
+    if 'si la llamada llegara a cortarse' in html and \
+       'n\u00famero de su consulta' in html and \
+       'n\u00famero adicional' in html:
+        result.ok('v3.10.46 SPEECH: atencion-segura redacción CEO (cortarse/su consulta/adicional)')
     else:
-        result.fail('v3.10.42 SPEECH atencion-segura', 'modernización AI 2026 esperada')
+        result.fail('v3.10.46 SPEECH atencion-segura', 'redacción CEO esperada')
 
-    # Speech encuesta: modernizado (atención que recibió en lugar de mi atención)
-    if 'la atenci\u00f3n que recibi\u00f3' in html and 'qued\u00f3 resuelto' in html:
-        result.ok('v3.10.42 SPEECH: encuesta modernizado (recibió/resuelto)')
+    # Speech encuesta: v3.10.46 CEO directive
+    # "En 48 horas lo contactaremos para confirmar su experiencia final
+    #  con la solucion que le brinde"
+    if 'la atenci\u00f3n que recibi\u00f3' in html and \
+       'experiencia final con la soluci\u00f3n que le brind\u00e9' in html:
+        result.ok('v3.10.46 SPEECH: encuesta redacción CEO (experiencia final / brindé)')
     else:
-        result.fail('v3.10.42 SPEECH encuesta', 'modernización AI 2026 esperada')
+        result.fail('v3.10.46 SPEECH encuesta', 'redacción CEO esperada')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.43 — BUG FIXES (3 bugs reportados por CEO)
@@ -3513,6 +3520,58 @@ def test(html_path):
         result.ok('v3.10.45 ANTI-regresión: speech bienvenida mantiene redacción CEO')
     else:
         result.fail('v3.10.45 anti-regresion', 'speech bienvenida debe mantener "Su consulta es por el numero..."')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.46 — BUG FIXES: layout grids + CTRL+SHIFT+R clear + speeches
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.46 — BUG FIXES: grid widths + CTRL+SHIFT+R + speeches CEO')
+
+    # BUG 4: .script-vars SIN background/border/padding (panel interno removido)
+    script_vars_css = re.search(r'\.script-vars\s*\{([^}]+)\}', html, re.DOTALL)
+    if script_vars_css:
+        sv_body = re.sub(r'/\*[\s\S]*?\*/', '', script_vars_css.group(1))
+        # Solo debe tener margin-bottom, sin padding/background/border
+        if ('background' not in sv_body and 'border:' not in sv_body and
+            'padding:' not in sv_body and 'margin-bottom' in sv_body):
+            result.ok('v3.10.46 BUG 4: .script-vars sin padding/border/background (ancho igual grids)')
+        else:
+            result.fail('v3.10.46 BUG 4 .script-vars', '.script-vars debe ser solo margin-bottom')
+    else:
+        result.fail('v3.10.46 BUG 4', '.script-vars CSS missing')
+
+    # BUG 1: clearScriptTemplate() función definida
+    if 'function clearScriptTemplate()' in html:
+        result.ok('v3.10.46 BUG 1: clearScriptTemplate() función definida')
+    else:
+        result.fail('v3.10.46 BUG 1 clearScriptTemplate', 'función clearScriptTemplate esperada')
+
+    # BUG 1: CTRL+SHIFT+R keydown handler presente
+    if re.search(r"e\.ctrlKey\s*&&\s*e\.shiftKey\s*&&\s*\(e\.key\s*===\s*['\"]R['\"]", html):
+        result.ok('v3.10.46 BUG 1: handler CTRL+SHIFT+R (keydown con ctrl+shift+R)')
+    else:
+        result.fail('v3.10.46 BUG 1 keydown', 'handler ctrl+shift+R esperado')
+
+    # BUG 1: clearScriptTemplate limpia localStorage
+    if re.search(r"localStorage\.removeItem\(\s*['\"]cima_script_vars_v1['\"]\s*\)", html):
+        result.ok('v3.10.46 BUG 1: clearScriptTemplate borra localStorage cima_script_vars_v1')
+    else:
+        result.fail('v3.10.46 BUG 1 localStorage', 'removeItem cima_script_vars_v1 esperado')
+
+    # BUG 1: clearScriptTemplate limpia inputs (agente, cliente, telefono)
+    if re.search(r"\[\s*['\"]agente['\"]\s*,\s*['\"]cliente['\"]\s*,\s*['\"]telefono['\"]\s*\][^}]*setScriptVar", html, re.DOTALL):
+        result.ok('v3.10.46 BUG 1: clearScriptTemplate limpia inputs agente/cliente/telefono')
+    else:
+        result.fail('v3.10.46 BUG 1 inputs', 'clearScriptTemplate debe limpiar agente/cliente/telefono')
+
+    # BUG 2 + BUG 3: speeches CEO directive ya testeados arriba
+    # (atencion-segura + encuesta)
+
+    # Anti-regresión: .section sigue con border + background (los otros grids)
+    section_css = re.search(r'\.section\s*\{([^}]+)\}', html, re.DOTALL)
+    if section_css and 'border:' in section_css.group(1):
+        result.ok('v3.10.46 ANTI-regresión: .section mantiene border (grids Address/Tipif intactos)')
+    else:
+        result.fail('v3.10.46 anti-regresion', '.section debe mantener border')
 
     # HTML: retorno card REMOVIDO (CEO: "no sera un speech textual sera como una sola row de alerta")
     if 'data-script-id="retorno"' not in html:
