@@ -1,5 +1,78 @@
 # Changelog — cima-generador
 
+## [3.10.27] - 2026-10-19 — 🔒 BLOQUEO botón ⚠️ + 🎯 Input focus limpio + 📝 RESULTADO texto + 🎨 Buttons diferenciados
+
+**CEO directive:** "Los botones clear y zona de apagado siguen iguales, y zona de apagado sigue vibrando a pesar de no tener datos y al darle click dice 'SELECCIONA DPT, PROVINCIA, DISTRITO' <- incorrecto debe estar bloqueado. Otro bugs detectado al darle clicks a los inputs, noto que no estan correctamente creados ya que se hacen un borde cuadrado y redondo como si no estuviera estilizado correctamente. El INPUT de RESULTADO <- debe decir 'Aqui se llenaran los datos'."
+
+### 🎯 Causa raíz (5 bugs)
+
+| Bug | Causa | Síntoma CEO |
+|---|---|---|
+| 1. Botón ⚠️ sigue vibrando | `pulseCopied` (scale 1.18) + `cima-shake` (translateX ±3px) one-shot animations | "se mueve sin datos" |
+| 2. Toast al click sin datos | `onClickCobertura` mostraba toast "Selecciona depto + provincia + distrito" | "debe estar bloqueado, no responder" |
+| 3. Buttons clear/⚠️ idénticos | Mismo `glass-2-bg` + `border-radius: pill` + mismo tamaño 36×36 | "se ven iguales" |
+| 4. Inputs border raro al click | `box-shadow: 0 0 0 3px` halo (red) + 1px border (red) = 2 capas visibles | "borde cuadrado y redondo" |
+| 5. RESULTADO texto | Decía "LLENAR DATOS" + `border-style: dashed` | "debe decir Aqui se llenaran los datos" |
+
+### 🔧 Cambios
+
+#### 1. BLOQUEO del botón ⚠️ cuando faltan datos
+
+| Cambio | Detalle |
+|---|---|
+| **JS `onClickCobertura`** | `if (!dep || !prov || !dist) return;` — early return silencioso, sin toast, sin shake |
+| **CSS `.cobertura-btn--idle`** | `opacity: 0.5` + `cursor: not-allowed` — comunica visualmente BLOQUEADO |
+| **JS `chk.nivel !== 'ccpp_exacto'`** | Antes: shake + toast. Ahora: solo toast informativo (sin shake) |
+
+#### 2. Click feedback animations reducidas (sin vibración)
+
+| Animación | Antes | Ahora |
+|---|---|---|
+| `cima-shake` amplitud | `translateX(-3px)` a `translateX(3px)` | `translateX(-1px)` a `translateX(1px)` (barely perceptible) |
+| `pulseCopied` scale | `scale(1.18)` (crece 18%) | `scale(1.04)` (crece 4%) |
+
+#### 3. Input focus limpio (sin "square+round" border)
+
+| Antes | Ahora |
+|---|---|
+| `border: 1px solid` + `box-shadow: 0 0 0 3px halo` + `border-color: --accent` (rojo) | `border: 1.5px solid` + `border-color: --text 65%` (gris neutro) + `padding: 5.5px 8.5px` (compensa borde más grueso). SIN box-shadow halo. |
+
+#### 4. Texto RESULTADO
+
+| Cambio | Antes | Ahora |
+|---|---|---|
+| HTML placeholder | `<div ...>LLENAR DATOS</div>` | `<div ...>Aqui se llenaran los datos</div>` |
+| JS reset `box.textContent` | `'LLENAR DATOS'` | `'Aqui se llenaran los datos'` |
+| CSS `.output-box.output-result.placeholder` | `border-style: dashed` | `border-style: solid` (sin dashed raro) |
+
+#### 5. Botones diferenciados visualmente
+
+| Botón | Antes | Ahora |
+|---|---|---|
+| `.btn-icon-clear` border | `1.5px solid` (igual a ⚠️) | `1.5px dashed` (acción rutinaria = punteado) |
+| `.btn-icon-clear:hover` | solid en hover | `border-style: solid` en hover (feedback claro) |
+| `.btn-icon:active` | `transform: scale(0.94)` | REMOVIDO (sin vibración) |
+| `.cobertura-btn` border | `1.5px solid` (alerta) | Mantiene solid (alerta operacional) |
+
+Diferenciación: **clear = dashed** (rutinaria) | **⚠️ = solid** (alerta).
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **482/482 PASS** (+8 nuevos tests v3.10.27) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (971,680 chars JS) |
+| HTML size | 1,123,789 bytes (+1,818 vs v3.10.26) |
+
+### 📐 Lecciones aplicadas
+
+- **L-067/068/069**: el CEO percibe incluso animaciones one-shot como "vibración". Solución: amplitudes < 2px y scales < 1.05.
+- **CRIT-002**: "El resultado observable es el contrato". El CEO probó y reportó múltiples bugs adicionales — no aceptar "los tests pasan" como suficiente.
+- **L-079**: "Iterar = fallar". El CEO tuvo que probar en navegador real para detectar que las animaciones one-shot también se sentían como vibración.
+
 ## [3.10.26] - 2026-10-19 — 🐛 FIX: BUSQUEDA ADDRESS — eliminar vibración + label ROJO + optimizar botones
 
 **CEO directive:** "primero arreglaremos el bug de BUSQUEDA ADDRESS:

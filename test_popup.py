@@ -2802,6 +2802,68 @@ def test(html_path):
         result.fail('v3.10.2 HTML fuzzy item', 'rendering de fuzzy_matches missing')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.27 — BLOQUEO botón + click feedback reducido + input focus
+    # limpio + RESULTADO texto + diferenciación visual botones
+    # CEO directive: "Los botones clear y zona de apagado siguen iguales, y
+    # zona de apagado sigue vibrando... al darle click dice SELECCIONA DPT,
+    # PROVINCIA, DISTRITO <- incorrecto debe estar bloqueado. Otro bugs
+    # detectado al darle clicks a los inputs, noto que no estan correctamente
+    # creados... El INPUT de RESULTADO <- debe decir Aqui se llenaran los datos"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.27 — BLOQUEO botón + input focus + RESULTADO + buttons diferenciados')
+
+    # JS: bloqueo en onClickCobertura (early return sin toast/shake)
+    if re.search(r'if\s*\(\s*!dep\s*\|\|\s*!prov\s*\|\|\s*!dist\s*\)\s*\{\s*return;', html):
+        result.ok('v3.10.27 JS: onClickCobertura BLOQUEADO (early return sin DPT/PROV/DIST)')
+    else:
+        result.fail('v3.10.27 JS bloque', 'early return sin toast/shake esperado')
+
+    # CSS: cobertura-btn--idle BLOQUEADO (opacity 0.5 + cursor not-allowed)
+    css_idle_match = re.search(r'\.cobertura-btn--idle\s*\{([^}]+)\}', html)
+    if css_idle_match:
+        idle_body = css_idle_match.group(1)
+        if 'cursor: not-allowed' in idle_body and 'opacity: 0.5' in idle_body:
+            result.ok('v3.10.27 CSS: cobertura-btn--idle BLOQUEADO (opacity 0.5 + cursor not-allowed)')
+        else:
+            result.fail('v3.10.27 CSS idle', 'opacity: 0.5 + cursor: not-allowed esperado')
+    else:
+        result.fail('v3.10.27 CSS idle', '.cobertura-btn--idle CSS missing')
+
+    # CSS: click feedback animations reducidas (no vibración)
+    if re.search(r'@keyframes\s+cimaShake[\s\S]*?translateX\(-1px\)', html):
+        result.ok('v3.10.27 CSS: cimaShake amplitud reducida 3px → 1px')
+    else:
+        result.fail('v3.10.27 CSS shake', 'amplitud reducida esperada')
+    if re.search(r'@keyframes\s+pulseCopied[\s\S]*?scale\(1\.04\)', html):
+        result.ok('v3.10.27 CSS: pulseCopied reducido scale(1.18) → scale(1.04)')
+    else:
+        result.fail('v3.10.27 CSS copied', 'scale reducido esperado')
+
+    # CSS: input focus LIMPIO (sin box-shadow halo, border más grueso)
+    if re.search(r'\.field input:focus[^{}]*\{[^}]*border-width:\s*1\.5px', html, re.DOTALL):
+        result.ok('v3.10.27 CSS: input:focus border-width 1.5px (sin halo)')
+    else:
+        result.fail('v3.10.27 CSS focus', 'input:focus border-width 1.5px esperado')
+
+    # HTML: RESULTADO placeholder texto
+    if 'Aqui se llenaran los datos' in html:
+        result.ok('v3.10.27 HTML: RESULTADO placeholder "Aqui se llenaran los datos"')
+    else:
+        result.fail('v3.10.27 HTML result', 'placeholder text actualizado esperado')
+
+    # CSS: output-box.placeholder border-style dashed REMOVIDO
+    if 'border-style: dashed' in html:
+        result.fail('v3.10.27 CSS dashed', 'border-style: dashed en output-box debe estar removido')
+    else:
+        result.ok('v3.10.27 CSS: output-box.placeholder SIN border-style: dashed (CEO feedback)')
+
+    # CSS: btn-icon-clear diferenciado con border DASHED en estado base
+    if re.search(r'\.btn-icon-clear\s*\{[^}]*border:[^}]*dashed', html, re.DOTALL):
+        result.ok('v3.10.27 CSS: btn-icon-clear border DASHED (diferenciado de ⚠️ solid)')
+    else:
+        result.fail('v3.10.27 CSS btn-clear', 'btn-icon-clear con border dashed esperado')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.3 — STOP CHECK visual para COMU-5672 + Santa Rosa de Loreto
     # CEO directive: "como solucionamos los RIESGOS CONOCIDOS?"
     # Soluciones: stop check prominente + distrito nuevo 160405 + anomalías
