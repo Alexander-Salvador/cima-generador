@@ -1,8 +1,8 @@
-# CIMA v3.10.31 — Lista de Pendientes (Estado al cierre de sesión)
+# CIMA v3.10.32 — Lista de Pendientes (Estado al cierre de sesión)
 
 **Fecha:** 2026-10-19 · **Branch:** develop · **Popup LIVE:** v3.9.15 (push pendiente CEO)
 
-## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-31 BUSQUEDA ADDRESS v6 + GRID 0 Script v2)
+## ✅ YA RESUELTOS (Bloques 1-4 + v3.10.0-v3.10.6 + v3.10.26-32 BUSQUEDA ADDRESS v7 + GRID 0 Script v3)
 
 ## ✅ SESIÓN 2026-10-18/19 (v3.10.11 → v3.10.30) — 20 commits
 
@@ -28,7 +28,8 @@
 | **v3.10.28** | **Inputs filled clean + toast wording**: REMOVIDO box-shadow halo `--shadow-focus-green` (causaba square+round en filled) + toast "Tipea..." → "Escribe el CCPP exacto del PDF..." | 2bc3636 |
 | **v3.10.29** | **Botón ⚠️ totalmente BLOCKED + RESULTADO hover clean**: showToast REMOVIDO completamente en no-match (silent early return) + CCPP placeholder "(elegir CCPP exacto del PDF)" + REMOVIDO box-shadow halo en `.output-box.output-result:hover` | 51df668 |
 | **v3.10.30** | **GRID 0 Script Llamada**: nuevo grid colapsable ARRIBA de Búsqueda Address con 8 secciones del flujo (Bienvenida, Atención segura, Motivo, Detección, Retoma, Consulta, App, Encuesta) + 4 vars (Agente/Cliente/Teléfono/Motivo) auto-reemplazan `{placeholders}` en TODAS las cards via JS live update + persistencia localStorage | 5a83757 |
-| **v3.10.31** | **HEADER Estructura de Atención mejorada**: phone label "TELÉFONO EN CONSULTA" + motivo `<select>` con 5 opciones (INTERNET/LLAMADAS/SMS/THETERING/OTRO) + speeches con puntuación completa + canal TÉCNICO MÓVIL explícito + flujo OTRO diferenciado (oculta 4+6, muestra card 9 Transferir) | TBD |
+| **v3.10.31** | **HEADER Estructura de Atención mejorada**: phone label "TELÉFONO EN CONSULTA" + motivo `<select>` con 5 opciones (INTERNET/LLAMADAS/SMS/THETERING/OTRO) + speeches con puntuación completa + canal TÉCNICO MÓVIL explícito + flujo OTRO diferenciado (oculta 4+6, muestra card 9 Transferir) | 2d45f91 |
+| **v3.10.32** | **HEADER Estructura de Atención v2 (matching imagen CEO)**: CEO rechazó v3.10.31 (textos agresivos perdieron sentido). Restaurada estructura matching imagen: 4 secciones con headers de color (blue/green/orange/purple), 3 Bienvenida speeches con hint boxes, TIP callout "Personaliza tu llamada", badges ✅/❌/⭐ en CIERRE. Speech original restaurado sin cambios agresivos. Anti-regression test. | TBD |
 
 | ID | Descripción | Versión | Commit |
 |---|---|---|---|

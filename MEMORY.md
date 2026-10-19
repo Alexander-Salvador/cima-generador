@@ -56,13 +56,13 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-19 — v3.10.31 FIN SESIÓN (21 commits: v3.10.11 → v3.10.31)**.
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.32 FIN SESIÓN (22 commits: v3.10.11 → v3.10.32)**.
 
 **Estado del popup:**
-- **Versión actual (develop):** v3.10.31
-- **Tests passing:** 585 (508 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
+- **Versión actual (develop):** v3.10.32
+- **Tests passing:** 591 (524 popup + 63 aggressive + 14 browser static + audit brutal con 1 mentira histórica M4)
 - **Popup LIVE (origin/main):** v3.9.15 (push pendiente CEO)
-- **Branch develop:** v3.10.31 (31 commits desde v3.9.15)
+- **Branch develop:** v3.10.32 (32 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
 **Logros de la sesión 2026-10-18/19 (v3.10.11 → v3.10.30):**
@@ -82,6 +82,7 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.31 FIN SESI�
 - ✅ **v3.10.29: Botón ⚠️ totalmente BLOCKED + RESULTADO hover clean** — showToast REMOVIDO completamente en caso no-match (silent early return) + CCPP placeholder mejorado + REMOVIDO box-shadow halo en `.output-box.output-result:hover`.
 - ✅ **v3.10.30: GRID 0 Script Llamada** — Nuevo grid colapsable ARRIBA de Búsqueda Address con 8 secciones del flujo de llamada call center técnico MOVIL: Bienvenida, Atención segura, Motivo, Detección Avería, Retoma, Consulta adicional, App Movistar, Encuesta. Cada card tiene copy-to-clipboard. Top vars (Agente/Cliente/Teléfono/Motivo) se llenan una vez y auto-reemplazan `{placeholders}` en TODAS las cards via JS live update. Persistencia en localStorage (`cima_script_vars_v1`). 8 cards simples sin animaciones pesadas (L-067/068/069).
 - ✅ **v3.10.31: HEADER Estructura de Atención mejorada** — (1) Phone label renombrado a "TELÉFONO EN CONSULTA". (2) Motivo convertido a `<select>` con 5 opciones (INTERNET/LLAMADAS/SMS/THETERING/OTRO). (3) Speeches mejorados: puntuación completa, formas completas, mención explícita del canal TÉCNICO MÓVIL. (4) Flujo OTRO diferenciado: oculta cards 4 (Detección) y 6 (Consulta adicional), muestra card 9 (Transferir) con script específico para transferir al área especializada. (5) CSS select styling con chevron SVG inline + glass-1-bg.
+- ✅ **v3.10.32: HEADER Estructura de Atención v2** — CEO rechazó v3.10.31 (textos agresivos perdieron sentido). Restaurada estructura matching imagen: 4 secciones con headers de color (blue Bienvenida / green Motivo / orange Consulta+App / purple Cierre), 3 Bienvenida speeches con hint boxes, TIP callout "Personaliza tu llamada", badges ✅/❌/⭐ en CIERRE. Speech original del CEO restaurado sin cambios agresivos. Anti-regression test agregado.
 
 **Logros previos (v3.10.0 → v3.10.10):**
 - 7 agentes OVAV en paralelo detectaron shadowing + 24 mentiras

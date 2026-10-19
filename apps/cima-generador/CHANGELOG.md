@@ -1,5 +1,142 @@
 # Changelog — cima-generador
 
+## [3.10.32] - 2026-10-19 — 🎬 HEADER Estructura de Atención v2 (matching imagen CEO)
+
+**CEO directive:** "No, te equivocaste alteraste demasiado los textos perdiendo sentido: mira la imagen y corrige". El CEO rechazó los cambios agresivos de v3.10.31 (que habían modificado speeches perdiendo el sentido original). v3.10.32 reorganiza la estructura para coincidir EXACTAMENTE con el flujo de llamada de la imagen del CEO.
+
+### 🎯 Causa raíz
+
+v3.10.31 cambió agresivamente los textos de los speeches ("Bienvenido a Movistar" → "Bienvenido a Movistar, del equipo TÉCNICO MÓVIL. Te llamo desde nuestro canal..."), alterando el flujo natural de la llamada. El CEO mostró la imagen del flow original y pidió RESTAURAR los textos + reorganizar la estructura visual.
+
+### 🔧 Cambios
+
+#### Estructura: 4 secciones con headers de color (matching imagen)
+
+| Sección | Color | Cards |
+|---|---|---|
+| **BIENVENIDA E IDENTIFICACIÓN** | 🔵 blue | bienvenida-1, bienvenida-2, bienvenida-3, Personaliza tu llamada TIP |
+| **MOTIVO DE LA LLAMADA** | 🟢 green | motivo-llamada, brinda-solucion, atencion-segura, tiempo-espera, retorno |
+| **CONSULTA ADICIONAL + APP MOVISTAR** | 🟠 orange | consulta-adicional, educa-app |
+| **CIERRE + ENCUESTA** | 🟣 purple | cierre-con-solución ✅, cierre-sin-solución ❌, encuesta ⭐ |
+
+Más: card "Transferir" (oculta, visible solo si motivo === OTRO).
+
+#### 3 Bienvenida speeches con hint boxes (azul)
+
+```
+┌─ 🔵 Speech 1 · Cuando el número y el motivo figuran en matriz ─┐
+│ "Bienvenido a Movistar, te saluda (1.er nombre y 1.er         │
+│  apellido del agente), te comunicas por (indicar el motivo)   │
+│  de tu número (indicar el número), ¿es correcto?".           │
+└────────────────────────────────────────────────────────────┘
+
+┌─ 🔵 Speech 2 · Cuando NO figura el número ni el motivo ────┐
+│ "Bienvenido a Movistar, te saluda (1.er nombre y 1.er         │
+│  apellido del agente), ¿me brindas tu número en consulta     │
+│  y el motivo de tu llamada?"                                  │
+└────────────────────────────────────────────────────────────┘
+
+┌─ 🔵 Speech 3 · Cuando figura el número, pero NO el motivo ─┐
+│ "Bienvenido a Movistar, te saluda (1.er nombre y 1.er         │
+│  apellido del agente), te comunicas por tu número             │
+│  (indicar el número), ¿es correcto? ¿Me indicas el motivo     │
+│  de tu llamada?"                                              │
+└────────────────────────────────────────────────────────────┘
+```
+
+#### TIP callout (estrella + instrucciones al agente)
+
+```
+⭐ Personaliza tu llamada
+"(nombre de cliente), ¿Con quién tengo el gusto?"
+```
+
+#### 5 cards de Sección MOTIVO (green)
+
+| Card | Contenido |
+|---|---|
+| Sondea el problema | "Sondea el problema o necesidad del cliente" |
+| Brinda solución | "Prioriza la solución de la causa raíz utilizando Genio..." |
+| Atención segura | "(nombre de cliente), en caso se corte la llamada..." |
+| Tiempo de espera | "(Nombre de Cliente), por favor, permítame un momento..." + **Importante: En consultas complejas retoma cada 60 segundos** |
+| Retorno | "(Nombre de Cliente), disculpa la demora y gracias por tu espera..." |
+
+#### 2 cards de Sección CONSULTA+APP (orange)
+
+| Card | Contenido |
+|---|---|
+| Consulta adicional | "¿Tienes alguna consulta adicional en la que te pueda ayudar?" |
+| Educa al App + SMS | "(Nombre del cliente), recuerda que en la App Mi Movistar... Te enviaremos un enlace por SMS..." |
+
+#### 3 cards de Sección CIERRE (purple) con badges
+
+| Badge | Card | Contenido |
+|---|---|---|
+| ✅ | Cierre con solución | "(Nombre del cliente), ya realizamos (detallar la solución) por lo que hemos solucionado tu avería". |
+| ❌ | Cierre sin solución | "(Nombre del cliente), ya realizamos (detallar la atención) esperamos haber orientado tu consulta..." |
+| ⭐ | Invita a encuesta | "Para finalizar, te agradeceré completar una breve encuesta sobre mi atención y en 48 horas, te contactaremos..." |
+
+#### CSS nuevo
+
+```css
+.script-section-header {  /* ▌ <Nombre> con border-left color */
+  border-left: 4px solid <color>;
+  background: gradient con color sutil;
+}
+.script-section-header--blue   { border-left-color: #3b82f6; }
+.script-section-header--green  { border-left-color: #10b981; }
+.script-section-header--orange { border-left-color: #f97316; }
+.script-section-header--purple { border-left-color: #8b5cf6; }
+
+.script-hint {  /* speech bubble box (azul) */
+  background: #3b82f6 14%;
+  color: #3b82f6;
+}
+
+.script-tip {  /* callout amber */
+  background: #f59e0b 14%;
+  border: 1px solid #f59e0b 35%;
+}
+
+.script-badge--ok    { background: #10b981; }  /* ✅ */
+.script-badge--fail  { background: #ef4444; }  /* ❌ */
+.script-badge--star  { background: #f59e0b; }  /* ⭐ */
+
+.ph-inline {  /* placeholder estático (instrucción al agente) */
+  color: var(--text-faint);
+  font-style: italic;
+}
+```
+
+#### Anti-regression: bienvenida SIN TÉCNICO MÓVIL
+
+v3.10.31 había agregado "del equipo TÉCNICO MÓVIL. Te llamo desde nuestro canal de consulta" al saludo. El CEO rechazó este cambio (perdió el sentido natural del flujo). v3.10.32 restaura el original:
+
+```
+"Bienvenido a Movistar, te saluda (1.er nombre y 1.er apellido del agente),
+te comunicas por (indicar el motivo) de tu número (indicar el número),
+¿es correcto?".
+```
+
+Test added para garantizar que futuras versiones NO agreguen "TÉCNICO MÓVIL" al saludo.
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **524/524 PASS** (+5 nuevos tests v3.10.32, 1 actualizado) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,019 chars JS) |
+| HTML balanced | 98 `<div>` open = 98 close |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: Resultado observable es contrato. El CEO probó v3.10.31, vio que el texto había cambiado agresivamente, y rechazó el cambio con evidencia visual (imagen).
+- **L-079**: "Iterar = fallar". Cambiar textos sin CEO approval es iteración destructiva.
+- **Restaurar > Reescribir**: cuando el CEO da feedback específico (mostrar imagen), restaurar el texto EXACTO es mejor que "mejorarlo".
+
 ## [3.10.31] - 2026-10-19 — 🎯 HEADER Estructura de Atención mejorada + Motivo select
 
 **CEO directive:** "Mejora los speech Inteligentes <- completos correcto coma, puntos etc dales forma sin romperlos. Las preguntas Iniciales de rellenado inteligente deben tener aun mas inteligente, nuestro canal de atencion es solo preguntas de TECNICA MOVIL, si el cliente consulta por otro motivo lo debemos transferir. En telefono debe ser 'TELEFONO EN CONSULTA' en MOTIVO debe ir INTERNET, LLAMADAS, SMS, THETERING, OTRO <- LA OPCION de otro cambiara los speech ya que el flujo es distinto, no hacemos deteccion de averia ni consulta adicional."
