@@ -1,5 +1,88 @@
 # Changelog — cima-generador
 
+## [3.10.49] - 2026-10-19 — 🎯 DESGLOSE del flow al click en MOTIVO
+
+**CEO directive:** "Vamos a mejorar algo al darle click a el MOTIVO recien se desglozara toda la info correspondiente al motivo"
+
+### 🎯 Causa raíz
+
+Antes de v3.10.49, click en una MOTIVO card activa solo:
+- Actualizaba el `<select hidden>` (form value)
+- Disparaba `updateScriptPlaceholders()` (reemplaza `{Cliente}`, `{Motivo}`, etc. en las cards)
+- Marcaba `aria-checked="true"`
+
+El flow NO se "desglosaba" visualmente — las cards seguían colapsadas y el GRID podía estar oculto.
+
+### 🔧 Cambios
+
+#### Nueva función `desgloseMotivoFlow(motivoValue)`
+
+Click en MOTIVO card activa ejecuta automáticamente:
+
+1. **Expandir GRID 0** (Estructura de Llamada) si está colapsado:
+   ```js
+   if (gridScript.classList.contains('is-collapsed')) {
+     toggleGrid('gridScript', false);
+   }
+   ```
+
+2. **Expandir TODAS las script-cards colapsadas** (mostrar todo el flow):
+   ```js
+   document.querySelectorAll('.script-card.is-collapsed').forEach(function (card) {
+     card.classList.remove('is-collapsed');
+     // Limpiar estado persistido
+     var state = loadScriptCollapsed();
+     delete state[id];
+     saveScriptCollapsed(state);
+   });
+   ```
+
+3. **Scroll suave a `gridScript-body`**:
+   ```js
+   body.scrollIntoView({ behavior: 'smooth', block: 'start' });
+   ```
+
+4. **Highlight visual temporal** en las cards del motivo:
+   ```js
+   card.classList.add('motivo-flash');
+   setTimeout(function () { card.classList.remove('motivo-flash'); }, 1800);
+   ```
+
+#### Map MOTIVO → script-ids (`getMotivoFlowCards`)
+
+| Motivo | Cards que se highlightean |
+|---|---|
+| **MOVIL** (Técnico Móvil) | bienvenida, atencion-segura, sondea, sondeo-averias, tiempo-espera, educa-app, despedida, encuesta (8 cards) |
+| **OTRO** (Otras Consultas) | bienvenida, atencion-segura, transferir (3 cards) |
+| **AVERIA** (Avería Masiva) | bienvenida, sondea, sondeo-averias, tiempo-espera, despedida, encuesta (6 cards) |
+| **GTR** (GTR Crítico) | bienvenida, sondea, tiempo-espera, despedida, encuesta (5 cards) |
+
+#### CSS `.script-card.motivo-flash` (Apple-style highlight)
+
+```css
+@keyframes motivoFlashPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55),
+              inset 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  40%  { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.20),
+              inset 0 0 0 2px rgba(16, 185, 129, 0.30); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0),
+              inset 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+.script-card.motivo-flash {
+  animation: motivoFlashPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+  border-color: color-mix(in srgb, #10b981 60%, transparent);
+}
+```
+
+Pulso sage de 1.8s con ring expand + inset highlight — mismo lenguaje visual que el resto del design system premium.
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +7 nuevos tests v3.10.49 (desgloseMotivoFlow, getMotivoFlowCards, scrollIntoView, motivo-flash CSS, toggleGrid expand, expand all cards, click handler)
+- ✅ 595 → 602 tests PASS
+
+---
+
 ## [3.10.48] - 2026-10-19 — 🎯 SPEECHES nutridos AI 2026 (variación {Cliente} + consecutivas)
 
 **CEO directives (3 puntos):**

@@ -3472,6 +3472,59 @@ def test(html_path):
         result.fail('v3.10.44 JS init call', 'initMotivoCards() debe invocarse en DOMContentLoaded')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.49 — Desglose del flow al click en MOTIVO card
+    # CEO: "al darle click a el MOTIVO recien se desglozara toda la info
+    # correspondiente al motivo"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.49 — DESGLOSE del flow al click en MOTIVO')
+
+    # JS: desgloseMotivoFlow() función definida
+    if 'function desgloseMotivoFlow(' in html:
+        result.ok('v3.10.49 JS: desgloseMotivoFlow() función definida')
+    else:
+        result.fail('v3.10.49 JS desgloseMotivoFlow', 'función desgloseMotivoFlow esperada')
+
+    # JS: getMotivoFlowCards() función definida con map MOTIVO → script-ids
+    if 'function getMotivoFlowCards(' in html and \
+       "'MOVIL'" in html and "'OTRO'" in html:
+        result.ok('v3.10.49 JS: getMotivoFlowCards() con map MOTIVO → script-ids')
+    else:
+        result.fail('v3.10.49 JS getMotivoFlowCards', 'map MOTIVO → script-ids esperado')
+
+    # JS: initMotivoCards() llama a desgloseMotivoFlow() al click
+    if re.search(r'desgloseMotivoFlow\(\s*value\s*\)', html):
+        result.ok('v3.10.49 JS: click en MOTIVO card llama a desgloseMotivoFlow(value)')
+    else:
+        result.fail('v3.10.49 JS click handler', 'click debe llamar a desgloseMotivoFlow(value)')
+
+    # JS: desgloseMotivoFlow hace scrollIntoView a gridScript-body
+    # (match flexible: scrollIntoView puede estar en línea separada del id)
+    if re.search(r"scrollIntoView\(\s*\{\s*behavior", html) and \
+       re.search(r"getElementById\(['\"]gridScript-body['\"]\)", html):
+        result.ok('v3.10.49 JS: scrollIntoView a gridScript-body (scroll suave)')
+    else:
+        result.fail('v3.10.49 JS scroll', 'scrollIntoView + getElementById("gridScript-body") esperado')
+
+    # CSS: .script-card.motivo-flash con animación
+    if '.script-card.motivo-flash' in html and \
+       '@keyframes motivoFlashPulse' in html:
+        result.ok('v3.10.49 CSS: .script-card.motivo-flash + @keyframes motivoFlashPulse')
+    else:
+        result.fail('v3.10.49 CSS motivo-flash', '.script-card.motivo-flash + keyframes esperado')
+
+    # JS: desgloseMotivoFlow expande el GRID si está colapsado
+    if re.search(r"toggleGrid\(['\"]gridScript['\"]\s*,\s*false\)", html):
+        result.ok('v3.10.49 JS: desgloseMotivoFlow expande GRID si está colapsado')
+    else:
+        result.fail('v3.10.49 JS expand grid', 'toggleGrid("gridScript", false) esperado')
+
+    # JS: desgloseMotivoFlow expande TODAS las script-cards colapsadas
+    if re.search(r"document\.querySelectorAll\(['\"]\.script-card\.is-collapsed['\"]\)", html):
+        result.ok('v3.10.49 JS: desgloseMotivoFlow expande todas las script-cards colapsadas')
+    else:
+        result.fail('v3.10.49 JS expand cards', 'querySelectorAll(".script-card.is-collapsed") esperado')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.45 — BUG FIXES (layout + telefono-last3)
     # CEO: "Formato roto. No se hizo cambios correctos, las opciones deben
     # estar dentro de MOTIVO. En el speech dice {telefono en consulta} no

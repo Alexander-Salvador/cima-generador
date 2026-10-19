@@ -1195,6 +1195,17 @@
   .motivo-card--disabled:hover {
     opacity: 0.7;
   }
+  /* v3.10.49: motivo-flash — highlight visual temporal en las script-cards
+     que aplican al motivo seleccionado. Pulso sage + ring inset durante 1.8s. */
+  @keyframes motivoFlashPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55), inset 0 0 0 0 rgba(16, 185, 129, 0.45); }
+    40%  { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.20), inset 0 0 0 2px rgba(16, 185, 129, 0.30); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), inset 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+  .script-card.motivo-flash {
+    animation: motivoFlashPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+    border-color: color-mix(in srgb, #10b981 60%, transparent);
+  }
   .motivo-card-badge {
     position: absolute;
     top: 4px;
@@ -4269,7 +4280,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.48</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.49</span>
     </span>
   </footer>
 </div>
@@ -4716,11 +4727,14 @@ function initScriptCardClick() {
 
 // v3.10.44: MOTIVO CARDS — click en card activa selecciona + sync con select
 // oculto. Click en card desactivada muestra toast "Próximamente".
+// v3.10.49: click activa → "desglose" del flow: expandir GRID + cards,
+//   scroll a gridScript-body, highlight visual de las script-cards que
+//   aplican al motivo seleccionado.
 function initMotivoCards() {
   var motivoSelect = $('script-motivo');
   if (!motivoSelect) return;
 
-  // Card activa — click selecciona
+  // Card activa — click selecciona + desglosa
   document.querySelectorAll('.motivo-card--active').forEach(function (card) {
     card.addEventListener('click', function () {
       var value = card.dataset.motivoValue;
@@ -4734,6 +4748,8 @@ function initMotivoCards() {
       var ev = new Event('change', { bubbles: true });
       motivoSelect.dispatchEvent(ev);
       motivoSelect.dispatchEvent(new Event('input', { bubbles: true }));
+      // v3.10.49: desglose del flow (expandir GRID + cards + scroll + highlight)
+      desgloseMotivoFlow(value);
     });
   });
 
@@ -4759,6 +4775,72 @@ function initMotivoCards() {
 
   // Sync inicial: si el select tiene valor, marcar la card correspondiente
   syncMotivoCardsFromSelect();
+}
+
+// v3.10.49: "desglose" del flow al click en MOTIVO card activa.
+// Acciones:
+//   1. Expandir el GRID 0 (Estructura de Llamada) si está colapsado
+//   2. Expandir TODAS las script-cards colapsadas (mostrar todo el flow)
+//   3. Scroll suave a la grid-body del script
+//   4. Highlight visual temporal (flash sage) en las cards que aplican al motivo
+function desgloseMotivoFlow(motivoValue) {
+  // 1. Expandir GRID 0 si está colapsado
+  var gridScript = document.getElementById('gridScript');
+  if (gridScript && gridScript.classList.contains('is-collapsed')) {
+    toggleGrid('gridScript', false);
+  }
+
+  // 2. Expandir TODAS las script-cards colapsadas
+  document.querySelectorAll('.script-card.is-collapsed').forEach(function (card) {
+    var id = card.dataset.scriptId;
+    if (id) {
+      // Forzar expandir sin persistir (después se vuelven a colapsar
+      // individualmente si el usuario lo desea)
+      card.classList.remove('is-collapsed');
+      // Limpiar estado de persistencia para esta card
+      var state = loadScriptCollapsed();
+      if (state[id]) {
+        delete state[id];
+        saveScriptCollapsed(state);
+      }
+    }
+  });
+
+  // 3. Scroll suave a gridScript-body
+  var body = document.getElementById('gridScript-body');
+  if (body) {
+    setTimeout(function () {
+      body.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  // 4. Highlight visual temporal en cards del motivo
+  var cardsToHighlight = getMotivoFlowCards(motivoValue);
+  setTimeout(function () {
+    cardsToHighlight.forEach(function (id) {
+      var card = document.querySelector('.script-card[data-script-id="' + id + '"]');
+      if (card) {
+        card.classList.add('motivo-flash');
+        setTimeout(function () {
+          card.classList.remove('motivo-flash');
+        }, 1800);
+      }
+    });
+  }, 350);
+}
+
+// v3.10.49: retorna los script-id de las cards que aplican al motivo
+function getMotivoFlowCards(motivoValue) {
+  // Map de motivo → lista de script-id que se desglosan
+  var flow = {
+    'MOVIL': ['bienvenida', 'atencion-segura', 'sondea', 'sondeo-averias',
+              'tiempo-espera', 'educa-app', 'despedida', 'encuesta'],
+    'OTRO': ['bienvenida', 'atencion-segura', 'transferir'],
+    'AVERIA': ['bienvenida', 'sondea', 'sondeo-averias', 'tiempo-espera',
+               'despedida', 'encuesta'],
+    'GTR': ['bienvenida', 'sondea', 'tiempo-espera', 'despedida', 'encuesta']
+  };
+  return flow[motivoValue] || flow['MOVIL'];
 }
 
 // v3.2.0: sincroniza aria-checked de las cards con el valor del select
@@ -6193,7 +6275,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.48] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.49] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
