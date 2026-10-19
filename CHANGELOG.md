@@ -1,5 +1,122 @@
 # Changelog — cima-generador
 
+## [3.10.43] - 2026-10-19 — 🐛 BUG FIXES (3 bugs reportados por CEO)
+
+### BUG 1: Speech bienvenida — solo últimos 3 dígitos del teléfono + sin redundancia motivo
+
+**CEO directive:** "Corregir speech inicial 'Bienvenido a Movistar, le saluda Williams Huerta. ¿Me comunico con el titular del número 992319171 por la consulta de SMS? ¿Es correcto?' Arregla estas partes: Su consulta es por el numero que termina en {Telefono en consulta solo 3 digitos finales}. Por la consulta de SMS, es correcto? <- eso lo eliminamos ya que en motivo de llamada ya trackeamos esa info"
+
+**Causa raíz:**
+- Teléfono completo en speech → riesgo privacidad + identificación poco profesional
+- "por la consulta de {Motivo}" redundante con MOTIVO DE LLAMADA section
+
+**Fix:**
+
+```html
+<!-- v3.10.42 (rechazado): -->
+"Bienvenido a Movistar, le saluda {Agente}. ¿Me comunico con el titular del número {Telefono} por la consulta de {Motivo}? ¿Es correcto?"
+
+<!-- v3.10.43: solo últimos 3 dígitos + sin redundancia motivo -->
+"Bienvenido a Movistar, le saluda {Agente}. ¿Me comunico con el titular de la línea que termina en {Telefono-last3}? ¿Es correcto?"
+```
+
+**JS nueva lógica `telefono-last3`:** extracción automática de últimos 3 dígitos del valor del input `telefono`:
+
+```js
+// v3.10.43: telefono-last3 — solo últimos 3 dígitos
+if (key === 'telefono-last3' && val) {
+  val = val.replace(/\D/g, '').slice(-3);
+  if (!val) val = '';  // si no hay dígitos, vacío
+}
+```
+
+**Output ejemplo con teléfono 992319171:**
+- "{Agente}: Williams Huerta" → "Williams Huerta"
+- "{Telefono-last3}" → "**171**" (últimos 3 dígitos)
+- Resultado: "Bienvenido a Movistar, le saluda Williams Huerta. ¿Me comunico con el titular de la línea que termina en **171**? ¿Es correcto?"
+
+### BUG 2: Encuesta no cabe en el espacio disponible (overflow fix)
+
+**CEO directive:** "El speech de invitacion a encuesta no se muestra completo parece que no entra en el espacio disponible arregla el problema."
+
+**Causa raíz:** `.script-card-body` sin flex → el badge `★` se renderizaba antes del `<p>` y el texto se cortaba porque no wrappeaba correctamente con el badge en línea.
+
+**Fix:**
+
+```css
+/* v3.10.42 (rechazado): sin flex layout */
+.script-card-body { /* sin reglas → block layout */ }
+.script-card-body > .script-card-text { /* sin reglas → overflow */ }
+
+/* v3.10.43: flex con wrap correcto */
+.script-card-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+}
+.script-card-body > .script-card-text {
+  flex: 1 1 200px;       /* base 200px, crece a llenar */
+  min-width: 0;           /* permite shrink */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+```
+
+Ahora el badge `★` (inline-flex) fluye como flex item y el `<p>` (flex: 1 1 200px) wrappea correctamente. El texto "Para finalizar, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos..." se muestra completo en 2-3 líneas sin truncarse.
+
+### BUG 3: Diferenciar visualmente TÍTULOS vs ALERTS
+
+**CEO directive:** "de manera general optimiza mejor para que existan difererncias TITLES principales como BIENVENIDA E IDENTIFICACION los textos de apoyo como 💡 Conecta desde la empatía: escucha activa, tono cálido, soluciones claras. <- que se optimicen mas en ancho y espacio que no ocupen tanto espacio."
+
+**Causa raíz:** Los títulos de sección (font 10px) y las alerts (font 11.5px) tenían peso visual casi igual. CEO pidió: títulos más prominentes (los quiero ver de un vistazo) + alerts más compactos (que no roben espacio al speech principal).
+
+**Fix:**
+
+```css
+/* v3.10.42 (rechazado): poca diferencia visual */
+.script-section-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-left: 4px solid var(--accent);
+}
+.script-alert {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 8px 12px;
+  /* max-width: 100% por defecto */
+}
+
+/* v3.10.43: jerarquía clara TÍTULO > ALERT */
+.script-section-header {
+  font-size: 12px;             /* +20% */
+  font-weight: 800;             /* más bold */
+  letter-spacing: 0.12em;       /* +50% */
+  border-left: 5px solid;
+  padding: 6px 0 8px 0;
+}
+.script-alert {
+  font-size: 10.5px;            /* -9% */
+  font-weight: 450;             /* más sutil */
+  padding: 5px 10px;            /* -38% padding */
+  max-width: 96%;               /* no estira a 100% */
+  align-self: flex-start;       /* no estira en cross axis */
+}
+```
+
+**Resultado visual:**
+- TÍTULOS: "BIENVENIDA E IDENTIFICACIÓN" ahora pesa más (12px bold 800 letter-spacing 0.12em border-left 5px)
+- ALERTS: "💡 Conecta desde la empatía..." ahora es más sutil y compacto (10.5px, max 96% ancho, padding mínimo)
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +6 nuevos tests v3.10.43
+- ✅ 556 → 562 tests PASS
+- ✅ Anti-regresión CEO preservada (Bienvenido a Movistar + ¿Es correcto? + sin TÉCNICO MÓVIL)
+
+---
+
 ## [3.10.42] - 2026-10-19 — 🎯 Redistribución alerts + AI 2026 speeches + datos clave
 
 **CEO directive:** "Debemos distribuirlos de manera inteligente para que no saturen solo a MOTIVO DE LLAMADA. Mejora la font de los speech texto, que se entiendan mas optimizalos y resalta los datos clave importante, adicional debes releer todos los speech y mejorar la gramatica comas,puntos, espacios, mayusculas minusculas, coherencia y correcto español peru"

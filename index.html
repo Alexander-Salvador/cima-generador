@@ -1151,6 +1151,21 @@
     gap: 10px;
   }
   .script-card.is-collapsed .script-card-body { display: none; }
+  /* v3.10.43: BUG FIX — .script-card-body flex para que el badge (★ en
+     encuesta) fluya con el texto y ambos wrappeen correctamente. Antes
+     el badge flotaba a la izquierda y el <p> se desbordaba. */
+  .script-card-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .script-card-body > .script-card-text {
+    flex: 1 1 200px;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
   /* v3.10.39: "✓ Hecho" gradient pill badge (Apple Reminders style) */
   .script-card.is-collapsed::before {
     content: "✓ Hecho";
@@ -1204,23 +1219,25 @@
   .script-alert {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    margin-top: 6px;
+    gap: 7px;
+    padding: 5px 10px;              /* v3.10.43: 8px 12px → 5px 10px (más compacto) */
+    margin-top: 5px;                /* v3.10.43: 6→5 */
     background: linear-gradient(135deg,
       color-mix(in srgb, #10b981 6%, var(--surface)) 0%,
       color-mix(in srgb, #06b6d4 4%, var(--surface)) 100%);
     border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
     border-radius: var(--radius-md);
     color: var(--text);
-    font-size: 11.5px;
-    font-weight: 500;
-    line-height: 1.5;
+    font-size: 10.5px;              /* v3.10.43: 11.5→10.5 (más compacto) */
+    font-weight: 450;              /* v3.10.43: 500→450 (más sutil) */
+    line-height: 1.4;               /* v3.10.43: 1.5→1.4 */
     text-transform: none;
     letter-spacing: 0;
+    max-width: 96%;                 /* v3.10.43: no estira a 100% del container */
+    align-self: flex-start;         /* v3.10.43: no estira en cross axis */
   }
   .script-alert-icon {
-    font-size: 14px;
+    font-size: 12px;                /* v3.10.43: 14→12 (proporcional al font menor) */
     line-height: 1;
     color: #10b981;
     flex-shrink: 0;
@@ -1241,16 +1258,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 0 6px 0;
-    margin-bottom: 4px;
-    font-size: 10px;
-    font-weight: 700;
+    padding: 6px 0 8px 0;           /* v3.10.43: más prominente (4→6, 6→8) */
+    margin-bottom: 6px;             /* v3.10.43: 4→6 (separación de cards) */
+    font-size: 12px;                /* v3.10.43: 10→12 (más prominente) */
+    font-weight: 800;               /* v3.10.43: 700→800 (más bold) */
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;         /* v3.10.43: 0.08→0.12 (más espaciado) */
     color: var(--text);
-    border-left: 4px solid var(--accent);
-    padding-left: 8px;
-    background: linear-gradient(to right, color-mix(in srgb, var(--accent) 6%, transparent), transparent 40%);
+    border-left: 5px solid var(--accent);  /* v3.10.43: 4→5 (más visible) */
+    padding-left: 10px;             /* v3.10.43: 8→10 */
+    background: linear-gradient(to right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 50%);  /* v3.10.43: 6→10, 40→50 */
   }
   .script-section-header--blue { border-left-color: #3b82f6; }
   .script-section-header--blue {
@@ -3716,7 +3733,10 @@ font-size: 10px;
             <div class="script-card" data-script-id="bienvenida">
               
                <div class="script-card-body">
-                 <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, le saluda <span class="ph" data-ph="agente">{Agente}</span>. ¿Me comunico con el titular del número <span class="ph" data-ph="telefono">{Telefono}</span> por la consulta de <span class="ph" data-ph="motivo">{Motivo}</span>? ¿Es correcto?"</p>
+                 <!-- v3.10.43: BUG FIX — Solo últimos 3 dígitos del teléfono
+                      (privacidad + identificación). "por la consulta de {Motivo}"
+                      REMOVIDO porque ya se trackea en MOTIVO DE LLAMADA. -->
+                 <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, le saluda <span class="ph" data-ph="agente">{Agente}</span>. ¿Me comunico con el titular de la línea que termina en <span class="ph" data-ph="telefono-last3">{Últimos 3}</span>? ¿Es correcto?"</p>
                </div>
             </div>
 
@@ -4078,7 +4098,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.42</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.43</span>
     </span>
   </footer>
 </div>
@@ -4428,6 +4448,12 @@ function updateScriptPlaceholders() {
     el.querySelectorAll('.ph').forEach(function (span) {
       var key = span.dataset.ph;
       var val = vars[key] || '';
+      // v3.10.43: telefono-last3 — solo últimos 3 dígitos del teléfono
+      // (privacidad + identificación en speech de bienvenida)
+      if (key === 'telefono-last3' && val) {
+        val = val.replace(/\D/g, '').slice(-3);
+        if (!val) val = '';  // si no hay dígitos, vacío
+      }
       var origText = span.dataset.orig || span.textContent;
       if (val) {
         span.textContent = val;
@@ -5930,7 +5956,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.42] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.43] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
