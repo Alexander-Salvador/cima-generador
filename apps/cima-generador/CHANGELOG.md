@@ -1,5 +1,112 @@
 # Changelog — cima-generador
 
+## [3.10.34] - 2026-10-19 — 🎯 HEADER refinado (click-to-collapse + nuevos speeches MOTIVO)
+
+**CEO directive:** "Estamos cerca. En BIENVENIDA Y IDENTIFICACION Solo mantenemos 1 speech -> Bienvenido a Movistar, te saluda Williams Huerta. Te comunicas por INTERNET de tu número 992319171. ¿Es correcto? Luis, ¿Con quién tengo el gusto? <- lo eliminamos es inncesario. Si le damos click a 'Bienvenido a Movistar...' <- se debe minizar para no ocupar espacio se debe contener en su padre BIENVENIDA E IDENTIFICACION. MOTIVO DE LA LLAMADA — Sondea el problema o necesidad del cliente debe decir el speech: {cliente} en que puedo ayudarte? cual seria el motivo de tu comunicacion o consulta. Sondeo de identificacion de AVERIAS para esto debe preguntar {Cliente}, me indicas en que departamento te encuentras?, provincia y distrito por favor! Gracias, ahora me indicarias por favor cual es tu direccion donde te encuentras en este momento? para verificar la cobertura de la zona, mz, lote, avenida, urb. Bien por ultimo me bríndame alguna referencia?"
+
+### 🎯 Causa raíz (3 refinamientos específicos)
+
+| # | Refinamiento | Antes (v3.10.33) | Ahora (v3.10.34) |
+|---|---|---|---|
+| 1 | **"Luis, ¿Con quién tengo el gusto?"** | Card "con-quien" (Personaliza tu llamada) | **REMOVED** (CEO: innecesario) |
+| 2 | **Click behavior** | `.is-done` (opacity 0.65 + ✓ verde) | **`.is-collapsed`** (body hidden, contained en section parent) |
+| 3 | **MOTIVO speeches** | "Sondea" sin speech específico · sin Sondeo AVERIAS | **Sondea speech**: "{Cliente}, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta" · **NUEVO Sondeo AVERIAS**: 3 pasos |
+
+### 🔧 Cambios
+
+#### 1. Card "con-quien" REMOVIDA
+
+```html
+<!-- ANTES: 2 cards en Bienvenida -->
+<div class="script-card" data-script-id="bienvenida">...</div>
+<div class="script-card" data-script-id="con-quien">...</div>
+
+<!-- AHORA: solo 1 card -->
+<div class="script-card" data-script-id="bienvenida">...</div>
+```
+
+#### 2. Click-to-COLLAPSE (reemplaza click-to-DONE)
+
+```js
+// v3.10.33 (REEMPLAZADO):
+// function toggleScriptDone(id) → toggle .is-done (opacity + ✓)
+
+// v3.10.34 (NUEVO):
+function toggleScriptCardCollapse(id) {
+  var card = document.querySelector('.script-card[data-script-id="' + id + '"]');
+  var state = loadScriptCollapsed();
+  if (state[id]) {
+    delete state[id];
+    card.classList.remove('is-collapsed');  // expand
+  } else {
+    state[id] = true;
+    card.classList.add('is-collapsed');  // collapse
+  }
+  saveScriptCollapsed(state);
+}
+```
+
+```css
+/* v3.10.34: estado COLLAPSED — card minimizado, contenido contained en section parent */
+.script-card.is-collapsed {
+  padding: 5px 10px;
+  background: green tint;
+  border-color: green;
+}
+.script-card.is-collapsed .script-card-body { display: none; }  /* body hidden */
+```
+
+Persistencia: `localStorage.cima_script_collapsed_v1`.
+
+#### 3. MOTIVO: Nuevos speeches
+
+**Sondea (texto completo del CEO):**
+```
+"{Cliente}, ¿en qué puedo ayudarte? Cuál sería el motivo de tu comunicación o consulta."
+```
+
+**Sondeo identificación de AVERIAS (NUEVO card):**
+```
+"{Cliente}, me indicas en qué departamento te encuentras, provincia y distrito por favor.
+Gracias. Ahora me indicarias por favor cuál es tu dirección donde te encuentras en este momento,
+para verificar la cobertura de la zona, mz, lote, avenida, urb.
+Bien, por último me bríndame alguna referencia."
+```
+
+3 pasos del flujo de averías:
+1. Departamento + provincia + distrito
+2. Dirección (mz, lote, avenida, urb)
+3. Referencia
+
+#### 4. Estructura final de Motivo
+
+| Card | Contenido |
+|---|---|
+| Sondea el problema | "{Cliente}, ¿en qué puedo ayudarte? Cuál sería el motivo..." |
+| **Sondeo de identificación de AVERIAS (NUEVO)** | 3 pasos del flujo de averías |
+| Atención segura | (existente) |
+| Tiempo de espera | (existente) |
+| Retorno | (existente) |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **521/521 PASS** (10 nuevos tests v3.10.34) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,072 chars JS) |
+| HTML balanced | 99 `<div>` open = 99 close |
+
+### 📐 Lecciones aplicadas
+
+- **CRIT-002**: Resultado observable es contrato. El CEO probó v3.10.33 en navegador real y reportó 3 refinamientos específicos.
+- **L-079**: "Iterar = fallar". v3.10.33 click-to-done fue reemplazado por click-to-collapse (UX más útil para el flujo del agente).
+- **Iteración iterativa**: cada iteración revela nuevos detalles del CEO que el código automatizado no detecta.
+
+---
+
 ## [3.10.33] - 2026-10-19 — 🎯 HEADER Estructura de Atención v3 (simplificación inteligente)
 
 **CEO directive:** "Vamos a mejorarlo de manera inteligente. EL HEADER DEL GRID arreglalo ya te dije que no es SCRIPT LLAMADA. Bienvenida e identificacion es el header de las opciones y abajo debe tener solo 1 speech no 3, usaremos 1 general que sera este: Bienvenido a Movistar, te saluda {Agente}, te comunicas por {Motivo} de tu numero {Telefono}, ¡Es correcto? <- arregla comas puntas etc que sea bien escrito. Cuando se le de click a 1 se ocultara como si ya estuviera realizado minimizandose con un check. <- debemos eliminar el icono de copiar no es necesario. Vamos a retirar los subtiles de SPEECH 2"
