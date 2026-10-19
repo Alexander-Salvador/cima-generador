@@ -1,5 +1,98 @@
 # Changelog — cima-generador
 
+## [3.10.36] - 2026-10-19 — 📋 MOVER Atención segura a BIENVENIDA + REFINAR Sondeo identificación AVERIAS
+
+**CEO directive:** "Vamos a subir la atencion segura a BEINVENIDA E IDENTIFICACION. Motivo de la llamada: Sondeo de identificacion de AVERIAS... mejorar"
+
+### 🎯 Causa raíz (2 refinamientos específicos)
+
+| # | Refinamiento | Antes (v3.10.35) | Ahora (v3.10.36) |
+|---|---|---|---|
+| 1 | **Atención segura** ubicación | MOTIVO de la llamada | **BIENVENIDA E IDENTIFICACIÓN** (flujo natural: bienvenida → callback number → motive query) |
+| 2 | **Sondeo identificación AVERIAS** | 3 frases separadas | **1 párrafo unificado** + tip referencias |
+
+### 🔧 Cambios
+
+#### 1. MOVER "atencion-segura" a BIENVENIDA
+
+```html
+<!-- ANTES (v3.10.35): MOTIVO contenía atencion-segura -->
+<div class="script-section">
+  <div class="script-section-header">Motivo de la llamada</div>
+  <div class="script-card" data-script-id="sondea">...</div>
+  <div class="script-card" data-script-id="sondeo-averias">...</div>
+  <div class="script-card" data-script-id="atencion-segura">...</div>  ← MOVIDA
+  <div class="script-card" data-script-id="tiempo-espera">...</div>
+  <div class="script-card" data-script-id="retorno">...</div>
+</div>
+
+<!-- AHORA (v3.10.36): BIENVENIDA contiene bienvenida + atención-segura -->
+<div class="script-section">
+  <div class="script-section-header">Bienvenida e identificación</div>
+  <div class="script-card" data-script-id="bienvenida">...</div>
+  <div class="script-card" data-script-id="atencion-segura">...</div>  ← AQUÍ
+</div>
+```
+
+**Lógica del flujo:**
+1. Bienvenida → identifica al cliente + motivo
+2. Atención segura → confirma callback number (POR SI SE CORTA LA LLamada)
+3. → Recién entonces inicia Motivo de la llamada (preguntas técnicas)
+
+Esta reordenación refleja el flujo real del agente: asegurar continuidad ANTES de empezar trabajo técnico.
+
+#### 2. Sondeo identificación AVERIAS unificado
+
+```html
+<!-- ANTES (v3.10.35): 3 frases separadas -->
+<p>"...me indicas en qué departamento te encuentras, provincia y distrito por favor.
+Gracias. Ahora me indicarias por favor cuál es tu dirección donde te encuentras
+en este momento, para verificar la cobertura de la zona, mz, lote, avenida, urb.
+Bien, por último me bríndame alguna referencia."</p>
+
+<!-- AHORA (v3.10.36): 1 párrafo unificado + tip -->
+<p>"...comprendo, debido al inconveniente que nos mencionas, realizaré una
+revisión de su servicio. Para esto me confirmas en qué departamento te
+encuentras, provincia y distrito por favor. Me indicas también la dirección
+donde te encuentras en este momento por favor, con eso podré avanzar
+con la búsqueda."</p>
+<p><strong>Tip:</strong> En caso no encontremos al cliente, solicitamos referencias.</p>
+```
+
+**Estructura del nuevo párrafo:**
+1. Empatía: "comprendo, debido al inconveniente"
+2. Acción: "realizaré una revisión de su servicio"
+3. Pregunta 1: departamento + provincia + distrito
+4. Pregunta 2: dirección
+5. Cierre: "con eso podré avanzar con la búsqueda"
+
+#### 3. Estructura final de secciones
+
+| Sección | Cards |
+|---|---|
+| **Bienvenida e identificación** | bienvenida + **atencion-segura (NUEVO)** |
+| **Motivo de la llamada** | sondea + sondeo-averias (refinado) + tiempo-espera + retorno |
+| Consulta adicional + App Movistar | consulta-adicional + educa-app |
+| Cierre + Encuesta | cierre-con-solucion + cierre-sin-solucion + encuesta |
+
+### ✅ Verificación
+
+| Test | Resultado |
+|---|---|
+| `test_popup.py` | **528/528 PASS** (+3 nuevos tests v3.10.36, 1 actualizado) |
+| `test_aggressive.py` | **63/63 PASS** |
+| `test_audit_brutal.py` | 55 OK + 1 mentira pre-existente (M4 IPT fuera scope) |
+| `test_browser_static.py` | **14/0/2 PASS/FAIL/WARN** |
+| `node --check` | EXIT 0 (978,072 chars JS) |
+| HTML balanced | 87 `<div>` open = 87 close |
+
+### 📐 Lecciones aplicadas
+
+- **L-067/068/069**: orden lógico del flujo > orden técnico. Mover "atención segura" antes de las preguntas técnicas refleja el flujo real del agente.
+- **CRIT-002**: el CEO probó el flujo completo y reportó que el orden no era natural. Las preguntas técnicas deben ir DESPUÉS de asegurar continuidad.
+
+---
+
 ## [3.10.35] - 2026-10-19 — 🎯 OPTIMIZACIÓN: single header (sin duplicado) + ✓ Hecho indicator
 
 **CEO directive:** "Vamos a Optimizar ya que hay doble header BIENVENIDA E IDENTIFICACION BIENVENIDA + SPEECH debe hacerse 1 solo para no estirar tanto espacio corrige de manera lineal para todos los textos y al minimizarse se debe marcar como listo o hecho"
