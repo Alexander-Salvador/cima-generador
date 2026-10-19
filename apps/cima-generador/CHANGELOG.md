@@ -1,5 +1,85 @@
 # Changelog — cima-generador
 
+## [3.10.45] - 2026-10-19 — 🐛 BUG FIXES: layout MOTIVO full-width + telefono-last3 alias
+
+**CEO directive:** "Formato roto [...] No se hizo cambios correctos, las opciones deben estar dentro de MOTIVO. En el speech dice {telefono en consulta} no esta tomando realmente la indicacion que te di el numero que ya esta ingresado en la plantilla inicial."
+
+### 🎯 Causa raíz
+
+**BUG 1 — Layout:** v3.10.44 puso MOTIVO en `field-row row-2` (50% width) compartiendo row con TELÉFONO. Las 4 cards visuales (grid 2x2 interno) quedaron a 25% cada una → desbordaban el container padre (cards cortadas a la derecha, label "Próximamente" parcial).
+
+**BUG 2 — JS telefono-last3:** el objeto `vars` solo contenía `agente/cliente/telefono/motivo`. El placeholder `data-ph="telefono-last3"` buscaba `vars['telefono-last3']` que era `undefined` → mostraba siempre el `origText` literal `{Telefono en consulta}` en vez de los últimos 3 dígitos.
+
+### 🔧 Cambios
+
+#### 1. Layout: MOTIVO ahora full-width
+
+```html
+<!-- v3.10.44 (rechazado por CEO): TELÉFONO + MOTIVO compartían row-2 (50/50) -->
+<div class="field-row row-2">
+  <div class="field">...TELÉFONO EN CONSULTA...</div>
+  <div class="field">...MOTIVO (con cards desbordadas)...</div>
+</div>
+
+<!-- v3.10.45: TELÉFONO y MOTIVO en rows separados, cada uno full-width -->
+<div class="field-row row-1">
+  <div class="field">...TELÉFONO EN CONSULTA...</div>
+</div>
+<div class="field-row row-1">
+  <div class="field">...MOTIVO (4 cards dentro)...</div>
+</div>
+```
+
+```css
+/* v3.10.45: nueva regla para row-1 (single column) */
+.row-1 { grid-template-columns: 1fr; }
+```
+
+Ahora las 4 cards visuales tienen el ancho completo del campo MOTIVO, sin desbordarse.
+
+#### 2. JS: `vars['telefono-last3']` alias
+
+```js
+/* v3.10.44 (rechazado): vars solo tenía 4 keys, telefono-last3 era undefined */
+var vars = {
+  agente: ...,
+  cliente: ...,
+  telefono: ...,
+  motivo: ...
+};
+
+/* v3.10.45: alias que toma el valor del input telefono */
+var _tel = getScriptVar('telefono');
+var vars = {
+  agente: getScriptVar('agente'),
+  cliente: getScriptVar('cliente'),
+  telefono: _tel,
+  'telefono-last3': _tel,        // ← alias para data-ph="telefono-last3"
+  motivo: getScriptVar('motivo')
+};
+```
+
+La transformación `slice(-3)` ya existía en el bucle `.ph` y ahora opera sobre un valor válido:
+
+```js
+if (key === 'telefono-last3' && val) {
+  val = val.replace(/\D/g, '').slice(-3);
+  // → "992319171".replace(/\D/g, '') → "992319171"
+  // → "992319171".slice(-3) → "171"
+}
+```
+
+**Output verificado con Williams Huerta + 992319171:**
+> "Bienvenido a Movistar, le saluda Williams Huerta. ¿Su consulta es por el numero que termina en **171**? ¿Es correcto?"
+
+### 🧪 Tests
+
+- ✅ `test_popup.py`: +4 nuevos tests v3.10.45
+- ✅ 573 → 577 tests PASS
+- ✅ Anti-regresión: speech bienvenida mantiene "Su consulta es por el numero..." (CEO directive v3.10.44)
+
+---
+
 ## [3.10.44] - 2026-10-19 — 🎨 HEADER "Estructura de Llamada" + MOTIVO cards Apple 2026
 
 **CEO directives (2 partes):**
