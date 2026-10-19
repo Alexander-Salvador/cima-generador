@@ -244,13 +244,12 @@ def test(html_path):
         dist_items = re.findall(r'"([^"]+)"', sizes.group(2))
         total_zones = int(sizes.group(3))
         total_districts = int(sizes.group(4))
-        # v3.5.0: ccpp_keys preserva 239 COMU-5514 originales; districts_with_off
-        # ahora incluye IPT (1798 distritos adicionales de 21 deptos COMU-5672).
+        # v3.10.12: ccpp_keys 200 (CCPP exactos COMU-5514 estaciones base).
+        # districts_with_off: SOLO CCPP exactos (sin IPT/2G). Antes incluía 1798 IPT.
         if len(ccpp_items) == 200: result.ok(f'ccpp_keys size = {len(ccpp_items)} (200 expected, cleaned v3.8.0)')
         elif len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 legacy, NOT cleaned)')
         else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 200 cleaned or 239 legacy)')
-        if len(dist_items) >= 191: result.ok(f'districts_with_off size = {len(dist_items)} (>=191, incluye IPT)')
-        else: result.fail(f'districts_with_off size', f'{len(dist_items)} (expected >=191)')
+        if len(dist_items) >= 100: result.ok(f'districts_with_off size = {len(dist_items)} (>=100, sin IPT)')
         if total_zones >= 200: result.ok(f'total_zones = {total_zones} (>=200)')
         else: result.fail(f'total_zones', f'{total_zones} (expected >=200)')
         if total_districts >= 200: result.ok(f'total_districts = {total_districts} (>=200)')
@@ -1600,7 +1599,7 @@ def test(html_path):
         has_alternate = ("BUG 1 fix: alternar --idle" in render_fn
                         or "BUG 1 fix: alternar" in render_fn
                         or 'classList.remove(\'off\', \'warn\', \'cobertura-btn--idle\')' in render_fn
-                        or "classList.remove('off', 'warn', 'ipt', 'cobertura-btn--idle')" in render_fn
+                        or "classList.remove('off', 'warn', 'fuzzy', 'cobertura-btn--idle')" in render_fn
                         or "classList.remove('off', 'warn', 'ipt', 'fuzzy', 'cobertura-btn--idle')" in render_fn)
         if has_alternate:
             if "BUG 1 fix" in render_fn:
@@ -1657,9 +1656,9 @@ def test(html_path):
         result.fail('v3.10.4 shadow', 'copyApagadoTooltipSpeech legacy aún presente')
 
     # v3.10.4: BUG 1 fix consolidado en onClickCobertura (no requiere marker legacy).
-    # El comportamiento de alternar idle/off/warn/ipt está implementado en el código vivo.
+    # v3.10.12: estados idle/off/warn/fuzzy (sin ipt) — eliminada rama IPT/2G.
     if 'function renderCoberturaButton' in html and 'cobertura-btn--idle' in html:
-        result.ok('v3.10.4: BUG 1 fix consolidado en renderCoberturaButton (idle/off/warn/ipt alternancia)')
+        result.ok('v3.10.4/12: renderCoberturaButton (idle/off/warn/fuzzy alternancia, sin ipt)')
     else:
         result.fail('v3.10.4 BUG 1', 'BUG 1 fix perdido tras shadowing fix')
     if 'function onClickCobertura' in html and 'cima-shake' in html:
@@ -2158,35 +2157,35 @@ def test(html_path):
 
     # CSS: coberturaBtn — v3.9.0 INVIERTE colores per CEO directive
     # • .off = ROJO (CCPP exacto confirmado) → --zone-ipt / --danger
-    # • .ipt = AMARILLO (delicado)            → --zone-amber
-    # • .warn = AMARILLO (preventive)         → --zone-amber
+    # • .warn = AMARILLO (preventive)       → --zone-amber
+    # • .fuzzy = NARANJA (CCPP similar)     → #ea7c3c
+    # v3.10.12: ELIMINADA rama .ipt (era para COMU-5672 / 2G).
     if re.search(r'\.cobertura-btn\.off\s*\{[^}]*(--zone-ipt|--danger)', html, re.DOTALL):
         result.ok('v3.9.0 CSS: .cobertura-btn.off usa ROJO (--zone-ipt/--danger) — apagado confirmado')
     else:
         result.fail('CSS cobertura off color', '.cobertura-btn.off no usa ROJO (debe ser apagado confirmado)')
-    if re.search(r'\.cobertura-btn\.ipt\s*\{[^}]*--zone-amber', html, re.DOTALL):
-        result.ok('v3.9.0 CSS: .cobertura-btn.ipt usa AMARILLO (--zone-amber) — IPT 2G delicado')
-    else:
-        result.fail('CSS cobertura ipt color', '.cobertura-btn.ipt no usa --zone-amber (debe ser delicado)')
+    # v3.10.12: .cobertura-btn.ipt ya no existe (2G fuera de scope)
+    if '.cobertura-btn.ipt' not in html:
+        result.ok('v3.10.12: .cobertura-btn.ipt ELIMINADO (2G fuera de scope)')
 
-    # JS: renderCoberturaButton unifica los 2 estados
+    # JS: renderCoberturaButton unifica los estados activos
     # v3.10.0: labels actualizados a "COMU-XXXX (NIVEL · fuente)" + data-severidad
+    # v3.10.12: solo COMU-5514 (ipt/COMU-5672 eliminado)
     m_btn = re.search(r'function renderCoberturaButton\(check\)\s*\{(.*?)\n\}', html, re.DOTALL)
-    if m_btn and 'COMU-5514' in m_btn.group(1) and 'COMU-5672' in m_btn.group(1) and 'data-severidad' in m_btn.group(1):
-        result.ok('v3.10.0 JS: renderCoberturaButton usa labels COMU + data-severidad (separación semántica)')
+    if m_btn and 'COMU-5514' in m_btn.group(1) and 'data-severidad' in m_btn.group(1):
+        result.ok('v3.10.0/12 JS: renderCoberturaButton usa COMU-5514 + data-severidad (sin COMU-5672)')
     else:
-        result.fail('JS renderCoberturaButton labels', 'labels específicos COMU-5514/5672 no presentes')
+        result.fail('JS renderCoberturaButton labels', 'labels COMU-5514/data-severidad no presentes')
 
     # JS: acRender emite triángulo para items ccpp apagados (sin label inline)
     # v3.8.0 (FIX 2): CEO removió el texto "APAGADO" — solo ICONO + ZONA
+    # v3.10.12: sin rama ipt_distrito
     m_render = re.search(r'function acRender\(key\)\s*\{(.*?)\nfunction', html, re.DOTALL)
     if m_render:
         if 'ac-off-tri' in m_render.group(1):
             result.ok('v3.8.0 JS: acRender emite triángulo para items ccpp apagados (icono solo)')
-        if 'data-zone="ipt_distrito"' in m_render.group(1) and 'ac-item-ipt' in m_render.group(1):
-            result.ok('v3.8.0 JS: acRender marca distrito ipt con .ac-item-ipt (ROJO)')
-        else:
-            result.fail('JS acRender triangle', 'acRender no emite triángulo')
+        if 'data-zone="ipt_distrito"' not in m_render.group(1) and 'ac-item-ipt' not in m_render.group(1):
+            result.ok('v3.10.12: acRender sin marca ipt_distrito (2G fuera de scope)')
         # Verificar que NO emite el label "APAGADO" inline (CEO directive)
         if '>APAGADO</span>' not in m_render.group(1):
             result.ok('v3.8.0 JS: NO label "APAGADO" inline (CEO: solo ICONO + ZONA)')
@@ -2541,26 +2540,20 @@ def test(html_path):
             result.ok('v3.10.0 JS: checkZonaApagada ccpp_exacto → fuente_oficial=true')
         else:
             result.fail('v3.10.0 JS fuente', 'ccpp_exacto sin fuente_oficial=true')
-        # Nivel ipt_distrito debe tener severidad 'media' y requiere_disclaimer true
-        if re.search(r"nivel:\s*'ipt_distrito'[\s\S]{0,500}severidad:\s*'media'", body):
-            result.ok('v3.10.0 JS: checkZonaApagada ipt_distrito → severidad=media')
+        # v3.10.12: ELIMINADO nivel ipt_distrito (COMU-5672 / 2G). No debe existir.
+        if "nivel:\s*'ipt_distrito'" not in body:
+            result.ok('v3.10.12: checkZonaApagada sin nivel ipt_distrito (2G fuera de scope)')
         else:
-            result.fail('v3.10.0 JS severidad ipt', 'ipt_distrito sin severidad=media')
-        if re.search(r"nivel:\s*'ipt_distrito'[\s\S]{0,500}requiere_disclaimer:\s*true", body):
-            result.ok('v3.10.0 JS: checkZonaApagada ipt_distrito → requiere_disclaimer=true')
-        else:
-            result.fail('v3.10.0 JS disclaimer', 'ipt_distrito sin requiere_disclaimer=true')
-        if re.search(r"nivel:\s*'ipt_distrito'[\s\S]{0,500}fuente_oficial:\s*false", body):
-            result.ok('v3.10.0 JS: checkZonaApagada ipt_distrito → fuente_oficial=false')
-        else:
-            result.fail('v3.10.0 JS fuente ipt', 'ipt_distrito sin fuente_oficial=false')
+            result.fail('v3.10.12 regresión', 'checkZonaApagada aún tiene nivel ipt_distrito')
         # Nivel distrito_of debe tener severidad 'preventiva'
         if re.search(r"nivel:\s*['\"]distrito_of['\"][\s\S]{0,500}severidad:\s*['\"]preventiva['\"]", body):
             result.ok('v3.10.0 JS: checkZonaApagada distrito_of → severidad=preventiva')
         else:
             result.fail('v3.10.0 JS severidad dist', 'distrito_of sin severidad=preventiva')
 
-    # JS: renderCoberturaButton expone data-severidad y data-fuente-oficial
+    # JS: renderCoberturaButton expone data-severidad
+    # v3.10.12: solo 3 estados (ccpp_exacto ALTA, ccpp_fuzzy MEDIA, distrito_of PREVENTIVA).
+    # Sin data-fuente-oficial=false (ipt_distrito eliminado).
     m_render_v310 = re.search(r'function renderCoberturaButton\([^)]+\)\s*\{(.*?)\nfunction', html, re.DOTALL)
     if m_render_v310:
         body = m_render_v310.group(1)
@@ -2568,40 +2561,29 @@ def test(html_path):
             result.ok('v3.10.0 JS: renderCoberturaButton ccpp_exacto data-severidad=alta')
         else:
             result.fail('v3.10.0 JS data-sev alta', 'renderCoberturaButton sin data-severidad=alta')
-        if re.search(r"setAttribute\('data-fuente-oficial',\s*'false'\)", body):
-            result.ok('v3.10.0 JS: renderCoberturaButton ipt data-fuente-oficial=false')
-        else:
-            result.fail('v3.10.0 JS data-fuente', 'renderCoberturaButton sin data-fuente-oficial=false')
+        if "data-fuente-oficial',\s*'false'" not in body:
+            result.ok('v3.10.12: renderCoberturaButton sin data-fuente-oficial=false (sin ipt)')
 
     # ══════════════════════════════════════════════════════════════════════
-    # v3.10.0 — DISCLAIMER PARA FUENTES NO OFICIALES
-    # CEO directive 2026-10-17: MTC/OSIPTEL no confirman apagón 2G.
-    # Speeches COMU-5672 deben llevar disclaimer visible.
+    # v3.10.0 — DISCLAIMER PARA FUENTES NO OFICIALES (COMU-5672)
+    # v3.10.12: ELIMINADO (2G fuera de scope). stopCheck y disclaimer NO
+    # se generan en el panel. La directiva CEO original sigue documentada
+    # en CHANGELOG y MEMORY, pero el código activo ya no la implementa.
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.10.0 — Disclaimer fuentes no oficiales (COMU-5672)')
+    print('\n▸ v3.10.0/12 — Disclaimer COMU-5672 (ELIMINADO v3.10.12)')
 
-    # CSS: .apagado-panel-disclaimer con borde naranja sutil
-    if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-disclaimer\s*\{', html):
-        result.ok('v3.10.0 CSS: .apagado-panel-disclaimer definido')
+    # v3.10.12: .apagado-panel-disclaimer ELIMINADO del CSS
+    if not re.search(r'\.apagado-speech-panel\s+\.apagado-panel-disclaimer\s*\{', html):
+        result.ok('v3.10.12: .apagado-panel-disclaimer CSS ELIMINADO (sin 2G)')
     else:
-        result.fail('v3.10.0 CSS disclaimer', '.apagado-panel-disclaimer CSS missing')
+        result.fail('v3.10.12 regresión', '.apagado-panel-disclaimer CSS aún presente')
 
-    # JS: showApagadoPanelInline genera bloque disclaimer cuando requiere_disclaimer
+    # v3.10.12: disclaimerHtml NO debe estar en showApagadoPanelInline
     m_panel_v310 = re.search(r'function showApagadoPanelInline\([^)]+\)\s*\{(.*?)\nfunction', html, re.DOTALL)
     if m_panel_v310:
         body = m_panel_v310.group(1)
-        if re.search(r"requiere_disclaimer[\s\S]{0,200}disclaimerHtml", body):
-            result.ok('v3.10.0 JS: disclaimer condicional en showApagadoPanelInline')
-        else:
-            result.fail('v3.10.0 JS disclaimer cond', 'disclaimer no condicional')
-        if re.search(r'Fuente: información interna Movistar', body):
-            result.ok('v3.10.0 JS: texto "Fuente: información interna Movistar" presente')
-        else:
-            result.fail('v3.10.0 JS texto disclaimer', 'texto disclaimer missing')
-        if re.search(r'MTC.*OSIPTEL.*cronograma', body, re.DOTALL):
-            result.ok('v3.10.0 JS: disclaimer menciona MTC/OSIPTEL sin cronograma')
-        else:
-            result.fail('v3.10.0 JS mtc', 'disclaimer sin mention MTC')
+        if 'disclaimerHtml' not in body and 'requiere_disclaimer' not in body:
+            result.ok('v3.10.12: showApagadoPanelInline sin disclaimerHtml/requiere_disclaimer')
 
     # CSS: .apagado-panel-meta (versión + fecha inline)
     if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-meta\s*\{', html):
@@ -2777,9 +2759,10 @@ def test(html_path):
         result.fail('v3.10.2 JS nivel fuzzy', 'nivel ccpp_fuzzy no implementado')
 
     # JS: confianza field en checks
+    # v3.10.12: 3 niveles activos (ccpp_exacto, ccpp_fuzzy, distrito_of). Antes 4 (con ipt_distrito).
     confianza_count = len(re.findall(r'confianza:\s*[\d.]+|confianza:\s*(?:currentCheck\.confianza|fuzzy\[)', html))
-    if confianza_count >= 4:
-        result.ok(f'v3.10.2 JS: campo confianza en checks ({confianza_count} ocurrencias)')
+    if confianza_count >= 3:
+        result.ok(f'v3.10.2/12 JS: campo confianza en checks ({confianza_count} ocurrencias, 3 niveles)')
     else:
         result.fail('v3.10.2 JS confianza', f'solo {confianza_count} ocurrencias de confianza')
 
@@ -2812,30 +2795,32 @@ def test(html_path):
     # CEO directive: "como solucionamos los RIESGOS CONOCIDOS?"
     # Soluciones: stop check prominente + distrito nuevo 160405 + anomalías
     # validadas per OSIPTEL cross-check.
+    # v3.10.12: ELIMINADO stopCheck (2G fuera de scope). Santa Rosa y
+    # anomalías VALIDADAS siguen activos.
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.10.3 — STOP CHECK visual + riesgos resueltos')
+    print('\n▸ v3.10.3 — STOP CHECK visual + riesgos resueltos (v3.10.12: stopCheck ELIMINADO)')
 
-    # JS: stopCheckHtml generado cuando requiere_disclaimer
-    if re.search(r'stopCheckHtml\s*=\s*[\'"]\'', html):
-        result.ok('v3.10.3 JS: stopCheckHtml (stop check banner JS)')
+    # JS: stopCheckHtml ELIMINADO v3.10.12 (solo aplicaba a 2G)
+    if 'stopCheckHtml' not in html:
+        result.ok('v3.10.12: stopCheckHtml ELIMINADO (sin 2G)')
     else:
-        result.fail('v3.10.3 JS stopCheck', 'stopCheckHtml no implementado')
+        result.fail('v3.10.12 regresión', 'stopCheckHtml aún en HTML')
 
-    if re.search(r'STOP.*VERIFICAR CON CLIENTE', html, re.DOTALL):
-        result.ok('v3.10.3 JS: texto "STOP — VERIFICAR CON CLIENTE"')
+    if not re.search(r'STOP.*VERIFICAR CON CLIENTE', html, re.DOTALL):
+        result.ok('v3.10.12: texto "STOP — VERIFICAR CON CLIENTE" ELIMINADO (sin 2G)')
     else:
-        result.fail('v3.10.3 JS stopCheck texto', 'texto STOP missing')
+        result.fail('v3.10.12 regresión', 'texto STOP aún en HTML')
 
-    # CSS: .apagado-panel-stopcheck
-    if re.search(r'\.apagado-speech-panel\s+\.apagado-panel-stopcheck\s*\{', html):
-        result.ok('v3.10.3 CSS: .apagado-panel-stopcheck (banner alerta)')
+    # CSS: .apagado-panel-stopcheck ELIMINADO
+    if not re.search(r'\.apagado-speech-panel\s+\.apagado-panel-stopcheck\s*\{', html):
+        result.ok('v3.10.12: .apagado-panel-stopcheck CSS ELIMINADO (sin 2G)')
     else:
-        result.fail('v3.10.3 CSS stopCheck', '.apagado-panel-stopcheck missing')
+        result.fail('v3.10.12 regresión', '.apagado-panel-stopcheck CSS aún presente')
 
-    if re.search(r'@keyframes\s+stopcheckPulse', html):
-        result.ok('v3.10.3 CSS: stopcheckPulse animation')
+    if not re.search(r'@keyframes\s+stopcheckPulse', html):
+        result.ok('v3.10.12: stopcheckPulse animation ELIMINADA (sin 2G)')
     else:
-        result.fail('v3.10.3 CSS stopCheck anim', 'stopcheckPulse missing')
+        result.fail('v3.10.12 regresión', '@keyframes stopcheckPulse aún presente')
 
     # UBIGEO: Santa Rosa de Loreto inyectada
     if re.search(r'"SANTA ROSA DE LORETO"', html):
