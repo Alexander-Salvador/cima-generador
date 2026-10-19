@@ -1638,9 +1638,12 @@
   }
 
   /* v3.9.12: Row REFERENCIA + botones (borrar + alerta) — flex mixto.
-     REFERENCIA toma flex:1 (espacio restante); 2 botones mantienen 36px fijo. */
+     REFERENCIA toma flex:1 (espacio restante); 2 botones mantienen 36px fijo.
+     v3.10.19: flex-wrap: wrap para que el panel de speech (hijo de este row)
+     baje a su propia línea y ocupe 100% del ancho del row. */
   .row-ref-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: flex-end;        /* inputs y buttons alineados por abajo */
     margin-top: var(--space-2);
@@ -1652,26 +1655,18 @@
   .row-ref-buttons .field-ref input {
     width: 100%;
   }
-  /* v3.9.12: wrapper del botón ⚠ — ancla el panel speech.
-     v3.10.18: vuelve a display: block. El panel se renderiza DENTRO del
-     .cobertura-wrap, DEBAJO del botón ⚠, in-flow. No position absolute,
-     no sale fuera del grid. max-height estricto + overflow-y para no
-     estirar el grid de Búsqueda Address en popup 480px. */
+  .row-ref-buttons > .apagado-speech-panel {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+  /* v3.9.12: wrapper del botón ⚠ — ancla el botón.
+     v3.10.19: panel movido a ser hijo de .row-ref-buttons (no del wrap). */
   .cobertura-wrap {
     position: relative;
     flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    width: auto;
-  }
-  .cobertura-wrap > #coberturaBtn {
-    flex: 0 0 auto;
-  }
-  .cobertura-wrap > .apagado-speech-panel {
-    flex: 0 0 auto;
-    align-self: stretch;
-    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
   }
 
 /* v2.1.7: output-wrap SIN max-height (igual que v2.1.4). El cap viene del .output-box
@@ -3273,11 +3268,13 @@ font-size: 10px;
               <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
             </svg>
           </button>
-          <!-- v3.9.12: panel anclado al wrapper del botón ⚠ (no al
-               output-row como antes). Aparece encima del botón contextual. -->
-          <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
-               aria-label="Speech de zona de apagado" hidden></div>
         </div>
+        <!-- v3.10.19: panel hijo de .row-ref-buttons (no de .cobertura-wrap).
+             Se renderiza en su propia fila dentro del row, full width del
+             row, DEBAJO del botón ⚠. NO position absolute, NO sale del
+             grid. -->
+        <div id="apagadoSpeechPanel" class="apagado-speech-panel" role="region"
+             aria-label="Speech de zona de apagado" hidden></div>
       </div>
 
       <!-- v3.9.12: Row 4 completa — RESULTADO con padding, full width.
