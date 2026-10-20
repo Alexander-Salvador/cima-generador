@@ -1142,53 +1142,108 @@
                 padding 0.22s var(--motion-ease);
     position: relative;
   }
-  .script-card:hover { border-color: color-mix(in srgb, var(--text-faint) 50%, transparent); }
+  /* v3.10.59: cards compactas + COLLAPSED PILL-LINE ultra-compacta (~22px).
+     CEO directive: "debe minizarse pero ocupando menos espacio mas estilizado".
+
+     Problema v3.10.39: estado minimizado ocupaba ~50px por card:
+       min-height 36px + "✓ Hecho" badge (22px) + "Toca para abrir ▴" (14px)
+       → 8 cards = ~400px de espacio inútil.
+
+     v3.10.59: pill-line de 1 sola línea (~22px):
+       min-height eliminado (altura = padding 3px + line-height 14px)
+       "✓ Hecho" text badge → dot circular 12px (left)
+       "Toca para abrir ▴" text → chevron ▸ 10px sutil (right)
+       → 8 cards = ~180px (−55% espacio). */
+  .script-card {
+    margin-top: 3px;
+    padding: 5px 9px;
+    background: var(--glass-1-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: background 0.18s var(--motion-ease),
+                border-color 0.18s var(--motion-ease),
+                padding 0.22s var(--motion-ease),
+                border-radius 0.22s var(--motion-ease);
+    position: relative;
+  }
+  .script-card:hover {
+    border-color: color-mix(in srgb, var(--text-faint) 45%, transparent);
+  }
   .script-card:active { transform: scale(0.99); }
-  /* v3.10.31: cards ocultas via atributo [hidden] (motivo OTRO toggle) */
+  /* v3.10.31: cards ocultas via attributo [hidden] (motivo OTRO toggle) */
   .script-card[hidden] { display: none; }
-  /* v3.10.39: Collapsed card — APPLE 2026 PREMIUM STYLE.
-     CEO: "no me agrada cambialo a otro diferente necesito premium real en
-     2026. APPLE styles". Diseño inspirado en iOS 26 / visionOS / macOS
-     Sequoia: pill-shape, glassmorphism con backdrop-filter, spring
-     transitions (cubic-bezier), gradient pill badge con glow, hover lift
-     + glow. Coherente con el design system premium del popup. */
+  /* v3.10.59: COLLAPSED — pill-line minimalista (dot + chevron, sin texto). */
   .script-card.is-collapsed {
-    /* Pill shape (Apple-style fully rounded) */
+    /* Sin min-height — la altura la define padding + line-height del contenido */
     border-radius: 999px;
-    padding: 8px 14px;
-    min-height: 36px;
-
-    /* Soft green gradient (Apple Reminders done-state vibe) */
+    padding: 3px 10px;
     background: linear-gradient(135deg,
-      color-mix(in srgb, #10b981 8%, var(--glass-2-bg)) 0%,
-      color-mix(in srgb, #059669 4%, var(--glass-1-bg)) 100%);
-
-    /* Glassmorphism (v3.10.39 Apple 2026) */
-    -webkit-backdrop-filter: blur(12px) saturate(1.4);
-    backdrop-filter: blur(12px) saturate(1.4);
-
-    /* Premium border + inset highlight (Apple glass effect) */
-    border: 1px solid color-mix(in srgb, #10b981 28%, transparent);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.18),
-      0 1px 2px rgba(16, 185, 129, 0.06);
-
-    /* Smooth spring transition (Apple feel) */
-    transition: all 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
-
+      color-mix(in srgb, #10b981 7%, var(--glass-2-bg)) 0%,
+      color-mix(in srgb, #059669 3%, var(--glass-1-bg)) 100%);
+    border: 1px solid color-mix(in srgb, #10b981 24%, transparent);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    gap: 6px;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .script-card.is-collapsed .script-card-body { display: none; }
-  /* v3.10.43: BUG FIX — .script-card-body flex para que el badge (★ en
-     encuesta) fluya con el texto y ambos wrappeen correctamente. Antes
-     el badge flotaba a la izquierda y el <p> se desbordaba. */
+  /* Dot de estado (reemplaza el "✓ Hecho" badge textual — 12px vs 22px) */
+  .script-card.is-collapsed::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow:
+      0 1px 2px rgba(16, 185, 129, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  }
+  /* Chevron discreto a la derecha (reemplaza "Toca para abrir ▴") */
+  .script-card.is-collapsed::after {
+    content: '▸';
+    margin-left: auto;
+    font-size: 9px;
+    line-height: 1;
+    color: color-mix(in srgb, #10b981 65%, transparent);
+    flex-shrink: 0;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                color 0.18s var(--motion-ease);
+  }
+  /* v3.10.59: label de estado del step minimizado. Oculto por default
+     (solo visible cuando la card tiene .is-collapsed) — evita duplicar
+     texto con el speech completo cuando la card está expandida. */
+  .script-card-label { display: none; }
+  .script-card.is-collapsed .script-card-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--text) 72%, transparent);
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .script-card.is-collapsed:hover {
+    border-color: color-mix(in srgb, #10b981 38%, transparent);
+    background: linear-gradient(135deg,
+      color-mix(in srgb, #10b981 12%, var(--glass-2-bg)) 0%,
+      color-mix(in srgb, #059669 5%, var(--glass-1-bg)) 100%);
+  }
+  .script-card.is-collapsed:hover::after {
+    color: #10b981;
+    transform: translateX(1px);
+  }
+  /* v3.10.43: .script-card-body flex para que el badge (★ en encuesta) fluya
+     con el texto y ambos wrappeen correctamente. v3.10.59: gap 6→5px. */
   .script-card-body {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 5px;
     align-items: flex-start;
   }
   .script-card-body > .script-card-text {
@@ -1197,51 +1252,14 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
   }
-  /* v3.10.39: "✓ Hecho" gradient pill badge (Apple Reminders style) */
-  .script-card.is-collapsed::before {
-    content: "✓ Hecho";
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    font-size: 10.5px;
-    font-weight: 600;
-    border-radius: 999px;
-    box-shadow:
-      0 1px 3px rgba(16, 185, 129, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
-    flex-shrink: 0;
-  }
-  /* v3.10.39: "Toca para abrir ▴" hint (right side, subtle italic) */
-  .script-card.is-collapsed::after {
-    content: "Toca para abrir ▴";
-    font-size: 9.5px;
-    color: var(--text-faint);
-    font-style: italic;
-    flex: 1 1 auto;
-    text-align: right;
-    opacity: 0.85;
-  }
-  /* v3.10.39: Hover — lift + glow (Apple spring feel) */
-  .script-card.is-collapsed:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, #10b981 42%, transparent);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.22),
-      0 6px 16px rgba(16, 185, 129, 0.18);
-  }
-  .script-card.is-collapsed:hover::before {
-    background: linear-gradient(135deg, #34d399, #10b981);
-    box-shadow:
-      0 2px 6px rgba(16, 185, 129, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  }
-  .script-card.is-collapsed:hover::after {
-    color: var(--text);
-    opacity: 1;
-  }
-  /* v3.10.53: MOTIVO FLOW VISIBILITY.
+  /* v3.10.39 LEGACY CSS ELIMINADO (v3.10.59):
+     .script-card.is-collapsed::before  ("✓ Hecho" badge)
+     .script-card.is-collapsed::after   ("Toca para abrir ▴" hint)
+     .script-card.is-collapsed:hover   (lift + glow)
+     .script-card.is-collapsed:hover::before / ::after
+     Motivo: el click ahora COPIA (acción útil) en vez de minimizar, y el
+     estado minimizado ocupaba ~50px sin agregar valor.
+     v3.10.53: MOTIVO FLOW VISIBILITY.
      CEO directive: "Mientras que no se seleccione un motivo todos los textos
      deben eliminarse, solo se muestra cuando exista un motivo SELECCIONADO."
      - Hasta que MOTIVO sea seleccionado → TODOS los script-cards + alerts
@@ -1257,29 +1275,31 @@
      - Color sage verde (#10b981) en vez de --accent rojo (#dc2626) → amigable
      - Single-row layout: align-items center, padding generoso
      - Font más clara: 11.5px, weight 500, line-height 1.5
-     - Glass effect sutil con gradient sage→cyan (Apple-inspired) */
+     - Glass effect sutil con gradient sage→cyan (Apple-inspired)
+     v3.10.59: comprimido (padding 5px 10px → 3px 8px, margin-top 5→3,
+     font 10.5→10px, icon 12→11px) — el alert es apoyo, no protagonista. */
   .script-alert {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 5px 10px;              /* v3.10.43: 8px 12px → 5px 10px (más compacto) */
-    margin-top: 5px;                /* v3.10.43: 6→5 */
+    gap: 6px;
+    padding: 3px 8px;
+    margin-top: 3px;
     background: linear-gradient(135deg,
       color-mix(in srgb, #10b981 6%, var(--surface)) 0%,
       color-mix(in srgb, #06b6d4 4%, var(--surface)) 100%);
     border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
     border-radius: var(--radius-md);
     color: var(--text);
-    font-size: 10.5px;              /* v3.10.43: 11.5→10.5 (más compacto) */
-    font-weight: 450;              /* v3.10.43: 500→450 (más sutil) */
-    line-height: 1.4;               /* v3.10.43: 1.5→1.4 */
+    font-size: 10px;
+    font-weight: 450;
+    line-height: 1.35;
     text-transform: none;
     letter-spacing: 0;
-    max-width: 96%;                 /* v3.10.43: no estira a 100% del container */
-    align-self: flex-start;         /* v3.10.43: no estira en cross axis */
+    max-width: 96%;
+    align-self: flex-start;
   }
   .script-alert-icon {
-    font-size: 12px;                /* v3.10.43: 14→12 (proporcional al font menor) */
+    font-size: 11px;
     line-height: 1;
     color: #10b981;
     flex-shrink: 0;
@@ -3930,6 +3950,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="bienvenida">
+                <span class="script-card-label" aria-hidden="true">Bienvenida + confirmación número</span>
                 <div class="script-card-body">
                   <!-- v3.10.44: Speech bienvenida — CEO directive.
                        "¿Su consulta es por el numero que termina en {Telefono en consulta}?
@@ -3941,6 +3962,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="atencion-segura">
+                <span class="script-card-label" aria-hidden="true">Ofrecer devolución de llamada</span>
                 <div class="script-card-body">
                   <!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
                        ¡puedo devolverle la llamada al numero de su consulta o
@@ -3976,6 +3998,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="sondea">
+                <span class="script-card-label" aria-hidden="true">Sondear motivo de consulta</span>
                 <div class="script-card-body">
                   <!-- v3.10.48: nombre al final de la frase introductoria -->
                   <p class="script-card-text" id="script-text-sondea">"¿En qué puedo ayudarle hoy? Cuénteme <span class="ph" data-ph="cliente">{Cliente}</span> cuál sería el motivo de su comunicación o consulta."</p>
@@ -3983,6 +4006,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="sondeo-averias">
+                <span class="script-card-label" aria-hidden="true">Sondeo identificación de averías</span>
                 <div class="script-card-body">
                   <!-- v3.10.48: nombre después de "Comprendo" (no al inicio) -->
                   <p class="script-card-text" id="script-text-sondeo-averias">"Comprendo <span class="ph" data-ph="cliente">{Cliente}</span>, debido al inconveniente que nos mencionas, voy a validar su servicio. Para esto, me confirmas en qué <span class="key">departamento</span> te encuentras, <span class="key">provincia</span> y <span class="key">distrito</span>, por favor. Me indicas también la <span class="key">dirección</span> donde te encuentras en este momento, con eso podré avanzar con la búsqueda".</p>
@@ -3991,6 +4015,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="tiempo-espera">
+                <span class="script-card-label" aria-hidden="true">Pedir espera mientras valida</span>
                 <div class="script-card-body">
                   <!-- v3.10.48: nombre al medio + CEO directive "luego tiene que seguir"
                        (continuación explícita con "Apenas tenga novedades...") -->
@@ -4022,6 +4047,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="educa-app">
+                <span class="script-card-label" aria-hidden="true">Educar sobre App Mi Movistar</span>
                 <div class="script-card-body">
                   <!-- v3.10.48: nombre al medio + frase introductoria empática -->
                   <p class="script-card-text" id="script-text-educa-app">"Para resolver más rápido, <span class="ph" data-ph="cliente">{Cliente}</span>, en la <span class="key">App Mi Movistar</span> puede consultar su <span class="key">saldo</span>, ver y pagar su <span class="key">recibo</span>, y acceder a <span class="key">beneficios exclusivos</span>. Le enviaremos un enlace por SMS para que ingrese directo."</p>
@@ -4053,6 +4079,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="despedida">
+                <span class="script-card-label" aria-hidden="true">Despedida + seguimiento</span>
                 <div class="script-card-body">
                   <!-- v3.10.48: CEO directive — "consecutiva la atencion"
                        Flujo continuo: "Perfecto {Cliente}, ya tenemos listo..."
@@ -4062,6 +4089,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="encuesta">
+                <span class="script-card-label" aria-hidden="true">Encuesta de satisfacción</span>
                 <div class="script-card-body">
                   <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
                   <!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
@@ -4080,6 +4108,7 @@ font-size: 10px;
               v3.10.54: indent corregido + movido DENTRO de grid-body (antes era
               sibling por el bug del cierre prematuro). -->
          <div class="script-card script-card--transfer" data-script-id="transferir" hidden>
+            <span class="script-card-label" aria-hidden="true">Transferir a área especializada</span>
             <div class="script-card-body">
               <!-- v3.10.48: nombre 1 sola vez al medio (antes 2 veces al inicio y final)
                        + frase empática introductoria "Entiendo..." -->
@@ -4339,7 +4368,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.58</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.59</span>
     </span>
   </footer>
 </div>
@@ -4720,12 +4749,20 @@ function toggleScriptCard(id, visible) {
   }
 }
 
-// v3.10.34: CLICK-TO-COLLAPSE. Cada script-card es clickeable.
-// Click toggle el estado .is-collapsed (cuerpo hidden, padding reducido,
-// border verde, contenido minimized). El agente click para "cerrar"
-// la card después de usar el speech — el card se mantiene visible pero
-// colapsa (solo título), contained en su section parent. Click again → expand.
-// Persiste en localStorage.
+// v3.10.59: CLICK-TO-COLLAPSE REDISEÑADO (ultra-compacto + estilizado).
+// CEO directive: "debe minizarse pero ocupando menos espacio mas estilizado".
+// PROBLEMA (v3.10.39): el estado minimizado ocupaba ~50px por card
+//   - min-height: 36px
+//   - "✓ Hecho" badge con padding 4px 12px (≈22px de alto)
+//   - "Toca para abrir ▴" hint textual (≈14px, competía por espacio)
+//   → 8 cards minimizadas = ~400px de espacio sin valor.
+// SOLUCIÓN v3.10.59: pill-line de 1 sola línea (~22px total):
+//   - min-height: 36px → none (altura = padding + line-height del dot)
+//   - "✓ Hecho" text badge → replaced por dot circular 12px (left)
+//   - "Toca para abrir ▴" text hint → replaced por chevron ▸ sutil (right)
+//   - Semántica de estado clara: dot = completado, todo pill es clickeable
+//   → 8 cards minimizadas = ~180px (−55% espacio).
+// El click sigue minimizando/restaurando (NO copia). Persiste en localStorage.
 const SCRIPT_COLLAPSED_STORAGE_KEY = 'cima_script_collapsed_v1';
 
 function loadScriptCollapsed() {
@@ -4760,10 +4797,8 @@ function toggleScriptCardCollapse(id) {
 
 function applyScriptCollapsedStates() {
   var state = loadScriptCollapsed();
-  // v3.10.53: ya no auto-colapsamos todas por default — applyMotivoFlow()
-  // controla visibility según MOTIVO (cards hidden si motivo vacío, visibles
-  // si motivo seleccionado). El estado colapsado del usuario (manual) sí se
-  // preserva y se aplica a las cards visibles (cuando hay motivo).
+  // v3.10.53: no auto-colapsamos por default — applyMotivoFlow() controla
+  // visibility según MOTIVO. El estado colapsado del usuario sí se preserva.
   Object.keys(state).forEach(function (id) {
     if (!state[id]) return;
     var card = document.querySelector('.script-card[data-script-id="' + id + '"]');
@@ -4771,12 +4806,10 @@ function applyScriptCollapsedStates() {
   });
 }
 
-// v3.10.34: event delegation para click-to-collapse en cualquier .script-card.
-// El click toggle el estado collapsed. El agente marca el speech como "usado"
-// y la card se minimiza automáticamente. Click again → expand.
+// v3.10.59: click-to-collapse (minimizar/restaurar). NO copia.
 function initScriptCardClick() {
   document.querySelectorAll('.script-card[data-script-id]').forEach(function (card) {
-    card.addEventListener('click', function (e) {
+    card.addEventListener('click', function () {
       var id = card.dataset.scriptId;
       if (id) toggleScriptCardCollapse(id);
     });
@@ -6355,7 +6388,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.58] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.59] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
