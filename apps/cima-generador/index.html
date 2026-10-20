@@ -1125,9 +1125,10 @@
     animation: motivoFlashPulse 1.8s cubic-bezier(0.22, 1, 0.0, 1);
     border-color: color-mix(in srgb, #10b981 60%, transparent);
   }
-    color: var(--text-faint);
-    line-height: 1.2;
-  }
+  /* v3.10.57: FIX — 3 líneas huérfanas (color/line-height) + llave extra `}`
+     que quedaron del cleanup v3.10.51 (motivo-card-label removido). La llave
+     extra cerraba 2 bloques CSS legítimos (.btn-icon-clear en gridAddress +
+     .ac-item en autocomplete) → CSS entero después del punto se ignoraba. */
   /* v3.10.55: script-card más compacto (CEO "no ocupen tanto espacio") */
   .script-card {
     margin-top: 4px;
@@ -1459,6 +1460,7 @@
     transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
                 opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.05s,
                 margin-top 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
   /* v3.10.32: Speech hint box (blue box en BIENVENIDA con Speech 1/2/3).
      Contiene la condición ("Cuando el número y el motivo figuran en matriz")
      y un icono SVG speech-bubble. */
@@ -4337,7 +4339,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.57</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.58</span>
     </span>
   </footer>
 </div>
@@ -6353,7 +6355,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.57] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.58] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
