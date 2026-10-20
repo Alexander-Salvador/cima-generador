@@ -3499,33 +3499,50 @@ def test(html_path):
     else:
         result.fail('v3.10.62 mousedown global', "guard closest('#ac-etiqueta') esperado")
 
-    # v3.10.62 FIX REAL: listener mousedown directo en #ac-etiqueta que selecciona
-    # la etiqueta inmediatamente con stopPropagation (evita que el mousedown
-    # global de click-outside cierre el dropdown antes del click).
-    etiqueta_mousedown = re.search(
-        r"\$?\(['\"]ac-etiqueta['\"]\)[\s\S]{0,300}?_etiquetaWired[\s\S]{0,600}?addEventListener\(\s*['\"]mousedown['\"][\s\S]{0,500}?selectEtiqueta\(",
+    # v3.10.63 FIX DEFINITIVO: listener en CAPTURE phase a nivel document.
+    # Se ejecuta ANTES de cualquier handler bubble (click-outside + acSelect
+    # de Address), selecciona inmediatamente y blinda el evento con
+    # stopPropagation + stopImmediatePropagation.
+    capture_handler = re.search(
+        r"_cimaEtiquetaSelectWired[\s\S]{0,300}?addEventListener\(\s*['\"]mousedown['\"][\s\S]{0,900}?selectEtiqueta\([\s\S]{0,200}?capture\s*:\s*true",
         html
     )
-    if etiqueta_mousedown:
-        block = etiqueta_mousedown.group(0)
-        has_stop = 'stopPropagation' in block
+    if capture_handler:
+        block = capture_handler.group(0)
+        has_stop_prop = 'stopPropagation' in block
+        has_stop_immediate = 'stopImmediatePropagation' in block
         has_prevent = 'preventDefault' in block
-        has_selector = 'etiqueta-item' in block
-        if has_stop and has_prevent and has_selector:
-            result.ok('v3.10.62 JS: mousedown directo en #ac-etiqueta con stopPropagation + preventDefault')
+        has_contains_guard = 'drop.contains(item)' in block
+        if has_stop_prop and has_stop_immediate and has_prevent and has_contains_guard:
+            result.ok('v3.10.63 JS: capture-phase mousedown con stopPropagation + stopImmediatePropagation + contains guard')
         else:
-            missing = [n for n, v in [('stopPropagation', has_stop),
-                                      ('preventDefault', has_prevent),
-                                      ('etiqueta-item selector', has_selector)] if not v]
-            result.fail('v3.10.62 mousedown handler', f'faltan: {missing}')
+            missing = [n for n, v in [
+                ('stopPropagation', has_stop_prop),
+                ('stopImmediatePropagation', has_stop_immediate),
+                ('preventDefault', has_prevent),
+                ('drop.contains(item) guard', has_contains_guard)] if not v]
+            result.fail('v3.10.63 capture handler', f'faltan: {missing}')
     else:
-        result.fail('v3.10.62 etiqueta mousedown', 'listener mousedown en #ac-etiqueta con selectEtiqueta no encontrado')
+        result.fail('v3.10.63 capture', 'listener mousedown capture:true con selectEtiqueta no encontrado')
 
-    # Anti-regression: el guard _etiquetaWired evita doble-registro
-    if '!dropEl._etiquetaWired' in html and 'dropEl._etiquetaWired = true' in html:
-        result.ok('v3.10.62 ANTI-REG: guard _etiquetaWiredpreviene doble-registro del listener')
+    # Anti-regression: guard de doble-registro (window flag)
+    if '_cimaEtiquetaSelectWired' in html:
+        result.ok('v3.10.63 ANTI-REG: guard window._cimaEtiquetaSelectWired previene doble-registro')
     else:
-        result.fail('v3.10.62 wired guard', 'guard _etiquetaWired (check + set) esperado')
+        result.fail('v3.10.63 wired guard', 'guard window._cimaEtiquetaSelectWired esperado')
+
+    # v3.10.63: selectEtiqueta normaliza id a string (data-id es string,
+    # ETIQUETAS_DATA puede tener number) — sin esto el find() falla.
+    if re.search(r"function selectEtiqueta\(id\)[\s\S]{0,300}?String\(x\.id\)\s*===\s*key", html):
+        result.ok('v3.10.63 JS: selectEtiqueta normaliza id (String(x.id) === key)')
+    else:
+        result.fail('v3.10.63 id normalize', 'selectEtiqueta con String(x.id) === key esperado')
+
+    # v3.10.63: el selector usa .etiqueta-item[data-id] (scope preciso)
+    if re.search(r"closest\('\.etiqueta-item\[data-id\]'\)", html):
+        result.ok('v3.10.63 JS: selector .etiqueta-item[data-id] (scope preciso, no cualquier .ac-item)')
+    else:
+        result.fail('v3.10.63 selector', "selector .etiqueta-item[data-id] esperado")
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.44 (LEGACY) — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS
