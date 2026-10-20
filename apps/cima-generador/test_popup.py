@@ -3390,9 +3390,13 @@ def test(html_path):
         result.fail('v3.10.43 BUG 3 alert', '.script-alert CSS missing')
 
     # ══════════════════════════════════════════════════════════════════════
-    # v3.10.44 — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS (Apple 2026)
+    # v3.10.44 (LEGACY) — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS
+    #   Reemplazado por v3.10.51: MOTIVO = 1 <select> dropdown con 4 options.
+    #   Las 4 cards visuales Apple-2026 (motivo-card / motivo-grid / Próximamente)
+    #   fueron ELIMINADAS. Mantengo tests de regresión invertidos (esperan
+    #   AUSENCIA de .motivo-card) + tests nuevos del select dropdown.
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.10.44 — HEADER estructura + MOTIVO cards visuales')
+    print('\n▸ v3.10.44 LEGACY — HEADER estructura de llamada (sin motivo cards)')
 
     # HEADER GRID 0 dice "Estructura de Llamada" (no "Llamada")
     if '>Estructura de Llamada<' in html:
@@ -3400,112 +3404,144 @@ def test(html_path):
     else:
         result.fail('v3.10.44 HEADER', 'HEADER GRID 0 debe decir "Estructura de Llamada"')
 
-    # HTML: motivo-grid container presente
-    if 'class="motivo-grid"' in html and 'role="radiogroup"' in html:
-        result.ok('v3.10.44 HTML: .motivo-grid container (role=radiogroup)')
+    # LEGACY: .motivo-grid container YA NO EXISTE (v3.10.51 lo eliminó)
+    if 'class="motivo-grid"' not in html and 'role="radiogroup"' not in html:
+        result.ok('v3.10.51 REFACTOR: .motivo-grid / role=radiogroup ELIMINADOS')
     else:
-        result.fail('v3.10.44 HTML motivo-grid', '.motivo-grid radiogroup esperado')
+        result.fail('v3.10.51 REFACTOR motivo-grid', 'motivo-grid debiera estar eliminado')
 
-    # HTML: 4 motivo cards total (1 active + 3 disabled) — solo contar en HTML
-    # (no en CSS que tiene los selectores)
+    # LEGACY: 4 motivo cards YA NO EXISTEN
     n_active = len(re.findall(r'class="motivo-card motivo-card--active"', html))
     n_disabled = len(re.findall(r'class="motivo-card motivo-card--disabled"', html))
-    if n_active == 1 and n_disabled == 3:
-        result.ok(f'v3.10.44 HTML: 1 card activa + 3 cards desactivadas (4 totales)')
+    if n_active == 0 and n_disabled == 0:
+        result.ok('v3.10.51 REFACTOR: 0 motivo cards (reemplazadas por dropdown)')
     else:
-        result.fail('v3.10.44 HTML cards count', f'1 active + 3 disabled esperados, {n_active} active + {n_disabled} disabled encontrados')
+        result.fail('v3.10.51 cards count', f'0 cards esperados, {n_active}+{n_disabled} encontrados')
 
-    # HTML: card activa dice "Técnico Móvil"
-    if 'data-motivo-value="MOVIL"' in html and 'Técnico Móvil' in html and \
-       'Internet · Llamadas · SMS · Tethering' in html:
-        result.ok('v3.10.44 HTML: card activa = "Técnico Móvil" con sub-label 4 motivos')
+    # LEGACY: CSS .motivo-card fue removido (debería dar 0 matches en style block)
+    motivo_card_css = re.search(r'\.motivo-card\s*\{[^}]+\}', html, re.DOTALL)
+    if not motivo_card_css:
+        result.ok('v3.10.51 CSS: .motivo-card styles ELIMINADOS')
     else:
-        result.fail('v3.10.44 HTML active card', 'Técnico Móvil con Internet/Llamadas/SMS/Tethering esperado')
+        result.fail('v3.10.51 CSS motivo-card', '.motivo-card styles debieran estar eliminados')
 
-    # HTML: 3 cards desactivadas (Otras Consultas, Avería Masiva, GTR Crítico)
-    disabled_labels = ['Otras Consultas', 'Avería Masiva', 'GTR Crítico']
-    missing_disabled = [d for d in disabled_labels if d not in html]
-    if not missing_disabled:
-        result.ok('v3.10.44 HTML: 3 cards desactivadas (Otras Consultas/Avería Masiva/GTR Crítico)')
-    else:
-        result.fail('v3.10.44 HTML disabled cards', f'faltan labels: {missing_disabled}')
-
-    # HTML: badge "Próximamente" en cards desactivadas
+    # LEGACY: badge "Próximamente" en cards desactivadas YA NO EXISTE
     n_prox = html.count('Próximamente')
-    if n_prox >= 3:
-        result.ok(f'v3.10.44 HTML: {n_prox} badges "Próximamente" en cards desactivadas')
+    if n_prox == 0:
+        result.ok('v3.10.51 HTML: 0 badges "Próximamente" (cards Próximamente eliminadas)')
     else:
-        result.fail('v3.10.44 HTML badge', f'≥3 badges "Próximamente" esperados, {n_prox} encontrados')
-
-    # CSS: .motivo-card glass + transition
-    motivo_card_css = re.search(r'\.motivo-card\s*\{([^}]+)\}', html, re.DOTALL)
-    if motivo_card_css and 'background:' in motivo_card_css.group(1) and \
-       'transition:' in motivo_card_css.group(1):
-        result.ok('v3.10.44 CSS: .motivo-card glass + transition')
-    else:
-        result.fail('v3.10.44 CSS motivo-card', 'background glass + transition esperados')
-
-    # CSS: .motivo-card--disabled estilo (opacity + cursor: not-allowed)
-    motivo_disabled_css = re.search(r'\.motivo-card--disabled\s*\{([^}]+)\}', html, re.DOTALL)
-    if motivo_disabled_css and 'opacity:' in motivo_disabled_css.group(1) and \
-       'not-allowed' in motivo_disabled_css.group(1):
-        result.ok('v3.10.44 CSS: .motivo-card--disabled opacity + cursor not-allowed')
-    else:
-        result.fail('v3.10.44 CSS disabled', 'opacity + not-allowed esperados')
-
-    # CSS: .motivo-card--active[aria-checked="true"] (gradient sage cuando seleccionada)
-    if '.motivo-card--active[aria-checked="true"]' in html:
-        result.ok('v3.10.44 CSS: .motivo-card--active[aria-checked=true] gradient sage')
-    else:
-        result.fail('v3.10.44 CSS active checked', 'gradient sage en estado seleccionado esperado')
-
-    # JS: initMotivoCards() función definida
-    if 'function initMotivoCards()' in html:
-        result.ok('v3.10.44 JS: initMotivoCards() función definida')
-    else:
-        result.fail('v3.10.44 JS initMotivoCards', 'función initMotivoCards esperada')
-
-    # JS: initMotivoCards() llamada en DOMContentLoaded
-    if re.search(r'initMotivoCards\(\)', html):
-        result.ok('v3.10.44 JS: initMotivoCards() invocada en init')
-    else:
-        result.fail('v3.10.44 JS init call', 'initMotivoCards() debe invocarse en DOMContentLoaded')
+        result.fail('v3.10.51 HTML badge', f'0 badges esperados, {n_prox} encontrados')
 
     # ══════════════════════════════════════════════════════════════════════
-    # v3.10.49 — Desglose del flow al click en MOTIVO card
-    # CEO: "al darle click a el MOTIVO recien se desglozara toda la info
-    # correspondiente al motivo"
+    # v3.10.51 — MOTIVO consolidado en 1 dropdown con 4 opciones
+    # CEO directive: "EN SU INPUT MOTIVO <- las 4 opciones vamos a meterlas
+    #   en 1 dropdow cada 1 ocupa 1 row.. TELEFONO DE CONSULTA + MOTIVO"
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.10.49 — DESGLOSE del flow al click en MOTIVO')
+    print('\n▸ v3.10.51 — MOTIVO = 1 dropdown con 4 opciones')
 
-    # JS: desgloseMotivoFlow() función definida
+    # HTML: <select id="script-motivo"> visible (NO hidden)
+    select_match = re.search(
+        r'<select\s+id="script-motivo"[^>]*>',
+        html
+    )
+    if select_match and 'hidden' not in select_match.group(0):
+        result.ok('v3.10.51 HTML: <select id="script-motivo"> VISIBLE (sin atributo hidden)')
+    else:
+        result.fail('v3.10.51 HTML select', '<select id="script-motivo"> visible esperado')
+
+    # HTML: 4 options + 1 default = 5 options en el select
+    option_block = re.search(
+        r'<select[^>]*id="script-motivo"[^>]*>(.*?)</select>',
+        html, re.DOTALL
+    )
+    n_opts = len(re.findall(r'<option\s', option_block.group(1))) if option_block else 0
+    if n_opts == 5:  # 1 default "— Seleccionar —" + 4 motivos
+        result.ok(f'v3.10.51 HTML: {n_opts} options en MOTIVO (1 default + 4 motivos)')
+    else:
+        result.fail('v3.10.51 HTML options count', f'5 options esperadas, {n_opts} encontradas')
+
+    # HTML: 4 motivos específicos (Técnico Móvil, Otras Consultas, Avería Masiva, GTR Crítico)
+    motivo_labels = ['Técnico Móvil', 'Otras Consultas', 'Avería Masiva', 'GTR Crítico']
+    motivo_values = ['MOVIL', 'OTRAS', 'AVERIA', 'GTR']
+    missing_labels = [m for m in motivo_labels if m not in html]
+    missing_values = [m for m in motivo_values if f'value="{m}"' not in html]
+    if not missing_labels and not missing_values:
+        result.ok(f'v3.10.51 HTML: 4 motivos dropdown (MOVIL/OTRAS/AVERIA/GTR)')
+    else:
+        result.fail('v3.10.51 HTML motivos',
+                    f'faltan labels={missing_labels} values={missing_values}')
+
+    # HTML: TELÉFONO ahora dice "DE CONSULTA" (CEO directive, antes "EN CONSULTA")
+    if 'TELÉFONO DE CONSULTA' in html and 'TELÉFONO EN CONSULTA' not in html:
+        result.ok('v3.10.51 HTML: TELÉFONO renombrado EN → DE CONSULTA')
+    else:
+        result.fail('v3.10.51 HTML tel label', '"TELÉFONO DE CONSULTA" esperado, NO "EN CONSULTA"')
+
+    # JS: initMotivoSelect() función definida (reemplaza initMotivoCards)
+    if 'function initMotivoSelect()' in html:
+        result.ok('v3.10.51 JS: initMotivoSelect() función definida')
+    else:
+        result.fail('v3.10.51 JS initMotivoSelect', 'función initMotivoSelect esperada')
+
+    # JS: initMotivoCards() YA NO EXISTE (fue renombrada/removida)
+    if 'function initMotivoCards()' not in html:
+        result.ok('v3.10.51 JS: initMotivoCards() ELIMINADO (reemplazado por initMotivoSelect)')
+    else:
+        result.fail('v3.10.51 JS initMotivoCards', 'initMotivoCards debiera estar eliminado')
+
+    # JS: syncMotivoCardsFromSelect() ELIMINADO (ya no hay cards que sincronizar)
+    if 'function syncMotivoCardsFromSelect' not in html:
+        result.ok('v3.10.51 JS: syncMotivoCardsFromSelect() ELIMINADO')
+    else:
+        result.fail('v3.10.51 JS syncMotivoCards', 'syncMotivoCardsFromSelect debiera estar eliminado')
+
+    # JS: initMotivoSelect() llamada en DOMContentLoaded
+    if re.search(r'initMotivoSelect\(\)', html):
+        result.ok('v3.10.51 JS: initMotivoSelect() invocada en init')
+    else:
+        result.fail('v3.10.51 JS initMotivoSelect call', 'initMotivoSelect() debe invocarse en DOMContentLoaded')
+
+    # JS: clearScriptTemplate ya no llama a syncMotivoCardsFromSelect
+    # (busca la función en el bloque del clear handler)
+    if 'syncMotivoCardsFromSelect' not in html:
+        result.ok('v3.10.51 JS: 0 referencias a syncMotivoCardsFromSelect (sin huérfanos)')
+    else:
+        result.fail('v3.10.51 JS sync huérfanos', '0 referencias syncMotivoCardsFromSelect esperadas')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.49 (LEGACY) — Desglose del flow al click en MOTIVO
+    # v3.10.51: el trigger cambió de "click en card" a "change en select",
+    #   pero desgloseMotivoFlow() + getMotivoFlowCards() siguen vivos.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.49 LEGACY — DESGLOSE flow mantiene comportamiento')
+
+    # JS: desgloseMotivoFlow() función definida (sin cambios)
     if 'function desgloseMotivoFlow(' in html:
-        result.ok('v3.10.49 JS: desgloseMotivoFlow() función definida')
+        result.ok('v3.10.49 JS: desgloseMotivoFlow() función definida (mantenida)')
     else:
         result.fail('v3.10.49 JS desgloseMotivoFlow', 'función desgloseMotivoFlow esperada')
 
     # JS: getMotivoFlowCards() función definida con map MOTIVO → script-ids
     if 'function getMotivoFlowCards(' in html and \
-       "'MOVIL'" in html and "'OTRO'" in html:
-        result.ok('v3.10.49 JS: getMotivoFlowCards() con map MOTIVO → script-ids')
+       "'MOVIL'" in html and ("'OTRO'" in html or "'OTRAS'" in html):
+        result.ok('v3.10.49/3.10.51 JS: getMotivoFlowCards() con map MOTIVO → script-ids')
     else:
         result.fail('v3.10.49 JS getMotivoFlowCards', 'map MOTIVO → script-ids esperado')
 
-    # JS: initMotivoCards() llama a desgloseMotivoFlow() al click
+    # JS: initMotivoSelect change handler llama a desgloseMotivoFlow(value)
     if re.search(r'desgloseMotivoFlow\(\s*value\s*\)', html):
-        result.ok('v3.10.49 JS: click en MOTIVO card llama a desgloseMotivoFlow(value)')
+        result.ok('v3.10.51 JS: change en MOTIVO select llama desgloseMotivoFlow(value)')
     else:
-        result.fail('v3.10.49 JS click handler', 'click debe llamar a desgloseMotivoFlow(value)')
+        result.fail('v3.10.51 JS change handler', 'change debe llamar a desgloseMotivoFlow(value)')
 
     # JS: desgloseMotivoFlow hace scrollIntoView a gridScript-body
-    # (match flexible: scrollIntoView puede estar en línea separada del id)
     if re.search(r"scrollIntoView\(\s*\{\s*behavior", html) and \
        re.search(r"getElementById\(['\"]gridScript-body['\"]\)", html):
         result.ok('v3.10.49 JS: scrollIntoView a gridScript-body (scroll suave)')
     else:
         result.fail('v3.10.49 JS scroll', 'scrollIntoView + getElementById("gridScript-body") esperado')
 
-    # CSS: .script-card.motivo-flash con animación
+    # CSS: .script-card.motivo-flash con animación (mantenida)
     if '.script-card.motivo-flash' in html and \
        '@keyframes motivoFlashPulse' in html:
         result.ok('v3.10.49 CSS: .script-card.motivo-flash + @keyframes motivoFlashPulse')
@@ -4100,25 +4136,28 @@ def test(html_path):
     # ══════════════════════════════════════════════════════════════════════
     print('\n▸ v3.10.31 — HEADER Estructura de Atención mejorada')
 
-    # HTML: phone label "TELÉFONO EN CONSULTA"
-    if '<label for="script-telefono">TELÉFONO EN CONSULTA</label>' in html:
-        result.ok('v3.10.31 HTML: phone label "TELÉFONO EN CONSULTA"')
+    # HTML: phone label "TELÉFONO DE CONSULTA" (v3.10.51 EN → DE)
+    if '<label for="script-telefono">TELÉFONO DE CONSULTA</label>' in html:
+        result.ok('v3.10.31/v3.10.51 HTML: phone label "TELÉFONO DE CONSULTA"')
     else:
-        result.fail('v3.10.31 HTML phone label', 'TELÉFONO EN CONSULTA esperado')
+        result.fail('v3.10.31/v3.10.51 HTML phone label', 'TELÉFONO DE CONSULTA esperado')
 
-    # HTML: motivo es SELECT (no input)
-    if re.search(r'<select\s+id="script-motivo"[^>]*>', html):
-        result.ok('v3.10.31 HTML: motivo es <select> (no input)')
+    # HTML: motivo es SELECT (no input) — v3.10.51 consolidado en 1 dropdown
+    if re.search(r'<select\s+id="script-motivo"[^>]*>', html) and \
+       'hidden' not in re.search(r'<select\s+id="script-motivo"[^>]*>', html).group(0):
+        result.ok('v3.10.31/v3.10.51 HTML: motivo es <select> visible (no hidden)')
     else:
-        result.fail('v3.10.31 HTML motivo', 'select element esperado para motivo')
+        result.fail('v3.10.31/v3.10.51 HTML motivo', '<select id="script-motivo"> visible esperado')
 
-    # HTML: motivo select tiene 5 opciones (INTERNET, LLAMADAS, SMS, THETERING, OTRO)
-    expected_motivos = ['INTERNET', 'LLAMADAS', 'SMS', 'THETERING', 'OTRO']
+    # HTML: motivo select tiene 4 motivos (MOVIL, OTRAS, AVERIA, GTR) en v3.10.51
+    # v3.10.31 tenía 5 opciones (INTERNET/LLAMADAS/SMS/THETERING/OTRO);
+    # v3.10.51 las consolidó en "Técnico Móvil" como opción umbrella + 3 próximas.
+    expected_motivos = ['MOVIL', 'OTRAS', 'AVERIA', 'GTR']
     missing_motivos = [m for m in expected_motivos if f'value="{m}"' not in html]
     if not missing_motivos:
-        result.ok(f'v3.10.31 HTML: motivo select con 5 opciones ({", ".join(expected_motivos)})')
+        result.ok(f'v3.10.51 HTML: motivo select con 4 opciones ({", ".join(expected_motivos)})')
     else:
-        result.fail('v3.10.31 HTML motivo options', f'faltantes: {missing_motivos}')
+        result.fail('v3.10.51 HTML motivo options', f'faltantes: {missing_motivos}')
 
     # HTML: card 9 "Transferir" presente
     if 'data-script-id="transferir"' in html:
