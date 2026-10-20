@@ -1,5 +1,50 @@
 # Changelog — cima-generador
 
+## [3.10.55] - 2026-10-20 — 🎨 Estilización + compactación del GRID "Estructura de Llamada"
+
+**CEO directive:**
+> "debemos estilizarlas mejorarlas que no ocupen tanto espacio diseñas de mejor manera"
+
+**Cambios CSS:**
+
+1. **`.script-section-header`**: rediseñado con estilo pill-shape premium.
+   - `padding: 7px 12px` (compacto, antes 6px 0 8px 0)
+   - `border-radius: 6px` (rounded, antes sin radius)
+   - `font-size: 11.5px` (antes 12px)
+   - `font-weight: 800` (mantenido)
+   - `letter-spacing: 0.1em` (antes 0.12em)
+   - `border-left: 4px solid` (mantenido, color viene del variant)
+
+2. **4 variants de section-header** (`--blue`, `--green`, `--orange`, `--purple`):
+   - Background gradient full-width: `color-mix(color 14%, transparent) 0% → color-mix(color 5%, transparent) 100%`
+   - Antes: gradient de 8% → transparent en 40% (solo tintaba el lado izquierdo).
+   - Ahora: tinted bg cubre todo el ancho del header → look más premium y "section banner".
+
+3. **`.script-section` margin-top**: `12px → 8px` (más compacto entre sections).
+   - `.script-section:first-of-type { margin-top: 4px }` (sin doble spacing al inicio).
+
+4. **`.script-card` margin-top**: `6px → 4px`, padding `8px 10px → 7px 11px` (más denso verticalmente).
+
+5. **`.script-vars` field labels**:
+   - `font-size: 9px → 9.5px`
+   - `font-weight: 600` (nuevo, antes sin definir → tomaba 400)
+   - `letter-spacing: 0.06em → 0.08em`
+   - `padding-left: 2px` (alineación con input border-radius).
+
+6. **`.script-vars` inputs/select**:
+   - `padding: 4px 8px → 6px 12px` (más alto + cómodo para touch)
+   - `font-size: 10px → 11.5px` (más legible).
+
+**Resultado visual:** GRID "Estructura de Llamada" con section headers tipo "section banner" pill-shape tinted (blue / green / orange / purple), inputs prominentes con labels uppercase, spacing vertical reducido ~30%.
+
+**Compatibilidad:**
+- Misma estructura HTML (4 sections en grid-body, intacta).
+- `applyMotivoFlow()` sigue ocultando texts cuando motivo vacío.
+- Variables inputs siguen alimentando `{Vars}` placeholders.
+- Tests con anti-regression para estructura HTML intacta.
+
+**Verificación local:** 634/634 tests PASS (9 nuevos v3.10.55).
+
 ## [3.10.54] - 2026-10-20 — 🐛 FIX: header "Estructura de Llamada" oculta todo el GRID (no solo la plantilla de datos)
 
 **CEO directive:**
