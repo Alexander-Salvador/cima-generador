@@ -1,5 +1,69 @@
 # Changelog — cima-generador
 
+## [3.10.56] - 2026-10-20 — 📱 DISCLOSURE CONTROL PILLS (Apple HIG 2026 progressive disclosure)
+
+**CEO directive:**
+> "Cambiaremos el modelo ahora seran como pills - pildoras que al darle click mostraran la informacion, no se desplegaran automaticamente."
+
+**Crítica CEO sobre mi diseño anterior:**
+> "no veo mejoras considerables [...]. siempre haces esos bordes gruesos como si fuera tu base de diseño. ubica el error de tu criterio de diseño [...]. todo diseño frontend debe investigarse e implementarse a nivel 2026 estandares innovadores y modernos"
+
+**Honestidad técnica (CRIT-003):** Mi diseño caía en patrones 2010-2015:
+1. Bordes gruesos 4-5px como ancla visual (outdated)
+2. Tinted bg como "destacado" (noisy)
+3. Sin glassmorphism ni spring transitions 2026
+4. Default expandido (progressive disclosure NO era el patrón)
+
+**Investigación 2026:** Fetched Apple HIG `disclosure controls` — el control mismo es la affordance, NO heavy borders. Chevron rotate 180° on expand. Subtle surface elevation. Default collapsed. ARIA aria-expanded.
+
+**Cambios:**
+
+1. **HTML restructure**: cada section header → `<button class="section-pill section-pill--[color]" aria-expanded="false" aria-controls="[id]">`. Estructura interna:
+   - `<span class="section-pill-icon">` (svg 16×16)
+   - `<span class="section-pill-label">` (texto uppercase)
+   - `<span class="section-pill-meta">N</span>` (count)
+   - `<svg class="section-pill-chevron">` (rotación 180° en expanded)
+   - + `<div class="section-pill-content">` envuelve alerts + cards
+
+2. **CSS — sin bordes gruesos, glass-morphic 2026:**
+   - `.section-pill { border: none; border-radius: 12px }` (rounded rect moderno, no capsule)
+   - `:before` background glass-morphic (`color-mix(surface 92%)`)
+   - `:after` box-shadow + 1px border sutil vía `box-shadow: 0 0 0 1px currentColor 12%` (depth via shadow, no border)
+   - 4 variants vía `currentColor` (blue/green/orange/purple como color de acento)
+   - Hover: translateY(-0.5px) + brightness en shadow
+   - Press: scale(0.985) Apple-style feedback
+
+3. **CSS — `.section-pill[aria-expanded="true"]`:**
+   - Chevron rota 180° (spring transition: `cubic-bezier(0.34, 1.56, 0.64, 1)`)
+   - Icon scale 1.08 + opacity 1
+   - :after shadow más prominente con currentColor 28%
+
+4. **CSS — `.section-pill-content`:**
+   - Default: `max-height: 0; opacity: 0; margin-top: 0` (oculto)
+   - En expanded (`[aria-expanded="true"] + .section-pill-content`): `max-height: 2000px; opacity: 1; margin-top: 6px`
+   - Transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1) (ease-out-circ)
+
+5. **JS — nueva función `initSectionPills()`:**
+   - Click en cada pill toggle aria-expanded
+   - Persiste en `localStorage.cima_section_pills_v1` (solo cuando se expande — colapsado se limpia del storage para mantener "first load = clean collapse")
+   - Default collapsed per CEO directive ("no se desplegaran automaticamente")
+
+6. **JS — DOMContentLoaded init:** `initSectionPills()` invocado después de `initScriptCardClick()` para que cards individuales (mark-done) sigan funcionando dentro de pills expandidos.
+
+**Compatibilidad:**
+
+- `applyMotivoFlow()` preservado — visibility de cards por MOTIVO sigue funcionando independiente del pill toggle.
+- `.script-card.is-collapsed` (mark-done individuales) sigue funcionando dentro de pills expandidos.
+- 4 scripts sections + transferir card siguen dentro de grid-body (estructura HTML balanceada).
+- `localStorage` keys previas sin cambios.
+
+**Verificación local:** 645/645 tests PASS (16 nuevos v3.10.56).
+
+**Verificación estructura HTML:**
+- 4 `<button class="section-pill">` con `aria-expanded="false"` por default ✅
+- 4 `<div class="section-pill-content">` wrappers ✅
+- div.app tiene 8 children (srStatus/srAlert/header/alertBox/gridScript/gridAddress/gridTipif/footer) ✅
+
 ## [3.10.55] - 2026-10-20 — 🎨 Estilización + compactación del GRID "Estructura de Llamada"
 
 **CEO directive:**
