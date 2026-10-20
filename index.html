@@ -3702,9 +3702,11 @@ font-size: 10px;
                v3.10.45: MOTIVO ahora full-width (row-1).
                v3.10.51: MOTIVO consolidado en 1 SOLO <select> con 4 opciones
                (Técnico Móvil / Otras Consultas / Avería Masiva / GTR Crítico).
-               Layout visible del GRID: TELÉFONO DE CONSULTA + MOTIVO.
-               Agente + Cliente permanecen como fila secundaria para alimentar
-               placeholders {Agente}/{Cliente} de los speeches. -->
+               v3.10.52: TELÉFONO DE CONSULTA + MOTIVO consolidados en 1 sola
+               row-2 (side-by-side, 50/50). Layout visible del GRID:
+                   Row 1 (secundarios):  [Agente]      [Cliente]
+                   Row 2 (primarios):    [TELÉFONO]    [▼ Motivo]
+               Los placeholders {Agente}/{Cliente} siguen funcionando. -->
            <div class="script-vars" role="group" aria-label="Variables de la llamada">
              <div class="field-row row-2">
                <div class="field">
@@ -3716,8 +3718,12 @@ font-size: 10px;
                  <input id="script-cliente" type="text" placeholder="(nombre del cliente)" autocomplete="off" maxlength="80" data-script-var="cliente">
                </div>
              </div>
-             <div class="field-row row-1"><div class="field"><label for="script-telefono">TELÉFONO DE CONSULTA</label><input id="script-telefono" type="text" placeholder="(número en consulta)" autocomplete="off" maxlength="40" data-script-var="telefono"></div></div>
-             <div class="field-row row-1">
+             <!-- v3.10.52: row-2 con [TELÉFONO DE CONSULTA] + [Motivo] side-by-side -->
+             <div class="field-row row-2">
+               <div class="field">
+                 <label for="script-telefono">TELÉFONO DE CONSULTA</label>
+                 <input id="script-telefono" type="text" placeholder="(número en consulta)" autocomplete="off" maxlength="40" data-script-var="telefono">
+               </div>
                <div class="field">
                  <label for="script-motivo">Motivo</label>
                  <!-- v3.10.51: MOTIVO = 1 dropdown con 4 opciones. Cada <option>
@@ -3730,8 +3736,8 @@ font-size: 10px;
                    <option value="AVERIA">Avería Masiva</option>
                    <option value="GTR">GTR Crítico</option>
                  </select>
-              </div>
-            </div>
+               </div>
+             </div>
             </div>
           </div>
 
@@ -4141,7 +4147,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.51</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.52</span>
     </span>
   </footer>
 </div>
@@ -6106,7 +6112,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.51] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.52] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
