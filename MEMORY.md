@@ -56,19 +56,58 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-19 — v3.10.50 FIN SESIÓN (46 commits: v3.10.11 → v3.10.50)**.
+Memoria persistente. Última actualización: **2026-10-19 — v3.10.50 FIN SESIÓN (47 commits: v3.10.11 → v3.10.50)**.
 
-## 🧹 Estado Git verificado (2026-10-19)
+## 🧹 Estado Git verificado (2026-10-19 — CIERRE DE SESIÓN)
 
 ```
-✅ Working tree clean
-✅ Branch: develop @ 2f0177a (v3.10.50)
+✅ Working tree clean (0 archivos modificados, 0 untracked, 0 stashes)
+✅ Branch: develop @ f2d7b45 (L-060 push policy + MEMORY refactor)
+✅ 1 commit local SIN pushear (esperando OK CEO):
+   f2d7b45 docs(cima): L-060 procedimiento push requiere OK CEO explícito
 ✅ VERSION file: 3.10.50 (coherente con footer + console.log)
-✅ 1 worktree: /home/braka/Systems/projects/work/cima
-✅ 0 stashes
-✅ 0 untracked files
-✅ PUSH A REMOTO AUTORIZADO POR CEO — origin/develop y origin/main actualizados
+✅ Tests: 607 passed / 0 failed (test_popup.py) + test_aggressive PASSED
+✅ Server local activo: PID 6206, puerto 8765
+✅ Popup local = LIVE (MD5 idéntico: 743bdd507fef6903690897875397de28)
 ```
+
+### 🔴 DIRECTIVA ACTIVA — LOCAL FIRST (CEO 2026-10-19)
+
+**"No es funcional, actualiza todo localmente debemos tener la ultima version y trabajaremos sobre LOCAL primero — local first!"**
+
+**Workflow OBLIGATORIO para el próximo chat:**
+
+```bash
+# 1. SIEMPRE trabajar local primero
+cd /home/braka/Systems/projects/work/cima
+
+# 2. Verificar server local activo
+ps aux | grep "http.server 8765" | grep -v grep
+
+# 3. Editar en apps/cima-generador/index.html
+
+# 4. Validar en LOCAL
+curl -s http://127.0.0.1:8765/index.html | grep -oE 'footer-version[^>]*>[^<]+'
+# CEO abre: http://127.0.0.1:8765/index.html?popup=1
+
+# 5. Correr tests
+cd apps/cima-generador && python3 test_popup.py
+
+# 6. Commit LOCAL
+git add apps/cima-generador/ && git commit -m "..."
+
+# 7. ⛔ STOP — PREGUNTAR AL CEO antes de push
+#    NO push sin OK explícito del CEO
+```
+
+**URLs de desarrollo local:**
+| Modo | URL |
+|---|---|
+| Standalone | http://127.0.0.1:8765/index.html |
+| Popup (Google Sites) | http://127.0.0.1:8765/index.html?popup=1 |
+| Launcher | http://127.0.0.1:8765/launcher.html |
+
+**Refresh:** CTRL+R (HTML crudo + JS inline, sin HMR) · CTRL+SHIFT+R = limpiar template (v3.10.50)
 
 ### Branches activas
 
@@ -77,32 +116,33 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.50 FIN SESI�
 | `develop` | ✅ activo | LATEST (v3.10.48) |
 | `main` | ⚠️ obsoleto | sheets bridge era — contiene v3.10.4, no integrar |
 
-### Estado del Remoto (post-push CEO 2026-10-19)
+### Estado del Remoto (sincronizado al cierre de sesión)
 
 ```
-✅ origin/develop @ 2f0177a (v3.10.50) — synced
+✅ origin/develop @ 75defa4 (v3.10.50) — synced
 ✅ origin/main    @ 4fa12e4 (v3.10.50) — synced (popup LIVE)
-✅ GitHub Pages build status: built (43s, commit 4fa12e4)
+✅ GitHub Pages build: built (43s, commit 4fa12e4)
 ✅ last-modified: 2026-10-19 22:45:51 UTC
+⚠️ 1 commit local SIN pushear: f2d7b45 (L-060 policy) — esperando OK CEO
 ```
 
-✅ **3 pushes exitosos.** CEO autorizó 3 deploys en sesión 2026-10-19:
+✅ **3 deploys exitosos en sesión 2026-10-19:**
 1. v3.10.48 (post speech AI 2026)
 2. v3.10.49 (post desglose MOTIVO)
 3. v3.10.50 (post 3 BUG FIXES: CTRL+SHIFT+R + default collapsed + no auto-desglose)
 
-**Deploy pipeline ejecutado (v3.10.50):**
-1. `git push origin develop:develop` → 1 commit pusheado (f3bab61..2f0177a)
-2. `git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy` → 291 commits, HEAD 4fa12e4
-3. `git push -f origin popup-deploy:main` → force-push (86c19bb..4fa12e4)
-4. GitHub Pages auto-rebuild: status `built`, duration 43s
-5. Verificación LIVE: https://alexander-salvador.github.io/cima-generador/ → footer v3.10.50 ✓
+**Deploy pipeline (validado, para usar cuando CEO dé OK):**
+1. `git push origin develop:develop` → commits a origin/develop
+2. `git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy` → ~291 commits
+3. `git push -f origin popup-deploy:main` → force-push a origin/main
+4. Esperar 60s → `gh api /repos/Alexander-Salvador/cima-generador/pages/builds/latest` → status `built`
+5. Verificar: `curl -s https://alexander-salvador.github.io/cima-generador/ | grep -oE 'footer-version[^>]*>[^<]+'`
 
 **Estado del popup:**
 - **Versión actual (develop + popup LIVE):** v3.10.50
-- **Tests passing:** 607 (602 previos + 5 nuevos v3.10.50)
+- **Tests passing:** 607 (test_popup.py) + test_aggressive PASSED
 - **Popup LIVE (origin/main):** v3.10.50 — verificado en vivo
-- **Branch develop:** v3.10.50 (46 commits desde v3.9.15)
+- **Branch develop:** v3.10.50 (47 commits desde v3.9.15)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
 **Nota técnica — bug push refspec:**
