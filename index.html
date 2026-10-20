@@ -1285,58 +1285,177 @@
     flex: 1 1 auto;
     min-width: 0;
   }
-  /* v3.10.55: SECTION HEADERS estilizados (CEO: "debemos estilizarlas mejorarlas
-     que no ocupen tanto espacio diseñas de mejor manera").
-     - Pill-shape con radius 6px + tinted bg full-width (de color → 5% alpha)
-     - Border-left 4px sólido del color del variant
-     - Padding compacto (7px 12px) → menos espacio vertical
-     - Font 11.5px weight 800 uppercase + letter-spacing 0.1em
-     - Margin entre sections reducido (8px en vez de 12px). */
+  /* v3.10.56: DISCLOSURE CONTROL PILLS (Apple HIG 2026 progressive disclosure).
+     CEO directive: "seran como pills - pildoras que al darle click mostraran
+       la informacion, no se desplegaran automaticamente".
+     - Cada section header es ahora un <button> disclosure control.
+     - Default collapsed (per directive "no se desplegaran automaticamente").
+     - Click toggle aria-expanded → expande/colapsa contenido con animación.
+     - Sin bordes gruesos. Glass-morphic + color tint sutil via currentColor.
+     - Chevron rota 180° en expand (spring transition).
+     - 2026 standards: aria-expanded, currentColor, transform-scale press,
+       backdrop-filter blur, no thick borders. */
   .script-section {
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .script-section:first-of-type {
-    margin-top: 4px;
+    margin-top: 2px;
   }
-  .script-section-header {
+  /* Disclosure pill: button base, sin bordes nativos */
+  .section-pill {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 12px 7px 12px;
-    margin-bottom: 5px;
-    font-size: 11.5px;
-    font-weight: 800;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 14px 9px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    text-align: left;
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s var(--motion-ease, ease);
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Glass-morphic surface (Apple 2026 depth via shadow, not borders) */
+  .section-pill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--surface, #ffffff) 92%, transparent);
+    border-radius: inherit;
+    z-index: -2;
+  }
+  .section-pill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    border-radius: inherit;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px color-mix(in srgb, currentColor 12%, transparent);
+    z-index: -1;
+    transition: box-shadow 0.24s var(--motion-ease, ease),
+                background 0.24s var(--motion-ease, ease);
+  }
+  /* Press feedback (Apple scale 0.98) */
+  .section-pill:hover::after {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 2px 6px color-mix(in srgb, currentColor 14%, transparent),
+      0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
+  }
+  .section-pill:hover {
+    transform: translateY(-0.5px);
+  }
+  .section-pill:active {
+    transform: scale(0.985);
+  }
+  .section-pill:focus-visible {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 0 0 2px color-mix(in srgb, currentColor 60%, transparent);
+  }
+  /* Color variants via currentColor (no thick borders) */
+  .section-pill--blue   { color: #2563eb; }
+  .section-pill--green  { color: #059669; }
+  .section-pill--orange { color: #ea580c; }
+  .section-pill--purple { color: #7c3aed; }
+
+  .section-pill-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.85;
+    transition: opacity 0.2s var(--motion-ease, ease),
+                transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .section-pill-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-width: 2.2;
+  }
+
+  .section-pill-label {
+    flex: 1 1 auto;
     color: var(--text);
-    border-left: 4px solid;
-    border-radius: 6px;
-    /* bg tintado se setea por cada variant abajo */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .script-section-header--blue {
-    border-left-color: #3b82f6;
-    background: linear-gradient(to right,
-      color-mix(in srgb, #3b82f6 14%, transparent) 0%,
-      color-mix(in srgb, #3b82f6 5%, transparent) 100%);
+
+  .section-pill-meta {
+    flex-shrink: 0;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    color: currentColor;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1;
+    margin-right: 4px;
   }
-  .script-section-header--green {
-    border-left-color: #10b981;
-    background: linear-gradient(to right,
-      color-mix(in srgb, #10b981 14%, transparent) 0%,
-      color-mix(in srgb, #10b981 5%, transparent) 100%);
+
+  .section-pill-chevron {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    opacity: 0.55;
+    transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.2s var(--motion-ease, ease);
   }
-  .script-section-header--orange {
-    border-left-color: #f97316;
-    background: linear-gradient(to right,
-      color-mix(in srgb, #f97316 14%, transparent) 0%,
-      color-mix(in srgb, #f97316 5%, transparent) 100%);
+  /* Expanded state — chevron flips 180° (Apple disclosure pattern) */
+  .section-pill[aria-expanded="true"] {
+    background: color-mix(in srgb, currentColor 3%, transparent);
   }
-  .script-section-header--purple {
-    border-left-color: #8b5cf6;
-    background: linear-gradient(to right,
-      color-mix(in srgb, #8b5cf6 14%, transparent) 0%,
-      color-mix(in srgb, #8b5cf6 5%, transparent) 100%);
+  .section-pill[aria-expanded="true"]::after {
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 0 0 1px color-mix(in srgb, currentColor 28%, transparent);
   }
+  .section-pill[aria-expanded="true"] .section-pill-chevron {
+    transform: rotate(180deg);
+    opacity: 0.85;
+  }
+  .section-pill[aria-expanded="true"] .section-pill-icon {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  /* Collapsible content area — max-height transition */
+  .section-pill-content {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-top: 0;
+    transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-top 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .section-pill[aria-expanded="true"] + .section-pill-content {
+    max-height: 2000px;
+    opacity: 1;
+    margin-top: 6px;
+    transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.05s,
+                margin-top 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   /* v3.10.32: Speech hint box (blue box en BIENVENIDA con Speech 1/2/3).
      Contiene la condición ("Cuando el número y el motivo figuran en matriz")
      y un icono SVG speech-bubble. */
@@ -3784,38 +3903,47 @@ font-size: 10px;
 
 <!-- ▌▌▌ SECCIÓN 1: Bienvenida e identificación (BLUE) ▌▌▌
                v3.10.36: Agregada "Atención segura" (movida desde MOTIVO).
-               v3.10.42: 1 alert aquí (empatía) + speeches modernizados AI 2026. -->
+               v3.10.42: 1 alert aquí (empatía) + speeches modernizados AI 2026.
+               v3.10.56: header → <button class="section-pill"> disclosure control
+                       (Apple HIG 2026 progressive disclosure). Default collapsed,
+                       click → expande contenido. Sin bordes gruesos. -->
           <div class="script-section">
-            <div class="script-section-header script-section-header--blue">
-              Bienvenida e identificación
-            </div>
+            <button type="button" id="section-pill-bienvenida" class="section-pill section-pill--blue"
+                    aria-expanded="false" aria-controls="section-content-bienvenida">
+              <span class="section-pill-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M21 15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </span>
+              <span class="section-pill-label">Bienvenida e identificación</span>
+              <span class="section-pill-meta" aria-label="2 cards">2</span>
+              <svg class="section-pill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
 
-            <div class="script-alert" role="note">
-              <span class="script-alert-icon" aria-hidden="true">💡</span>
-              <span class="script-alert-text">Conecta desde la empatía: escucha activa, tono cálido, soluciones claras.</span>
-            </div>
+            <div class="section-pill-content" id="section-content-bienvenida">
+              <div class="script-alert" role="note">
+                <span class="script-alert-icon" aria-hidden="true">💡</span>
+                <span class="script-alert-text">Conecta desde la empatía: escucha activa, tono cálido, soluciones claras.</span>
+              </div>
 
-            <div class="script-card" data-script-id="bienvenida">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.44: Speech bienvenida — CEO directive.
-                      "¿Su consulta es por el numero que termina en {Telefono en consulta}?
-                      ¿Es correcto?" — placeholder dice "Telefono en consulta"
-                      (no "Últimos 3"), toma el número del input y muestra
-                      últimos 3 dígitos via telefono-last3 transformation. -->
-                 <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, le saluda <span class="ph" data-ph="agente">{Agente}</span>. ¿Su consulta es por el numero que termina en <span class="ph" data-ph="telefono-last3">{Telefono en consulta}</span>? ¿Es correcto?"</p>
-               </div>
-            </div>
+              <div class="script-card" data-script-id="bienvenida">
+                <div class="script-card-body">
+                  <!-- v3.10.44: Speech bienvenida — CEO directive.
+                       "¿Su consulta es por el numero que termina en {Telefono en consulta}?
+                       ¿Es correcto?" — placeholder dice "Telefono en consulta"
+                       (no "Últimos 3"), toma el número del input y muestra
+                       últimos 3 dígitos via telefono-last3 transformation. -->
+                  <p class="script-card-text" id="script-text-bienvenida">"Bienvenido a Movistar, le saluda <span class="ph" data-ph="agente">{Agente}</span>. ¿Su consulta es por el numero que termina en <span class="ph" data-ph="telefono-last3">{Telefono en consulta}</span>? ¿Es correcto?"</p>
+                </div>
+              </div>
 
-            <div class="script-card" data-script-id="atencion-segura">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
-                      ¡puedo devolverle la llamada al numero de su consulta o
-                      prefiere brindarme un numero adicional para contactarlo?" -->
-                 <!-- v3.10.48: nombre al medio (no al inicio) + frase empática introductoria -->
+              <div class="script-card" data-script-id="atencion-segura">
+                <div class="script-card-body">
+                  <!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
+                       ¡puedo devolverle la llamada al numero de su consulta o
+                       prefiere brindarme un numero adicional para contactarlo?" -->
+                  <!-- v3.10.48: nombre al medio (no al inicio) + frase empática introductoria -->
                   <p class="script-card-text" id="script-text-atencion-segura">"Pensando en su comodidad, si la llamada llegara a cortarse, ¿puedo devolverle la llamada <span class="ph" data-ph="cliente">{Cliente}</span> al número de su consulta, o prefiere brindarme uno adicional para contactarlo?"</p>
-               </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3823,99 +3951,120 @@ font-size: 10px;
                 v3.10.36: Removida "atencion-segura" (movida a BIENVENIDA).
                 v3.10.36: Sondeo identificación AVERIAS speech unificado.
                 v3.10.42: alerts redistribuidas 1/section (3→1 aquí);
-                          datos clave resaltados con .key. -->
+                          datos clave resaltados con .key.
+                v3.10.56: disclosure control pill. -->
           <div class="script-section">
-            <div class="script-section-header script-section-header--green">
-              Motivo de la llamada
-            </div>
+            <button type="button" id="section-pill-motivo" class="section-pill section-pill--green"
+                    aria-expanded="false" aria-controls="section-content-motivo">
+              <span class="section-pill-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              <span class="section-pill-label">Motivo de la llamada</span>
+              <span class="section-pill-meta" aria-label="3 cards">3</span>
+              <svg class="section-pill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
 
-            <div class="script-alert" role="note">
-              <span class="script-alert-icon" aria-hidden="true">💡</span>
-              <span class="script-alert-text">Antes de ausentarte, indica el motivo y al retomar, agradece la espera del cliente.</span>
-            </div>
+            <div class="section-pill-content" id="section-content-motivo">
+              <div class="script-alert" role="note">
+                <span class="script-alert-icon" aria-hidden="true">💡</span>
+                <span class="script-alert-text">Antes de ausentarte, indica el motivo y al retomar, agradece la espera del cliente.</span>
+              </div>
 
-            <div class="script-card" data-script-id="sondea">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.48: nombre al final de la frase introductoria -->
+              <div class="script-card" data-script-id="sondea">
+                <div class="script-card-body">
+                  <!-- v3.10.48: nombre al final de la frase introductoria -->
                   <p class="script-card-text" id="script-text-sondea">"¿En qué puedo ayudarle hoy? Cuénteme <span class="ph" data-ph="cliente">{Cliente}</span> cuál sería el motivo de su comunicación o consulta."</p>
-               </div>
-            </div>
+                </div>
+              </div>
 
-            <div class="script-card" data-script-id="sondeo-averias">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.48: nombre después de "Comprendo" (no al inicio) -->
+              <div class="script-card" data-script-id="sondeo-averias">
+                <div class="script-card-body">
+                  <!-- v3.10.48: nombre después de "Comprendo" (no al inicio) -->
                   <p class="script-card-text" id="script-text-sondeo-averias">"Comprendo <span class="ph" data-ph="cliente">{Cliente}</span>, debido al inconveniente que nos mencionas, voy a validar su servicio. Para esto, me confirmas en qué <span class="key">departamento</span> te encuentras, <span class="key">provincia</span> y <span class="key">distrito</span>, por favor. Me indicas también la <span class="key">dirección</span> donde te encuentras en este momento, con eso podré avanzar con la búsqueda".</p>
-                 <p style="margin-top:6px;font-size:10.5px;color:var(--text-faint);"><strong>Tip:</strong> En caso no encontremos al cliente, solicitamos referencias.</p>
-               </div>
-            </div>
+                  <p style="margin-top:6px;font-size:10.5px;color:var(--text-faint);"><strong>Tip:</strong> En caso no encontremos al cliente, solicitamos referencias.</p>
+                </div>
+              </div>
 
-            <div class="script-card" data-script-id="tiempo-espera">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.48: nombre al medio + CEO directive "luego tiene que seguir"
+              <div class="script-card" data-script-id="tiempo-espera">
+                <div class="script-card-body">
+                  <!-- v3.10.48: nombre al medio + CEO directive "luego tiene que seguir"
                        (continuación explícita con "Apenas tenga novedades...") -->
                   <p class="script-card-text" id="script-text-tiempo-espera">"Un momento por favor mientras valido su información <span class="ph" data-ph="cliente">{Cliente}</span> <span class="ph-inline">(indique brevemente la acción a realizar)</span>. Apenas tenga novedades, le comento cómo seguimos."</p>
-               </div>
+                </div>
+              </div>
             </div>
           </div>
 
 <!-- ▌▌▌ SECCIÓN 3: Consulta adicional + App (ORANGE) ▌▌▌
                v3.10.37: "consulta-adicional" removida como card.
-               v3.10.42: alert mantenido; educa-app modernizado con datos clave .key. -->
+               v3.10.42: alert mantenido; educa-app modernizado con datos clave .key.
+               v3.10.56: disclosure control pill. -->
           <div class="script-section">
-            <div class="script-section-header script-section-header--orange">
-              Consulta adicional + App Movistar
-            </div>
+            <button type="button" id="section-pill-consulta" class="section-pill section-pill--orange"
+                    aria-expanded="false" aria-controls="section-content-consulta">
+              <span class="section-pill-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+              </span>
+              <span class="section-pill-label">Consulta adicional + App Movistar</span>
+              <span class="section-pill-meta" aria-label="1 card">1</span>
+              <svg class="section-pill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
 
-            <div class="script-alert" role="note">
-              <span class="script-alert-icon" aria-hidden="true">💡</span>
-              <span class="script-alert-text">Antes de cerrar, confirma si hay algo más en lo que puedas acompañarle.</span>
-            </div>
+            <div class="section-pill-content" id="section-content-consulta">
+              <div class="script-alert" role="note">
+                <span class="script-alert-icon" aria-hidden="true">💡</span>
+                <span class="script-alert-text">Antes de cerrar, confirma si hay algo más en lo que puedas acompañarle.</span>
+              </div>
 
-            <div class="script-card" data-script-id="educa-app">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.48: nombre al medio + frase introductoria empática -->
+              <div class="script-card" data-script-id="educa-app">
+                <div class="script-card-body">
+                  <!-- v3.10.48: nombre al medio + frase introductoria empática -->
                   <p class="script-card-text" id="script-text-educa-app">"Para resolver más rápido, <span class="ph" data-ph="cliente">{Cliente}</span>, en la <span class="key">App Mi Movistar</span> puede consultar su <span class="key">saldo</span>, ver y pagar su <span class="key">recibo</span>, y acceder a <span class="key">beneficios exclusivos</span>. Le enviaremos un enlace por SMS para que ingrese directo."</p>
-               </div>
+                </div>
+              </div>
             </div>
           </div>
 
 <!-- ▌▌▌ SECCIÓN 4: Cierre + Encuesta (PURPLE) ▌▌▌
                v3.10.37: REMOVIDAS cierre-con-solucion + cierre-sin-solucion.
                v3.10.42: alert agregado aquí (paciencia al entregar);
-                         despedida + encuesta modernizados. -->
+                         despedida + encuesta modernizados.
+               v3.10.56: disclosure control pill. -->
           <div class="script-section">
-            <div class="script-section-header script-section-header--purple">
-              Cierre + Encuesta
-            </div>
+            <button type="button" id="section-pill-cierre" class="section-pill section-pill--purple"
+                    aria-expanded="false" aria-controls="section-content-cierre">
+              <span class="section-pill-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </span>
+              <span class="section-pill-label">Cierre + Encuesta</span>
+              <span class="section-pill-meta" aria-label="2 cards">2</span>
+              <svg class="section-pill-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
 
-            <div class="script-alert" role="note">
-              <span class="script-alert-icon" aria-hidden="true">💡</span>
-              <span class="script-alert-text"><span class="ph-inline">{Cliente}</span>, gracias por tu paciencia. Te comento: <span class="ph-inline">(verificación o acción realizada)</span>.</span>
-            </div>
+<div class="section-pill-content" id="section-content-cierre">
+              <div class="script-alert" role="note">
+                <span class="script-alert-icon" aria-hidden="true">💡</span>
+                <span class="script-alert-text"><span class="ph-inline">{Cliente}</span>, gracias por tu paciencia. Te comento: <span class="ph-inline">(verificación o acción realizada)</span>.</span>
+              </div>
 
-            <div class="script-card" data-script-id="despedida">
-              
-               <div class="script-card-body">
-                 <!-- v3.10.48: CEO directive — "consecutiva la atencion"
+              <div class="script-card" data-script-id="despedida">
+                <div class="script-card-body">
+                  <!-- v3.10.48: CEO directive — "consecutiva la atencion"
                        Flujo continuo: "Perfecto {Cliente}, ya tenemos listo..."
                        en lugar de 2 mensajes separados ("hemos realizado para ti" + "solo sigamos"). -->
                   <p class="script-card-text" id="script-text-despedida">"Perfecto <span class="ph" data-ph="cliente">{Cliente}</span>, ya tenemos listo el <span class="ph-inline">(proceso generado)</span>. Sigamos las indicaciones para que notes la mejora en tu servicio. Ha sido un gusto atenderle."</p>
-               </div>
-            </div>
+                </div>
+              </div>
 
-            <div class="script-card" data-script-id="encuesta">
-              
-               <div class="script-card-body">
-                 <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
-                 <!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
-                confirmar su experiencia final con la solucion que le brinde." -->
-                <!-- v3.10.48: nombre al inicio (no estaba antes), frase más cordial -->
-                 <p class="script-card-text" id="script-text-encuesta">"Antes de cerrar <span class="ph" data-ph="cliente">{Cliente}</span>, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar su experiencia final con la solución que le brindé. ¡Muchas gracias por su tiempo!"</p>
-               </div>
+              <div class="script-card" data-script-id="encuesta">
+                <div class="script-card-body">
+                  <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
+                  <!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
+                  confirmar su experiencia final con la solucion que le brinde." -->
+                  <!-- v3.10.48: nombre al inicio (no estaba antes), frase más cordial -->
+                  <p class="script-card-text" id="script-text-encuesta">"Antes de cerrar <span class="ph" data-ph="cliente">{Cliente}</span>, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar su experiencia final con la solución que le brindé. ¡Muchas gracias por su tiempo!"</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4185,7 +4334,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.55</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.56</span>
     </span>
   </footer>
 </div>
@@ -4625,6 +4774,61 @@ function initScriptCardClick() {
     card.addEventListener('click', function (e) {
       var id = card.dataset.scriptId;
       if (id) toggleScriptCardCollapse(id);
+    });
+  });
+}
+
+// v3.10.56: DISCLOSURE CONTROL PILLS — wire up click handlers para cada
+// section pill. ARIA aria-expanded toggled + persist en localStorage.
+// Default collapsed per CEO directive ("no se desplegaran automaticamente").
+const SECTION_PILLS_STORAGE_KEY = 'cima_section_pills_v1';
+
+function loadSectionPillsState() {
+  try {
+    var raw = localStorage.getItem(SECTION_PILLS_STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) || {};
+  } catch (e) { return {}; }
+}
+
+function saveSectionPillsState(state) {
+  try {
+    localStorage.setItem(SECTION_PILLS_STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function initSectionPills() {
+  var pills = document.querySelectorAll('.section-pill');
+  if (!pills.length) return;
+  var state = loadSectionPillsState();
+
+  pills.forEach(function (pill) {
+    // ID format: 'section-pill-bienvenida' → state key 'bienvenida'
+    var sectionId = (pill.id || '').replace(/^section-pill-/, '');
+    if (!sectionId) return;
+
+    // Aplicar estado persistido (default = collapsed)
+    if (state[sectionId]) {
+      pill.setAttribute('aria-expanded', 'true');
+    } else {
+      pill.setAttribute('aria-expanded', 'false');
+    }
+
+    // Click toggle + persist
+    pill.addEventListener('click', function () {
+      var wasExpanded = pill.getAttribute('aria-expanded') === 'true';
+      var nowExpanded = !wasExpanded;
+      pill.setAttribute('aria-expanded', nowExpanded ? 'true' : 'false');
+
+      // Persist (solo si se expandió; colapsado no se persiste para mantener
+      // "first load = todo colapsado" como estado inicial limpio).
+      var s = loadSectionPillsState();
+      if (nowExpanded) {
+        s[sectionId] = true;
+      } else {
+        delete s[sectionId];
+      }
+      saveSectionPillsState(s);
     });
   });
 }
@@ -6146,7 +6350,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.55] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.56] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -7728,6 +7932,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // 5) v3.10.34: click-to-collapse — aplicar estados persistidos + wire up listeners
   applyScriptCollapsedStates();
   initScriptCardClick();
+  // v3.10.56: section pills (disclosure controls) — wire up click handlers
+  initSectionPills();
   // v3.10.51: MOTIVO consolidado en 1 dropdown (reemplaza 4 cards)
   initMotivoSelect();
   // v3.10.53: aplicar visibility inicial del flow según MOTIVO (puede estar

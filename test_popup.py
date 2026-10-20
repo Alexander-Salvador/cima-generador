@@ -3367,17 +3367,19 @@ def test(html_path):
     else:
         result.fail('v3.10.43 BUG 2 .script-card-text', 'flex: 1 1 200px + min-width: 0 esperados')
 
-    # BUG 3 (v3.10.43 → v3.10.55): .script-section-header font-size 12px.
-    # v3.10.55 redujimos a 11.5px para mejor compactación (CEO directive).
-    header_font = re.search(r'\.script-section-header\s*\{([^}]+)\}', html, re.DOTALL)
-    if header_font:
-        header_body = re.sub(r'/\*[\s\S]*?\*/', '', header_font.group(1))
-        if 'font-weight: 800' in header_body and ('font-size: 11.5px' in header_body or 'font-size: 12px' in header_body):
-            result.ok('v3.10.55: .script-section-header weight 800 + font-size 11.5px (compacto)')
+    # BUG 3 (v3.10.43 → v3.10.55 → v3.10.56): .script-section-header fue reemplazado
+    # por .section-pill button en v3.10.56 (Apple HIG 2026 disclosure control).
+    # Anti-regression: header ya NO usa border-left + tinted bg (legacy removed).
+    # v3.10.56 verification: .section-pill usa font-weight 700 (no 800) + 11px (compacto)
+    section_pill = re.search(r'\.section-pill\s*\{([^}]+)\}', html, re.DOTALL)
+    if section_pill:
+        pill_body = re.sub(r'/\*[\s\S]*?\*/', '', section_pill.group(1))
+        if 'font-weight: 700' in pill_body and 'font-size: 11px' in pill_body:
+            result.ok('v3.10.56: .section-pill weight 700 + font-size 11px (compacto moderno)')
         else:
-            result.fail('v3.10.55 section-header', 'weight 800 + font-size 11.5px esperados')
+            result.fail('v3.10.56 section-pill', 'weight 700 + font-size 11px esperados')
     else:
-        result.fail('v3.10.55', '.script-section-header CSS missing')
+        result.fail('v3.10.56', '.section-pill CSS missing')
 
     # BUG 3: .script-alert font-size 10.5px (más compacto)
     alert_font = re.search(r'\.script-alert\s*\{([^}]+)\}', html, re.DOTALL)
@@ -3769,40 +3771,17 @@ def test(html_path):
     # v3.10.55 — ESTILIZACIÓN Y COMPACTACIÓN del GRID
     # CEO directive: "debemos estilizarlas mejorarlas que no ocupen tanto
     #   espacio diseñas de mejor manera"
+    # v3.10.56 UPDATE: header deja de ser div y se vuelve <button class="section-pill">
+    #   disclosure control (Apple HIG 2026). Las 4 cards con .motivo-card-icon +
+    #   label + meta + chevron. Sin bordes gruesos (currentColor + tinted bg).
     # ══════════════════════════════════════════════════════════════════════
-    print('\n▸ v3.10.55 — Estilización + compactación GRID')
+    print('\n▸ v3.10.55/56 — Estilización + compactación + section pills')
 
-    # CSS: .script-section-header padding compacto 7px 12px (no 6px 0 8px 0)
-    if re.search(r"\.script-section-header\s*\{[^}]*padding\s*:\s*7px\s+12px", html, re.DOTALL):
-        result.ok('v3.10.55 CSS: .script-section-header padding compacto 7px 12px')
+    # CSS: .script-section margin-top 6px (v3.10.56; antes 8px v3.10.55)
+    if re.search(r"\.script-section\s*\{[^}]*margin-top\s*:\s*6px", html, re.DOTALL):
+        result.ok('v3.10.56 CSS: .script-section margin-top 6px (compacto)')
     else:
-        result.fail('v3.10.55 CSS padding', 'padding 7px 12px esperado en .script-section-header')
-
-    # CSS: .script-section-header border-radius 6px (pill-shape)
-    if re.search(r"\.script-section-header\s*\{[^}]*border-radius\s*:\s*6px", html, re.DOTALL):
-        result.ok('v3.10.55 CSS: .script-section-header border-radius 6px (pill-shape)')
-    else:
-        result.fail('v3.10.55 CSS radius', 'border-radius 6px esperado en .script-section-header')
-
-    # CSS: 4 sections con tinted bg full-width (gradient con alpha 14% → 5%)
-    # El gradient es multi-línea, regex con DOTALL.
-    variants_ok = 0
-    for variant in ['blue', 'green', 'orange', 'purple']:
-        if re.search(
-            r"\.script-section-header--" + variant + r"\s*\{[^}]*linear-gradient[\s\S]{0,300}?5%[\s\S]{0,50}?100%\s*\)",
-            html, re.DOTALL
-        ):
-            variants_ok += 1
-    if variants_ok == 4:
-        result.ok('v3.10.55 CSS: 4 variants con tinted bg full-width (gradient 14% → 5% → 100%)')
-    else:
-        result.fail('v3.10.55 CSS variants', f'{variants_ok}/4 variants con gradient esperado')
-
-    # CSS: .script-section margin-top 8px (compacto, antes era var(--space-3))
-    if re.search(r"\.script-section\s*\{[^}]*margin-top\s*:\s*8px", html, re.DOTALL):
-        result.ok('v3.10.55 CSS: .script-section margin-top 8px (compacto)')
-    else:
-        result.fail('v3.10.55 CSS section margin', '.script-section margin-top 8px esperado')
+        result.fail('v3.10.56 CSS section margin', '.script-section margin-top 6px esperado')
 
     # CSS: .script-card margin-top 4px (más compacto, antes 6px)
     if re.search(r"\.script-card\s*\{[^}]*margin-top\s*:\s*4px", html, re.DOTALL):
@@ -3822,12 +3801,104 @@ def test(html_path):
     else:
         result.fail('v3.10.55 CSS input padding', 'input padding 6px 12px esperado')
 
-    # JS unchanged: variables, initMotivoSelect, applyMotivoFlow, etc.
-    # Anti-regression: applyMotivoFlow sigue presente
-    if 'function applyMotivoFlow(' in html:
-        result.ok('v3.10.55 ANTI-REGRESSION: applyMotivoFlow() intacto')
+    # v3.10.56 NEW: SECTION PILLS (disclosure controls Apple HIG 2026)
+    # 4 buttons con class="section-pill" + 4 divs section-pill-content
+    n_pills = len(re.findall(r'<button[^>]*class="section-pill\s', html))
+    if n_pills == 4:
+        result.ok('v3.10.56 HTML: 4 <button class="section-pill"> disclosure controls')
     else:
-        result.fail('v3.10.55 anti-reg', 'applyMotivoFlow debería seguir presente')
+        result.fail('v3.10.56 HTML pills', f'4 section-pill buttons esperados, {n_pills} encontrados')
+
+    # section-pill-content: 4 divs (uno por section)
+    n_contents = len(re.findall(r'<div[^>]*class="section-pill-content"', html))
+    if n_contents == 4:
+        result.ok('v3.10.56 HTML: 4 <div class="section-pill-content"> wrappers')
+    else:
+        result.fail('v3.10.56 HTML contents', f'4 section-pill-content esperados, {n_contents} encontrados')
+
+    # 4 pills con aria-expanded="false" por default (collapsed)
+    n_aria_false = len(re.findall(r'<button[^>]*class="section-pill[^"]*"[^>]*aria-expanded="false"', html))
+    if n_aria_false == 4:
+        result.ok('v3.10.56 HTML: 4 pills con aria-expanded="false" (default collapsed)')
+    else:
+        result.fail('v3.10.56 HTML default state', f'4 aria-expanded=false esperados, {n_aria_false} encontrados')
+
+    # CSS: .section-pill border: none (sin bordes nativos, glass-morphic)
+    if re.search(r"\.section-pill\s*\{[^}]*border\s*:\s*none", html, re.DOTALL):
+        result.ok('v3.10.56 CSS: .section-pill { border: none } (2026 no-border)')
+    else:
+        result.fail('v3.10.56 CSS border', '.section-pill border:none esperado')
+
+    # CSS: .section-pill border-radius 12px (rounded rect, no capsule)
+    if re.search(r"\.section-pill\s*\{[^}]*border-radius\s*:\s*12px", html, re.DOTALL):
+        result.ok('v3.10.56 CSS: .section-pill border-radius 12px (rounded rect modern)')
+    else:
+        result.fail('v3.10.56 CSS pill radius', '.section-pill border-radius 12px esperado')
+
+    # CSS: .section-pill-chevron transform rotate 180° en expanded state
+    if re.search(r"\.section-pill\[aria-expanded=[\"']true[\"']\]\s+\.section-pill-chevron[^}]*transform\s*:\s*rotate\(180deg\)", html, re.DOTALL):
+        result.ok('v3.10.56 CSS: chevron rotate 180° en [aria-expanded="true"]')
+    else:
+        result.fail('v3.10.56 CSS chevron', '.section-pill[aria-expanded=true] .section-pill-chevron rotate(180deg) esperado')
+
+    # CSS: .section-pill-content max-height: 0 (collapsible content)
+    if re.search(r"\.section-pill-content\s*\{[^}]*max-height\s*:\s*0", html, re.DOTALL):
+        result.ok('v3.10.56 CSS: .section-pill-content { max-height: 0 } (collapsed by default)')
+    else:
+        result.fail('v3.10.56 CSS content collapsed', '.section-pill-content max-height: 0 esperado')
+
+    # CSS: .section-pill[aria-expanded=true] + .section-pill-content max-height: 2000px
+    if re.search(r"\.section-pill\[aria-expanded=[\"']true[\"']\]\s*\+\s*\.section-pill-content[^}]*max-height\s*:\s*2000px", html, re.DOTALL):
+        result.ok('v3.10.56 CSS: expanded pill + content → max-height: 2000px (smooth expand)')
+    else:
+        result.fail('v3.10.56 CSS expand', '.section-pill[aria-expanded=true] + .section-pill-content max-height 2000px esperado')
+
+    # CSS: 4 variants via currentColor (blue/green/orange/purple)
+    variants_ok = 0
+    for variant_color in ['#2563eb', '#059669', '#ea580c', '#7c3aed']:
+        if re.search(r"\.section-pill--\w+\s*\{[^}]*color\s*:\s*" + re.escape(variant_color), html, re.DOTALL):
+            variants_ok += 1
+    if variants_ok == 4:
+        result.ok('v3.10.56 CSS: 4 variants via currentColor (blue/green/orange/purple)')
+    else:
+        result.fail('v3.10.56 CSS variants', f'{variants_ok}/4 variants con currentColor esperado')
+
+    # JS: initSectionPills() función definida
+    if 'function initSectionPills(' in html:
+        result.ok('v3.10.56 JS: initSectionPills() función definida')
+    else:
+        result.fail('v3.10.56 JS initSectionPills', 'función initSectionPills esperada')
+
+    # JS: initSectionPills invocada en DOMContentLoaded
+    if re.search(r'initSectionPills\(\)', html):
+        result.ok('v3.10.56 JS: initSectionPills() invocada en init')
+    else:
+        result.fail('v3.10.56 JS init call', 'initSectionPills() debe invocarse en DOMContentLoaded')
+
+    # JS: click handler cambia aria-expanded en pill
+    if re.search(r"pill\.addEventListener\([\s\S]{0,150}aria-expanded", html, re.DOTALL):
+        result.ok('v3.10.56 JS: click en pill toggle aria-expanded')
+    else:
+        result.fail('v3.10.56 JS click handler', 'click debe cambiar aria-expanded')
+
+    # JS: localStorage key cima_section_pills_v1 persist
+    if re.search(r"cima_section_pills_v1", html):
+        result.ok('v3.10.56 JS: persist via localStorage cima_section_pills_v1')
+    else:
+        result.fail('v3.10.56 JS persist', 'cima_section_pills_v1 localStorage key esperado')
+
+    # ANTI-REGRESSION: .script-section-header CSS ELIMINADO (reemplazado por .section-pill)
+    legacy_header = re.search(r"\.script-section-header\s*\{[^}]*border-left", html, re.DOTALL)
+    if not legacy_header:
+        result.ok('v3.10.56 ANTI-REG: .script-section-header ELIMINADO (sin bordes gruesos legacy)')
+    else:
+        result.fail('v3.10.56 anti-reg', '.script-section-header con border-left debería estar eliminado')
+
+    # ANTI-REGRESSION: applyMotivoFlow intacto
+    if 'function applyMotivoFlow(' in html:
+        result.ok('v3.10.56 ANTI-REG: applyMotivoFlow() intacto')
+    else:
+        result.fail('v3.10.56 anti-reg apply', 'applyMotivoFlow debería seguir presente')
 
     # Anti-regression: GRID 0 sigue teniendo grid-body que contiene 4 sections
     if grid_block_start != -1 and grid_block_end != -1:
@@ -3876,34 +3947,31 @@ def test(html_path):
     else:
         result.fail('v3.10.53 BUG 2', 'auto-colapsar TODO debería haber sido eliminado')
 
-    # BUG 3: NO hay auto-desglose al cargar (el flow solo se desglosa en click MOTIVO)
-    # Contar LLAMADAS REALES a desgloseMotivoFlow (excluir definición + comentarios)
-    # Definición = "function desgloseMotivoFlow(...)"
-    # Comentarios = líneas que empiezan con //
-    # Llamada real = "desgloseMotivoFlow(args)" en línea de código
+    # BUG 3: NO hay auto-desglose al cargar.
+    # v3.10.50 esperaba: 1 llamada real a desgloseMotivoFlow dentro de un card.addEventListener click.
+    # v3.10.51+: el trigger cambió de "click en card" a "change en <select id='script-motivo'>".
+    # El comportamiento es equivalente: solo se desglosa al elegir motivo (manual), no auto.
     real_calls = []
     for i, line in enumerate(html.split('\n'), start=1):
         stripped = line.strip()
-        # Saltar comentarios y definiciones
         if stripped.startswith('//'):
             continue
         if 'function desgloseMotivoFlow' in stripped:
             continue
-        # Buscar llamadas
         m = re.search(r"desgloseMotivoFlow\(\s*([A-Za-z_]*)\s*\)", stripped)
         if m:
             real_calls.append((i, m.group(1)))
 
-    # Debe haber exactamente 1 llamada real, en el click handler
-    click_handler = re.search(
-        r"card\.addEventListener\(\s*['\"]click['\"]\s*,\s*function[\s\S]{0,1000}desgloseMotivoFlow\(\s*value\s*\)",
+    # v3.10.51+: el trigger es change handler del select MOTIVO, no card click.
+    change_handler = re.search(
+        r"motivoSelect\.addEventListener\(\s*['\"]change['\"][\s\S]{0,800}desgloseMotivoFlow\(\s*value\s*\)",
         html
     )
-    if len(real_calls) == 1 and click_handler:
-        result.ok(f'v3.10.50 BUG 3: desgloseMotivoFlow solo se llama en click handler (L{real_calls[0][0]}, 1 llamada real)')
+    if len(real_calls) == 1 and change_handler:
+        result.ok(f'v3.10.51 BUG 3: desgloseMotivoFlow solo se llama en change handler del select MOTIVO (L{real_calls[0][0]}, 1 llamada real)')
     else:
-        result.fail('v3.10.50 BUG 3',
-                    f'desgloseMotivoFlow debe ser solo en click (encontradas {len(real_calls)} llamadas reales: {real_calls})')
+        result.fail('v3.10.51 BUG 3',
+                    f'desgloseMotivoFlow debe ser solo en change handler (encontradas {len(real_calls)} llamadas: {real_calls})')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.45 — BUG FIXES (layout + telefono-last3)
