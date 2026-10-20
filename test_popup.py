@@ -3367,16 +3367,17 @@ def test(html_path):
     else:
         result.fail('v3.10.43 BUG 2 .script-card-text', 'flex: 1 1 200px + min-width: 0 esperados')
 
-    # BUG 3: .script-section-header font-size 12px (más prominente)
+    # BUG 3 (v3.10.43 → v3.10.55): .script-section-header font-size 12px.
+    # v3.10.55 redujimos a 11.5px para mejor compactación (CEO directive).
     header_font = re.search(r'\.script-section-header\s*\{([^}]+)\}', html, re.DOTALL)
     if header_font:
         header_body = re.sub(r'/\*[\s\S]*?\*/', '', header_font.group(1))
-        if 'font-size: 12px' in header_body and 'font-weight: 800' in header_body:
-            result.ok('v3.10.43 BUG 3: .script-section-header font-size 12px + weight 800 (más prominente)')
+        if 'font-weight: 800' in header_body and ('font-size: 11.5px' in header_body or 'font-size: 12px' in header_body):
+            result.ok('v3.10.55: .script-section-header weight 800 + font-size 11.5px (compacto)')
         else:
-            result.fail('v3.10.43 BUG 3 section-header', 'font-size 12px + weight 800 esperados')
+            result.fail('v3.10.55 section-header', 'weight 800 + font-size 11.5px esperados')
     else:
-        result.fail('v3.10.43 BUG 3', '.script-section-header CSS missing')
+        result.fail('v3.10.55', '.script-section-header CSS missing')
 
     # BUG 3: .script-alert font-size 10.5px (más compacto)
     alert_font = re.search(r'\.script-alert\s*\{([^}]+)\}', html, re.DOTALL)
@@ -3763,6 +3764,103 @@ def test(html_path):
             result.ok('v3.10.54 ANTI-REGRESSION: 0 script-section huérfanas antes de grid-body')
         else:
             result.fail('v3.10.54 anti-regression', f'{n_sections_before} script-section huérfanas encontradas antes de grid-body')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.55 — ESTILIZACIÓN Y COMPACTACIÓN del GRID
+    # CEO directive: "debemos estilizarlas mejorarlas que no ocupen tanto
+    #   espacio diseñas de mejor manera"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.55 — Estilización + compactación GRID')
+
+    # CSS: .script-section-header padding compacto 7px 12px (no 6px 0 8px 0)
+    if re.search(r"\.script-section-header\s*\{[^}]*padding\s*:\s*7px\s+12px", html, re.DOTALL):
+        result.ok('v3.10.55 CSS: .script-section-header padding compacto 7px 12px')
+    else:
+        result.fail('v3.10.55 CSS padding', 'padding 7px 12px esperado en .script-section-header')
+
+    # CSS: .script-section-header border-radius 6px (pill-shape)
+    if re.search(r"\.script-section-header\s*\{[^}]*border-radius\s*:\s*6px", html, re.DOTALL):
+        result.ok('v3.10.55 CSS: .script-section-header border-radius 6px (pill-shape)')
+    else:
+        result.fail('v3.10.55 CSS radius', 'border-radius 6px esperado en .script-section-header')
+
+    # CSS: 4 sections con tinted bg full-width (gradient con alpha 14% → 5%)
+    # El gradient es multi-línea, regex con DOTALL.
+    variants_ok = 0
+    for variant in ['blue', 'green', 'orange', 'purple']:
+        if re.search(
+            r"\.script-section-header--" + variant + r"\s*\{[^}]*linear-gradient[\s\S]{0,300}?5%[\s\S]{0,50}?100%\s*\)",
+            html, re.DOTALL
+        ):
+            variants_ok += 1
+    if variants_ok == 4:
+        result.ok('v3.10.55 CSS: 4 variants con tinted bg full-width (gradient 14% → 5% → 100%)')
+    else:
+        result.fail('v3.10.55 CSS variants', f'{variants_ok}/4 variants con gradient esperado')
+
+    # CSS: .script-section margin-top 8px (compacto, antes era var(--space-3))
+    if re.search(r"\.script-section\s*\{[^}]*margin-top\s*:\s*8px", html, re.DOTALL):
+        result.ok('v3.10.55 CSS: .script-section margin-top 8px (compacto)')
+    else:
+        result.fail('v3.10.55 CSS section margin', '.script-section margin-top 8px esperado')
+
+    # CSS: .script-card margin-top 4px (más compacto, antes 6px)
+    if re.search(r"\.script-card\s*\{[^}]*margin-top\s*:\s*4px", html, re.DOTALL):
+        result.ok('v3.10.55 CSS: .script-card margin-top 4px (más compacto)')
+    else:
+        result.fail('v3.10.55 CSS card margin', '.script-card margin-top 4px esperado')
+
+    # CSS: .script-vars .field label font-weight 600 (más prominente)
+    if re.search(r"\.script-vars\s+\.field\s+label\s*\{[^}]*font-weight\s*:\s*600", html, re.DOTALL):
+        result.ok('v3.10.55 CSS: .script-vars label font-weight 600 (labels más prominentes)')
+    else:
+        result.fail('v3.10.55 CSS label', '.script-vars label font-weight 600 esperado')
+
+    # CSS: input padding 6px 12px (más alto, antes 4px 8px)
+    if re.search(r"\.script-vars\s+\.field\s+input[^{]*\{[^}]*padding\s*:\s*6px\s+12px", html, re.DOTALL):
+        result.ok('v3.10.55 CSS: input padding 6px 12px (más touchable)')
+    else:
+        result.fail('v3.10.55 CSS input padding', 'input padding 6px 12px esperado')
+
+    # JS unchanged: variables, initMotivoSelect, applyMotivoFlow, etc.
+    # Anti-regression: applyMotivoFlow sigue presente
+    if 'function applyMotivoFlow(' in html:
+        result.ok('v3.10.55 ANTI-REGRESSION: applyMotivoFlow() intacto')
+    else:
+        result.fail('v3.10.55 anti-reg', 'applyMotivoFlow debería seguir presente')
+
+    # Anti-regression: GRID 0 sigue teniendo grid-body que contiene 4 sections
+    if grid_block_start != -1 and grid_block_end != -1:
+        region = html[grid_block_start:grid_block_end]
+        grid_body_open_rel = region.find('id="gridScript-body"')
+        events = []
+        for m in re.finditer(r'<div[^>]*>', region):
+            cls_match = re.search(r'<div\s+class="([^"]+)"', m.group(0))
+            cls = cls_match.group(1).split()[0] if cls_match else '?'
+            events.append((m.start(), 'open', cls))
+        for m in re.finditer(r'</div>', region):
+            events.append((m.start(), 'close', None))
+        events.sort()
+        stack = []
+        gb_close_pos = None
+        for pos, kind, cls in events:
+            if kind == 'open':
+                stack.append(cls)
+                if cls == 'grid-body':
+                    gb_start_pos = pos
+            else:
+                if stack:
+                    opened = stack.pop()
+                    if opened == 'grid-body':
+                        gb_close_pos = pos
+                        break
+        if gb_close_pos is not None:
+            body_content = region[gb_start_pos:gb_close_pos]
+            n_sections = len(re.findall(r'<div[^>]*class="script-section"', body_content))
+            if n_sections == 4:
+                result.ok('v3.10.55 ANTI-REGRESSION: 4 script-sections dentro de grid-body (estructura preservada)')
+            else:
+                result.fail('v3.10.55 anti-reg structure', f'{n_sections}/4 sections dentro de grid-body')
 
     # BUG 2 + 3 (v3.10.50): applyScriptCollapsedStates colapsaba TODO por default
     # si no había estado persistido. v3.10.53 REMOVIÓ este auto-collapse.
