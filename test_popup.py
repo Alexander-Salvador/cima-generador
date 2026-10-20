@@ -3095,10 +3095,14 @@ def test(html_path):
     )
     if collapsed_match:
         body = re_mod.sub(r'/\*[\s\S]*?\*/', '', collapsed_match.group(1))
-        if 'border-radius: 999px' in body and 'backdrop-filter' in body:
-            result.ok('v3.10.39 CSS: pill shape (999px) + glassmorphism (backdrop-filter)')
+        # v3.10.59: backdrop-filter ELIMINADO (pill-line minimalista usa solo
+        # gradient — blur en 22px de alto era overkill + costoso en GPU).
+        # Reemplazado por: pill shape (999px) + padding compacto (3px 10px)
+        # + sin min-height (altura = contenido).
+        if 'border-radius: 999px' in body and 'padding: 3px 10px' in body and 'min-height' not in body:
+            result.ok('v3.10.59 CSS: pill-line compact (999px radius + padding 3px 10px + sin min-height)')
         else:
-            result.fail('v3.10.39 CSS pill', 'border-radius 999px + backdrop-filter esperado')
+            result.fail('v3.10.59 CSS pill-line', 'border-radius 999px + padding 3px 10px + sin min-height esperado')
 
     # CSS: linear-gradient (Apple-style gradient backgrounds)
     if 'linear-gradient(135deg' in body and '#10b981' in body and '#059669' in body:
@@ -3112,7 +3116,7 @@ def test(html_path):
     else:
         result.fail('v3.10.39 CSS spring', 'spring transition esperado')
 
-    # CSS: "✓ Hecho" pill badge (multiline regex)
+    # v3.10.59: ::before = DOT circular de 12px (reemplaza "✓ Hecho" badge 22px)
     before_match = re_mod.search(
         r'\.script-card\.is-collapsed::before\s*\{([^}]+)\}',
         html,
@@ -3120,28 +3124,62 @@ def test(html_path):
     )
     if before_match:
         before_body = re_mod.sub(r'/\*[\s\S]*?\*/', '', before_match.group(1))
-        if 'linear-gradient' in before_body and '#10b981' in before_body and 'border-radius: 999px' in before_body:
-            result.ok('v3.10.39 CSS: ::before "✓ Hecho" gradient pill (999px radius)')
+        if 'width: 12px' in before_body and 'height: 12px' in before_body and 'border-radius: 50%' in before_body:
+            result.ok('v3.10.59 CSS: ::before = dot circular 12px (reemplaza "✓ Hecho" badge 22px)')
         else:
-            result.fail('v3.10.39 CSS before badge', '::before gradient pill esperado')
+            result.fail('v3.10.59 CSS dot', 'width/height 12px + border-radius 50% esperado en ::before')
 
-    # CSS: "Toca para abrir ▴" hint (Apple Reminders style)
-    if 'Toca para abrir' in html and '▴' in html:
-        result.ok('v3.10.39 CSS: ::after "Toca para abrir ▴" hint (Apple Reminders)')
-    else:
-        result.fail('v3.10.39 CSS after hint', '"Toca para abrir ▴" hint esperado')
+    # v3.10.59: ::after = chevron "▸" de 9px (reemplaza "Toca para abrir ▴" textual)
+    after_match = re_mod.search(
+        r'\.script-card\.is-collapsed::after\s*\{([^}]+)\}',
+        html,
+        re_mod.DOTALL
+    )
+    if after_match:
+        after_body = re_mod.sub(r'/\*[\s\S]*?\*/', '', after_match.group(1))
+        if "content: '▸'" in after_body and 'font-size: 9px' in after_body:
+            result.ok('v3.10.59 CSS: ::after = chevron "▸" 9px (reemplaza hint textual 14px)')
+        else:
+            result.fail('v3.10.59 CSS chevron', "content: '▸' + font-size 9px esperado en ::after")
 
-    # CSS: hover lift + glow (Apple-style micro-interaction)
-    if '.script-card.is-collapsed:hover' in html and 'translateY(-1px)' in html and 'cubic-bezier' in html:
-        result.ok('v3.10.39 CSS: hover lift (-1px) + spring + glow box-shadow')
+    # ANTI-REGRESSION v3.10.59: "Toca para abrir ▴" hint ELIMINADO del CSS real
+    # (puede quedar mencionado en comentarios históricos, lo que importa es
+    # que ningún content: "Toca para abrir" exista como regla activa).
+    if not re.search(r'content\s*:\s*["\']Toca para abrir', html):
+        result.ok('v3.10.59 ANTI-REG: hint "Toca para abrir ▴" ELIMINADO del CSS (solo queda en comentarios)')
     else:
-        result.fail('v3.10.39 CSS hover', 'hover lift + glow esperado')
+        result.fail('v3.10.59 anti-reg hint', 'content: "Toca para abrir" aún presente como regla activa')
 
-    # CSS: inset highlight (Apple glass effect)
-    if 'inset 0 1px 0 rgba(255, 255, 255' in body:
-        result.ok('v3.10.39 CSS: inset highlight blanco (Apple glass effect)')
+    # v3.10.59: .script-card-label inline (visible solo cuando is-collapsed)
+    if 'script-card.is-collapsed .script-card-label' in html and '.script-card-label { display: none; }' in html:
+        result.ok('v3.10.59 CSS: .script-card-label visible solo en is-collapsed (display:none por default)')
     else:
-        result.fail('v3.10.39 CSS inset', 'inset highlight esperado')
+        result.fail('v3.10.59 CSS label', '.script-card-label display:none + visible en is-collapsed esperados')
+
+    # HTML: 9 cards con .script-card-label (8 + transferir)
+    n_labels = len(re.findall(r'<span class="script-card-label"', html))
+    if n_labels == 9:
+        result.ok('v3.10.59 HTML: 9 .script-card-label (8 steps + transferir)')
+    else:
+        result.fail('v3.10.59 HTML labels', f'9 script-card-label esperados, {n_labels} encontrados')
+
+    # JS v3.10.59: click-to-COLLAPSE restaurado (NO copy)
+    if 'function toggleScriptCardCollapse(' in html and 'function copyScriptCardText' not in html:
+        result.ok('v3.10.59 JS: click-to-collapse RESTAURADO (toggleScriptCardCollapse presente, copy eliminado)')
+    else:
+        result.fail('v3.10.59 JS model', 'toggleScriptCardCollapse presente + copyScriptCardText ausente esperados')
+
+    # CSS: hover state (v3.10.59 usa border-color + bg, no translateY)
+    if '.script-card.is-collapsed:hover' in html:
+        result.ok('v3.10.59 CSS: .is-collapsed:hover presente (border + bg sage)')
+    else:
+        result.fail('v3.10.59 CSS hover', '.script-card.is-collapsed:hover esperado')
+
+    # Anti-regression: min-height 36px en is-collapsed ELIMINADO (era 36px = espacio inútil)
+    if collapsed_match and 'min-height' not in body:
+        result.ok('v3.10.59 ANTI-REG: min-height:36px ELIMINADO de is-collapsed (ahorra ~14px/card)')
+    else:
+        result.fail('v3.10.59 anti-reg min-height', 'min-height no debería estar en .is-collapsed')
 
     # Anti-regression: border-left 3px REMOVIDO (era v3.10.38 feo)
     if 'border-left: 3px solid var(--green)' not in body:
@@ -3381,16 +3419,17 @@ def test(html_path):
     else:
         result.fail('v3.10.56', '.section-pill CSS missing')
 
-    # BUG 3: .script-alert font-size 10.5px (más compacto)
+    # BUG 3 (v3.10.43 → v3.10.59): .script-alert font-size 10.5px → 10px (comprimido)
     alert_font = re.search(r'\.script-alert\s*\{([^}]+)\}', html, re.DOTALL)
     if alert_font:
         alert_body = re.sub(r'/\*[\s\S]*?\*/', '', alert_font.group(1))
-        if 'font-size: 10.5px' in alert_body and 'max-width: 96%' in alert_body:
-            result.ok('v3.10.43 BUG 3: .script-alert font-size 10.5px + max-width 96% (más compacto)')
+        # v3.10.59: comprimido (10.5→10px, padding 5px 10px → 3px 8px)
+        if 'font-size: 10px' in alert_body and 'max-width: 96%' in alert_body and 'padding: 3px 8px' in alert_body:
+            result.ok('v3.10.59: .script-alert font-size 10px + padding 3px 8px + max-width 96% (ultra-compact)')
         else:
-            result.fail('v3.10.43 BUG 3 .script-alert', 'font-size 10.5px + max-width 96% esperados')
+            result.fail('v3.10.59 .script-alert', 'font-size 10px + padding 3px 8px + max-width 96% esperados')
     else:
-        result.fail('v3.10.43 BUG 3 alert', '.script-alert CSS missing')
+        result.fail('v3.10.59 alert', '.script-alert CSS missing')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.44 (LEGACY) — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS

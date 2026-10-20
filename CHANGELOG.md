@@ -1,5 +1,56 @@
 # Changelog — cima-generador
 
+## [3.10.59] - 2026-10-20 — 🎯 COLLAPSED PILL-LINE ultra-compacta (~22px, −55% espacio)
+
+**CEO directive:**
+> "debe minizarse pero ocupando menos espacio mas estilizado"
+
+**PROBLEMA (v3.10.39):** el estado minimizado ocupaba ~50px por card:
+
+| Elemento | Altura |
+|---|---|
+| `min-height: 36px` | 36px |
+| "✓ Hecho" badge (`padding: 4px 12px`) | 22px |
+| "Toca para abrir ▴" hint textual | 14px |
+| **Total por card** | **~50px** |
+| **8 cards minimizadas** | **~400px de espacio inútil** |
+
+**SOLUCIÓN v3.10.59 — pill-line de 1 sola línea:**
+
+| Cambio | Antes | Después | Ahorro |
+|---|---|---|---|
+| `min-height` | 36px | **eliminado** | −36px |
+| `padding` | 8px 14px | **3px 10px** | −10px |
+| Estado visual | "✓ Hecho" badge (22px) | **dot circular 12px** (`::before`) | −10px |
+| Hint | "Toca para abrir ▴" (14px) | **chevron ▸ 9px** (`::after`) | −5px |
+| `backdrop-filter` | blur(12px) saturate(1.4) | **eliminado** | GPU |
+| **Total por card** | **~50px** | **~22px** | **−56%** |
+
+**Nuevo `.script-card-label`** (9 labels en HTML, uno por card):
+- `display: none` por default → **solo visible cuando `.is-collapsed`**
+- Reemplaza el "✓ Hecho" badge textual con un label semántico del step:
+  - `Bienvenida + confirmación número`
+  - `Ofrecer devolución de llamada`
+  - `Sondear motivo de consulta`
+  - `Sondeo identificación de averías`
+  - `Pedir espera mientras valida`
+  - `Educar sobre App Mi Movistar`
+  - `Despedida + seguimiento`
+  - `Encuesta de satisfacción`
+  - `Transferir a área especializada`
+
+**Compresión adicional:**
+- `.script-card { margin-top: 6px → 3px; padding: 7px 11px → 5px 9px }`
+- `.script-card-body { gap: 6px → 5px }`
+- `.script-alert { padding: 5px 10px → 3px 8px; margin-top: 5px → 3px; font: 10.5px → 10px; icon: 12px → 11px }`
+
+**Modelo de interacción (RESTAURADO — el click minimiza):**
+- Click en card → toggle `.is-collapsed` (minimizar/restaurar) — **NO copia**
+- Persiste en `localStorage.cima_script_collapsed_v1`
+- `applyMotivoFlow()` sigue controlando visibility según MOTIVO
+
+**Verificación local:** 661/661 tests PASS + CSS balanceado (531/531).
+
 ## [3.10.58] - 2026-10-20 — 🚨 FIX CRÍTICO: llave CSS extra rompía TODO el stylesheet
 
 **CEO directive:**
