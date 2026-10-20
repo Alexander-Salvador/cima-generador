@@ -3927,7 +3927,34 @@ def test(html_path):
     else:
         result.fail('v3.10.57 grid-body CSS', '.grid-body CSS no encontrado')
 
-    # Anti-regression: max-height 1200px NO debe existir más (el bug root)
+    # v3.10.57 CSS balance
+    css_blocks = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL)
+    if css_blocks:
+        css_nc = re.sub(r'/\*.*?\*/', '', css_blocks[0], flags=re.DOTALL)
+        n_open = css_nc.count('{')
+        n_close = css_nc.count('}')
+        if n_open == n_close:
+            result.ok(f'v3.10.57 CSS BALANCE: {n_open} llaves abiertas = {n_close} cerradas (balanceado)')
+        else:
+            result.fail('v3.10.57 CSS BALANCE',
+                        f'llaves desbalanceadas: {n_open} abre vs {n_close} cierra (diff={n_open-n_close})')
+    else:
+        result.fail('v3.10.57 CSS balance', 'no se encontró <style> block')
+
+    # v3.10.57 Anti-regression: los CSS de grids que se rompieron por la llave extra
+    # deben existir como reglas top-level (no anidadas dentro de otra regla).
+    for sel, label in [
+        ('\\.btn-icon-clear', 'btn-icon-clear (Address grid)'),
+        ('\\.output-box', 'output-box (Address result)'),
+        ('\\.etiqueta-categories', 'etiqueta-categories (Tipif grid)'),
+        ('\\.cobertura-btn', 'cobertura-btn (Address warning)'),
+    ]:
+        if re.search(sel + r'\s*\{', css_blocks[0] if css_blocks else ''):
+            result.ok(f'v3.10.57 ANTI-REG: {label} CSS restaurado (top-level rule)')
+        else:
+            result.fail(f'v3.10.57 anti-reg {label}', f'{label} CSS rule no encontrada')
+
+    # Anti-regression: grid-body max-height 1200px NO debe existir más (el bug cap)
     if 'max-height: 1200px' not in html:
         result.ok('v3.10.57 ANTI-REG: max-height 1200px (legacy bug cap) ELIMINADO')
     else:
