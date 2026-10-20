@@ -1232,6 +1232,17 @@
     color: var(--text);
     opacity: 1;
   }
+  /* v3.10.53: MOTIVO FLOW VISIBILITY.
+     CEO directive: "Mientras que no se seleccione un motivo todos los textos
+     deben eliminarse, solo se muestra cuando exista un motivo SELECCIONADO."
+     - Hasta que MOTIVO sea seleccionado → TODOS los script-cards + alerts
+       permanecen ocultos via .is-hidden-flow.
+     - Cuando MOTIVO es seleccionado → solo los cards/contents del flow
+       correspondiente (vía getMotivoFlowCards) pierden .is-hidden-flow.
+     !important gana sobre cualquier otra regla de display (incluyendo
+     .script-card[hidden] usado por OTRO legacy). */
+  .script-card.is-hidden-flow { display: none !important; }
+  .script-alert.is-hidden-flow { display: none !important; }
     /* v3.10.41: script-alert — amable 2026 (recordatorios de atención al agente)
      Cambios:
      - Color sage verde (#10b981) en vez de --accent rojo (#dc2626) → amigable
@@ -4147,7 +4158,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.52</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.53</span>
     </span>
   </footer>
 </div>
@@ -4474,8 +4485,9 @@ function setScriptVar(name, value) {
 // v3.10.30: reemplaza {placeholders} en TODAS las cards. Cuando el var está
 // lleno: span se vuelve verde (.filled) y muestra el valor. Cuando está
 // vacío: span vuelve a mostrar {Placeholder} con color accent.
-// v3.10.31: gestiona flujo OTRO (motivo === 'OTRO'): oculta cards 4 (Detección
-// Avería) + 6 (Consulta adicional), muestra card 9 (Transferir).
+// v3.10.53: visibility de cards/alerts según MOTIVO se delega a
+// applyMotivoFlow() (controlado por el evento 'change' del select). Este
+// handler SOLO actualiza los placeholders de los {Vars} (no toca visibility).
 function updateScriptPlaceholders() {
   var _tel = getScriptVar('telefono');
   var vars = {
@@ -4490,13 +4502,6 @@ function updateScriptPlaceholders() {
   };
   // Persistir
   saveScriptVars(vars);
-
-  // v3.10.31: toggle de cards según motivo (TÉCNICO MÓVIL vs OTRO).
-  // Cards siempre visibles: 1, 2, 5, 7, 8. Cards condicionales: 4, 6, 9.
-  var isOtro = (vars.motivo === 'OTRO');
-  toggleScriptCard('deteccion-averia', !isOtro);     // 4 oculta si OTRO
-  toggleScriptCard('consulta-adicional', !isOtro);   // 6 oculta si OTRO
-  toggleScriptCard('transferir', isOtro);             // 9 visible si OTRO
 
   document.querySelectorAll('.script-card-text').forEach(function (el) {
     el.querySelectorAll('.ph').forEach(function (span) {
@@ -4574,21 +4579,12 @@ function toggleScriptCardCollapse(id) {
 
 function applyScriptCollapsedStates() {
   var state = loadScriptCollapsed();
-  var stateKeys = Object.keys(state);
-
-  // v3.10.50: Si NO hay estado persistido (primera visita o tras CTRL+SHIFT+R
-  // que borra persistencia), colapsar TODAS las script-cards por default.
-  // El flow solo se "desglosa" cuando el usuario hace click en una MOTIVO
-  // card activa (vía desgloseMotivoFlow()).
-  if (stateKeys.length === 0) {
-    document.querySelectorAll('.script-card[data-script-id]').forEach(function (card) {
-      card.classList.add('is-collapsed');
-    });
-    return;
-  }
-
-  // Si hay estado persistido, aplicarlo
-  stateKeys.forEach(function (id) {
+  // v3.10.53: ya no auto-colapsamos todas por default — applyMotivoFlow()
+  // controla visibility según MOTIVO (cards hidden si motivo vacío, visibles
+  // si motivo seleccionado). El estado colapsado del usuario (manual) sí se
+  // preserva y se aplica a las cards visibles (cuando hay motivo).
+  Object.keys(state).forEach(function (id) {
+    if (!state[id]) return;
     var card = document.querySelector('.script-card[data-script-id="' + id + '"]');
     if (card) card.classList.add('is-collapsed');
   });
@@ -4606,30 +4602,56 @@ function initScriptCardClick() {
   });
 }
 
-// v3.10.51: MOTIVO consolidado en 1 solo <select> (reemplaza 4 cards).
-// Cambio en la selección → "desglose" del flow (mismo comportamiento v3.10.49):
-//   expandir GRID 0 + todas las script-cards + scroll + highlight sage.
-// Las 4 cards Apple-2026 y la función de sincronización fueron eliminados.
+// v3.10.53: MOTIVO consolidado en 1 dropdown + lógica de visibilidad.
+// Cambio en la selección → aplica visibilidad del flow (applyMotivoFlow)
+//   - Sin motivo: TODOS los script-cards + alerts ocultos.
+//   - Con motivo: solo los script-cards en getMotivoFlowCards(value)
+//     + todas las alerts del section quedan visibles.
+// Si hay motivo, también ejecuta el flow de scroll + highlight pulse.
 function initMotivoSelect() {
   var motivoSelect = $('script-motivo');
   if (!motivoSelect) return;
 
-  // Al cambiar la opción, ejecutar el mismo flow de desglose que antes hacía
-  // el click de la card activa. "" → ignorar (no se selecciona nada).
   motivoSelect.addEventListener('change', function () {
     var value = motivoSelect.value;
-    if (!value) return;
-    // v3.10.49: desglose del flow (expandir GRID + cards + scroll + highlight)
-    desgloseMotivoFlow(value);
+    // 1. Visibilidad del flow (siempre, incluso si value === "")
+    applyMotivoFlow(value);
+    // 2. Si hay motivo seleccionado: expandir GRID + scroll + highlight
+    if (value) desgloseMotivoFlow(value);
   });
 }
 
-// v3.10.49: "desglose" del flow al click en MOTIVO card activa.
-// Acciones:
-//   1. Expandir el GRID 0 (Estructura de Llamada) si está colapsado
-//   2. Expandir TODAS las script-cards colapsadas (mostrar todo el flow)
-//   3. Scroll suave a la grid-body del script
-//   4. Highlight visual temporal (flash sage) en las cards que aplican al motivo
+// v3.10.53: visibilidad de texts según MOTIVO.
+// Sin MOTIVO → todos los script-cards + alerts ocultos (.is-hidden-flow).
+// Con MOTIVO → solo los script-cards del flow correspondiente visibles.
+function applyMotivoFlow(value) {
+  var motivo = value || '';
+  var matchingIds = motivo ? getMotivoFlowCards(motivo) : [];
+  document.querySelectorAll('.script-card[data-script-id]').forEach(function (card) {
+    var id = card.dataset.scriptId;
+    if (!motivo) {
+      card.classList.add('is-hidden-flow');
+    } else if (matchingIds.indexOf(id) !== -1) {
+      card.classList.remove('is-hidden-flow');
+    } else {
+      card.classList.add('is-hidden-flow');
+    }
+  });
+  // Alerts: ocultas si no hay motivo, visibles si hay motivo
+  document.querySelectorAll('.script-alert').forEach(function (alertEl) {
+    if (!motivo) {
+      alertEl.classList.add('is-hidden-flow');
+    } else {
+      alertEl.classList.remove('is-hidden-flow');
+    }
+  });
+}
+
+// v3.10.49 / v3.10.53: "desglose" del flow al seleccionar MOTIVO.
+// v3.10.53: la visibility de las cards ahora la controla applyMotivoFlow().
+// Este handler hace solo el scroll + highlight pulse + expandir GRID si estaba
+// colapsado. La expansión masiva de TODAS las cards fue removida (era lógica
+// de v3.10.50 antes del flow visibility).
 function desgloseMotivoFlow(motivoValue) {
   // 1. Expandir GRID 0 si está colapsado
   var gridScript = document.getElementById('gridScript');
@@ -4637,23 +4659,7 @@ function desgloseMotivoFlow(motivoValue) {
     toggleGrid('gridScript', false);
   }
 
-  // 2. Expandir TODAS las script-cards colapsadas
-  document.querySelectorAll('.script-card.is-collapsed').forEach(function (card) {
-    var id = card.dataset.scriptId;
-    if (id) {
-      // Forzar expandir sin persistir (después se vuelven a colapsar
-      // individualmente si el usuario lo desea)
-      card.classList.remove('is-collapsed');
-      // Limpiar estado de persistencia para esta card
-      var state = loadScriptCollapsed();
-      if (state[id]) {
-        delete state[id];
-        saveScriptCollapsed(state);
-      }
-    }
-  });
-
-  // 3. Scroll suave a gridScript-body
+  // 2. Scroll suave a gridScript-body
   var body = document.getElementById('gridScript-body');
   if (body) {
     setTimeout(function () {
@@ -4661,7 +4667,7 @@ function desgloseMotivoFlow(motivoValue) {
     }, 100);
   }
 
-  // 4. Highlight visual temporal en cards del motivo
+  // 3. Highlight visual temporal en cards del motivo (sage pulse 1.8s)
   var cardsToHighlight = getMotivoFlowCards(motivoValue);
   setTimeout(function () {
     cardsToHighlight.forEach(function (id) {
@@ -4676,16 +4682,17 @@ function desgloseMotivoFlow(motivoValue) {
   }, 350);
 }
 
-// v3.10.49: retorna los script-id de las cards que aplican al motivo
+// v3.10.53: retorna los script-id de las cards que aplican al motivo.
+// v3.10.53 update: 'OTRO' renombrado a 'OTRAS' para alinear con el valor del
+// <select id="script-motivo"> v3.10.51.
 function getMotivoFlowCards(motivoValue) {
-  // Map de motivo → lista de script-id que se desglosan
   var flow = {
-    'MOVIL': ['bienvenida', 'atencion-segura', 'sondea', 'sondeo-averias',
-              'tiempo-espera', 'educa-app', 'despedida', 'encuesta'],
-    'OTRO': ['bienvenida', 'atencion-segura', 'transferir'],
+    'MOVIL':  ['bienvenida', 'atencion-segura', 'sondea', 'sondeo-averias',
+               'tiempo-espera', 'educa-app', 'despedida', 'encuesta'],
+    'OTRAS':  ['bienvenida', 'atencion-segura', 'transferir'],
     'AVERIA': ['bienvenida', 'sondea', 'sondeo-averias', 'tiempo-espera',
                'despedida', 'encuesta'],
-    'GTR': ['bienvenida', 'sondea', 'tiempo-espera', 'despedida', 'encuesta']
+    'GTR':    ['bienvenida', 'sondea', 'tiempo-espera', 'despedida', 'encuesta']
   };
   return flow[motivoValue] || flow['MOVIL'];
 }
@@ -6112,7 +6119,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.52] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.53] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -7696,6 +7703,9 @@ document.addEventListener('DOMContentLoaded', function () {
   initScriptCardClick();
   // v3.10.51: MOTIVO consolidado en 1 dropdown (reemplaza 4 cards)
   initMotivoSelect();
+  // v3.10.53: aplicar visibility inicial del flow según MOTIVO (puede estar
+  // restaurado del localStorage). Sin motivo → todas las texts ocultas.
+  applyMotivoFlow(getScriptVar('motivo'));
   // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
   renderTipifs();        // Inicializa grid 2 (vacío)
   initPopupMode();      // D-8: responsive desktop + botón X cerrar
