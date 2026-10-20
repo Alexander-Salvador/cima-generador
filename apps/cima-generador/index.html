@@ -4387,7 +4387,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.61</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.62</span>
     </span>
   </footer>
 </div>
@@ -5433,7 +5433,7 @@ function setupEtiquetas() {
       showEtiquetaPreview(null);
     }
   });
-  // v3.4.0: click-outside RE-AÑADIDO — cierra el dropdown cuando user click
+// v3.4.0: click-outside RE-AÑADIDO — cierra el dropdown cuando user click
   // fuera del search input. v3.3.8 había removido esto (siempre visible)
   // pero CEO revertió: dropdown ahora abre/cierra según interacción.
   document.addEventListener('mousedown', function (e) {
@@ -5444,6 +5444,30 @@ function setupEtiquetas() {
     if (e.target.closest('.action-buttons-row')) return;
     hideEtiquetaDropdown();
   });
+
+  // v3.10.62 BUG FIX: selección de etiquetas rota.
+  // Root cause: el dropdown de etiquetas se mueve al <body> (portal pattern
+  // via renderEtiquetasDropdownPosition) para escapar del isolation:isolate
+  // del .section. El item se selecciona via un listener `click` a nivel
+  // `document` (data-action="select-etiqueta"), pero el dropdown se
+  // repositiona/rerenderiza entre mousedown y click, y/o el click no
+  // dispara porque el elemento bajo el cursor cambió de lugar.
+  // FIX: mousedown directo en el dropdown (antes del click-outside global)
+  // que selecciona la etiqueta INMEDIATAMENTE y detiene propagación.
+  // Usamos mousedown (no click) porque es más robusto y ya_previene el
+  // blur premature del input (mismo patrón que los AC de Address).
+  var dropEl = $('ac-etiqueta');
+  if (dropEl && !dropEl._etiquetaWired) {
+    dropEl.addEventListener('mousedown', function (e) {
+      var item = e.target.closest('.ac-item.etiqueta-item');
+      if (!item) return;
+      e.preventDefault();       // evita blur del input → no cierra el dropdown
+      e.stopPropagation();      // evita que el mousedown global lo cierre
+      var id = item.getAttribute('data-id');
+      if (id) selectEtiqueta(id);
+    });
+    dropEl._etiquetaWired = true;
+  }
 }
 
 // FIX v3.0.3: cleanup completo del dropdown de etiquetas al cerrar
@@ -6407,7 +6431,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.61] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.62] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -7369,9 +7393,20 @@ function setupAutocomplete() {
     if (input.dataset.acInit === '1') return;
     input.dataset.acInit = '1';
     // Click en dropdown → selecciona
+    // v3.10.62 BUG FIX: el listener NO debe procesado items de OTROS dropdowns
+    // que comparten la clase .ac-item. El dropdown de etiquetas (#ac-etiqueta)
+    // usa data-id (no data-val) y su propia delegación via data-action. Antes,
+    // este handler corría para esos items con dataset.val === undefined →
+    // acSelect(undefined) → escribía "undefined" en el input Address +
+    // llamaba acClose() + updateOutput(), ensuciando el grid equivocado.
+    // Fix: si el item no tiene data-val (o el dropdown no es el activo),
+    // se deja pasar el evento para que el data-action delegation lo maneje.
     drop.addEventListener('mousedown', function (e) {
       var item = e.target.closest('.ac-item');
       if (!item) return;
+      // v3.10.62: solo items del dropdown Address (tienen data-val).
+      // Items de etiquetas (data-id + data-action) se saltan aquí.
+      if (!('val' in item.dataset)) return;
       e.preventDefault();
       acSelect(item.dataset.val);
     });
