@@ -3659,11 +3659,32 @@ def test(html_path):
     # ══════════════════════════════════════════════════════════════════════
     print('\n▸ v3.10.45 — BUG FIXES: layout MOTIVO full-width + telefono-last3 alias')
 
-    # BUG 1 LAYOUT: MOTIVO en row-1 (no comparte row con TELÉFONO)
-    # Estructura HTML esperada:
-    #   <div class="field-row row-1"><div class="field">script-telefono</div></div>
-    #   <div class="field-row row-1"><div class="field">script-motivo + cards</div></div>
+    # BUG 1 LAYOUT v3.10.45: MOTIVO en row-1 (NO compartía row con TELÉFONO)
+    # v3.10.52 UPDATE: TELÉFONO y MOTIVO consolidados en 1 sola row-2 (side-by-side)
+    #   Estructura HTML esperada v3.10.52:
+    #     <div class="field-row row-2">
+    #       <div class="field"><label script-telefono>...</div>
+    #       <div class="field"><label script-motivo>...</div>
+    #     </div>
     layout_ok = (
+        re.search(
+            r'<div\s+class="field-row\s+row-2">\s*<div\s+class="field">\s*<label\s+for="script-telefono"',
+            html, re.DOTALL
+        ) is not None and
+        re.search(
+            r'<div\s+class="field-row\s+row-2">[\s\S]{0,400}<label\s+for="script-motivo"',
+            html, re.DOTALL
+        ) is not None
+    )
+    if layout_ok:
+        result.ok('v3.10.52 LAYOUT: TELÉFONO + MOTIVO consolidados en 1 sola row-2 (side-by-side)')
+    else:
+        result.fail('v3.10.52 LAYOUT', 'TELÉFONO + MOTIVO deben compartir field-row row-2')
+
+    # LEGACY TEST — v3.10.45 esperaba que estuvieran en row-1 separados.
+    # v3.10.52 los consolidó en row-2. Anti-regression: NO deben existir
+    # dos field-row row-1 separados para tel/motivo.
+    legacy_separate = (
         re.search(
             r'<div\s+class="field-row\s+row-1">\s*<div\s+class="field">\s*<label\s+for="script-telefono"',
             html, re.DOTALL
@@ -3673,14 +3694,20 @@ def test(html_path):
             html, re.DOTALL
         ) is not None
     )
-    if layout_ok:
-        result.ok('v3.10.45 BUG 1: MOTIVO y TELÉFONO en row-1 separados (full-width cada uno)')
+    if not legacy_separate:
+        result.ok('v3.10.52 LEGACY: TELÉFONO + MOTIVO NO están en row-1 separados (consolidados)')
     else:
-        result.fail('v3.10.45 BUG 1 layout', 'MOTIVO y TELÉFONO deben estar en field-row row-1 separados')
+        result.fail('v3.10.52 LEGACY layout', 'TELÉFONO + MOTIVO ya no deben estar en row-1 separados')
 
-    # CSS: .row-1 = single column full width
+    # CSS: .row-2 = 2 columns split
+    if re.search(r'\.row-2\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr\s*;?\s*\}', html):
+        result.ok('v3.10.52 CSS: .row-2 { grid-template-columns: 1fr 1fr } (side-by-side)')
+    else:
+        result.fail('v3.10.52 CSS .row-2', '.row-2 con grid-template-columns 1fr 1fr esperado')
+
+    # CSS: .row-1 = single column full width (mantenido para otros usos)
     if re.search(r'\.row-1\s*\{[^}]*grid-template-columns:\s*1fr\s*;?\s*\}', html):
-        result.ok('v3.10.45 CSS: .row-1 { grid-template-columns: 1fr } (full-width)')
+        result.ok('v3.10.45 CSS: .row-1 { grid-template-columns: 1fr } (full-width, otros usos)')
     else:
         result.fail('v3.10.45 CSS .row-1', '.row-1 con grid-template-columns 1fr esperado')
 
