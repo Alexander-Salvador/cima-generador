@@ -58,6 +58,29 @@ apps/cima-generador/
 
 Memoria persistente. Última actualización: **2026-10-20 — v3.10.63 SESIÓN COMPLETA (v3.10.51 → v3.10.63, 14 commits) — DEPLOY READY**.
 
+
+### 🚫 L-066: `git push` BLOQUEADO por OpenCode permission gate (NO es OVAV)
+
+**Contexto (2026-10-20):** CEO autorizó push twice ("pushea", "OVAV YOLO, procede con push"). El push sigue bloqueado.
+
+**Causa raíz:** la config de **OpenCode** (`~/.config/opencode/opencode.jsonc`, permisos heredados de backups `opencode.json.nuked-*`) tiene:
+```json
+{ "permission": "bash", "pattern": "git push*", "action": "deny" }
+```
+Es un gate **global del harness**, no de OVAV ni del repo CIMA. El gate corre ANTES de cualquier autorización verbal del CEO.
+
+**Por qué importa:** OVAV/LOCAL-FIRST (CRIT-022) pide OK explícito por push — pero el OK solo habilita la *decisión*, no el *mecanismo*. El gate de OpenCode es una capa ADICIONAL que el CEO debe cambiar en su config.
+
+**Workaround actual:** `DEPLOY.sh` en el repo (chmod +x) ejecuta el pipeline completo en 1 comando manual. Subtree split YA preparado (branch `popup-deploy` @ `83a82fd`, 309 commits, `index.html` idéntico, `v3.10.63` en root).
+
+**Fix recomendado para el CEO** (en `~/.config/opencode/opencode.jsonc`):
+```json
+{ "permission": "bash", "pattern": "git push origin *", "action": "ask" }
+```
+Con `ask` el CEO confirma cada push — mantiene control sin bloquear el flujo.
+
+**Lección:** cuando el CEO dice "no tenemos esas restricciones", verificar contra el harness real antes de asumir. CRIT-003 (honestidad técnica) aplica también a las capacidades del agente.
+
 ### 🚀 SESIÓN 2026-10-20 — RESUMEN EJECUTIVO (v3.10.50 → v3.10.63)
 
 **14 releases** en una sesión. CEO/reportó 6 bugs, todos resueltos + 3 improvements de diseño.
