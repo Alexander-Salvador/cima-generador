@@ -1,5 +1,28 @@
 # Changelog — cima-generador
 
+## [3.10.52] - 2026-10-20 — 🔗 TELÉFONO DE CONSULTA + MOTIVO en una sola row (side-by-side)
+
+**CEO directive:**
+> "Sigamos corrigiendo. Telefono de consulta y Motivo en una sola row."
+
+**Cambio:**
+
+1. **HTML**: TELÉFONO DE CONSULTA y MOTIVO consolidados en una sola `<div class="field-row row-2">` (side-by-side, 50/50). Antes estaban en dos `row-1` separadas.
+2. **Layout del GRID** ahora es:
+   - **Row 1 (secundarios)**: `[Agente]` `[Cliente]` (row-2)
+   - **Row 2 (primarios)**: `[TELÉFONO DE CONSULTA]` `[▼ Motivo]` (row-2)
+3. **CSS**: nada que cambiar — `.row-2 { grid-template-columns: 1fr 1fr; }` ya existía.
+4. **Tests**: actualizado el expectation v3.10.45 BUG 1 (row-1 separados → row-2 consolidado). Anti-regression test verifica que NO estén separados.
+
+**Compatibilidad:**
+
+- `data-script-var` keys (agente, cliente, telefono, motivo) sin cambios.
+- `localStorage cima_script_vars_v1` keys/structure sin cambios.
+- `updateScriptPlaceholders()` y listeners `input/change` funcionan idéntico.
+- `desgloseMotivoFlow(value)` sigue disparándose en `change` del select MOTIVO.
+
+**Verificación local:** 612/612 tests PASS (2 nuevos v3.10.52).
+
 ## [3.10.51] - 2026-10-20 — 📋 MOTIVO consolidado en 1 dropdown con 4 opciones
 
 **CEO directive:**
