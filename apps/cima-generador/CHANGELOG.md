@@ -1,5 +1,49 @@
 # Changelog — cima-generador
 
+## [3.10.57] - 2026-10-20 — 🐛 FIX: grid-body max-height 1200px clipeaba contenido (todas las grids rotas)
+
+**CEO directive:**
+> "Verifica los estilos completos del responsive popup ya que con los cambios has roto todas las grid, no quiero que retrocedas a cambios anteriores quiero que inspecciones completo end to end y revises donde hubo el quiebre de estilos y arreglalo todo completo."
+
+**Root cause (quiebre de estilos identificado):**
+
+`.grid-body { max-height: 1200px; overflow: hidden }` — el cap de 1200px fue calibrado cuando GRID 0 solo tenía 8 cards lineales (~600px de contenido real). Con v3.10.56 los 4 section pills (`.section-pill-content { max-height: 2000px }` cada uno) multiplicaron el contenido total del GRID 0:
+
+```
+ANTES (v3.10.50):  script-vars (60px) + 4 sections × cards (~600px total) ≈ 660px  ✓ < 1200px
+DESPUÉS (v3.10.56): script-vars (60px) + 4 pills expandidos × 2000px + 8 cards ≈ 8000px ✗ > 1200px
+```
+
+**Consecuencia:** `overflow: hidden` + `max-height: 1200px` → clipping severo. Todos los GRIDs (script, address, tipif) veían el mismo `.grid-body` style → **todos se rompieron visualmente**.
+
+**Fix:**
+
+```css
+/* v3.10.57: max-height 1200px→8000px */
+.grid-body {
+  overflow: hidden;      /* preservado — necesario para animación de colapso */
+  max-height: 8000px;    /* era 1200px — cubría solo contenido lineal viejo */
+}
+```
+
+8000px cubre el peor caso: 4 pills expandidos (2000px cada uno) + 8 cards MOTIVO MOVIL + transferir card + script-vars.
+
+**Lo que NO se rompió (verificado end-to-end):**
+
+| Componente | Estado | Verificación |
+|---|---|---|
+| `.grid-block { width: 100%; box-sizing: border-box }` | ✅ intacto | test v3.10.57 |
+| `.grid-block.is-collapsed .grid-body { max-height: 0 }` | ✅ intacto | test v3.10.57 |
+| `.section-pill-content { max-height: 0 }` | ✅ intacto | test v3.10.57 |
+| 3 grids hijos de `div.app` (v3.10.47) | ✅ intacto | BeautifulSoup test |
+| Media queries responsive (319/480/481/721/1024/1280/1920px) | ✅ intacto | sin cambios |
+| `.field-row` grid layout | ✅ intacto | sin cambios |
+| `.popup-frame` max-width por breakpoint | ✅ intacto | sin cambios |
+
+**Verificación local:** 652/652 tests PASS (7 nuevos v3.10.57 anti-regression).
+
+**Sin retrocesos** — no se revirtió ningún cambio de v3.10.51 a v3.10.56. Solo se corrigió el cap que era incompatible con la nueva arquitectura de disclosure pills.
+
 ## [3.10.56] - 2026-10-20 — 📱 DISCLOSURE CONTROL PILLS (Apple HIG 2026 progressive disclosure)
 
 **CEO directive:**

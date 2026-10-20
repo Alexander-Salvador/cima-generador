@@ -3900,6 +3900,86 @@ def test(html_path):
     else:
         result.fail('v3.10.56 anti-reg apply', 'applyMotivoFlow debería seguir presente')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.57 — BUG FIX: grid-body max-height clipeaba contenido
+    # CEO: "con los cambios has roto todas las grid... inspecciones completo
+    #       end to end y revises donde hubo el quiebre de estilos"
+    # Root cause: .grid-body { max-height: 1200px; overflow: hidden }
+    #   El cap de 1200px fue calibrado cuando GRID 0 solo tenía 8 cards
+    #   lineales. Con v3.10.56 los 4 section pills (max-height: 2000px cada uno)
+    #   multiplican el contenido total → clipping severo + scroll interno roto.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.57 — BUG FIX: grid-body max-height 1200→8000px')
+
+    # CSS: .grid-body max-height 8000px (no 1200px)
+    grid_body_css = re.search(r'\.grid-body\s*\{([^}]+)\}', html, re.DOTALL)
+    if grid_body_css:
+        gb_body = re.sub(r'/\*[\s\S]*?\*/', '', grid_body_css.group(1))
+        if 'max-height: 8000px' in gb_body:
+            result.ok('v3.10.57 CSS: .grid-body max-height 8000px (cubre 4 pills expandidas)')
+        else:
+            result.fail('v3.10.57 grid-body max-height', 'max-height 8000px esperado (no 1200px)')
+        # Anti-regression: overflow:hidden debe seguir presente (slide-down collapse)
+        if 'overflow: hidden' in gb_body:
+            result.ok('v3.10.57 CSS: .grid-body overflow:hidden preservado (colapso funcional)')
+        else:
+            result.fail('v3.10.57 overflow', 'overflow:hidden debe permanecer para animación de colapso')
+    else:
+        result.fail('v3.10.57 grid-body CSS', '.grid-body CSS no encontrado')
+
+    # Anti-regression: max-height 1200px NO debe existir más (el bug root)
+    if 'max-height: 1200px' not in html:
+        result.ok('v3.10.57 ANTI-REG: max-height 1200px (legacy bug cap) ELIMINADO')
+    else:
+        result.fail('v3.10.57 anti-reg 1200px', 'max-height 1200px (bug cap) aún presente')
+
+    # Anti-regression: .grid-block.is-collapsed .grid-body max-height:0 intacto
+    collapsed_body = re.search(
+        r'\.grid-block\.is-collapsed\s+\.grid-body\s*\{([^}]+)\}',
+        html, re.DOTALL
+    )
+    if collapsed_body:
+        cb_body = re.sub(r'/\*[\s\S]*?\*/', '', collapsed_body.group(1))
+        if 'max-height: 0' in cb_body and 'pointer-events: none' in cb_body:
+            result.ok('v3.10.57 ANTI-REG: .is-collapsed .grid-body max-height:0 + pointer-events:none intactos')
+        else:
+            result.fail('v3.10.57 collapse intact', 'max-height:0 + pointer-events:none esperados')
+    else:
+        result.fail('v3.10.57 collapse CSS', '.grid-block.is-collapsed .grid-body CSS missing')
+
+    # Anti-regression: .grid-block { width: 100%; box-sizing: border-box } intacto (v3.10.24 fix)
+    grid_block_css = re.search(r'\.grid-block\s*\{([^}]+)\}', html, re.DOTALL)
+    if grid_block_css:
+        gblk_body = re.sub(r'/\*[\s\S]*?\*/', '', grid_block_css.group(1))
+        if 'width: 100%' in gblk_body and 'box-sizing: border-box' in gblk_body:
+            result.ok('v3.10.57 ANTI-REG: .grid-block width:100% + border-box intactos (3 grids mismo ancho)')
+        else:
+            result.fail('v3.10.57 grid-block width', 'width:100% + border-box esperados')
+    else:
+        result.fail('v3.10.57 grid-block CSS', '.grid-block CSS no encontrado')
+
+    # Anti-regression: .section-pill-content { max-height: 0 } sigue intacto (disclosure pill sigue colapsable)
+    pill_content_css = re.search(r'\.section-pill-content\s*\{([^}]+)\}', html, re.DOTALL)
+    if pill_content_css:
+        pc_body = re.sub(r'/\*[\s\S]*?\*/', '', pill_content_css.group(1))
+        if 'max-height: 0' in pc_body:
+            result.ok('v3.10.57 ANTI-REG: .section-pill-content max-height:0 intacto (pill sigue colapsable)')
+        else:
+            result.fail('v3.10.57 pill-content', 'max-height:0 esperado en .section-pill-content')
+
+    # Anti-regression: los 3 grids siguen siendo hijos de div.app (v3.10.47 fix preservado)
+    from bs4 import BeautifulSoup
+    soup_v57 = BeautifulSoup(html, 'html.parser')
+    app_v57 = soup_v57.find('div', class_='app')
+    if app_v57:
+        grids_v57 = app_v57.find_all('div', class_='grid-block')
+        if len(grids_v57) == 3:
+            result.ok('v3.10.57 ANTI-REG: 3 grids hijos de div.app (v3.10.47 jerarquía preservada)')
+        else:
+            result.fail('v3.10.57 grids app', f'3 grids esperados en div.app, {len(grids_v57)} encontrados')
+    else:
+        result.fail('v3.10.57 div.app', 'div.app no encontrado')
+
     # Anti-regression: GRID 0 sigue teniendo grid-body que contiene 4 sections
     if grid_block_start != -1 and grid_block_end != -1:
         region = html[grid_block_start:grid_block_end]
