@@ -4387,7 +4387,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.62</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.63</span>
     </span>
   </footer>
 </div>
@@ -5277,7 +5277,10 @@ function renderEtiquetasDropdownPosition() {
 // en el searchinput". La selección (title/solicitud) persiste en el input
 // y solo se generan los 2 skill rows abajo (TX OPER TO OPER + TX DIRECTA).
 function selectEtiqueta(id) {
-  var e = ETIQUETAS_DATA.find(function (x) { return x.id === id; });
+  // v3.10.63: id puede llegar como string (del data-id attribute) o como
+  // number (de ETIQUETAS_DATA). Normalizar a string para comparación exacta.
+  var key = String(id);
+  var e = ETIQUETAS_DATA.find(function (x) { return String(x.id) === key; });
   if (!e) return;
   TX_STATE.selectedId = e.id;
   // v3.3.6: persistir el título de la etiqueta en el search input
@@ -5445,28 +5448,54 @@ function setupEtiquetas() {
     hideEtiquetaDropdown();
   });
 
-  // v3.10.62 BUG FIX: selección de etiquetas rota.
-  // Root cause: el dropdown de etiquetas se mueve al <body> (portal pattern
-  // via renderEtiquetasDropdownPosition) para escapar del isolation:isolate
-  // del .section. El item se selecciona via un listener `click` a nivel
-  // `document` (data-action="select-etiqueta"), pero el dropdown se
-  // repositiona/rerenderiza entre mousedown y click, y/o el click no
-  // dispara porque el elemento bajo el cursor cambió de lugar.
-  // FIX: mousedown directo en el dropdown (antes del click-outside global)
-  // que selecciona la etiqueta INMEDIATAMENTE y detiene propagación.
-  // Usamos mousedown (no click) porque es más robusto y ya_previene el
-  // blur premature del input (mismo patrón que los AC de Address).
-  var dropEl = $('ac-etiqueta');
-  if (dropEl && !dropEl._etiquetaWired) {
-    dropEl.addEventListener('mousedown', function (e) {
-      var item = e.target.closest('.ac-item.etiqueta-item');
+  // ═══ v3.10.63 FIX DEFINITIVO: selección de etiquetas ═══
+  // BUG: el click en un item de #ac-etiqueta NO seleccionaba nada.
+  //
+  // CAUSAS ACUMULADAS (3):
+  //
+  // (1) ORDEN DE EVENTOS: el listener `mousedown` de click-outside (arriba)
+  //     corre en bubble sobre document. El item está DENTRO de #ac-etiqueta,
+  //     así que el guard `closest('#ac-etiqueta')` lo salta — OK.
+  //     PERO el listener `mousedown` de cada .ac-dropdown de ADDRESS (línea
+  //     ~7372, registrado por setupAutocomplete) también corre sobre el item
+  //     (porque #ac-etiqueta tiene class="ac-dropdown"). Antes consumía el
+  //     evento con acSelect(undefined) + preventDefault() → el click NUNCA
+  //     llegaba al delegation de data-action.
+  //
+  // (2) PORTAL PATTERN: renderEtiquetasDropdownPosition() mueve el dropdown
+  //     al <body>. Entre mousedown y click, el browser puede re-resolver el
+  //     hit-test y el click aterriza en otro elemento.
+  //
+  // (3) showEtiquetaPreview() hace scrollIntoView() — desplaza el documento
+  //     entre mousedown y click → el click va a otra posición.
+  //
+  // SOLUCIÓN: listener en CAPTURE phase a nivel document, registrado UNA vez.
+  // En capture, se ejecuta ANTES de cualquier handler bubble (incluido el
+  // click-outside y el acSelect de Address). Selecciona y llama
+  // stopPropagation() + stopImmediatePropagation() para que NAD MÁS maneje
+  // el evento. Es la misma estrategia que usé en v3.10.50 para el handler
+  // global de CTRL+SHIFT+R (probada y funcionando).
+  if (!window._cimaEtiquetaSelectWired) {
+    window._cimaEtiquetaSelectWired = true;
+    document.addEventListener('mousedown', function (e) {
+      var drop = $('ac-etiqueta');
+      if (!drop || drop.hidden) return;
+      // Solo items del dropdown de etiquetas (tienen data-id + data-action).
+      var item = e.target.closest('.etiqueta-item[data-id]');
       if (!item) return;
-      e.preventDefault();       // evita blur del input → no cierra el dropdown
-      e.stopPropagation();      // evita que el mousedown global lo cierre
+      // ¿El click es realmente sobre el dropdown visible? (evita clicks
+      // en elementos con la misma clase que estén fuera del dropdown).
+      if (!drop.contains(item)) return;
+
       var id = item.getAttribute('data-id');
-      if (id) selectEtiqueta(id);
-    });
-    dropEl._etiquetaWired = true;
+      if (!id) return;
+
+      // Seleccionar INMEDIATAMENTE + blindar el evento.
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      selectEtiqueta(id);
+    }, { capture: true });
   }
 }
 
@@ -6431,7 +6460,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.62] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.63] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
