@@ -62,9 +62,11 @@ Memoria persistente. Última actualización: **2026-10-19 — v3.10.50 FIN SESI�
 
 ```
 ✅ Working tree clean (0 archivos modificados, 0 untracked, 0 stashes)
-✅ Branch: develop @ f2d7b45 (L-060 push policy + MEMORY refactor)
-✅ 1 commit local SIN pushear (esperando OK CEO):
+✅ Branch: develop @ 8612620 (cierre de sesión + LOCAL FIRST)
+⛔ 2 commits LOCALES SIN PUSHEAR — CEO 2026-10-19: "Todo en local por el momento"
+   8612620 docs(cima): v3.10.50 CIERRE DE SESIÓN — LOCAL FIRST
    f2d7b45 docs(cima): L-060 procedimiento push requiere OK CEO explícito
+   → NO pushear sin OK explícito del CEO. Documentación solamente, código ya LIVE.
 ✅ VERSION file: 3.10.50 (coherente con footer + console.log)
 ✅ Tests: 607 passed / 0 failed (test_popup.py) + test_aggressive PASSED
 ✅ Server local activo: PID 6206, puerto 8765
@@ -116,22 +118,23 @@ git add apps/cima-generador/ && git commit -m "..."
 | `develop` | ✅ activo | LATEST (v3.10.48) |
 | `main` | ⚠️ obsoleto | sheets bridge era — contiene v3.10.4, no integrar |
 
-### Estado del Remoto (sincronizado al cierre de sesión)
+### Estado del Remoto — ⛔ CONGELADO
 
 ```
-✅ origin/develop @ 75defa4 (v3.10.50) — synced
-✅ origin/main    @ 4fa12e4 (v3.10.50) — synced (popup LIVE)
-✅ GitHub Pages build: built (43s, commit 4fa12e4)
-✅ last-modified: 2026-10-19 22:45:51 UTC
-⚠️ 1 commit local SIN pushear: f2d7b45 (L-060 policy) — esperando OK CEO
+⛔ CEO 2026-10-19: "Todo en local por el momento"
+⛔ NO HAY PUSH PENDIENTE AUTORIZADO
+
+origin/develop @ 75defa4 (v3.10.50) — synced, CONGELADO
+origin/main    @ 4fa12e4 (v3.10.50) — synced, CONGELADO (popup LIVE)
+GitHub Pages build: built (43s, commit 4fa12e4)
+Last-modified: 2026-10-19 22:45:51 UTC
+
+Estado: el código v3.10.50 YA está en remoto y LIVE.
+Los 2 commits locales pendientes son SOLO documentación (MEMORY.md).
+Se quedan en local hasta que CEO autorice push explícitamente.
 ```
 
-✅ **3 deploys exitosos en sesión 2026-10-19:**
-1. v3.10.48 (post speech AI 2026)
-2. v3.10.49 (post desglose MOTIVO)
-3. v3.10.50 (post 3 BUG FIXES: CTRL+SHIFT+R + default collapsed + no auto-desglose)
-
-**Deploy pipeline (validado, para usar cuando CEO dé OK):**
+**Deploy pipeline (NO ejecutar sin OK explícito del CEO):**
 1. `git push origin develop:develop` → commits a origin/develop
 2. `git subtree split --prefix=apps/cima-generador/ develop -b popup-deploy` → ~291 commits
 3. `git push -f origin popup-deploy:main` → force-push a origin/main
@@ -142,7 +145,7 @@ git add apps/cima-generador/ && git commit -m "..."
 - **Versión actual (develop + popup LIVE):** v3.10.50
 - **Tests passing:** 607 (test_popup.py) + test_aggressive PASSED
 - **Popup LIVE (origin/main):** v3.10.50 — verificado en vivo
-- **Branch develop:** v3.10.50 (47 commits desde v3.9.15)
+- **Branch develop:** v3.10.50 (47 commits desde v3.9.15, 2 sin pushear)
 - **Cobertura CCPPs del source:** 234/239 exactos (98%) + 5 fuzzy (100%)
 
 **Nota técnica — bug push refspec:**
