@@ -1,5 +1,36 @@
 # Changelog — cima-generador
 
+## [3.10.51] - 2026-10-20 — 📋 MOTIVO consolidado en 1 dropdown con 4 opciones
+
+**CEO directive:**
+> "Listo primero el GRID de estructura de llamada. EN SU INPUT MOTIVO ← las 4 opciones vamos a meterlas en 1 dropdown cada 1 ocupa 1 row. TELÉFONO DE CONSULTA + MOTIVO."
+
+**Cambios:**
+
+1. **HTML**: 4 cards visuales (`motivo-grid` con `.motivo-card--active` + 3 `--disabled`) reemplazadas por 1 `<select id="script-motivo">` VISIBLE con 4 opciones:
+   - `— Seleccionar motivo —` (default vacío)
+   - `Técnico Móvil` (umbrella: Internet/Llamadas/SMS/Tethering)
+   - `Otras Consultas` (transferir — antes "Próximamente")
+   - `Avería Masiva` (próximamente)
+   - `GTR Crítico` (próximamente)
+2. **Layout del GRID**: TELÉFONO DE CONSULTA (row-1) + MOTIVO (row-1) como inputs primarios. Agente + Cliente quedan como fila secundaria (row-2) para alimentar placeholders `{Agente}` y `{Cliente}` de los speeches.
+3. **Label TELÉFONO**: renombrado "EN CONSULTA" → "DE CONSULTA" (CEO directive).
+4. **CSS**: removidas las 100+ líneas de `.motivo-grid`, `.motivo-card`, `.motivo-card-icon`, `.motivo-card-body`, `.motivo-card-label`, `.motivo-card-sub`, `.motivo-card--active`, `.motivo-card--active[aria-checked=true]`, `.motivo-card-check`, `.motivo-card--disabled`, `.motivo-card-badge`. `@keyframes motivoFlashPulse` + `.script-card.motivo-flash` MANTENIDOS — el highlight sigue activo en el desglose.
+5. **JS**: `initMotivoCards()` → `initMotivoSelect()` (un solo listener `change` que dispara `desgloseMotivoFlow(value)` cuando se elige un motivo no vacío). `syncMotivoCardsFromSelect()` ELIMINADO (ya no hay cards que sincronizar).
+6. **JS clearScriptTemplate()**: referencia huérfana a la función de sync eliminada.
+
+**Compatibilidad:**
+
+- `desgloseMotivoFlow(value)` y `getMotivoFlowCards(value)` se mantienen con el mismo comportamiento (v3.10.49). Map MOTIVO → script-ids: `MOVIL` (8 cards) / `OTRAS` (3 transferir) / `AVERIA` (6) / `GTR` (5).
+- Los speeches (`{Agente}`, `{Cliente}`, `{Telefono en consulta}` con alias `telefono-last3`) siguen funcionando — las 3 fuentes se preservan en `cima_script_vars_v1`.
+- `localStorage` previo (versión key/structure) no cambia.
+
+**Verificación local:** 610/610 tests PASS (3 nuevos tests v3.10.51 agregados al suite `test_popup.py`).
+
+**Risks:**
+
+- Las cards de "Próximamente" (OTRAS/AVERIA/GTR) ya no aparecen como cards disabled — ahora son opciones del dropdown. El usuario puede seleccionarlas pero el flow actual solo tiene speeches completos para MOVIL (los otros 3 comparten bienvenida + despedida). Próxima iteración: completar los 3 flows faltantes.
+
 ## [3.10.50] - 2026-10-19 — 🐛 3 BUG FIXES (CTRL+SHIFT+R + default collapsed + no auto-desglose)
 
 **CEO directives (3 bugs):**

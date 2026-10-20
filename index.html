@@ -1101,122 +1101,23 @@
     border-color: color-mix(in srgb, var(--text) 65%, transparent);
     background-color: var(--glass-3-bg);
   }
-  /* v3.10.44: MOTIVO grid — 4 cards visuales premium Apple 2026.
-     1 activa (Técnico Móvil) + 3 desactivadas (Próximamente).
-     Glass effect, pill-shape sutil, spring transition. */
-  .motivo-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 6px;
-  }
-  .motivo-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: var(--glass-1-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-    transition: all 0.22s var(--motion-ease);
-    position: relative;
-    min-height: 44px;
-  }
-  .motivo-card-icon {
-    font-size: 16px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
-  .motivo-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-  .motivo-card-label {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
-    letter-spacing: 0.005em;
-  }
-  .motivo-card-sub {
-    font-size: 9px;
-    color: var(--text-faint);
-    line-height: 1.3;
-    letter-spacing: 0.01em;
-  }
-  /* Estado ACTIVO — glass premium con accent sage + check visible */
-  .motivo-card--active:hover {
-    border-color: color-mix(in srgb, #10b981 50%, transparent);
-    background: linear-gradient(135deg,
-      color-mix(in srgb, #10b981 8%, var(--glass-2-bg)) 0%,
-      color-mix(in srgb, #059669 4%, var(--glass-1-bg)) 100%);
-    transform: translateY(-1px);
-  }
-  .motivo-card--active[aria-checked="true"] {
-    border-color: color-mix(in srgb, #10b981 70%, transparent);
-    background: linear-gradient(135deg,
-      color-mix(in srgb, #10b981 16%, var(--glass-2-bg)) 0%,
-      color-mix(in srgb, #059669 8%, var(--glass-1-bg)) 100%);
-    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.18),
-                inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  }
-  .motivo-card-check {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    opacity: 0;
-    transform: scale(0.6);
-    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .motivo-card--active[aria-checked="true"] .motivo-card-check {
-    opacity: 1;
-    transform: scale(1);
-  }
-  /* Estado DESACTIVADO — opacidad 0.5, no-allowed, badge "Próximamente" */
-  .motivo-card--disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    background: color-mix(in srgb, var(--text) 3%, var(--glass-1-bg));
-  }
-  .motivo-card--disabled:hover {
-    opacity: 0.7;
-  }
+  /* v3.10.51: MOTIVO consolidado en 1 dropdown (reemplaza 4 cards previas).
+     Las opciones <option> ocupan 1 row cada una (comportamiento nativo <select>).
+     Estilos previos .motivo-card / .motivo-grid / .motivo-card-badge
+     ELIMINADOS — el flujo ahora vive dentro del <select id="script-motivo">
+     con styling heredado del .script-vars .field select (líneas 1079-1103). */
   /* v3.10.49: motivo-flash — highlight visual temporal en las script-cards
-     que aplican al motivo seleccionado. Pulso sage + ring inset durante 1.8s. */
+     que aplican al motivo seleccionado. Pulso sage + ring inset durante 1.8s.
+     v3.10.51: se mantiene — el change del select MOTIVO dispara el desglose. */
   @keyframes motivoFlashPulse {
     0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55), inset 0 0 0 0 rgba(16, 185, 129, 0.45); }
     40%  { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.20), inset 0 0 0 2px rgba(16, 185, 129, 0.30); }
     100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), inset 0 0 0 0 rgba(16, 185, 129, 0); }
   }
   .script-card.motivo-flash {
-    animation: motivoFlashPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: motivoFlashPulse 1.8s cubic-bezier(0.22, 1, 0.0, 1);
     border-color: color-mix(in srgb, #10b981 60%, transparent);
   }
-  .motivo-card-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 7.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 1px 5px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--text-faint) 20%, transparent);
     color: var(--text-faint);
     line-height: 1.2;
   }
@@ -3797,12 +3698,13 @@ font-size: 10px;
         <div class="grid-body" id="gridScript-body">
 
 <!-- TOP: Variables (filled once, all scripts auto-update live)
-               v3.10.31: Teléfono renombrado a "TELÉFONO EN CONSULTA" + Motivo
-               convertido a SELECT con 5 opciones (INTERNET/LLAMADAS/SMS/
-               THETERING/OTRO). OTRO activa flujo de transferencia (oculta
-               cards 4+6 + muestra "Transferir" card).
-               v3.10.45: MOTIVO ahora full-width (row-1, no comparte row con
-               TELÉFONO). Las 4 cards viven dentro del field MOTIVO. -->
+               v3.10.31: Motivo convertido a SELECT (antes era input).
+               v3.10.45: MOTIVO ahora full-width (row-1).
+               v3.10.51: MOTIVO consolidado en 1 SOLO <select> con 4 opciones
+               (Técnico Móvil / Otras Consultas / Avería Masiva / GTR Crítico).
+               Layout visible del GRID: TELÉFONO DE CONSULTA + MOTIVO.
+               Agente + Cliente permanecen como fila secundaria para alimentar
+               placeholders {Agente}/{Cliente} de los speeches. -->
            <div class="script-vars" role="group" aria-label="Variables de la llamada">
              <div class="field-row row-2">
                <div class="field">
@@ -3814,61 +3716,20 @@ font-size: 10px;
                  <input id="script-cliente" type="text" placeholder="(nombre del cliente)" autocomplete="off" maxlength="80" data-script-var="cliente">
                </div>
              </div>
-             <div class="field-row row-1">
-               <div class="field">
-                 <label for="script-telefono">TELÉFONO EN CONSULTA</label>
-                 <input id="script-telefono" type="text" placeholder="(número en consulta)" autocomplete="off" maxlength="40" data-script-var="telefono">
-               </div>
-             </div>
+             <div class="field-row row-1"><div class="field"><label for="script-telefono">TELÉFONO DE CONSULTA</label><input id="script-telefono" type="text" placeholder="(número en consulta)" autocomplete="off" maxlength="40" data-script-var="telefono"></div></div>
              <div class="field-row row-1">
                <div class="field">
                  <label for="script-motivo">Motivo</label>
-<select id="script-motivo" data-script-var="motivo" autocomplete="off" hidden>
-                  <option value="">— Seleccionar —</option>
-                  <option value="MOVIL">Técnico Móvil</option>
-                  <option value="INTERNET">Internet</option>
-                  <option value="LLAMADAS">Llamadas</option>
-                  <option value="SMS">SMS</option>
-                  <option value="THETERING">Tethering</option>
-                  <option value="OTRO">Otras Consultas (transferir)</option>
-                </select>
-                <!-- v3.10.44: MOTIVO rediseñado como 4 cards visuales (Apple 2026).
-                     1 activa (Técnico Móvil) + 3 desactivadas (próximamente).
-                     Click en card activa → selecciona. Click en desactivada → toast. -->
-                <div class="motivo-grid" role="radiogroup" aria-label="Motivo de la llamada">
-                  <button type="button" class="motivo-card motivo-card--active" data-motivo-value="MOVIL" role="radio" aria-checked="false">
-                    <span class="motivo-card-icon" aria-hidden="true">📱</span>
-                    <span class="motivo-card-body">
-                      <span class="motivo-card-label">Técnico Móvil</span>
-                      <span class="motivo-card-sub">Internet · Llamadas · SMS · Tethering</span>
-                    </span>
-                    <span class="motivo-card-check" aria-hidden="true">✓</span>
-                  </button>
-                  <button type="button" class="motivo-card motivo-card--disabled" data-motivo-preview="OTRAS" disabled aria-disabled="true">
-                    <span class="motivo-card-icon" aria-hidden="true">🔀</span>
-                    <span class="motivo-card-body">
-                      <span class="motivo-card-label">Otras Consultas</span>
-                      <span class="motivo-card-sub">Tema externo · Transferido</span>
-                    </span>
-                    <span class="motivo-card-badge">Próximamente</span>
-                  </button>
-                  <button type="button" class="motivo-card motivo-card--disabled" data-motivo-preview="AVERIA" disabled aria-disabled="true">
-                    <span class="motivo-card-icon" aria-hidden="true">📡</span>
-                    <span class="motivo-card-body">
-                      <span class="motivo-card-label">Avería Masiva</span>
-                      <span class="motivo-card-sub">Cambio de speech operativo</span>
-                    </span>
-                    <span class="motivo-card-badge">Próximamente</span>
-                  </button>
-                  <button type="button" class="motivo-card motivo-card--disabled" data-motivo-preview="GTR" disabled aria-disabled="true">
-                    <span class="motivo-card-icon" aria-hidden="true">⚡</span>
-                    <span class="motivo-card-body">
-                      <span class="motivo-card-label">GTR Crítico</span>
-                      <span class="motivo-card-sub">Cambio de speech crítico</span>
-                    </span>
-                    <span class="motivo-card-badge">Próximamente</span>
-                  </button>
-                </div>
+                 <!-- v3.10.51: MOTIVO = 1 dropdown con 4 opciones. Cada <option>
+                      ocupa 1 row cuando el dropdown está abierto. Click en
+                      opción ejecuta flow de desglose (v3.10.49). -->
+                 <select id="script-motivo" data-script-var="motivo" autocomplete="off">
+                   <option value="">— Seleccionar motivo —</option>
+                   <option value="MOVIL">Técnico Móvil</option>
+                   <option value="OTRAS">Otras Consultas</option>
+                   <option value="AVERIA">Avería Masiva</option>
+                   <option value="GTR">GTR Crítico</option>
+                 </select>
               </div>
             </div>
             </div>
@@ -4280,7 +4141,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.50</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.51</span>
     </span>
   </footer>
 </div>
@@ -4739,56 +4600,22 @@ function initScriptCardClick() {
   });
 }
 
-// v3.10.44: MOTIVO CARDS — click en card activa selecciona + sync con select
-// oculto. Click en card desactivada muestra toast "Próximamente".
-// v3.10.49: click activa → "desglose" del flow: expandir GRID + cards,
-//   scroll a gridScript-body, highlight visual de las script-cards que
-//   aplican al motivo seleccionado.
-function initMotivoCards() {
+// v3.10.51: MOTIVO consolidado en 1 solo <select> (reemplaza 4 cards).
+// Cambio en la selección → "desglose" del flow (mismo comportamiento v3.10.49):
+//   expandir GRID 0 + todas las script-cards + scroll + highlight sage.
+// Las 4 cards Apple-2026 y la función de sincronización fueron eliminados.
+function initMotivoSelect() {
   var motivoSelect = $('script-motivo');
   if (!motivoSelect) return;
 
-  // Card activa — click selecciona + desglosa
-  document.querySelectorAll('.motivo-card--active').forEach(function (card) {
-    card.addEventListener('click', function () {
-      var value = card.dataset.motivoValue;
-      motivoSelect.value = value;
-      // Update visual state (aria-checked)
-      document.querySelectorAll('.motivo-card--active').forEach(function (c) {
-        c.setAttribute('aria-checked', 'false');
-      });
-      card.setAttribute('aria-checked', 'true');
-      // Disparar update placeholders (usa el mismo handler que change del select)
-      var ev = new Event('change', { bubbles: true });
-      motivoSelect.dispatchEvent(ev);
-      motivoSelect.dispatchEvent(new Event('input', { bubbles: true }));
-      // v3.10.49: desglose del flow (expandir GRID + cards + scroll + highlight)
-      desgloseMotivoFlow(value);
-    });
+  // Al cambiar la opción, ejecutar el mismo flow de desglose que antes hacía
+  // el click de la card activa. "" → ignorar (no se selecciona nada).
+  motivoSelect.addEventListener('change', function () {
+    var value = motivoSelect.value;
+    if (!value) return;
+    // v3.10.49: desglose del flow (expandir GRID + cards + scroll + highlight)
+    desgloseMotivoFlow(value);
   });
-
-  // Cards desactivadas — click muestra toast
-  document.querySelectorAll('.motivo-card--disabled').forEach(function (card) {
-    card.addEventListener('click', function (e) {
-      e.preventDefault();
-      var label = card.querySelector('.motivo-card-label');
-      var labelText = label ? label.textContent : 'esta categoría';
-      // Toast simple en console + anuncio accesible
-      announce('Categoría "' + labelText + '" próximamente disponible');
-      // Mini feedback visual (toast nativo popup, no añadir DOM)
-      try {
-        var n = card.querySelector('.motivo-card-badge');
-        if (n) {
-          var orig = n.textContent;
-          n.textContent = 'Pronto ✨';
-          setTimeout(function () { n.textContent = orig; }, 1400);
-        }
-      } catch (e) {}
-    });
-  });
-
-  // Sync inicial: si el select tiene valor, marcar la card correspondiente
-  syncMotivoCardsFromSelect();
 }
 
 // v3.10.49: "desglose" del flow al click en MOTIVO card activa.
@@ -4857,19 +4684,9 @@ function getMotivoFlowCards(motivoValue) {
   return flow[motivoValue] || flow['MOVIL'];
 }
 
-// v3.2.0: sincroniza aria-checked de las cards con el valor del select
-function syncMotivoCardsFromSelect() {
-  var motivoSelect = $('script-motivo');
-  if (!motivoSelect) return;
-  var currentVal = motivoSelect.value;
-  document.querySelectorAll('.motivo-card--active').forEach(function (card) {
-    if (card.dataset.motivoValue === currentVal) {
-      card.setAttribute('aria-checked', 'true');
-    } else {
-      card.setAttribute('aria-checked', 'false');
-    }
-  });
-}
+// v3.10.51: función de sincronización ELIMINADA. Ya no hay cards que
+// sincronizar — el motivo vive directamente en el <select> (su valor es
+// la fuente de verdad).
 
 function copyText(text, okLabel, btn) {
   function showOk() {
@@ -6289,7 +6106,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.50] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.51] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');
@@ -7871,8 +7688,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // 5) v3.10.34: click-to-collapse — aplicar estados persistidos + wire up listeners
   applyScriptCollapsedStates();
   initScriptCardClick();
-  // v3.10.44: motivo cards visuales (Técnico Móvil + 3 desactivadas)
-  initMotivoCards();
+  // v3.10.51: MOTIVO consolidado en 1 dropdown (reemplaza 4 cards)
+  initMotivoSelect();
   // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
   renderTipifs();        // Inicializa grid 2 (vacío)
   initPopupMode();      // D-8: responsive desktop + botón X cerrar
@@ -8238,10 +8055,8 @@ function clearScriptTemplate() {
   try { localStorage.removeItem('cima_script_vars_v1'); } catch (e) {}
   // Refrescar placeholders (vuelve a {Placeholder} cuando var vacío)
   updateScriptPlaceholders();
-  // Sync visual de las motivo cards (desmarcar aria-checked)
-  if (typeof syncMotivoCardsFromSelect === 'function') {
-    syncMotivoCardsFromSelect();
-  }
+  // v3.10.51: la función de sync de motivo cards se eliminó (ya no hay cards).
+  // El <select> de MOTIVO es la única fuente de verdad.
   // Anuncio accesible
   announce('Plantilla limpiada — todos los datos del agente reiniciados');
 }
