@@ -1,5 +1,39 @@
 # Changelog — cima-generador
 
+## [3.10.60] - 2026-10-20 — 🐛 FIX render glitch: salto de border-radius al minimizar
+
+**CEO directive:**
+> "Al darle click se renderiza con bordes redondos y luego se hace cuadrado con bordes redondeados dando un salto de renderizacion"
+
+**ROOT CAUSE (dos bugs combinados):**
+
+1. **`border-radius` estaba en la transition list:**
+```css
+.script-card { border-radius: 10px; transition: ... border-radius 0.22s }
+.script-card.is-collapsed { border-radius: 999px; transition: all 0.28s ... }
+```
+Al hacer click, el radio interpola de `999px` → `10px`. En un card de ~40px de alto, `999px` se clampea a `height/2 = 20px`. Durante el tween el radio pasa por valores que **superan la mitad del alto**, provocando que el card se vea "cuadrado con bordes redondeados" a mitad del click.
+
+2. **Dos reglas `.script-card { }` duplicadas** (v3.10.55 línea 1133 + v3.10.59 línea 1157) compitiendo por cascade — la segunda ganaba por orden de aparición, sobreescribiendo valores de la primera de forma inconsistente.
+
+**FIX:**
+
+| Cambio | Antes | Después |
+|---|---|---|
+| Reglas `.script-card` base | 2 (duplicadas) | **1** |
+| `border-radius` en transition | sí (0.22s) | **NO** (instantáneo) |
+| `transition` en is-collapsed | `all 0.28s` | **explícita**: background / border-color / padding |
+
+Ahora el radio cambia en **1 frame** (sin interpolación → sin glitch), mientras padding y background animan suavemente.
+
+**Verificación local:** 665/665 tests PASS + CSS balanceado (530/530).
+
+**Tests agregados (v3.10.60 anti-regression):**
+- 1 sola regla `.script-card` base (no duplicadas)
+- 0 transitions con `border-radius`
+- `.is-collapsed` usa transition con props explícitas (no `all`)
+- `.is-collapsed` mantiene `border-radius: 999px` (pill shape intacto)
+
 ## [3.10.59] - 2026-10-20 — 🎯 COLLAPSED PILL-LINE ultra-compacta (~22px, −55% espacio)
 
 **CEO directive:**

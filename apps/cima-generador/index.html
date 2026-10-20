@@ -1129,19 +1129,12 @@
      que quedaron del cleanup v3.10.51 (motivo-card-label removido). La llave
      extra cerraba 2 bloques CSS legítimos (.btn-icon-clear en gridAddress +
      .ac-item en autocomplete) → CSS entero después del punto se ignoraba. */
-  /* v3.10.55: script-card más compacto (CEO "no ocupen tanto espacio") */
-  .script-card {
-    margin-top: 4px;
-    padding: 7px 11px;
-    background: var(--glass-1-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: background 0.18s var(--motion-ease),
-                border-color 0.18s var(--motion-ease),
-                padding 0.22s var(--motion-ease);
-    position: relative;
-  }
+  /* v3.10.55: script-card más compacto (CEO "no ocupen tanto espacio")
+     v3.10.60: FIX render glitch — la regla .script-card base ahora declara
+     UNICAMENTE el estado expandido. El estado minimizado vive SOLO en
+     .script-card.is-collapsed (línea ~1177). Antes había dos reglas
+     .script-card { } que competían por cascade, generando saltos de
+     render al hacer click. */
   /* v3.10.59: cards compactas + COLLAPSED PILL-LINE ultra-compacta (~22px).
      CEO directive: "debe minizarse pero ocupando menos espacio mas estilizado".
 
@@ -1163,8 +1156,7 @@
     cursor: pointer;
     transition: background 0.18s var(--motion-ease),
                 border-color 0.18s var(--motion-ease),
-                padding 0.22s var(--motion-ease),
-                border-radius 0.22s var(--motion-ease);
+                padding 0.22s var(--motion-ease);
     position: relative;
   }
   .script-card:hover {
@@ -1173,7 +1165,14 @@
   .script-card:active { transform: scale(0.99); }
   /* v3.10.31: cards ocultas via attributo [hidden] (motivo OTRO toggle) */
   .script-card[hidden] { display: none; }
-  /* v3.10.59: COLLAPSED — pill-line minimalista (dot + chevron, sin texto). */
+  /* v3.10.59: COLLAPSED — pill-line minimalista (dot + chevron, sin texto).
+     v3.10.60: FIX render glitch — border-radius cambia INSTANTÁNEAMENTE
+     (no está en la transition list). Razón: transicionar de 999px → 10px
+     hace que el radio pase por valores > height/2 durante el tween, y el
+     navegador clampea a height/2 → el card se ve "cuadrado con bordes
+     redondeados" a mitad del click (glitch visual reportado por CEO).
+     Ahora: radio cambia en 1 frame (sin interpolación) + solo padding/bg
+     animan suavemente. Resultado: sin salto de render. */
   .script-card.is-collapsed {
     /* Sin min-height — la altura la define padding + line-height del contenido */
     border-radius: 999px;
@@ -1185,7 +1184,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* v3.10.60: NO incluir border-radius en transition (evita el glitch).
+       Tampoco usar `all` — solo las props que deben animar. */
+    transition: background 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-color 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                padding 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .script-card.is-collapsed .script-card-body { display: none; }
   /* Dot de estado (reemplaza el "✓ Hecho" badge textual — 12px vs 22px) */
@@ -4368,7 +4371,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.59</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.60</span>
     </span>
   </footer>
 </div>
@@ -6388,7 +6391,7 @@ function zaCopyApagadoSpeech() {
     var btn = this;
     // v3.9.1: ALWAYS log click to console — CEO puede verificar en DevTools
     if (typeof console !== 'undefined' && console.log) {
-      try { console.log('%c[CIMA v3.10.59] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
+      try { console.log('%c[CIMA v3.10.60] ⚠️ click registrado', 'color:#dc2626;font-weight:bold'); } catch(e){}
     }
     var dep = upper('departamento');
     var prov = upper('provincia');

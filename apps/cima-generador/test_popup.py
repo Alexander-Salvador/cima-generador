@@ -3822,11 +3822,64 @@ def test(html_path):
     else:
         result.fail('v3.10.56 CSS section margin', '.script-section margin-top 6px esperado')
 
-    # CSS: .script-card margin-top 4px (más compacto, antes 6px)
-    if re.search(r"\.script-card\s*\{[^}]*margin-top\s*:\s*4px", html, re.DOTALL):
-        result.ok('v3.10.55 CSS: .script-card margin-top 4px (más compacto)')
+    # CSS: .script-card margin-top 3px (v3.10.59 comprimió 6→3→4→3px)
+    if re.search(r"\.script-card\s*\{[^}]*margin-top\s*:\s*3px", html, re.DOTALL):
+        result.ok('v3.10.59 CSS: .script-card margin-top 3px (ultra-compacto)')
     else:
-        result.fail('v3.10.55 CSS card margin', '.script-card margin-top 4px esperado')
+        result.fail('v3.10.59 CSS card margin', '.script-card margin-top 3px esperado')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.60 — FIX render glitch: salto de borde al minimizar
+    # CEO: "Al darle click se renderiza con bordes redondos y luego se hace
+    #       cuadrado con bordes redondeados dando un salto de renderizacion"
+    # Root cause: border-radius transitaba 999px → 10px. Durante el tween el
+    #   radio pasa por valores > height/2 y el browser lo clampea a height/2
+    #   → el card se ve "cuadrado con bordes redondeados" a mitad del click.
+    # FIX: border-radius cambia instantáneamente (fuera de transition list) +
+    #   `transition: all` reemplazado por props explícitas.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.60 — FIX render glitch (salto de border-radius)')
+
+    # Anti-regression: exactamente 1 regla base .script-card (no duplicadas)
+    css_60 = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL)
+    if css_60:
+        css_60_nc = re.sub(r'/\*[\s\S]*?\*/', '', css_60[0], flags=re.DOTALL)
+        n_base = len(re.findall(r'^\s*\.script-card \{', css_60_nc, re.M))
+        if n_base == 1:
+            result.ok('v3.10.60: 1 sola regla .script-card base (duplicada eliminada)')
+        else:
+            result.fail('v3.10.60 duplicada', f'1 regla .script-card esperada, {n_base} encontradas')
+
+        # Anti-regression: NINGUNA transition incluye border-radius
+        bad_radius_transitions = re.findall(r'transition[^;{]*border-radius', css_60_nc)
+        if not bad_radius_transitions:
+            result.ok('v3.10.60: 0 transitions con border-radius (glitch eliminado)')
+        else:
+            result.fail('v3.10.60 glitch', f'{len(bad_radius_transitions)} transitions con border-radius (deben ser 0)')
+
+        # Anti-regression: is-collapsed NO usa `transition: all`
+        collapsed_60 = re.search(
+            r'\.script-card\.is-collapsed\s*\{([^}]+)\}',
+            css_60_nc, re.DOTALL
+        )
+        if collapsed_60:
+            c60_body = collapsed_60.group(1)
+            if 'transition: all' not in c60_body and 'border-radius' not in c60_body.split('transition')[1] if 'transition' in c60_body else True:
+                result.ok('v3.10.60: is-collapsed usa transition con props explícitas (no `all`)')
+            else:
+                result.fail('v3.10.60 transition all', 'is-collapsed no debe usar `transition: all`')
+        else:
+            result.fail('v3.10.60 is-collapsed', '.script-card.is-collapsed CSS no encontrado')
+
+    # Verificación funcional: border-radius sigue siendo 999px en is-collapsed
+    collapsed_60b = re.search(
+        r'\.script-card\.is-collapsed\s*\{([^}]+)\}',
+        html, re.DOTALL
+    )
+    if collapsed_60b and 'border-radius: 999px' in collapsed_60b.group(1):
+        result.ok('v3.10.60: is-collapsed mantiene border-radius 999px (pill shape intacto)')
+    else:
+        result.fail('v3.10.60 pill', 'border-radius 999px esperado en is-collapsed')
 
     # CSS: .script-vars .field label font-weight 600 (más prominente)
     if re.search(r"\.script-vars\s+\.field\s+label\s*\{[^}]*font-weight\s*:\s*600", html, re.DOTALL):
