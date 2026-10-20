@@ -3554,11 +3554,15 @@ def test(html_path):
     else:
         result.fail('v3.10.49 JS expand grid', 'toggleGrid("gridScript", false) esperado')
 
-    # JS: desgloseMotivoFlow expande TODAS las script-cards colapsadas
-    if re.search(r"document\.querySelectorAll\(['\"]\.script-card\.is-collapsed['\"]\)", html):
-        result.ok('v3.10.49 JS: desgloseMotivoFlow expande todas las script-cards colapsadas')
+    # v3.10.53: desgloseMotivoFlow ya NO expande TODAS las script-cards —
+# la visibilidad ahora la controla applyMotivoFlow() (solo muestra las cards
+# del motivo seleccionado). Lo que queda: scrollIntoView + highlight pulse.
+    # Anti-regression: querySelectorAll(".script-card.is-collapsed") ya no
+    # debe estar en desgloseMotivoFlow (lo removimos en v3.10.53).
+    if not re.search(r"desgloseMotivoFlow[\s\S]{0,800}querySelectorAll\(['\"]\.script-card\.is-collapsed['\"]\)", html, re.DOTALL):
+        result.ok('v3.10.53 JS: desgloseMotivoFlow NO expande todas las cards (visibilidad por applyMotivoFlow)')
     else:
-        result.fail('v3.10.49 JS expand cards', 'querySelectorAll(".script-card.is-collapsed") esperado')
+        result.fail('v3.10.53 JS no auto-expand', 'desgloseMotivoFlow no debería expandir todas las cards')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.50 — 3 BUG FIXES reportados por CEO
@@ -3611,15 +3615,91 @@ def test(html_path):
     else:
         result.fail('v3.10.50 BUG 1 stop', 'stopImmediatePropagation esperado')
 
-    # BUG 2 + 3: applyScriptCollapsedStates colapsa TODO por default si no hay estado
-    # (primera visita o tras CTRL+SHIFT+R que borra persistencia)
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.53 — MOTIVO FLOW VISIBILITY
+    # CEO directive 2026-10-20: "Mientras que no se seleccione un motivo
+    #   todos los textos deben eliminarse, solo se muestra cuando exista
+    #   un motivo SELECCIONADO."
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.53 — MOTIVO FLOW VISIBILITY (hidden until seleccionado)')
+
+    # CSS: .script-card.is-hidden-flow { display: none !important; }
+    if re.search(r"\.script-card\.is-hidden-flow\s*\{\s*display\s*:\s*none\s*!important", html):
+        result.ok('v3.10.53 CSS: .script-card.is-hidden-flow { display: none !important }')
+    else:
+        result.fail('v3.10.53 CSS card hidden', '.script-card.is-hidden-flow con display:none !important esperado')
+
+    # CSS: .script-alert.is-hidden-flow { display: none !important; }
+    if re.search(r"\.script-alert\.is-hidden-flow\s*\{\s*display\s*:\s*none\s*!important", html):
+        result.ok('v3.10.53 CSS: .script-alert.is-hidden-flow { display: none !important }')
+    else:
+        result.fail('v3.10.53 CSS alert hidden', '.script-alert.is-hidden-flow esperado')
+
+    # JS: applyMotivoFlow() función definida
+    if 'function applyMotivoFlow(' in html:
+        result.ok('v3.10.53 JS: applyMotivoFlow() función definida')
+    else:
+        result.fail('v3.10.53 JS applyMotivoFlow', 'función applyMotivoFlow esperada')
+
+    # JS: applyMotivoFlow agrega .is-hidden-flow cuando motivo vacío
     if re.search(
-        r"function applyScriptCollapsedStates[\s\S]{0,600}stateKeys\.length\s*===\s*0[\s\S]{0,200}querySelectorAll\(\s*['\"]\.script-card\[data-script-id\]\s*['\"]",
+        r"applyMotivoFlow[\s\S]{0,1800}classList\.add\(\s*['\"]is-hidden-flow['\"]",
         html
     ):
-        result.ok('v3.10.50 BUG 2: applyScriptCollapsedStates colapsa TODO por default (sin estado persistido)')
+        result.ok('v3.10.53 JS: applyMotivoFlow agrega .is-hidden-flow cuando motivo vacío')
     else:
-        result.fail('v3.10.50 BUG 2', 'applyScriptCollapsedStates debe colapsar todas si no hay estado')
+        result.fail('v3.10.53 JS hide logic', 'applyMotivoFlow debe agregar .is-hidden-flow si motivo vacío')
+
+    # JS: applyMotivoFlow quita .is-hidden-flow cuando matching
+    if re.search(
+        r"matchingIds\.indexOf[\s\S]{0,200}classList\.remove\([\s\S]{0,50}is-hidden-flow",
+        html
+    ):
+        result.ok('v3.10.53 JS: applyMotivoFlow quita .is-hidden-flow para cards del flow')
+    else:
+        result.fail('v3.10.53 JS show logic', 'remove is-hidden-flow para matching esperado')
+
+    # JS: initMotivoSelect change handler llama applyMotivoFlow (no solo desgloseMotivoFlow)
+    if re.search(
+        r"motivoSelect\.addEventListener\(\s*['\"]change['\"][\s\S]{0,400}applyMotivoFlow\(\s*value\s*\)",
+        html
+    ):
+        result.ok('v3.10.53 JS: change en MOTIVO select llama applyMotivoFlow(value)')
+    else:
+        result.fail('v3.10.53 JS change→flow', 'change debe llamar applyMotivoFlow(value)')
+
+    # JS: applyMotivoFlow llamado en DOMContentLoaded para inicial state
+    if re.search(r"applyMotivoFlow\(\s*getScriptVar\([\s\S]{0,30}motivo", html):
+        result.ok('v3.10.53 JS: applyMotivoFlow invocado en init con getScriptVar("motivo")')
+    else:
+        result.fail('v3.10.53 JS init', 'applyMotivoFlow(getScriptVar("motivo")) esperado en init')
+
+    # JS: getMotivoFlowCards incluye OTRAS (no OTRO)
+    if re.search(r"['\"]OTRAS['\"]\s*:\s*\[", html):
+        result.ok('v3.10.53 JS: getMotivoFlowCards usa "OTRAS" (alineado con v3.10.51 select)')
+    else:
+        result.fail('v3.10.53 JS OTRAS', 'getMotivoFlowCards debe incluir "OTRAS" (no "OTRO")')
+
+    # JS: anti-regression — modo "Sin MOTIVO → ALL hidden" se aplica también a alerts
+    # (busca el loop sobre .script-alert)
+    if re.search(r"querySelectorAll\([\s\S]{0,30}\.script-alert[\s\S]{0,500}is-hidden-flow", html):
+        result.ok('v3.10.53 JS: applyMotivoFlow también oculta .script-alert si no hay motivo')
+    else:
+        result.fail('v3.10.53 JS alerts hide', 'applyMotivoFlow debe ocultar alerts también')
+
+    # BUG 2 + 3 (v3.10.50): applyScriptCollapsedStates colapsaba TODO por default
+    # si no había estado persistido. v3.10.53 REMOVIÓ este auto-collapse.
+    # Ahora la visibility inicial la controla applyMotivoFlow() (que oculta
+    # todas las cards si motivo está vacío). El estado colapsado del usuario
+    # (manual) sí se preserva y aplica a las cards visibles.
+    auto_collapse_present = re.search(
+        r"function applyScriptCollapsedStates[\s\S]{0,800}stateKeys\.length\s*===\s*0[\s\S]{0,300}querySelectorAll\(\s*['\"]\.script-card\[data-script-id\]\s*['\"]",
+        html, re.DOTALL
+    )
+    if not auto_collapse_present:
+        result.ok('v3.10.53 BUG 2: applyScriptCollapsedStates ya NO auto-colapsa TODO (delegado a applyMotivoFlow)')
+    else:
+        result.fail('v3.10.53 BUG 2', 'auto-colapsar TODO debería haber sido eliminado')
 
     # BUG 3: NO hay auto-desglose al cargar (el flow solo se desglosa en click MOTIVO)
     # Contar LLAMADAS REALES a desgloseMotivoFlow (excluir definición + comentarios)
@@ -4198,17 +4278,26 @@ def test(html_path):
     else:
         result.fail('v3.10.31 HTML transfer hidden', 'card transferir debe estar hidden por default')
 
-    # JS: helper toggleScriptCard presente
+    # JS: helper toggleScriptCard presente (legacy v3.10.31)
     if 'function toggleScriptCard(' in html:
-        result.ok('v3.10.31 JS: toggleScriptCard() helper presente')
+        result.ok('v3.10.31 JS: toggleScriptCard() helper presente (legacy)')
     else:
         result.fail('v3.10.31 JS helper', 'toggleScriptCard() missing')
 
-    # JS: lógica OTRO (motivo === OTRO → toggle cards)
-    if re.search(r"isOtro\s*=\s*\(vars\.motivo\s*===\s*['\"]OTRO['\"]\)", html):
-        result.ok('v3.10.31 JS: lógica OTRO (motivo === OTRO toggle)')
+    # v3.10.31 → v3.10.53: lógica "vars.motivo === 'OTRO'" → reemplazada por
+    # getMotivoFlowCards(motivo) en applyMotivoFlow(). El valor del select es
+    # 'OTRAS' (no 'OTRO') desde v3.10.51.
+    if re.search(r"getMotivoFlowCards\s*\(\s*motivo\s*\)", html):
+        result.ok('v3.10.53 JS: getMotivoFlowCards(motivo) controla flow visibility (reemplaza OTRO legacy)')
     else:
-        result.fail('v3.10.31 JS OTRO', 'lógica OTRO missing')
+        result.fail('v3.10.53 JS flow', 'getMotivoFlowCards(motivo) esperado')
+
+    # Anti-regression: lógica legacy "vars.motivo === 'OTRO'" YA NO en updateScriptPlaceholders
+    legacy_otro = re.search(r"isOtro\s*=\s*\(vars\.motivo\s*===\s*['\"]OTRO['\"]\)", html)
+    if not legacy_otro:
+        result.ok('v3.10.53 JS: lógica legacy isOtro = (vars.motivo === "OTRO") ELIMINADA de updateScriptPlaceholders')
+    else:
+        result.fail('v3.10.53 JS legacy OTRO', 'lógica OTRO legacy debería estar removida')
 
     # Speeches: bienvenida (v3.10.33: id cambió de bienvenida-1 → bienvenida,
     # y NO debe mencionar TÉCNICO MÓVIL — CEO rechazó ese cambio agresivo en

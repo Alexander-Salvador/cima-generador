@@ -1,5 +1,42 @@
 # Changelog — cima-generador
 
+## [3.10.53] - 2026-10-20 — 🙈 Texts ocultos hasta seleccionar MOTIVO (flow visibility)
+
+**CEO directive:**
+> "Mientras que no se seleccione un motivo todos los textos deben eliminarse, solo se muestra cuando exista un motivo SELECCIONADO."
+
+**Cambios:**
+
+1. **CSS**: nuevas reglas `.script-card.is-hidden-flow { display: none !important; }` y `.script-alert.is-hidden-flow { display: none !important; }` para ocultar texts del flow.
+2. **JS — nueva función `applyMotivoFlow(value)`**:
+   - Sin MOTIVO seleccionado (value vacío) → TODOS los `.script-card[data-script-id]` + `.script-alert` reciben `.is-hidden-flow`.
+   - Con MOTIVO seleccionado → solo las cards en `getMotivoFlowCards(value)` pierden `.is-hidden-flow`; alertas visibles.
+3. **JS — `getMotivoFlowCards`**: valor `'OTRO'` renombrado a `'OTRAS'` (alineado con `<select id="script-motivo">` v3.10.51).
+4. **JS — `initMotivoSelect`** ahora siempre llama `applyMotivoFlow(value)` en cada cambio (incluso cuando value === "" → oculta todo).
+5. **JS — `updateScriptPlaceholders`**: bloque `isOtro`/`toggleScriptCard` ELIMINADO — la visibility ahora se controla 100% desde `applyMotivoFlow()` (single source of truth).
+6. **JS — `applyScriptCollapsedStates`**: auto-colapsar TODO por default ELIMINADO — la visibilidad ahora depende del MOTIVO (no del collapsed state). Las colapso manuales del usuario sí se preservan.
+7. **JS — `desgloseMotivoFlow`**: simplificado — ya no intenta expandir todas las cards (eso ahora es responsabilidad de `applyMotivoFlow`). Conserva: expandir GRID + scroll suave + highlight pulse en cards matching.
+8. **JS — DOMContentLoaded**: nueva línea `applyMotivoFlow(getScriptVar('motivo'))` aplica el estado inicial. Si el motivo fue restaurado del localStorage, sus cards aparecen; si está vacío, todo oculto.
+
+**Compatibilidad:**
+
+- `localStorage` keys/structure sin cambios.
+- `data-script-var` keys (agente/cliente/telefono/motivo) intactas.
+- `updateScriptPlaceholders` sigue reemplazando {Vars} en TODAS las cards (incluyendo las ocultas — al hacerse visible el contenido ya tiene los {Vars} resueltos).
+- `clearScriptTemplate` (CTRL+SHIFT+R) ahora oculta TODO correctamente (motivo se limpia → `applyMotivoFlow('')`).
+
+**UI states:**
+
+| Estado MOTIVO | Cards visibles | Alerts visibles | Headers visibles |
+|---|---|---|---|
+| Vacío (default) | 0 | 0 | Sí |
+| MOVIL seleccionado | 8 (bienvenida/atencion-segura/sondea/sondeo-averias/tiempo-espera/educa-app/despedida/encuesta) | todas | Sí |
+| OTRAS seleccionado | 3 (bienvenida/atencion-segura/transferir) | todas | Sí |
+| AVERIA seleccionado | 6 | todas | Sí |
+| GTR seleccionado | 5 | todas | Sí |
+
+**Verificación local:** 622/622 tests PASS (10 nuevos v3.10.53 agregados).
+
 ## [3.10.52] - 2026-10-20 — 🔗 TELÉFONO DE CONSULTA + MOTIVO en una sola row (side-by-side)
 
 **CEO directive:**
