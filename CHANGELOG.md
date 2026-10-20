@@ -1,5 +1,47 @@
 # Changelog — cima-generador
 
+## [3.10.54] - 2026-10-20 — 🐛 FIX: header "Estructura de Llamada" oculta todo el GRID (no solo la plantilla de datos)
+
+**CEO directive:**
+> "Arreglemos al darle click al header ESTRUCTURA DE LLAMADA. se debe ocultar todo el contenido completo del GRID, en este momento solo oculta la plantilla de datos."
+
+**Root cause:**
+
+`<div class="grid-body">` se cerraba prematuramente después del bloque `<div class="script-vars">` (línea 3753), dejando las 4 `.script-section` (Bienvenida / Motivo / Consulta+App / Cierre) y la card `transferir` como **siblings** de `grid-body`, no children. La regla CSS `.grid-block.is-collapsed .grid-body { max-height: 0; opacity: 0 }` solo colapsaba el contenido dentro de `grid-body` (= solo las variables inputs), mientras que los speeches quedaban siempre visibles.
+
+**Cambio:**
+
+1. **HTML**: removido el `</div>` prematuro en línea 3753. Agregado el `</div>` de cierre de `grid-body` justo antes del cierre de `section` (línea 3921). 
+2. **HTML**: indentación corregida del bloque `transferir` (movido dentro de `grid-body` y alineado al estándar del nesting).
+3. **HTML**: añadidos comentarios `v3.10.54` documentando el fix.
+
+**Resultado del fix — estructura correcta:**
+
+```
+<div class="grid-block" id="gridScript">      ← grid-block
+  <div class="section">                       ← section
+    <button class="grid-toggle">...</button>  ← header "Estructura de Llamada"
+    <div class="grid-body" id="gridScript-body"> ← grid-body (CORRECTAMENTE ENVUELVE TODO)
+      <div class="script-vars">...</div>     ← variables inputs
+      <div class="script-section">...</div> × 4   ← Bienvenida/Motivo/Consulta/Cierre
+      <div class="script-card--transfer">...</div> ← transferir card
+    </div>                                   ← cierre grid-body (MOVIDO)
+  </div>                                     ← cierre section
+</div>                                       ← cierre grid-block
+```
+
+**Verificación:**
+
+- 4 script-section dentro de grid-body ✅
+- 1 transferir card dentro de grid-body ✅
+- 8 script-card dentro de grid-body ✅
+- 1 script-vars dentro de grid-body ✅
+- 40 opens / 40 closes (HTML balanced) ✅
+
+**Verificación local:** 625/625 tests PASS (3 nuevos v3.10.54).
+
+**Compatibilidad:** ningún cambio funcional. Mismo comportamiento, solo fix estructural HTML.
+
 ## [3.10.53] - 2026-10-20 — 🙈 Texts ocultos hasta seleccionar MOTIVO (flow visibility)
 
 **CEO directive:**
