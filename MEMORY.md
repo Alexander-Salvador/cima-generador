@@ -56,7 +56,39 @@ apps/cima-generador/
 
 ---
 
-Memoria persistente. Última actualización: **2026-10-20 — v3.10.61 ALERTS como refuerzo inteligente en 1 row (texto −40%, font 10.5px/600, color sage #0d9488) — CEO "estas ideas que son puntos de refuerzos deben ocupar maximo 1 row asi que debemos retirar texto reiterativo... mejora la font y colores"**.
+Memoria persistente. Última actualización: **2026-10-20 — v3.10.63 SESIÓN COMPLETA (v3.10.51 → v3.10.63, 14 commits) — DEPLOY READY**.
+
+### 🚀 SESIÓN 2026-10-20 — RESUMEN EJECUTIVO (v3.10.50 → v3.10.63)
+
+**14 releases** en una sesión. CEO/reportó 6 bugs, todos resueltos + 3 improvements de diseño.
+
+| Versión | Tipo | Resumen |
+|---|---|---|
+| v3.10.51 | feat | MOTIVO consolidado en 1 dropdown (4 opciones: MOVIL/OTRAS/AVERIA/GTR) |
+| v3.10.52 | feat | TELÉFONO + MOTIVO en 1 sola row-2 (side-by-side) |
+| v3.10.53 | feat | Texts ocultos hasta seleccionar MOTIVO (`applyMotivoFlow`) |
+| v3.10.54 | **fix** | grid-body cerraba prematuramente → script-sections huérfanos |
+| v3.10.55 | feat | Estilización + compactación GRID (primera iteración, rechazada por CEO) |
+| v3.10.56 | feat | **Disclosure control pills** (Apple HIG 2026 progressive disclosure) |
+| v3.10.57 | fix | grid-body max-height 1200→8000px (parche incompleto, no era el root) |
+| v3.10.58 | **fix** | **LLAVE CSS EXTRA rompía TODO el stylesheet** (6800 líneas ignoradas) |
+| v3.10.59 | feat | Collapsed pill-line ultra-compacta (~22px, −55% espacio) |
+| v3.10.60 | fix | Render glitch: salto de border-radius al minimizar |
+| v3.10.61 | feat | Alerts como refuerzo inteligente en 1 row (texto −40%) |
+| v3.10.62 | fix | Grid Tipificación: selección etiquetas rota (fix parcial) |
+| v3.10.63 | **fix** | **FIX DEFINITIVO** selección etiquetas (capture phase + id normalize) |
+
+**Lecciones críticas (registradas):**
+
+1. **L-061: Un `}` de más destruye 6800 líneas de CSS silenciosamente.** Balance check de llaves CSS ahora es test gate OBLIGATORIO. Detectaría el bug v3.10.51 en el commit, no 7 versiones después.
+2. **L-062: Nunca teorizar sobre un bug sin auditar el archivo completo primero.** v3.10.57 "arreglé" `max-height` cuando el root cause era una llave CSS de v3.10.51. CEO: "No arreglaste nada se mantiene igual".
+3. **L-063: Patrones de diseño 2010-2015 (bordes gruesos, tinted bg) no son 2026.** Apple HIG *progressive disclosure*: el control ES la affordance, no heavy borders. Chevron rotate + `aria-expanded` + default collapsed.
+4. **L-064: Event delegation con múltiples dropdowns requiere capture phase.** Un `mousedown` bubble handler puede consumir el evento antes del `click` delegation. Patrón probado: `{capture: true}` + `stopImmediatePropagation`.
+5. **L-065: `===` entre string (data-attribute) y number (data object) falla silenciosamente.** Normalizar con `String()` en handlers de delegation.
+
+**Tests: 676/676 PASS** (test_popup) + test_aggressive PASSED (234/234 fuzzy) + test_codereview GOOD + test_security CLEAN.
+
+**Estado deploy:** 16 commits pendientes de push (origin/develop @ 75defa4 → HEAD @ 2e28cd0).
 
 ## 🧹 Estado Git verificado (2026-10-19 — CIERRE DE SESIÓN)
 
