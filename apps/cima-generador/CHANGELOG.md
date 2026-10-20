@@ -1,5 +1,48 @@
 # Changelog — cima-generador
 
+## [3.10.61] - 2026-10-20 — 💡 ALERTS como refuerzo inteligente en 1 row (texto −40%, font + color)
+
+**CEO directive:**
+> "estas ideas que son puntos de refuerzos deben ocupar maximo 1 row asi que debemos retirar texto reiterativo, son como ideas o refuerzos inteligentes, mejora la font y colores"
+
+**PROBLEMA:** los 4 alerts ocupaban 2 rows cada uno (71-83 chars) porque eran *explicaciones* en vez de *ideas de refuerzo*.
+
+| # | Antes (v3.10.58) | Chars | Ahora (v3.10.61) | Chars |
+|---|---|---|---|---|
+| 1 | Conecta desde la empatía: escucha activa, tono cálido, soluciones claras. | 73 | **Empatía: escucha, tono cálido, solución clara.** | 46 |
+| 2 | Antes de ausentarte, indica el motivo y al retomar, agradece la espera del cliente. | 83 | **Si te ausentas, avisa. Al volver, agradece.** | 43 |
+| 3 | Antes de cerrar, confirma si hay algo más en lo que puedas acompañarle. | 71 | **Antes de cerrar, pregunta si ayudo en algo más.** | 47 |
+| 4 | {Cliente}, gracias por tu paciencia. Te comento: (verificación o acción realizada). | 59 | **Agradece la paciencia, luego entrega.** | 37 |
+
+**Total: 286 → 173 chars (−40%). Promedio: 71.5 → 43 chars.**
+
+**Mejora de font:**
+| Prop | Antes | Ahora |
+|---|---|---|
+| `font-size` | 10px | **10.5px** |
+| `font-weight` | 450 | **600** (refuerzo legible de un vistazo) |
+| `letter-spacing` | 0 | **0.005em** |
+
+**Mejora de color — identidad propia del alert:**
+| Elemento | Antes | Ahora |
+|---|---|---|
+| Texto | `var(--text)` (compite con el speech) | **`#0d9488`** sage-teal (identidad propia, 88% mix con text para legibilidad) |
+| Icono 💡 | `#10b981` | **`#14b8a6`** (sage más saturado) |
+| Border | `10b981 22%` | **`14b8a6 26%`** |
+| Background gradient | `10b981 6% → 06b6d4 4%` | **`14b8a6 9% → 10b981 5%`** (más presencia) |
+
+**Garantía de 1 row:**
+```css
+.script-alert { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.script-alert-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+```
+
+Cálculo: el alert más largo (47 chars @ 10.5px/600) ≈ **257px** vs **418px** disponibles en popup 480px → **cabe con 160px de margen**. Los `nowrap` + `ellipsis` son red de seguridad para viewports más angostos.
+
+**Nota:** el alert 4 perdió el `{Cliente}` placeholder inline (era redundante — el speech de `despedida` ya dice "Perfecto {Cliente}"). Esto lo hace genérico y 22 chars más corto.
+
+**Verificación local:** 668/668 tests PASS (3 nuevos v3.10.61) + CSS balanceado (530/530).
+
 ## [3.10.60] - 2026-10-20 — 🐛 FIX render glitch: salto de border-radius al minimizar
 
 **CEO directive:**

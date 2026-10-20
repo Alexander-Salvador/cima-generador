@@ -3232,17 +3232,26 @@ def test(html_path):
         result.fail('v3.10.37 HTML alerts', f'≥4 alerts esperados, {n_alerts_motivo} encontrados')
 
     # HTML: alert textos AI 2026 (v3.10.41 + v3.10.42 redistribución)
+    # v3.10.61: textos reescritos a ≤47 chars (refuerzo inteligente, 1 row).
     expected_alerts = [
-        'gracias por tu paciencia',
-        'Antes de ausentarte',
-        'Conecta desde la empat\u00eda',
-        'hay algo m\u00e1s en lo que puedas'
+        'Agradece la paciencia, luego entrega',
+        'Si te ausentas, avisa',
+        'Empatía: escucha, tono cálido',
+        'pregunta si ayudo en algo más'
     ]
     missing_alerts = [a for a in expected_alerts if a not in html]
     if not missing_alerts:
-        result.ok('v3.10.41/42 HTML: 4 alertas AI 2026 modernas presentes')
+        result.ok('v3.10.61 HTML: 4 alertas AI 2026 reescritas (≤47 chars, 1 row)')
     else:
-        result.fail('v3.10.41/42 HTML alerts textos', f'faltan: {missing_alerts}')
+        result.fail('v3.10.61 HTML alerts textos', f'faltan: {missing_alerts}')
+
+    # v3.10.61: cada alert cabe en 1 row (≤50 chars)
+    alert_texts = re.findall(r'<span class="script-alert-text">(.*?)</span>', html, re.DOTALL)
+    alert_lens = [len(re.sub(r'<[^>]+>', '', t).strip()) for t in alert_texts]
+    if len(alert_texts) == 4 and all(l <= 50 for l in alert_lens):
+        result.ok(f'v3.10.61 HTML: 4 alerts ≤50 chars ({", ".join(map(str, alert_lens))}) — caben en 1 row')
+    else:
+        result.fail('v3.10.61 alerts length', f'4 alerts ≤50 chars esperados, lens={alert_lens}')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.42 — Redistribución inteligente de alerts 1/section
@@ -3290,10 +3299,10 @@ def test(html_path):
     ))
     # Simplificado: contar alerts hasta el siguiente header
     # Pattern alternativo: contar alerts en cada section usando markers
-    bienvenida_alert = 'Conecta desde la empat\u00eda' in html
-    motivo_alert = 'Antes de ausentarte' in html
-    consulta_alert = 'hay algo m\u00e1s en lo que puedas' in html
-    cierre_alert = 'gracias por tu paciencia' in html
+    bienvenida_alert = 'Empatía: escucha, tono cálido' in html
+    motivo_alert = 'Si te ausentas, avisa' in html
+    consulta_alert = 'pregunta si ayudo en algo más' in html
+    cierre_alert = 'Agradece la paciencia, luego entrega' in html
     if all([bienvenida_alert, motivo_alert, consulta_alert, cierre_alert]):
         result.ok('v3.10.42 HTML: 4 alerts distribuidas 1/section (bienvenida/motivo/consulta/cierre)')
     else:
@@ -3419,17 +3428,32 @@ def test(html_path):
     else:
         result.fail('v3.10.56', '.section-pill CSS missing')
 
-    # BUG 3 (v3.10.43 → v3.10.59): .script-alert font-size 10.5px → 10px (comprimido)
+    # BUG 3 (v3.10.43 → v3.10.59 → v3.10.61): .script-alert refinada
     alert_font = re.search(r'\.script-alert\s*\{([^}]+)\}', html, re.DOTALL)
     if alert_font:
         alert_body = re.sub(r'/\*[\s\S]*?\*/', '', alert_font.group(1))
-        # v3.10.59: comprimido (10.5→10px, padding 5px 10px → 3px 8px)
-        if 'font-size: 10px' in alert_body and 'max-width: 96%' in alert_body and 'padding: 3px 8px' in alert_body:
-            result.ok('v3.10.59: .script-alert font-size 10px + padding 3px 8px + max-width 96% (ultra-compact)')
+        # v3.10.61: refuerzo inteligente 1 row — font 10.5px weight 600,
+        # color sage #0d9488, nowrap + ellipsis, padding 4px 9px
+        if ('font-size: 10.5px' in alert_body and 'font-weight: 600' in alert_body
+                and '#0d9488' in alert_body and 'white-space: nowrap' in alert_body
+                and 'padding: 4px 9px' in alert_body):
+            result.ok('v3.10.61: .script-alert 10.5px/600 + sage #0d9488 + nowrap + ellipsis (1 row)')
         else:
-            result.fail('v3.10.59 .script-alert', 'font-size 10px + padding 3px 8px + max-width 96% esperados')
+            result.fail('v3.10.61 .script-alert', '10.5px/600 + #0d9488 + nowrap + padding 4px 9px esperados')
+        # Anti-regression: max-width 96% (no estira al 100% del container)
+        if 'max-width: 96%' in alert_body:
+            result.ok('v3.10.61: .script-alert max-width 96% (no estira)')
+        else:
+            result.fail('v3.10.61 alert max-width', 'max-width 96% esperado')
     else:
-        result.fail('v3.10.59 alert', '.script-alert CSS missing')
+        result.fail('v3.10.61 alert', '.script-alert CSS missing')
+
+    # v3.10.61: .script-alert-icon color #14b8a6 (identidad propia del alert)
+    icon_61 = re.search(r'\.script-alert-icon\s*\{([^}]+)\}', html, re.DOTALL)
+    if icon_61 and '#14b8a6' in icon_61.group(1):
+        result.ok('v3.10.61 CSS: .script-alert-icon color #14b8a6 (sage-identity)')
+    else:
+        result.fail('v3.10.61 alert-icon', '.script-alert-icon con #14b8a6 esperado')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.10.44 (LEGACY) — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS
