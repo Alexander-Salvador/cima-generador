@@ -3687,6 +3687,83 @@ def test(html_path):
     else:
         result.fail('v3.10.53 JS alerts hide', 'applyMotivoFlow debe ocultar alerts también')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.54 — BUG FIX: grid-body cerraba prematuramente
+    # CEO directive 2026-10-20: "arreglemos al darle click al header
+    #   ESTRUCTURA DE LLAMADA. se debe ocultar todo el contenido completo
+    #   del GRID, en este momento solo oculta la plantilla de datos"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.54 — FIX: grid-body contiene TODO el contenido del GRID')
+
+    # Contar script-section DENTRO de grid-body (no como siblings)
+    # Reconstruir la región GRID 0 y verificar balance + posición
+    grid_block_start = html.find('<div class="grid-block" id="gridScript"')
+    grid_block_end = html.find('GRID 1: ADDRESS', grid_block_start)
+    if grid_block_start != -1 and grid_block_end != -1:
+        region = html[grid_block_start:grid_block_end]
+        grid_body_open_rel = region.find('id="gridScript-body"')
+        # Find balanced close of grid-body
+        events = []
+        for m in re.finditer(r'<div[^>]*>', region):
+            cls_match = re.search(r'<div\s+class="([^"]+)"', m.group(0))
+            cls = cls_match.group(1).split()[0] if cls_match else '?'
+            events.append((m.start(), 'open', cls))
+        for m in re.finditer(r'</div>', region):
+            events.append((m.start(), 'close', None))
+        events.sort()
+        stack = []
+        gb_close_pos = None
+        for pos, kind, cls in events:
+            if kind == 'open':
+                stack.append(cls)
+                if cls == 'grid-body':
+                    gb_start_pos = pos
+            else:
+                if stack:
+                    opened = stack.pop()
+                    if opened == 'grid-body':
+                        gb_close_pos = pos
+                        break
+
+        if gb_close_pos is not None:
+            body_content = region[gb_start_pos:gb_close_pos]
+            n_sections = len(re.findall(r'<div[^>]*class="script-section"', body_content))
+            n_transferir = len(re.findall(r'<div[^>]*class="script-card[^"]*--transfer"', body_content))
+            n_vards = len(re.findall(r'<div[^>]*class="script-vars"', body_content))
+
+            if n_sections == 4 and n_transferir == 1 and n_vards == 1:
+                result.ok(f'v3.10.54 BUG FIX: 4 script-section + 1 transferir + 1 script-vars TODOS dentro de grid-body')
+            else:
+                result.fail('v3.10.54 BUG FIX',
+                            f'4 sections + 1 transferir + 1 vars esperados dentro de grid-body; {n_sections} sections + {n_transferir} transferir + {n_vards} vars encontrados')
+        else:
+            result.fail('v3.10.54 grid-body close', 'grid-body close no encontrado')
+    else:
+        result.fail('v3.10.54 region', 'región GRID 0 no encontrada')
+
+    # CSS: regla que colapsa grid-body (sigue presente — v3.10.54 solo aseguramos
+    # que TODO el contenido del GRID esté dentro de grid-body para que esta
+    # regla aplique al 100% del contenido, no solo a las variables inputs)
+    if re.search(r"\.grid-block\.is-collapsed\s+\.grid-body\s*\{[^}]*(display\s*:\s*none|max-height\s*:\s*0)", html):
+        result.ok('v3.10.54 CSS: .grid-block.is-collapsed .grid-body colapsa contenido (regla sin cambios)')
+    else:
+        result.fail('v3.10.54 CSS', '.grid-block.is-collapsed .grid-body colapsando esperado')
+
+    # Anti-regression: las 4 script-sections NO están como siblings de grid-body
+    # (antes del fix, la cantidad de script-section como sibling era 4)
+    if grid_block_start != -1 and grid_block_end != -1:
+        region = html[grid_block_start:grid_block_end]
+        # Match script-section APARICIÓN que NO esté dentro de grid-body
+        gb_open = region.find('id="gridScript-body"')
+        gb_close = region.rfind('</div>', 0, gb_open)  # the close just BEFORE the next </div> after the right structure
+        # Simpler: count script-sections in region BEFORE grid-body
+        before_body = region[:gb_open]
+        n_sections_before = len(re.findall(r'<div[^>]*class="script-section', before_body))
+        if n_sections_before == 0:
+            result.ok('v3.10.54 ANTI-REGRESSION: 0 script-section huérfanas antes de grid-body')
+        else:
+            result.fail('v3.10.54 anti-regression', f'{n_sections_before} script-section huérfanas encontradas antes de grid-body')
+
     # BUG 2 + 3 (v3.10.50): applyScriptCollapsedStates colapsaba TODO por default
     # si no había estado persistido. v3.10.53 REMOVIÓ este auto-collapse.
     # Ahora la visibility inicial la controla applyMotivoFlow() (que oculta
