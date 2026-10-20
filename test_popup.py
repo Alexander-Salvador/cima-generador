@@ -3456,6 +3456,78 @@ def test(html_path):
         result.fail('v3.10.61 alert-icon', '.script-alert-icon con #14b8a6 esperado')
 
     # ══════════════════════════════════════════════════════════════════════
+    # v3.10.62 — BUG FIX: GRID TIPIFICACIÓN no permite seleccionar etiquetas
+    # CEO: "No permite seleccionar ninguna opcion verifica que paso y arreglalo"
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.62 — FIX GRID TIPIFICACIÓN (selección de etiquetas)')
+
+    # Root cause: el listener mousedown de cada .ac-dropdown llamaba
+    # acSelect(item.dataset.val) para TODOS los .ac-item, incluyendo los del
+    # dropdown de etiquetas (que usan data-id, no data-val) → acSelect(undefined)
+    # escribía "undefined" en el input Address + acClose() + updateOutput().
+    # FIX: guard `if (!('val' in item.dataset)) return;` — deja pasar los items
+    # de etiquetas para que los maneje el data-action delegation.
+    ac_mousedown = re.search(
+        r"drop\.addEventListener\(\s*['\"]mousedown['\"][\s\S]{0,500}?acSelect\(item\.dataset\.val\)",
+        html
+    )
+    if ac_mousedown:
+        block = ac_mousedown.group(0)
+        if "'val' in item.dataset" in block or '"val" in item.dataset' in block:
+            result.ok('v3.10.62 JS: mousedown guard `val in item.dataset` (items de etiquetas se saltan)')
+        else:
+            result.fail('v3.10.62 mousedown guard', "guard `if (!('val' in item.dataset)) return;` esperado")
+    else:
+        result.fail('v3.10.62 mousedown', 'mousedown handler con acSelect no encontrado')
+
+    # Anti-regression: el data-action delegation para select-etiqueta sigue intacto
+    if re.search(r"action === ['\"]select-etiqueta['\"]", html) and 'function selectEtiqueta(' in html:
+        result.ok('v3.10.62 ANTI-REG: data-action delegation select-etiqueta intacto')
+    else:
+        result.fail('v3.10.62 delegation', 'data-action select-etiqueta + selectEtiqueta() esperados')
+
+    # Anti-regression: los items de etiquetas usan data-id (no data-val)
+    if re.search(r'class="ac-item etiqueta-item"\s+data-id=', html) or \
+       re.search(r"data-id=\"[^\"]*\"\s+data-action=\"select-etiqueta\"", html):
+        result.ok('v3.10.62 ANTI-REG: items de etiquetas usan data-id + data-action (no data-val)')
+    else:
+        result.fail('v3.10.62 items', 'items con data-id + data-action="select-etiqueta" esperados')
+
+    # Anti-regression: el mousedown de etiquetas (click-outside) sigue respetando #ac-etiqueta
+    if re.search(r"if \(e\.target\.closest\('#ac-etiqueta'\)\) return;", html):
+        result.ok('v3.10.62 ANTI-REG: mousedown global respeta #ac-etiqueta (no cierra en click interno)')
+    else:
+        result.fail('v3.10.62 mousedown global', "guard closest('#ac-etiqueta') esperado")
+
+    # v3.10.62 FIX REAL: listener mousedown directo en #ac-etiqueta que selecciona
+    # la etiqueta inmediatamente con stopPropagation (evita que el mousedown
+    # global de click-outside cierre el dropdown antes del click).
+    etiqueta_mousedown = re.search(
+        r"\$?\(['\"]ac-etiqueta['\"]\)[\s\S]{0,300}?_etiquetaWired[\s\S]{0,600}?addEventListener\(\s*['\"]mousedown['\"][\s\S]{0,500}?selectEtiqueta\(",
+        html
+    )
+    if etiqueta_mousedown:
+        block = etiqueta_mousedown.group(0)
+        has_stop = 'stopPropagation' in block
+        has_prevent = 'preventDefault' in block
+        has_selector = 'etiqueta-item' in block
+        if has_stop and has_prevent and has_selector:
+            result.ok('v3.10.62 JS: mousedown directo en #ac-etiqueta con stopPropagation + preventDefault')
+        else:
+            missing = [n for n, v in [('stopPropagation', has_stop),
+                                      ('preventDefault', has_prevent),
+                                      ('etiqueta-item selector', has_selector)] if not v]
+            result.fail('v3.10.62 mousedown handler', f'faltan: {missing}')
+    else:
+        result.fail('v3.10.62 etiqueta mousedown', 'listener mousedown en #ac-etiqueta con selectEtiqueta no encontrado')
+
+    # Anti-regression: el guard _etiquetaWired evita doble-registro
+    if '!dropEl._etiquetaWired' in html and 'dropEl._etiquetaWired = true' in html:
+        result.ok('v3.10.62 ANTI-REG: guard _etiquetaWiredpreviene doble-registro del listener')
+    else:
+        result.fail('v3.10.62 wired guard', 'guard _etiquetaWired (check + set) esperado')
+
+    # ══════════════════════════════════════════════════════════════════════
     # v3.10.44 (LEGACY) — HEADER "ESTRUCTURA DE LLAMADA" + MOTIVO CARDS
     #   Reemplazado por v3.10.51: MOTIVO = 1 <select> dropdown con 4 options.
     #   Las 4 cards visuales Apple-2026 (motivo-card / motivo-grid / Próximamente)
