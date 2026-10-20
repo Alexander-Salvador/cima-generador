@@ -1,5 +1,59 @@
 # Changelog — cima-generador
 
+## [3.10.58] - 2026-10-20 — 🚨 FIX CRÍTICO: llave CSS extra rompía TODO el stylesheet
+
+**CEO directive:**
+> "No arreglaste nada se mantiene igual no llegaste a ningun estilo recuerda que estamos hablando a nivel LOCAL http://127.0.0.1:8765/index.html?popup=1"
+
+**Screenshots del CEO:**
+- Grid Address: 2 botones `cobertura-btn` / `btn-icon-clear` aplastados (~10px, sin width/height)
+- Grid Address: `.output-box` "Aqui se llenaran los datos" gigante (sin height fijo 36px)
+- Grid Tipif: SVG de etiquetas de transferencia gigante (~300px, sin width/height)
+
+**ROOT CAUSE REAL (v3.10.51, no v3.10.56):**
+
+Al hacer cleanup de `.motivo-card-label` en v3.10.51, quedaron 3 líneas huérfanas + **1 llave `}` extra**:
+
+```css
+.script-card.motivo-flash {
+    animation: motivoFlashPulse 1.8s ...;
+    border-color: color-mix(...);
+  }                    ← cierra .script-card.motivo-flash ✓
+    color: var(--text-faint);      ← HUÉRFANO (era de .motivo-card-label)
+    line-height: 1.2;              ← HUÉRFANO
+  }                    ← LLAVE EXTRA — no abre nada, CIERRA 2 bloques ajenos
+```
+
+**Consecuencia (por qué rompieron TODAS las grids):**
+
+La llave extra `}` cerraba prematuramente 2 bloques CSS legítimos. Desde ese punto (~línea 926) hasta el final, **todo el CSS quedó anidado dentro de reglas mal formadas** → el browser ignoraba ~6800 líneas de CSS:
+
+| CSS roto | Síntoma en pantalla |
+|---|---|
+| `.btn-icon-clear { width/height: 36px }` | botón aplastado 10px |
+| `.cobertura-btn { flex: 0 0 36px; width/height: 36px }` | botón aplastado 10px |
+| `.output-box { height: 36px }` | output box gigante |
+| `.etiqueta-categories { grid-template-columns }` | SVG etiquetas 300px |
+| `.ac-item`, `.field input`, `.script-card`, etc. | TODOS rotos |
+
+**FIX:**
+
+1. Removidas 3 líneas huérfanas (`color`, `line-height`) + llave `}` extra.
+2. Agregada llave `}` faltante que faltaba en `.section-pill[aria-expanded="true"] + .section-pill-content` (bug v3.10.56,ABIERTO desde línea 1462 hasta el final).
+
+**Balance CSS final: 529 `{` = 529 `}` ✅**
+
+**Tests agregados (v3.10.58):**
+- CSS brace balance check (529/529) — **este test hubiera detectado el bug v3.10.51**
+- Anti-regression: `.btn-icon-clear` CSS top-level rule existe
+- Anti-regression: `.output-box` CSS top-level rule existe
+- Anti-regression: `.etiqueta-categories` CSS top-level rule existe
+- Anti-regression: `.cobertura-btn` CSS top-level rule existe
+
+**Verificación local:** 657/657 tests PASS + CSS balance verificado en servidor LIVE (529/529).
+
+**Lección (CRIT-004 — arquitectura, no parches):** un solo `}` de más destruye 6800 líneas de CSS silenciosamente. **Todo cambio CSS DEBE validar balance de llaves antes de commitear.** Este test ahora es gate obligatorio.
+
 ## [3.10.57] - 2026-10-20 — 🐛 FIX: grid-body max-height 1200px clipeaba contenido (todas las grids rotas)
 
 **CEO directive:**
