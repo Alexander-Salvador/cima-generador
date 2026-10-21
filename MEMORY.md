@@ -2206,3 +2206,47 @@ Más `Etiquetas de Transferencia.xlsx` (3.18MB) en `Recursos CIMA/Etiquetas de T
 5. **Toda queja/reclamo:** agregar **color en observaciones** + ruta Call Center (1ra línea → Pool Retenciones) o Canales Escritos (104/tienda).
 6. **Tipificación CRM:** Motivo "Internet No Navega" + SubMotivo "Configuración equipo Datos 2G/3G / No datos" + Móviles/No APN "Movistar.pe".
 7. **Baja servicio siempre** con speech "desear viajar…" + CEE + delivery si no acepta.
+
+---
+
+## 📌 PENDIENTE — `launcher.html` nuevo (NO COMMITEADO) — 2026-10-21
+
+**Contexto:** CEO pidió combinar 2 botones (popup + nueva ventana) en 1 row para Google Sites. Generé HTML completo en chat (2026-10-21 ~12:00) pero **NO escribí aún** en `apps/cima-generador/launcher.html`.
+
+**CEO directive explícita:** *"primero debemos seguir remodelando el frontend"* → trabajo diferido.
+
+**HTML ya diseñado y validado (listo para copy-paste cuando se apruebe):**
+
+| Feature | Detalle |
+|---|---|
+| Layout | flex row, 2 botones en 1 row, `flex-wrap` en <480px |
+| Botón 🟠 **Popup** | naranja `#f97316`, abre CIMA en popup **520×720** (idéntico al original `abrirCIMA()`) |
+| Botón 🔵 **Nueva Ventana** | cian `#38bdf8`, abre CIMA en nueva ventana del browser (`window.open(url,'_blank',...)` sin features) |
+| Coherencia visual | mismo `.btn-cima` base + variantes `.btn-cima--popup` y `.btn-cima--newtab` |
+| Responsive | <480px → stack vertical full-width |
+| Accesibilidad | `role="group"`, `aria-label`, `focus-visible`, keyboard nav |
+| Hints en hover | `"520×720"` y `"Ctrl+Click"` (opacity 0→1) |
+| Tracker origen | `?popup=1&launcher=popup` vs `?launcher=newtab` (analytics/origen para popup) |
+| Memoria | `localStorage.cima_launcher_pref` recuerda último botón usado |
+| Atajos nativos | Ctrl/Cmd/Shift+click → delega al browser (no conflicto) |
+| Fallback robusto | try/catch + anchor dinámico (resistente a popup blockers) |
+| Hardening | `p.opener=null` + `noopener,noreferrer` en ambas ramas |
+| Tamaño | ~131 líneas, 1 archivo standalone |
+
+**Decision CEO pendiente (3 opciones):**
+
+| Opción | Acción | Trade-off |
+|---|---|---|
+| **A** | Reemplazar `apps/cima-generador/launcher.html` actual (v2.1.1 dev-interno) | Pierde menú dev (Popup/Standalone/JSON) |
+| **B** | Crear `apps/cima-generador/launcher-v2.html` paralelo | Mantiene dev + nuevo convive |
+| **C** | Solo embeber en Google Sites (no commitear al repo) | Producción sin pasar por git |
+
+**Estimación:** **5min** si CEO aprueba (escritura + commit local).
+
+**Bloqueante:** NO. Diferible hasta CEO diga "ahora sí" tras remodelación frontend.
+
+**Estado:** Diseñado ✅ · Implementado ❌ · Commiteado ❌
+
+**Tag grepeable:** `## 📌 PENDIENTE — \`launcher.html\` nuevo` (búsqueda rápida en MEMORY)
+
+---
