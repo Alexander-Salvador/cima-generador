@@ -161,9 +161,14 @@
    python3 test_codereview.py     # code review
    python3 test_cobertura_peru.py # cobertura nacional
    ```
-4. **Server local:** `python3 -m http.server 8765` (puerto 8765).
-5. **URL popup mode:** `http://127.0.0.1:8765/index.html?popup=1`
-6. **Refresh:** CTRL+R (HTML crudo + JS inline, sin HMR) · CTRL+SHIFT+R = limpiar template.
+4. **Server local:** `python3 serve.py` (puerto 8765, anti-cache). Ya NO usar
+   `python3 -m http.server` — no manda `Cache-Control`, y con un documento de
+   1.2 MB el browser aplica heurística de freshness y re-sirve HTML viejo
+   (ver L-070e).
+5. **URL popup mode:** `http://localhost:8765/index.html?popup=1`
+   ⚠️ **Solo `localhost`.** `127.0.0.1` es un origin distinto con state de browser
+   separado (ver L-071). No usar IPs de LAN: no son secure context.
+6. **Refresh:** CTRL+R · CTRL+SHIFT+R = limpiar template.
 7. **Próximo bloque sugerido (CEO decide):**
    - **A:** Higiene rápida (D9 cleanup + obsolete removal + CHANGELOG catchup) — 3h
    - **B:** Atacar el gigante (R12 acHighlight 1039 líneas → descomponer) — 4-6h

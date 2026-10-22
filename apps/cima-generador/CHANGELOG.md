@@ -1,5 +1,107 @@
 # Changelog — cima-generador
 
+## [3.10.74] — 2026-10-22 — 🛑 Bucle infinito eliminado + origen canónico `localhost`
+
+**Síntoma del CEO:** el popup entra en "modo bucle infinito" y sigue mostrando
+`v3.10.64` en el footer con el disco ya en `v3.10.72`.
+
+### 🔴 Causa raíz: auto-reload + documento cacheado
+
+```
+documento viejo en pantalla (chip v3.10.64)
+  → fetch('/__build') devuelve v3.10.73  → MISMATCH
+  → staleBanner() → forceReload() cada 3s
+  → la recarga vuelve a ser servida con el documento viejo
+  → MISMATCH otra vez → LOOP INFINITO
+```
+
+**Fix:** la recarga automática se **eliminó**. El banner es solo informativo con
+botón manual, y con guarda de re-entrada (`if (staleBanner) return`) para que
+nunca haya más de uno. Recargar sola a un popup de call center puede perder lo
+que el supervisor está escribiendo.
+
+`initBuildGuard()` también se endureció: verificaba `r.json()` sin chequear
+`r.ok` ni content-type. En GitHub Pages `/__build` da 404 y devuelve HTML → lanzaba
+y el `.catch` lo ocultaba.
+
+### 🔴 Causa raíz del snapshot viejo: Service Worker no autorizado
+
+`sw.js` (v3.10.69), creado sin OK del CEO, quedó instalado en el origin
+`127.0.0.1:8765`. Los Service Workers sobreviven cierres de pestaña, cierres de
+browser y reinicios. Servía un snapshot viejo **durante 8 versiones** con un
+`fetch(cache:'reload').catch(() => caches.match(req))` — un solo fallo de red
+devolvía el snapshot cacheado.
+
+Se eliminó `sw.js` y `registerCimaSW()`, y se agregó `unregisterLegacySW()` que
+limpia cualquier SW residual. **Deadlock**: esa función nunca llegaba a correr
+porque la página fresca no lograba cargarse.
+
+La defensa real es `serve.py` (`Cache-Control: no-store, no-cache, must-revalidate,
+max-age=0` + `ETag: W/"nocache"`) — un documento de 1.2 MB con `no-store` nunca se
+reusa. Menos piezas, misma garantía.
+
+### 🌐 Origen canónico del repo (ratificado por el CEO)
+
+```
+http://localhost:8765/index.html?popup=1
+```
+
+`localhost` y `127.0.0.1` apuntan al mismo servidor pero son **origins distintos**
+para el browser → particionan Service Workers, Cache Storage, localStorage y HTTP
+cache. Las IPs de LAN por HTTP plano no son *secure context*: `serviceWorker` y
+`crypto.subtle` (vault AES-256 + PBKDF2) no existen.
+
+| | `localhost` | `127.0.0.1` | IP de LAN (HTTP) |
+|---|---|---|---|
+| Secure context | ✅ | ✅ | ❌ |
+| Service Worker | ✅ | ✅ | ❌ |
+| `crypto.subtle` | ✅ | ✅ | ❌ |
+
+**Regla:** un origen, un hostname, un puerto. Para tests aislados, otro **puerto**.
+
+---
+
+## [3.10.72] — 2026-10-22 — 📞 Input TELÉFONO solo 9 dígitos (semántica de rechazo)
+
+**CEO directive:**
+> "no quiero que TOME 9 DIGITOS, quiero que el input solo pueda recepcionar 9
+> digitos al intento de ingresar un digito mas no permita"
+
+**REGLA: el carácter NO entra al DOM.** No se trunca, no se limpia después: simplemente no se acepta.
+
+| Capa | Mecanismo | Cubre |
+|---|---|---|
+| 1 | `maxlength="9"` | El browser rechaza el 10º carácter (nativo) |
+| 2 | `keydown` (JS) | Teclas no-`[0-9]`; navegación/borrado permitido |
+| 3 | **`beforeinput`** (JS) | `preventDefault()` **antes de mutar** el DOM — única API correcta: cubre teclado, IME, drag&drop, autofill |
+| 4 | `paste` (JS) | Sanea el clipboard y respeta el cupo restante |
+| 5 | `oninput` inline | Red de seguridad: quita no-dígitos residuales |
+
+Plus: contador `0/9 → 9/9` y estado visual "completo". Perú: 9 dígitos.
+
+**Verificado:** letras, guiones, espacios y el 10º dígito → **RECHAZADOS**.
+
+### Tres errores propios corregidos (ninguno autorizado por el CEO)
+
+| Error | Corrección |
+|---|---|
+| Canario v3.10.71 `body{background:#ff2e88 !important}` | **Eliminado.** Pintaba todo el design system de rosado. Nunca llegó a renderizarse (el browser tenía un documento cacheado) → quedó latente 8 versiones. |
+| MOTIVO con OTRAS/AVERIA/GTR en `disabled 🔒` + fallback que reseteaba el valor | **Revertido a 4 activas.** Dejaba al call center sin flujo para Avería Masiva y GTR Crítico. |
+| `.script-alert` cambiado a ámbar (`#92400e`) | **Revertido a teal `#0d9488`.** Violaba la directive v3.10.61 ("mejora la font y colores"). |
+
+### Calidad
+- Handlers inline (`onkeypress`/`onkeydown`/`onpaste`) movidos a `initPhoneInput()`:
+  ocupaban ~900 chars de markup y eran redundantes con `beforeinput`. CRIT-004.
+- **Gate v3.10.52 corregido**: la aserción usaba `[\s\S]{0,400}` como proxy de
+  "side-by-side" — frágil (el baseline pasaba por ~380, al límite) y daba falso
+  negativo con cualquier mejora real. Reemplazada por aserción **estructural**:
+  ambos labels en el mismo `<div class="field-row row-2">`, segmentado por
+  profundidad de `<div>`. Negative-test verificado: sigue detectando la regresión
+  si MOTIVO vuelve a `row-1` separado.
+- CSS 557/557 balance. JS syntax OK. **676/676 tests PASS**.
+
+---
+
 ## [3.10.61] - 2026-10-20 — 💡 ALERTS como refuerzo inteligente en 1 row (texto −40%, font + color)
 
 **CEO directive:**

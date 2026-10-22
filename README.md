@@ -14,14 +14,21 @@ Identidad del grupo WhatsApp del equipo: **CIMA**.
 
 ### Popup CIMA (frontend principal)
 
-```bash
-# Servidor local (puerto 8765 — NO 8000)
-cd apps/cima-generador && python3 -m http.server 8765
+> ⚠️ **Origen canónico: `localhost`.** Un solo hostname, un solo puerto, para
+> siempre. `127.0.0.1` e IPs de LAN están **prohibidos** — son origins distintos
+> con state de browser separado (Service Workers, Cache Storage, localStorage) y
+> las IPs de LAN por HTTP plano no son *secure context* (`crypto.subtle` y
+> `serviceWorker` no existen). Ver la ley en [AGENTS.md](./AGENTS.md).
 
-# Abrir
-#   Popup (Google Sites): http://127.0.0.1:8765/index.html?popup=1
-#   Standalone:          http://127.0.0.1:8765/index.html
-#   Launcher:            http://127.0.0.1:8765/launcher.html
+```bash
+# Servidor local con anti-cache (puerto 8765 — NO 8000)
+cd apps/cima-generador && python3 serve.py
+
+# Abrir SIEMPRE por localhost
+#   Popup (Google Sites): http://localhost:8765/index.html?popup=1
+#   Popup + diagnóstico: http://localhost:8765/index.html?popup=1&debug=1
+#   Launcher:             http://localhost:8765/launcher.html
+#   Salud:                http://localhost:8765/__health
 
 # Tests
 python3 test_popup.py           # 676 tests — UI/CSS/JS structure
@@ -33,6 +40,10 @@ python3 test_security.py        # secrets scan
 # ⚠️  Si cambiaste CSS: un solo `}` de más rompe TODO el stylesheet.
 #     El test suite valida balance de llaves — NO lo ignores.
 ```
+
+**Si el popup muestra una versión vieja** (el footer no coincide con el chip de
+build): abrí incógnito (`Ctrl+Shift+N`). El origin limpio confirma si el código
+sirve o si hay estado residual del browser.
 
 ### Sheets bridge (backend legacy)
 
@@ -77,6 +88,11 @@ curl -s https://alexander-salvador.github.io/cima-generador/ \
 
 **LIVE:** https://alexander-salvador.github.io/cima-generador/
 
+> **Estado:** producción en `v3.10.63`. El local va en `v3.10.74`. El fix del
+> input TELÉFONO (solo 9 dígitos) **aún no está desplegado** — los agentes siguen
+> viendo `type="text" maxlength="40"`. Deploy pendiente de OK del CEO.
+
 ---
 
-*OVAV-migrated: 2026-10-05* · *Popup v3.10.63 (2026-10-20)*
+*OVAV-migrated: 2026-10-05* · *Popup local v3.10.74 / LIVE v3.10.63 (2026-10-22)*
+*Origen canónico de desarrollo: `http://localhost:8765/index.html?popup=1`*
