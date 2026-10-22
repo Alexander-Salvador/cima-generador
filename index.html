@@ -1178,9 +1178,10 @@
     border-radius: 999px;
     padding: 3px 10px;
     background: linear-gradient(135deg,
-      color-mix(in srgb, #10b981 7%, var(--glass-2-bg)) 0%,
+      color-mix(in srgb, #10b981 6%, var(--glass-2-bg)) 0%,
       color-mix(in srgb, #059669 3%, var(--glass-1-bg)) 100%);
     border: 1px solid color-mix(in srgb, #10b981 24%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1220,11 +1221,12 @@
   .script-card-label { display: none; }
   .script-card.is-collapsed .script-card-label {
     display: block;
-    font-size: 10.5px;
-    font-weight: 600;
-    color: color-mix(in srgb, var(--text) 72%, transparent);
-    letter-spacing: 0.01em;
-    line-height: 1.5;
+    font-size: 10px;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--text) 80%, transparent);
+    letter-spacing: 0.06em;
+    line-height: 1.45;
+    text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1237,6 +1239,11 @@
       color-mix(in srgb, #10b981 12%, var(--glass-2-bg)) 0%,
       color-mix(in srgb, #059669 5%, var(--glass-1-bg)) 100%);
   }
+  /* v3.10.65: CEO revirtió variantes BIENVENIDA azules — "muy tosco".
+     Removidas 4 reglas (border/dot/chevron/hover azules para
+     data-script-id="bienvenida" y "atencion-segura"). Las 8 cards
+     ahora comparten el estilo sutil universal (border 1px verde sage,
+     dot 12px, chevron 9px, sin box-shadow externa). */
   .script-card.is-collapsed:hover::after {
     color: #10b981;
     transform: translateX(1px);
@@ -1482,6 +1489,200 @@
     opacity: 1;
   }
 
+  /* v3.10.66 BUG FIX: cuando MOTIVO está vacío, los section-pill deben
+     verse como labels planos (sin affordances de expansión). El usuario
+     debe seleccionar MOTIVO para "desbloquear" el flujo. Sin esta clase,
+     los section-pill muestran meta `(N)` + chevron rotatorio + cursor
+     pointer, sugiriendo clickabilidad que aún no aplica (no hay cards
+     visibles dentro). */
+  body.motivo-pending .section-pill-meta,
+  body.motivo-pending .section-pill-chevron {
+    display: none;
+  }
+  body.motivo-pending .section-pill {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  body.motivo-pending .section-pill:hover,
+  body.motivo-pending .section-pill:active {
+    transform: none;
+  }
+  body.motivo-pending .section-pill::after,
+  body.motivo-pending .section-pill:hover::after,
+  body.motivo-pending .section-pill:focus-visible::after {
+    background: transparent;
+    box-shadow: none;
+  }
+  body.motivo-pending .section-pill-icon {
+    opacity: 0.55;
+    transform: none;
+  }
+
+  /* v3.10.72: CANARIO v3.10.71 RETIRADO. Era un override temporal
+     `body{background:#ff2e88 !important}` usado para diagnosticar caché.
+     Nunca llegó a renderizarse (el documento en el browser era una copia
+     cacheada anterior), quedó latente 8 versiones y habría roto el design
+     system completo al desplegar. Eliminado por ser debug muerto. */
+
+  /* v3.10.70: banner de caché obsoleta. Aparece SOLO si el build del documento
+     no coincide con el del servidor — es decir, solo si estás viendo una
+     versión vieja. Nunca aparece en operación normal. */
+  #staleBanner {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 2147483647;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 14px;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, #dc2626, #b91c1c);
+    color: #fff;
+    font: 700 12px/1.5 system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 18px rgba(185, 28, 28, 0.4);
+  }
+  #staleBanner strong {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  #staleBanner code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.28);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  #staleBanner #staleReload {
+    padding: 5px 12px;
+    border: 0;
+    border-radius: 7px;
+    background: #fff;
+    color: #b91c1c;
+    font: 800 11px/1 system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  #staleBanner #staleReload:hover { background: #fee2e2; }
+  #staleBanner .stale-auto {
+    font-weight: 500;
+    opacity: 0.9;
+    font-size: 11px;
+  }
+
+  /* v3.10.70: input TELÉFONO rediseñado — rechazo en origen + contador.
+     Semántica de rechazo: al llegar a 9/9 el input se marca "completo" y
+     cualquier intento adicional no entra (maxlength nativo + onkeypress).
+     El contador da feedback inmediato para que el agente sepa cuándo parar. */
+  .phone-input-wrap {
+    position: relative;
+    display: block;
+  }
+  .phone-input {
+    width: 100%;
+    /* Deja aire al contador a la derecha sin solapar el texto. */
+    padding-right: 44px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+  }
+  .phone-counter {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-faint) 14%, transparent);
+    color: var(--text-faint);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    pointer-events: none;
+    transition: background 0.18s var(--motion-ease), color 0.18s var(--motion-ease);
+  }
+  .phone-input-wrap.is-full .phone-counter {
+    background: color-mix(in srgb, #10b981 22%, transparent);
+    color: color-mix(in srgb, #10b981 95%, var(--text));
+  }
+  .phone-input-wrap.is-full .phone-input {
+    border-color: color-mix(in srgb, #10b981 55%, transparent);
+  }
+  /* Rechazo visible: cuando se intenta escribir y no se acepta, el campo
+     "sacude" una vez. Es feedback no bloqueante: el supervisor puede
+     seguir escribiendo (nada entra) y entiende por qué. */
+  .phone-input-wrap.is-rejected .phone-input {
+    animation: phoneReject 0.24s var(--motion-ease);
+  }
+  @keyframes phoneReject {
+    0%, 100% { transform: translateX(0); }
+    30%      { transform: translateX(-3px); }
+    65%      { transform: translateX(3px); }
+  }
+  .phone-help {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-faint);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
+  }
+  .phone-input-wrap.is-full .phone-help {
+    color: color-mix(in srgb, #10b981 88%, var(--text));
+  }
+
+  /* v3.10.69: build chip — muestra el build servido junto al título del GRID 0.
+     Verificación visual de caché sin DevTools: si el número no cambia al
+     recargar, el browser está mostrando otro archivo. */
+  .build-chip {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, #10b981 16%, transparent);
+    border: 1px solid color-mix(in srgb, #10b981 34%, transparent);
+    color: color-mix(in srgb, #10b981 92%, var(--text));
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  /* v3.10.68: DEBUG BANNER (?debug=1) — auto-verificación de runtime.
+     Muestra el estado REAL del DOM (no de lo que creemos en el HTML):
+     versión del footer, maxLength real del input teléfono, cantidad de
+     badges .script-badge en el DOM, y timestamp de carga. Existe para
+     eliminar la ambigüedad "cambié el código pero no se ve" — si el
+     banner dice v3.10.68 y maxLength=9, el browser sirve ESTE archivo. */
+  #debugBanner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2147483647;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: center;
+    padding: 5px 10px;
+    background: #111827;
+    color: #e5e7eb;
+    font: 600 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.02em;
+    border-top: 2px solid #22c55e;
+  }
+  #debugBanner .db-k { color: #9ca3af; }
+  #debugBanner .db-v { color: #4ade80; }
+  #debugBanner .db-bad { color: #f87171; }
+
   /* Collapsible content area — max-height transition */
   .section-pill-content {
     max-height: 0;
@@ -1495,7 +1696,7 @@
   .section-pill[aria-expanded="true"] + .section-pill-content {
     max-height: 2000px;
     opacity: 1;
-    margin-top: 6px;
+    margin-top: 4px;
     transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
                 opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.05s,
                 margin-top 0.32s cubic-bezier(0.22, 1, 0.36, 1);
@@ -3847,6 +4048,8 @@ font-size: 10px;
 </style>
 </head>
 <body>
+<!-- v3.10.72: canario de control RETIRADO (era temporal, nunca se vio,
+     y el CSS `#ff2e88 !important` habría destruido el design al deploy). -->
 <!-- APAGADO MODAL (v3.5.0) — contenedor del popover inteligente -->
 <div id="apagadoModal" class="apagado-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="apagadoModalTitle"></div>
 
@@ -3884,6 +4087,10 @@ font-size: 10px;
         <button type="button" class="grid-toggle" id="gridScript-toggle"
                 aria-expanded="true" aria-controls="gridScript-body">
           <h3>Estructura de Llamada</h3>
+          <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
+               tras recargar, el browser está sirviendo otro archivo/versión.
+               Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.72</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -3911,26 +4118,54 @@ font-size: 10px;
                  <input id="script-cliente" type="text" placeholder="(nombre del cliente)" autocomplete="off" maxlength="80" data-script-var="cliente">
                </div>
              </div>
-             <!-- v3.10.52: row-2 con [TELÉFONO DE CONSULTA] + [Motivo] side-by-side -->
-             <div class="field-row row-2">
-               <div class="field">
-                 <label for="script-telefono">TELÉFONO DE CONSULTA</label>
-                 <input id="script-telefono" type="text" placeholder="(número en consulta)" autocomplete="off" maxlength="40" data-script-var="telefono">
-               </div>
-               <div class="field">
-                 <label for="script-motivo">Motivo</label>
-                 <!-- v3.10.51: MOTIVO = 1 dropdown con 4 opciones. Cada <option>
-                      ocupa 1 row cuando el dropdown está abierto. Click en
-                      opción ejecuta flow de desglose (v3.10.49). -->
-                 <select id="script-motivo" data-script-var="motivo" autocomplete="off">
-                   <option value="">— Seleccionar motivo —</option>
-                   <option value="MOVIL">Técnico Móvil</option>
-                   <option value="OTRAS">Otras Consultas</option>
-                   <option value="AVERIA">Avería Masiva</option>
-                   <option value="GTR">GTR Crítico</option>
-                 </select>
-               </div>
-</div>
+<!-- v3.10.52: row-2 con [TELÉFONO DE CONSULTA] + [Motivo] side-by-side
+
+   v3.10.70 — REDISEÑO COMPLETO del input TELÉFONO (semántica de RECHAZO).
+   CEO directive (2026-10-22, literal): "no quiero que TOME 9 DIGITOS, quiero que
+   el input solo pueda recepcionar 9 digitos al intento de ingresar un digito mas
+   no permita" → el carácter NO entra al DOM: no se trunca, no se limpia después.
+
+   CAPAS (todas rechazan en origen, ninguna repara después):
+     1. maxlength="9"        → el browser rechaza el 10º carácter (nativo).
+     2. onkeypress/onkeydown inline → return false para teclas no-[0-9].
+     3. beforeinput (JS)    → preventDefault() rechaza ANTES de mutar el DOM.
+                                Única API correcta: cubre IME, drag&drop, autofill.
+     4. onpaste inline      → sanea clipboard y respeta el cupo restante.
+     5. oninput inline/JS   → red de seguridad: quita no-dígitos residuales.
+
+   Además: contador 0/9..9/9 + estado visual "completo". Perú: 9 dígitos. -->
+
+              <div class="field-row row-2">
+                <div class="field">
+                  <label for="script-telefono">TELÉFONO DE CONSULTA</label>
+                  <div class="phone-input-wrap">
+                    <input id="script-telefono" type="tel" class="phone-input"
+                           placeholder="992319171" autocomplete="off" inputmode="numeric"
+                           pattern="[0-9]{9}" maxlength="9"
+                           aria-describedby="phoneHelp"
+                           aria-label="Teléfono de consulta, solo números, 9 dígitos"
+                           oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                           data-script-var="telefono">
+                    <span class="phone-counter" id="phoneCounter" aria-hidden="true">0/9</span>
+                    <span class="phone-help" id="phoneHelp">Solo números · 9 dígitos</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="script-motivo">Motivo</label>
+                  <!-- v3.10.51: MOTIVO = 1 dropdown con 4 opciones. Click en
+                       opción ejecuta flow de desglose (v3.10.49).
+                       v3.10.72: las 4 opciones vuelven a estar HABILITADAS —
+                       el bloqueo 🔒 era un cambio de comportamiento no
+                       autorizado (solo MOVIL tenía speeches completos). -->
+                  <select id="script-motivo" data-script-var="motivo" autocomplete="off">
+                    <option value="">— Seleccionar motivo —</option>
+                    <option value="MOVIL">Técnico Móvil</option>
+                    <option value="OTRAS">Otras Consultas</option>
+                    <option value="AVERIA">Avería Masiva</option>
+                    <option value="GTR">GTR Crítico</option>
+                  </select>
+                </div>
+              </div>
              </div>
 <!-- v3.10.34: ESTRUCTURA REFINADA con click-to-collapse.
               Click en cualquier card = minimiza (solo título visible) → contained
@@ -3969,7 +4204,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="bienvenida">
-                <span class="script-card-label" aria-hidden="true">Bienvenida + confirmación número</span>
+                <span class="script-card-label" aria-hidden="true">Bienvenida speech</span>
                 <div class="script-card-body">
                   <!-- v3.10.44: Speech bienvenida — CEO directive.
                        "¿Su consulta es por el numero que termina en {Telefono en consulta}?
@@ -3981,7 +4216,7 @@ font-size: 10px;
               </div>
 
               <div class="script-card" data-script-id="atencion-segura">
-                <span class="script-card-label" aria-hidden="true">Ofrecer devolución de llamada</span>
+                <span class="script-card-label" aria-hidden="true">Atención segura</span>
                 <div class="script-card-body">
                   <!-- v3.10.46: CEO directive — "si la llamada llegara a cortarse,
                        ¡puedo devolverle la llamada al numero de su consulta o
@@ -4110,10 +4345,10 @@ font-size: 10px;
               <div class="script-card" data-script-id="encuesta">
                 <span class="script-card-label" aria-hidden="true">Encuesta de satisfacción</span>
                 <div class="script-card-body">
-                  <span class="script-badge script-badge--star" aria-label="Speech de encuesta">★</span>
                   <!-- v3.10.46: CEO directive — "En 48 horas lo contactaremos para
                   confirmar su experiencia final con la solucion que le brinde." -->
                   <!-- v3.10.48: nombre al inicio (no estaba antes), frase más cordial -->
+                  <!-- v3.10.66: badge ★ RETIRADO (CEO: "retira el icono"). -->
                   <p class="script-card-text" id="script-text-encuesta">"Antes de cerrar <span class="ph" data-ph="cliente">{Cliente}</span>, le agradeceré completar una breve encuesta sobre la atención que recibió. En 48 horas lo contactaremos para confirmar su experiencia final con la solución que le brindé. ¡Muchas gracias por su tiempo!"</p>
                 </div>
               </div>
@@ -4387,7 +4622,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.63</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.72</span>
     </span>
   </footer>
 </div>
@@ -4717,6 +4952,14 @@ function setScriptVar(name, value) {
 // v3.10.53: visibility de cards/alerts según MOTIVO se delega a
 // applyMotivoFlow() (controlado por el evento 'change' del select). Este
 // handler SOLO actualiza los placeholders de los {Vars} (no toca visibility).
+// v3.10.67: sanitiza TELÉFONO — solo dígitos, máx 9 (formato Perú 9xxxxxxx).
+// Perú usa 9 dígitos (992319171). Defense in depth: el HTML ya trae
+// maxlength="9" + inputmode="numeric", pero setScriptVar() al restaura
+// desde localStorage puede escribir un valor legacy >9 (v3.10.66 usaba
+// maxlength="40"). Esta capa garantiza el invariant en runtime.
+function sanitizeTelefono(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 9);
+}
 function updateScriptPlaceholders() {
   var _tel = getScriptVar('telefono');
   var vars = {
@@ -4933,6 +5176,11 @@ function applyMotivoFlow(value) {
       alertEl.classList.remove('is-hidden-flow');
     }
   });
+  // v3.10.66 BUG FIX: togglear clase motivo-pending en body. Cuando
+  // motivo=='', los section-pill no deben mostrar meta `(N)` ni chevron
+  // (affordances de "abrir opciones") ni ser clickeables. El usuario
+  // debe seleccionar MOTIVO primero para desbloquear el flujo visual.
+  document.body.classList.toggle('motivo-pending', !motivo);
 }
 
 // v3.10.49 / v3.10.53: "desglose" del flow al seleccionar MOTIVO.
@@ -8043,11 +8291,30 @@ document.addEventListener('DOMContentLoaded', function () {
   ['agente', 'cliente', 'telefono', 'motivo'].forEach(function (name) {
     if (savedVars[name]) setScriptVar(name, savedVars[name]);
   });
+  // 2b) v3.10.67: sanear TELÉFONO restaurado. localStorage puede contener
+  // un valor legacy >9 dígitos (o con letras) escrito antes de maxlength="9".
+  // sanitizeTelefono() fuerza el invariant "solo dígitos, máx 9".
+  var _telEl = $('script-telefono');
+  if (_telEl) {
+    var _telSaneado = sanitizeTelefono(_telEl.value);
+    if (_telSaneado !== _telEl.value) setScriptVar('telefono', _telSaneado);
+  }
   // 3) Wire up input listeners → live replace
   ['agente', 'cliente', 'telefono', 'motivo'].forEach(function (name) {
     var el = $('script-' + name);
     if (el) el.addEventListener('input', updateScriptPlaceholders);
   });
+  // 3b) v3.10.67: input listener dedicado para TELÉFONO — filtra no-dígitos
+  // en vivo y trunca a 9 mientras el agente escribe (no solo al salir/blur).
+  if (_telEl) {
+    _telEl.addEventListener('input', function () {
+      var limpio = sanitizeTelefono(_telEl.value);
+      if (limpio !== _telEl.value) {
+        _telEl.value = limpio;
+        updateScriptPlaceholders();
+      }
+    });
+  }
   // 4) Render inicial (reemplaza vars persistidas si existen)
   updateScriptPlaceholders();
   // 5) v3.10.34: click-to-collapse — aplicar estados persistidos + wire up listeners
@@ -8059,10 +8326,18 @@ document.addEventListener('DOMContentLoaded', function () {
   initMotivoSelect();
   // v3.10.53: aplicar visibility inicial del flow según MOTIVO (puede estar
   // restaurado del localStorage). Sin motivo → todas las texts ocultas.
+  // v3.10.72: fallback de motivo RETIRADO.(v3.10.64 bloqueaba OTRAS/AVERIA/GTR
+  // en el select y aquí reseteaba el valor; ambos eran cambios de comportamiento
+  // NO autorizados por el CEO que alteraban producción. Las 4 opciones vuelven
+  // a estar habilitadas como en v3.10.63.)
   applyMotivoFlow(getScriptVar('motivo'));
   // D-30: CCPP lazy load (625KB) — se carga al primer focus de distrito/ccpp
   renderTipifs();        // Inicializa grid 2 (vacío)
+  initPhoneInput();   // v3.10.70: rechazo en origen + contador 0/9
+  initBuildGuard();  // v3.10.70: autorrecarga si el build está viejo
   initPopupMode();      // D-8: responsive desktop + botón X cerrar
+  initDebugBanner();    // v3.10.68: auto-verificación (?debug=1)
+  registerCimaSW();     // v3.10.69: red-only (mata el cache de navegación)
   // Event delegation para tipifList (cubre add/copy/remove/etc)
   var tipifList = $('tipifList');
   if (tipifList) tipifList.addEventListener('click', tipifListHandler);
@@ -8352,6 +8627,213 @@ function auditZonasApagadas() {
     console.log('[CIMA audit] ZONAS_APAGADAS OK: ' + ZONAS_APAGADAS.ccpp_keys.size + ' CCPPs, ' +
       ZONAS_APAGADAS.districts_with_off.size + ' districts, ' + iptSize + ' ipt');
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// DEBUG BANNER (v3.10.68) — ?debug=1
+// ══════════════════════════════════════════════════════════════════════
+// Existe para cerrar la ambigüedad "cambié el código y no se ve".
+// Muestra el estado REAL del DOM en runtime, no del HTML en disco:
+//   - versión del footer (#footerVersion)
+//   - maxLength real del input #script-telefono (leído del DOM)
+//   - cantidad de .script-badge renderizados (debe ser 0 tras quitar ★)
+//   - timestamp de carga + hora del último fetch
+// Si el banner dice v3.10.68 / maxLength 9 / badges 0, el browser está
+// sirviendo este archivo — no hay caché de por medio.
+// Uso: http://127.0.0.1:8765/index.html?popup=1&debug=1
+// ══════════════════════════════════════════════════════════════════════
+function initDebugBanner() {
+  if (!/[?&]debug=1\b/.test(location.search)) return;
+  var bar = document.createElement('div');
+  bar.id = 'debugBanner';
+  document.body.appendChild(bar);
+
+  function fmt(k, v, bad) {
+    return '<span><span class="db-k">' + k + '</span> <span class="' +
+      (bad ? 'db-bad' : 'db-v') + '">' + v + '</span></span>';
+  }
+
+  function paint() {
+    var ver = document.getElementById('footerVersion');
+    var tel = document.getElementById('script-telefono');
+    var badges = document.querySelectorAll('span.script-badge').length;
+    var motivo = document.getElementById('script-motivo');
+    var selOpts = motivo ? motivo.querySelectorAll('option[disabled]').length : 0;
+    bar.innerHTML =
+      fmt('VER', ver ? ver.textContent.trim() : '?') +
+      fmt('TEL maxLength', tel ? String(tel.maxLength) : 'NO EXISTE', !tel) +
+      fmt('badges DOM', String(badges), badges !== 0) +
+      fmt('opciones MOTIVO bloqueadas', String(selOpts)) +
+      fmt('cargado', new Date().toLocaleTimeString('es-PE'));
+  }
+  paint();
+  // Repinta tras cualquier cambio de valor (inputs)
+  ['script-telefono', 'script-motivo'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', paint);
+    if (el) el.addEventListener('change', paint);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// TELÉFONO — Init del input rediseñado (v3.10.70)
+// ══════════════════════════════════════════════════════════════════════
+// `beforeinput` es la API correcta para RECHAZAR: se dispara ANTES de que
+// el DOM mute y `preventDefault()` cancela la inserción. A diferencia de
+// `input` (que repara después de facto), aquí el carácter nunca existe.
+//
+// El inline onkeypress ya cubre teclado; beforeinput cubre IME, drag&drop,
+// autofill y composición — rutas que onkeypress no ve.
+function initPhoneInput() {
+  var el = $('script-telefono');
+  if (!el) return;
+  var wrap = el.closest('.phone-input-wrap');
+  var counter = $('phoneCounter');
+  var MAX = 9;
+
+  function paint() {
+    var n = el.value.replace(/[^0-9]/g, '').length;
+    if (counter) counter.textContent = n + '/' + MAX;
+    if (wrap) wrap.classList.toggle('is-full', n >= MAX);
+  }
+
+  function reject() {
+    if (!wrap) return;
+    wrap.classList.remove('is-rejected');
+    // reflow para reiniciar la animación
+    void wrap.offsetWidth;
+    wrap.classList.add('is-rejected');
+    setTimeout(function () { wrap.classList.remove('is-rejected'); }, 260);
+  }
+
+  el.addEventListener('beforeinput', function (e) {
+    // Delete/Backspace y navegación: permitido.
+    if (e.inputType && e.inputType.indexOf('delete') === 0) return;
+    if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') return;
+
+    var data = e.data;
+    if (data == null) return;   // sin datos (p.ej. composición): deja pasar
+
+    // 1) Rechaza cualquier no-dígito.
+    if (!/^[0-9]+$/.test(data)) { e.preventDefault(); reject(); return; }
+    // 2) Rechaza si NO cabe (semántica de rechazo, no de truncado).
+    if (el.value.length + data.length > MAX) { e.preventDefault(); reject(); return; }
+  });
+
+  // Cubre IME/composition y cualquier ruta que beforeinput no capture.
+  el.addEventListener('input', function () {
+    var limpio = el.value.replace(/[^0-9]/g, '');
+    if (limpio !== el.value) el.value = limpio;
+    paint();
+    updateScriptPlaceholders();
+  });
+
+  // v3.10.72: los handlers inline (onkeypress/onkeydown/onpaste) se
+  // eliminaron del HTML — ocupaban ~900 chars y rompían el gate de layout
+  // v3.10.52 (ventana de 400 chars entre row-2 y script-motivo). CRIT-004:
+  // la lógica va en JS, no en markup. `beforeinput` YA cubre el teclado
+  // (dispara antes de mutar); aquí solo se.navigation + paste explícitos.
+  el.addEventListener('keydown', function (e) {
+    var nav = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (nav.indexOf(e.key) !== -1) return;   // navegación/borrado: permitido
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // atajos del browser
+    if (e.key.length === 1 && !/^[0-9]$/.test(e.key)) { e.preventDefault(); reject(); }
+  });
+
+  // Paste: sanea el clipboard y respeta el cupo restante (antes era inline).
+  el.addEventListener('paste', function (e) {
+    e.preventDefault();
+    var raw = ((e.clipboardData || window.clipboardData) || {}).getData
+      ? (e.clipboardData || window.clipboardData).getData('text')
+      : '';
+    var room = MAX - el.value.length;
+    if (room > 0) el.value = el.value + raw.replace(/[^0-9]/g, '').slice(0, room);
+    paint();
+    updateScriptPlaceholders();
+  });
+
+  // Saneo defensivo al inicio (localStorage puede traer valores legacy).
+  if (el.value) {
+    var s = sanitizeTelefono(el.value);
+    if (s !== el.value) el.value = s;
+  }
+  paint();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// BUILD GUARD — auto-curación de caché (v3.10.70)
+// ══════════════════════════════════════════════════════════════════════
+// El popup se compara contra el build que el servidor tiene en disco. Si no
+// coinciden, el documento en pantalla está VIEJO: se avisa y se recarga con
+// un cache-buster. Esto cierra el bucle "cambié el código y no se ve" sin
+// depender de que el usuario haga un hard-reload manual.
+function initBuildGuard() {
+  if (location.protocol === 'file:') return;
+  var chip = document.getElementById('buildChip');
+  var mine = chip ? chip.textContent.trim() : '';
+  if (!mine) return;
+
+  fetch('__build', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var theirs = (data && data.build) || 'unknown';
+      if (theirs === mine) return;              // todo al día
+      staleBanner(mine, theirs);
+    })
+    .catch(function () { /* sin server (file://, offline): no hacer nada */ });
+}
+
+function staleBanner(mine, theirs) {
+  var box = document.createElement('div');
+  box.id = 'staleBanner';
+  box.innerHTML =
+    '<strong>ACTUALIZACIÓN DISPONIBLE</strong>' +
+    '<span>Estás viendo <code>' + mine + '</code> · el servidor tiene <code>' + theirs + '</code></span>' +
+    '<button type="button" id="staleReload">Recargar ahora</button>' +
+    '<span class="stale-auto">Recarga automática en <b id="staleCount">3</b>s</span>';
+  document.body.appendChild(box);
+
+  var left = 3;
+  var tick = document.getElementById('staleCount');
+  var t = setInterval(function () {
+    left -= 1;
+    if (left <= 0) { clearInterval(t); forceReload(); return; }
+    tick.textContent = String(left);
+  }, 1000);
+
+  document.getElementById('staleReload').addEventListener('click', function () {
+    clearInterval(t);
+    forceReload();
+  });
+}
+
+function forceReload() {
+  var u = new URL(location.href);
+  u.searchParams.set('t', Date.now());   // cache-buster único
+  u.searchParams.set('b', (document.getElementById('buildChip') || {}).textContent || '');
+  location.replace(u.toString());
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SERVICE WORKER (v3.10.69) — red-only para navegación.
+// ══════════════════════════════════════════════════════════════════════
+// Es la pieza que elimina DEFINITIVAMENTE el bug "cambié el código y el
+// browser sigue mostrando la versión vieja". Sin SW, un document de 1.19MB
+// queda en el cache de navegación del browser y un reload puede reusarlo.
+// Con este SW, cada navegación pasa por fetch(cache:'reload') — el disco es
+// la única fuente de verdad. Se auto-desregistra si el servidor no expone
+// sw.js (compat con file:// y entornos sin SW).
+function registerCimaSW() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol === 'file:') return;   // SW no funciona en file://
+  if (/^https?:$/.test(location.protocol) === false) return;
+  navigator.serviceWorker.register('sw.js').then(function (reg) {
+    // Pedimos activación inmediata: si había un SW viejo, se reemplaza ya.
+    if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  }).catch(function () {
+    // Sin SW (CORS, CSP, entorno restringido) el popup sigue funcionando:
+    // la defensa real es el no-cache de serve.py + los atributos inline.
+  });
 }
 
 // ══════════════════════════════════════════════════════════════════════

@@ -4301,15 +4301,27 @@ def test(html_path):
     #       <div class="field"><label script-telefono>...</div>
     #       <div class="field"><label script-motivo>...</div>
     #     </div>
-    layout_ok = (
-        re.search(
-            r'<div\s+class="field-row\s+row-2">\s*<div\s+class="field">\s*<label\s+for="script-telefono"',
-            html, re.DOTALL
-        ) is not None and
-        re.search(
-            r'<div\s+class="field-row\s+row-2">[\s\S]{0,400}<label\s+for="script-motivo"',
-            html, re.DOTALL
-        ) is not None
+# v3.10.72 UPDATE: la segunda aserción usaba `[\s\S]{0,400}` como proxy de
+    #   "side-by-side compacto". Ese proxy era FRÁGIL: el baseline pasaba por
+    #   ~380 chars (justo al límite) y v3.10.70 (contador 0/9 + help text +
+    #   phone-input-wrap + atributos a11y) lo subió a ~989 → falso negativo.
+    #   La intención real es ESTRUCTURAL: ambos labels viven en el MISMO bloque
+    #   <div class="field-row row-2">. Se asserta eso, no una distancia en chars.
+    #   Segmentación por profundidad de <div> (no regex: los <div> internos anidan).
+    def _iter_blocks_by_div_depth(src, open_re):
+        for _m in re.finditer(open_re, src):
+            _i = _m.end()
+            _depth = 1
+            for _t in re.finditer(r'<div\b[^>]*>|</div>', src[_i:]):
+                _depth += -1 if _t.group(0).startswith('</') else 1
+                if _depth == 0:
+                    yield src[_m.start():_i + _t.end()]
+                    break
+
+    layout_ok = any(
+        re.search(r'<label\s+for="script-telefono"', blk) is not None and
+        re.search(r'<label\s+for="script-motivo"', blk) is not None
+        for blk in _iter_blocks_by_div_depth(html, r'<div\s+class="field-row\s+row-2"[^>]*>')
     )
     if layout_ok:
         result.ok('v3.10.52 LAYOUT: TELÉFONO + MOTIVO consolidados en 1 sola row-2 (side-by-side)')
