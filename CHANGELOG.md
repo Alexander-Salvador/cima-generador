@@ -1,5 +1,68 @@
 # Changelog — cima-generador
 
+## [3.10.76] — 2026-10-22 — 🛡️ `originGuard` mata la ruta IP + fix de mojibake visible
+
+### La ruta `127.0.0.1` deja de existir de facto
+
+El launcher es **exclusivo de desarrollo** y el origin canónico del repo es
+`localhost` (ley en `AGENTS.md`). Antes la regla dependía de que el usuario la
+recordara; ahora se cumple sola.
+
+Si el popup o el launcher se abren con un literal de loopback, redirigen a
+`localhost` conservando puerto, path y query:
+
+| Entra | Sale |
+|---|---|
+| `http://127.0.0.1:8765/launcher.html` | `http://localhost:8765/launcher.html` |
+| `http://127.0.0.1:8766/index.html?popup=1` | `http://localhost:8766/index.html?popup=1` |
+| `http://localhost:8765/index.html?popup=1` | sin cambio |
+| `https://alexander-salvador.github.io/cima-generador/` | sin cambio (producción) |
+
+**NO actúa en GitHub Pages**: el host `alexander-salvador.github.io` no es
+loopback, así que se sirve tal cual. Verificado simulando la lógica sobre 5 casos
+reales.
+
+Implementado en `launcher.html` (IIFE) e `index.html` (`originGuard()`, invocada
+en `DOMContentLoaded` junto a `unregisterLegacySW()`).
+
+### 🐛 Bug visible pre-existente corregido
+
+```js
+alertMsg('⚠️ Selecciona la RED (3G, 4G <CJK> 5G).');   // <CJK> = 2 ideogramas chinos
+```
+
+Dos ideogramas chinos (CJK) corrompían la "o" española. **Este texto lo ve un
+supervisor en el popup y estaba en producción desde el commit inicial
+(`551abc0`).**
+Corregido a `(3G, 4G o 5G)`. Barrido de mojibake en el archivo completo: **0
+restantes**.
+
+### 📌 Directive del CEO registrada (L-076)
+
+> "No metas push a remoto, no confundas, estamos trabajando en local. No vuelvas
+> a mencionar push hasta que yo autorice la solicitud. Estamos trabajando en
+> local únicamente, recursos de desarrollo primero."
+
+Que GitHub Pages sirva `v3.10.63` mientras el local va `v3.10.76` es el **estado
+correcto**, no una deuda.
+
+---
+
+## [3.10.75] — 2026-10-22 — 🧭 Launcher dev con rutas dinámicas
+
+El panel de URLs del launcher estaba hardcodeado a `http://localhost:8765`, lo
+que mentía en cuanto el server corría en otro puerto (`serve.py 8766` para tests
+aislados). Ahora las rutas se resuelven contra `location.origin` en runtime.
+
+Los `href` y el `window.open` siguen **relativos** a propósito: así el launcher
+funciona en cualquier puerto y nunca rompe por un origin hardcodeado. Un launcher
+dev-only no necesita forzar el hostname — necesita **no mentir** sobre él.
+
+Agregada la ruta `__health` al panel. Verificado con Chrome headless: las 4 URLs
+renderizan contra el origin real.
+
+---
+
 ## [3.10.74] — 2026-10-22 — 🛑 Bucle infinito eliminado + origen canónico `localhost`
 
 **Síntoma del CEO:** el popup entra en "modo bucle infinito" y sigue mostrando
