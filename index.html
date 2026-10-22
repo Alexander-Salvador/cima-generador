@@ -1567,11 +1567,6 @@
     cursor: pointer;
   }
   #staleBanner #staleReload:hover { background: #fee2e2; }
-  #staleBanner .stale-auto {
-    font-weight: 500;
-    opacity: 0.9;
-    font-size: 11px;
-  }
 
   /* v3.10.70: input TELÉFONO rediseñado — rechazo en origen + contador.
      Semántica de rechazo: al llegar a 9/9 el input se marca "completo" y
@@ -4090,7 +4085,7 @@ font-size: 10px;
           <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
                tras recargar, el browser está sirviendo otro archivo/versión.
                Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
-          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.73</span>
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.74</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -4622,7 +4617,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.73</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.74</span>
     </span>
   </footer>
 </div>
@@ -8777,45 +8772,59 @@ function initBuildGuard() {
   if (!mine) return;
 
   fetch('__build', { cache: 'no-store' })
-    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      // v3.10.74: en GitHub Pages /__build NO existe (404 → HTML). Antes se
+      // llamaba r.json() sin verificar y lanzaba; el .catch lo tapaba y
+      // ocultaba el motivo real. Ahora: si no es JSON, no hay guard (Pages).
+      if (!r.ok) return null;
+      var ct = r.headers.get('content-type') || '';
+      if (ct.indexOf('json') === -1) return null;
+      return r.json();
+    })
     .then(function (data) {
-      var theirs = (data && data.build) || 'unknown';
-      if (theirs === mine) return;              // todo al día
+      if (!data) return;                    // sin endpoint de build → no-op
+      var theirs = data.build || 'unknown';
+      if (theirs === mine) return;          // todo al día
       staleBanner(mine, theirs);
     })
     .catch(function () { /* sin server (file://, offline): no hacer nada */ });
 }
 
-function staleBanner(mine, theirs) {
-  var box = document.createElement('div');
-  box.id = 'staleBanner';
-  box.innerHTML =
-    '<strong>ACTUALIZACIÓN DISPONIBLE</strong>' +
-    '<span>Estás viendo <code>' + mine + '</code> · el servidor tiene <code>' + theirs + '</code></span>' +
-    '<button type="button" id="staleReload">Recargar ahora</button>' +
-    '<span class="stale-auto">Recarga automática en <b id="staleCount">3</b>s</span>';
-  document.body.appendChild(box);
+// v3.10.74: RECARGA AUTOMÁTICA ELIMINADA. Antes `staleBanner` corría un
+  // setInterval de 3s que llamaba `forceReload()` → `location.replace()`.
+  // Esoificialel BICLO INFINITO que reportó el CEO: si el documento en
+  // pantalla es viejo (p.ej. servido por el Service Worker eliminado en
+  // v3.10.73), el chip dice v3.10.64 y el servidor dice v3.10.73 → mismatch
+  // permanente → recarga cada 3s → el SW volvía a servir v3.10.64 → loop.
+  //
+  // Además, recargar sola a un popup de call center en pleno turno puede
+  // perder lo que el supervisor estaba escribiendo (AGENTS.md: latencia <1s,
+  // no romper el flujo de supervisión).
+  //
+  // AHORA: el banner es SOLO informativo, con botón manual, y con guarda de
+  // re-entrada para que jamás pueda haber más de uno. La curledad la
+  // guarantee `serve.py` (Cache-Control no-store) + el hard-reload del user.
+  function staleBanner(mine, theirs) {
+    if (document.getElementById('staleBanner')) return;   // guarda: 1 banner máx
+    var box = document.createElement('div');
+    box.id = 'staleBanner';
+    box.innerHTML =
+      '<strong>ACTUALIZACIÓN DISPONIBLE</strong>' +
+      '<span>Estás viendo <code>' + mine + '</code> · el servidor tiene <code>' + theirs + '</code></span>' +
+      '<button type="button" id="staleReload">Recargar ahora</button>';
+    document.body.appendChild(box);
 
-  var left = 3;
-  var tick = document.getElementById('staleCount');
-  var t = setInterval(function () {
-    left -= 1;
-    if (left <= 0) { clearInterval(t); forceReload(); return; }
-    tick.textContent = String(left);
-  }, 1000);
+    document.getElementById('staleReload').addEventListener('click', function () {
+      forceReload();
+    });
+  }
 
-  document.getElementById('staleReload').addEventListener('click', function () {
-    clearInterval(t);
-    forceReload();
-  });
-}
-
-function forceReload() {
-  var u = new URL(location.href);
-  u.searchParams.set('t', Date.now());   // cache-buster único
-  u.searchParams.set('b', (document.getElementById('buildChip') || {}).textContent || '');
-  location.replace(u.toString());
-}
+  function forceReload() {
+    var u = new URL(location.href);
+    u.searchParams.set('t', Date.now());   // cache-buster único
+    u.searchParams.set('b', (document.getElementById('buildChip') || {}).textContent || '');
+    location.replace(u.toString());
+  }
 
 // ══════════════════════════════════════════════════════════════════════
 // SERVICE WORKER — v3.10.73 ELIMINADO (era v3.10.69)
