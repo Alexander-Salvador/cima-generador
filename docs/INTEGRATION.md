@@ -21,9 +21,14 @@ URL pública: `https://alexander-salvador.github.io/cima-generador/`
 
 ```bash
 cd apps/cima-generador
-python3 -m http.server 8000
-# Abrir: http://localhost:8000
+python3 serve.py          # puerto 8765, anti-cache
+# Abrir: http://localhost:8765/index.html?popup=1
 ```
+
+⚠️ **Solo `localhost`.** `127.0.0.1` e IPs de LAN están prohibidos como origen
+de desarrollo: son origins distintos con state de browser separado, y las IPs de
+LAN por HTTP plano no son *secure context* (`serviceWorker` y `crypto.subtle` no
+existen). Ley del origen canónico en `AGENTS.md`.
 
 **IMPORTANTE:** No abrir como `file://` — los `fetch()` a `data/*.json` fallan por CORS.
 

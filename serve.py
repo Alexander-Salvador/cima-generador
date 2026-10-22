@@ -17,9 +17,30 @@ Este wrapper sirve el MISMO directorio con:
 
 Uso:
   python3 serve.py [port]      # default 8765
-  python3 serve.py 8766        # puerto alternativo
+  python3 serve.py 8766        # puerto alternativo (tests aislados)
 
 Mismo comportamiento que http.server, pero CADA reload trae el archivo real.
+
+ORIGEN CANÓNICO (ley del repo, ver AGENTS.md)
+------------------------------------------------
+El popup se desarrolla y prueba SOLO en `localhost`. `127.0.0.1` e IPs de LAN
+están prohibidos como origen de desarrollo:
+
+  - `localhost` y `127.0.0.1` apuntan aquí, pero el browser los trata como
+    ORIGINS DISTINTOS → particionan Service Workers, Cache Storage,
+    localStorage y HTTP cache. Cambiar de hostname a mitad de sesión cambia
+    de "caja de estado" sin avisar (incident: L-071, 8 versiones servidas
+    desde un Service Worker residual).
+  - Una IP de LAN por HTTP plano NO es *secure context*: `serviceWorker` y
+    `crypto.subtle` (vault AES-256 + PBKDF2) no existen.
+
+Este server hace bind a 127.0.0.1 (loopback) — el DNS de `localhost` resuelve
+a esa misma dirección, así que ambos nombres alcanzan este proceso. Lo que
+importa es cuál se ESCRIBE en la URL: usá siempre `localhost`.
+
+Para tests automatizados que no deben contaminar el estado de la sesión de
+trabajo, usá OTRO PUERTO (`python3 serve.py 8766`), nunca otro hostname: el
+puerto también particiona el origin y así el aislamiento es explícito.
 """
 
 import http.server
@@ -127,10 +148,11 @@ if __name__ == "__main__":
     facts = file_facts()
     with ReusableServer(("127.0.0.1", PORT), NoCacheHandler) as httpd:
         print("=" * 64)
-        print("CIMA dev server (NO-CACHE)")
-        print("  URLpopup : http://127.0.0.1:{}/index.html?popup=1".format(PORT))
-        print("  Debug    : http://127.0.0.1:{}/index.html?popup=1&debug=1".format(PORT))
-        print("  Salud    : http://127.0.0.1:{}/__health".format(PORT))
+        print("CIMA dev server (NO-CACHE) — origen canónico")
+        print("  URLpopup : http://localhost:{}/index.html?popup=1".format(PORT))
+        print("  Debug    : http://localhost:{}/index.html?popup=1&debug=1".format(PORT))
+        print("  Salud    : http://localhost:{}/__health".format(PORT))
+        print("  ⚠️  Usá localhost, NUNCA 127.0.0.1 ni IP de LAN (ver docstring)")
         print("  Sirviendo: {}".format(DIR))
         print("  index.html: {} bytes  md5={}".format(
             facts.get("bytes"), facts.get("md5", "?")[:12]))

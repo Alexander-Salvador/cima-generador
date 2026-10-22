@@ -152,11 +152,22 @@
 
     <div class="info">
       <div class="info-title">URLs directos</div>
-      <code>http://127.0.0.1:8765/index.html</code> — popup estándar<br>
-      <code>http://127.0.0.1:8765/index.html?popup=1</code> — forzar modo popup<br>
-      <code>file:///home/braka/Systems/projects/work/cima/apps/cima-generador/index.html</code> — sin servidor<br>
+      <!-- v3.10.75: el origen se inyecta desde location.origin en runtime.
+           Antes estaba hardcodeado `http://localhost:8765`, que mentía en
+           cuanto el server corría en otro puerto (`serve.py 8766` para tests
+           aislados). Los href de arriba siguen siendo RELATIVOS a propósito:
+           así el launcher funciona en cualquier puerto sin editar nada, y
+           nunca rompe por un origin hardcodeado. -->
+      <code id="urlCanonical">…</code> — <strong>URL canónica</strong><br>
+      <code id="urlDebug">…</code> — con banner de diagnóstico<br>
+      <code id="urlStandalone">…</code> — standalone sin botón X<br>
+      <code id="urlHealth">…</code> — salud del server (PID, md5, build)<br>
       <br>
-      <strong>Servidor:</strong> python3 -m http.server 8765 (PID 1102374) · CWD: apps/cima-generador
+      ⚠️ <strong>Usá <code>localhost</code>, nunca <code>127.0.0.1</code>.</strong> Son
+      origins distintos para el browser y cada uno tiene su propio Service Worker,
+      Cache Storage y localStorage. Ver la ley del origen canónico en <code>AGENTS.md</code>.
+      <br>
+      <strong>Servidor:</strong> python3 serve.py (anti-cache) · CWD: apps/cima-generador
     </div>
 
     <div class="footer">
@@ -165,6 +176,24 @@
   </div>
 
   <script>
+    // v3.10.75 — rutas dev resueltas contra el origin REAL de la página.
+    // launcher.html es exclusivo de desarrollo (ver AGENTS.md): el origen
+    // canónico del repo es `localhost`, y estos <code> ahora reflejan el
+    // hostname+porta con el que realmente abriste el launcher.
+    (function paintUrls() {
+      var o = window.location.origin;
+      var map = {
+        urlCanonical: o + '/index.html?popup=1',
+        urlDebug: o + '/index.html?popup=1&debug=1',
+        urlStandalone: o + '/index.html',
+        urlHealth: o + '/__health'
+      };
+      Object.keys(map).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = map[id];
+      });
+    })();
+
     function abrirPopup() {
       // Abre el popup como ventana flotante centrada, con X de cerrar
       const w = 720;
