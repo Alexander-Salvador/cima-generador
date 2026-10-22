@@ -176,6 +176,33 @@
   </div>
 
   <script>
+    // ══════════════════════════════════════════════════════════════════════
+    // v3.10.76 — GUARD DE ORIGEN: elimina la ruta IP.
+    // ══════════════════════════════════════════════════════════════════════
+    // El launcher es EXCLUSIVO de desarrollo local. El origin canónico del repo
+    // es `localhost` (ley en AGENTS.md). Si alguien escribe la URL con un
+    // literal de loopback (127.0.0.1, 0.0.0.0, ::1) o cualquier IP, el
+    // launcher se redirige a `localhost` conservando puerto, path y query.
+    //
+    // Por qué importa: `127.0.0.1` y `localhost` son ORIGINS DISTINTOS para el
+    // browser → particionan Service Workers, Cache Storage, localStorage y HTTP
+    // cache. Es exactamente el incidente de L-071/L-072 (un SW residual sirvió
+    // un documento viejo durante 8 versiones). Un redirect elimina la ruta IP
+    // sin depender de que el usuario memorice la regla.
+    //
+    // NO redirige cuando el host NO es un loopback: en GitHub Pages el host es
+    // `alexander-salvador.github.io` y debe servirse tal cual.
+    (function originGuard() {
+      var h = window.location.hostname;
+      if (h === 'localhost') return;                 // origin canónico: OK
+      var isLoopback = /^(127\.\d+\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?)$/.test(h);
+      if (!isLoopback) return;                       // producción: no tocar
+      var target = window.location.href.replace(
+        /^https?:\/\/(?:127\.\d+\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?)/i, 'http://localhost'
+      );
+      window.location.replace(target);
+    })();
+
     // v3.10.75 — rutas dev resueltas contra el origin REAL de la página.
     // launcher.html es exclusivo de desarrollo (ver AGENTS.md): el origen
     // canónico del repo es `localhost`, y estos <code> ahora reflejan el

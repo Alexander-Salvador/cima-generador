@@ -2289,12 +2289,22 @@ y luego reportó **"entra en modo bucle infinito"**.
 | **L-073** | **AUTO-RELOAD + DOCUMENTO CACHEADO = BUCLE INFINITO.** `staleBanner()` (v3.10.70) recargaba cada 3s ante mismatch de build. Con el documento viejo siempre en pantalla, el mismatch era permanente → reload → documento viejo → reload. Peor: recargar sola a un popup de call center puede **perder lo que el supervisor está escribiendo**. **Regla: si detectás desactualización, AVISAR — nunca recargar.** |
 | **L-074** | **DEADLOCK DE AUTOLIMPIEZA.** `unregisterLegacySW()` no podía ejecutarse porque la página fresca nunca lograba cargarse. Un fix que depende de que el bug desaparezca para poder correr es un fix que no corre. **El desblqueo fue entrar por un origin limpio (`localhost`), no por código.** |
 | **L-075** | **"LOCAL FIRST" SIN COMMIT NO ES LOCAL FIRST — ES TRABAJO INVISIBLE.** 8 versiones (v3.10.64→v3.10.71) vivieron solo en el working tree. El CEO no vio ninguna, y ni siquiera yo supe qué versión estaba mirando. **Regla de repo #7: LOCAL FIRST = LOCAL + COMMIT.** Y `serve.py` se commiteó en `ac1a59e` sin OK — violación de L-070b, declarada al CEO. |
+| **L-076** | **LOCAL ÚNICAMENTE. CERO PUSH HASTA QUE EL CEO AUTORICE.** Directive explícita del CEO (2026-10-22): *"No metas push a remoto, no confundas, estamos trabajando en local. No vuelvas a mencionar push hasta que yo autorice la solicitud. Estamos trabajando en local únicamente, recursos de desarrollo primero."* **No proponer, no mencionar, no preparar deploy a GitHub Pages** hasta que él lo pida. `DEPLOY.sh` existe pero no se ejecuta. Los agentes call center siguen en `v3.10.63` en producción y **eso es lo correcto por ahora**. |
 
 ### Reglas derivadas
 
+0. ⛔ **L-076 manda sobre cualquier urgencia de deploy.** El fix del input TELÉFONO
+   está commiteado y verificado en local; que producción siga en `v3.10.63` es
+   el estado correcto hasta que el CEO autorice. No usar "los agentes no lo
+   tienen" como argumento para empujar un push.
 1. **`serve.py` con `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` + `ETag: W/"nocache"`** es la defensa real y suficiente para un documento de 1.2 MB. Ninguna capa opaca (SW) es necesaria encima.
 2. **Nunca usar IPs de LAN para desarrollo**: por HTTP plano no son *secure context* → `serviceWorker` y `crypto.subtle` (vault AES-256 + PBKDF2) no existen. Solo `localhost` / `127.0.0.1` / HTTPS.
 3. **Para tests automatizados que no deben contaminar la sesión de trabajo: otro PUERTO**, nunca otro hostname.
+4. **`originGuard()` (v3.10.76) elimina la ruta IP en runtime** — si el popup o el
+   launcher se abren con un literal de loopback, redirigen a `localhost`
+   conservando puerto, path y query. No actúa en GitHub Pages (host
+   `alexander-salvador.github.io`). Una ley que depende de que el usuario la
+   recuerde es una ley frágil; el guard la hace cumplir.
 
 ### Archivos canónicos verificados (2026-10-22)
 

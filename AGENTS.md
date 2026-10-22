@@ -164,9 +164,14 @@ cd apps/cima-generador && python3 test_popup.py   # 676 asserts, gate obligatori
    cambia. Si se detecta desactualización: **avisar, nunca recargar**.
 10. **Todo cambio CSS valida balance de llaves antes de commitear.** Una llave
     `}` de más destruye silenciosamente miles de líneas. `test_popup.py` lo asserta.
+11. ⛔ **LOCAL ÚNICAMENTE — CERO PUSH SIN AUTORIZACIÓN.** El CEO gobierna los
+    deploys. No ejecutar `DEPLOY.sh`, no hacer push, no proponer push, no
+    mencionarlo como pendiente, hasta que él lo autorice explícitamente en la
+    sesión. Que GitHub Pages sirva `v3.10.63` mientras el local va `v3.10.76` es
+    el **estado correcto**, no una deuda. Ver `MEMORY.md` L-076.
 
 ---
 
-*Actualizado 2026-10-22 — sesión v3.10.72/73/74 (Thavren)*
+*Actualizado 2026-10-22 — sesión v3.10.72/73/74/76 (Thavren)*
 *OVAV migrated from develop — 2026-10-05*
 *Project lead: Alexander Salvador (CEO)*
