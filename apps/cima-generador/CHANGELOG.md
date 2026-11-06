@@ -1,5 +1,40 @@
 # Changelog — cima-generador
 
+## [3.10.77] — 2026-11-06 — 🎯 Alineación del contador `9/9` en TELÉFONO DE CONSULTA
+
+### El indicador estaba descentrado respecto al input
+
+En el GRID **Estructura de llamada** (row-2: `[TELÉFONO DE CONSULTA] [▼ Motivo]`)
+la píldora `9/9` se veía desalineada dentro del input.
+
+**Causa raíz** — el contador se posicionaba con `position:absolute; top:50%`
+sobre `.phone-input-wrap`, pero ese wrapper **no** es la caja del input: también
+contiene `.phone-help` (*"Solo números · 9 dígitos"*). El `50%` caía en el punto
+medio del **wrapper** (input + ayuda), ~7px por debajo del centro real del
+input → la píldora cruzaba el borde inferior del campo.
+
+**Solución** — overlay con CSS Grid, sin HTML nuevo ni JS nuevo:
+
+| Elemento | Grid | Efecto |
+|---|---|---|
+| `.phone-input` | fila 1 / col 1 | define la caja de la fila |
+| `.phone-counter` | fila 1 / col 1 (`justify-self:end`, `align-self:center`) | se alinea al centro real del input por construcción |
+| `.phone-help` | fila 2 / col 1 | conserva su posición bajo el input |
+
+`align-self:center` alinea la píldora contra la **misma caja** que el input
+— no depende de alturas hardcodeadas, no se rompe con `padding` distinto ni
+con zoom del browser. Se eliminan `position:absolute`, `top`, `right` y
+`transform:translateY(-50%)` del contador.
+
+**Sin cambios de comportamiento:** la semántica de rechazo en origen (9 dígitos,
+`beforeinput` + `maxlength` + `onpaste`), el estado `is-full` y el a11y
+(`aria-describedby`/`aria-label`) quedan intactos.
+
+**Verificado:** `test_popup.py` → 676/676 PASS · balance CSS `{`/`}` sin cambios ·
+build servido `v3.10.77` (md5 actualizado en `__health`).
+
+---
+
 ## [3.10.76] — 2026-10-22 — 🛡️ `originGuard` mata la ruta IP + fix de mojibake visible
 
 ### La ruta `127.0.0.1` deja de existir de facto
