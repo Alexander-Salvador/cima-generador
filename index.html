@@ -1571,12 +1571,28 @@
   /* v3.10.70: input TELÉFONO rediseñado — rechazo en origen + contador.
      Semántica de rechazo: al llegar a 9/9 el input se marca "completo" y
      cualquier intento adicional no entra (maxlength nativo + onkeypress).
-     El contador da feedback inmediato para que el agente sepa cuándo parar. */
+     El contador da feedback inmediato para que el agente sepa cuándo parar.
+
+     v3.10.77 — FIX DE ALINEACIÓN de la píldora "9/9" dentro del input.
+     CAUSA RAÍZ: el contador se posicionaba con `position:absolute; top:50%`
+     sobre `.phone-input-wrap`, pero ese wrap NO es la caja del input —
+     también contiene `.phone-help` (texto de ayuda). El 50% caía en el
+     punto medio del WRAP (input + ayuda), ~7px por debajo del centro real
+     del input → la píldora flotaba descentrada, cruzando el borde inferior.
+     SOLUCIÓN: overlay con CSS Grid. Input y contador comparten la FILA 1
+     (misma caja exacta); la ayuda ocupa la FILA 2. `align-self:center` dentro
+     de esa fila alinea la píldora con el centro del input POR CONSTRUCCIÓN
+     (no depende de alturas hardcodeadas ni de nowrap frágil).
+     Sin HTML nuevo · sin JS nuevo · sin tocar la semántica de rechazo. */
   .phone-input-wrap {
     position: relative;
-    display: block;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
   }
   .phone-input {
+    grid-column: 1;
+    grid-row: 1;
     width: 100%;
     /* Deja aire al contador a la derecha sin solapar el texto. */
     padding-right: 44px;
@@ -1584,10 +1600,11 @@
     letter-spacing: 0.08em;
   }
   .phone-counter {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
+    margin-right: 10px;
     padding: 1px 6px;
     border-radius: 999px;
     background: color-mix(in srgb, var(--text-faint) 14%, transparent);
@@ -1619,6 +1636,8 @@
     65%      { transform: translateX(3px); }
   }
   .phone-help {
+    grid-column: 1;
+    grid-row: 2;
     display: block;
     margin-top: 3px;
     color: var(--text-faint);
@@ -4085,7 +4104,7 @@ font-size: 10px;
           <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
                tras recargar, el browser está sirviendo otro archivo/versión.
                Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
-          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.76</span>
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.77</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -4617,7 +4636,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.76</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.77</span>
     </span>
   </footer>
 </div>

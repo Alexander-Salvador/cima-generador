@@ -4981,6 +4981,50 @@ def test(html_path):
     # 41 distritos sin CCPP deben estar documentados (NO agregados al data)
     # Esto se valida en data/known_data_gaps.json ya verificado arriba.
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.77 — FIX ALINEACIÓN del contador "9/9" (GRID Estructura de llamada)
+    # El contador usaba `position:absolute; top:50%` sobre .phone-input-wrap,
+    # que NO es la caja del input (también contiene .phone-help) → la píldora
+    # "9/9" quedaba ~7px descentrada respecto al input. Fix: overlay CSS Grid
+    # (input + contador en fila 1; ayuda en fila 2).
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.77 — ALINEACIÓN del contador 9/9 en TELÉFONO DE CONSULTA')
+
+    wrap_css = re.search(r'\.phone-input-wrap\s*\{([^}]+)\}', html, re.DOTALL)
+    counter_css = re.search(r'\.phone-counter\s*\{([^}]+)\}', html, re.DOTALL)
+    phone_input_css = re.search(r'\.phone-input\s*\{([^}]+)\}', html, re.DOTALL)
+    phone_help_css = re.search(r'\.phone-help\s*\{([^}]+)\}', html, re.DOTALL)
+
+    wrap_body = wrap_css.group(1) if wrap_css else ''
+    counter_body = counter_css.group(1) if counter_css else ''
+    input_body = phone_input_css.group(1) if phone_input_css else ''
+    help_body = phone_help_css.group(1) if phone_help_css else ''
+
+    if 'display: grid' in wrap_body and 'grid-template-rows: auto auto' in wrap_body:
+        result.ok('v3.10.77 ALIGN: .phone-input-wrap es grid de 2 filas (input+contador / ayuda)')
+    else:
+        result.fail('v3.10.77 ALIGN wrap',
+                    '.phone-input-wrap debe ser display:grid con grid-template-rows: auto auto')
+
+    if ('grid-row: 1' in counter_body and 'align-self: center' in counter_body
+            and 'justify-self: end' in counter_body):
+        result.ok('v3.10.77 ALIGN: .phone-counter comparte fila 1 y se auto-centra en el input')
+    else:
+        result.fail('v3.10.77 ALIGN counter',
+                    '.phone-counter debe tener grid-row:1 + align-self:center + justify-self:end')
+
+    if 'position: absolute' not in counter_body and 'top: 50%' not in counter_body:
+        result.ok('v3.10.77 ALIGN: .phone-counter SIN position:absolute (causa raíz del descentrado)')
+    else:
+        result.fail('v3.10.77 ALIGN counter abs',
+                    '.phone-counter no debe usar position:absolute / top:50% sobre el wrap')
+
+    if 'grid-row: 1' in input_body and 'grid-row: 2' in help_body:
+        result.ok('v3.10.77 ALIGN: input en fila 1 y .phone-help en fila 2 (no arrastra el centro)')
+    else:
+        result.fail('v3.10.77 ALIGN filas',
+                    'input debe estar en grid-row 1 y .phone-help en grid-row 2')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
