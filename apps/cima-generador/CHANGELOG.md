@@ -1,5 +1,58 @@
 # Changelog — cima-generador
 
+## [3.10.80] — 2026-11-06 — 🛡️ Verificación integral de las 39 etiquetas + baseline anti-regresión
+
+### Auditoría completa contra el Excel
+
+Se auditó **cada una de las 39 opciones** contra el Excel en 8 ejes:
+estructura · origen · skill · contraparte DP · validación · cobertura inversa ·
+consistencia entre segmentos · alias.
+
+**Resultado: 0 errores fatales.** 25 warnings, revisados uno por uno: **25
+falsos positivos** del auditor (títulos que reescribimos por split/renombre, no
+pueden matchearse por texto) y **1 defecto real corregido**.
+
+### Defecto real corregido
+
+🔴 **`AVERÍA HOGAR` (MT + STANDALONE) había perdido una clause de validación.**
+El Excel (`ETIQUETAS.` r38 y r48) dice textualmente:
+
+> `TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)`
+
+El popup tenía solo `TITULAR o USUARIO. (Personaliza la atención)` → **la
+instrucción de confirmar número de contacto y motivo se había perdido**.
+Restaurada en ambas categorías.
+
+Además se eliminó el alias redundante `'BAJA DE SERVICIO'` (id34), que
+duplicaba su propio título.
+
+### Confirmaciones (sin cambio, verificadas)
+
+| Verificación | Resultado |
+|---|---|
+| Skills inexistentes en el Excel | **0** — las 16 SK_CV_* del Excel, todas usadas |
+| Opciones con `skill_txdirecto` sin contraparte DP en el Excel | **0** — los 2 sin DP son TÉCNICO N2 y TÉCNICO ACREDITACIONES, y el Excel lo dice literal: *"Prohibido Tx DIRECTA"* |
+| Opciones con validación vacía | **0** — las 39 tienen texto |
+| Gaps (fila del Excel sin opción) | **0** |
+| Duplicados `(cat, solicitud)` | **0** |
+| Opciones sin origen en el Excel | **0** (12 son splits/renombres documentados: FACTURACIÓN, INFORMACIÓN COMERCIAL, BENEFICIOS DEL PLAN, TÉCNICO N2, TÉCNICO ACREDITACIONES) |
+
+### Baseline anti-regresión en el gate
+
+`ETIQUETAS_BASELINE` quedó embebido en `test_popup.py`: las 39 opciones
+ancladas a `(cat, solicitud) → (skill 2 pasos, skill directa) + fila de origen
+en el Excel`. Si alguien edita un skill, un nombre o borra una opción, **el
+gate falla y hay que re-verificar contra el Excel** antes de seguir.
+
+Checks nuevos: coincidencia dataset↔baseline · cero huérfanas · catálogo
+16 SK_CV_* + 14 DP_CV_* · validación no vacía · clause completa de AVERÍA HOGAR.
+
+**Verificado:** `test_popup.py` → **727 passed, 0 failed, 0 warnings** ·
+auditoría integral externa → **81 OK / 25 warnings confirmados falsos positivos
+/ 0 FAIL** · CSS balance 566/566.
+
+---
+
 ## [3.10.79] — 2026-11-06 — 🧭 Misma lógica en MOVISTAR TOTAL + STANDALONE (auditoría de trazabilidad)
 
 ### Auditoría: cada fila del Excel → su opción en el popup

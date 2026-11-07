@@ -5166,6 +5166,111 @@ def test(html_path):
         else:
             result.fail('v3.10.79 skill cobertura', f'{sk} ausente')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.80 — BASELINE EXCEL-VERIFICADO (39 opciones)
+    # ══════════════════════════════════════════════════════════════════════
+    # Cada opción queda anclada a (cat, solicitud) → (skill 2 pasos, skill
+    # directa) + su fila de origen en el Excel. Si alguien edita un skill o
+    # un nombre, el gate falla y hay que re-verificar contra el Excel.
+    print('\n▸ v3.10.80 — Baseline Excel-verificado (39 opciones)')
+
+    ETIQUETAS_BASELINE = {
+        ('POSTPAGO', 'RECLAMOS'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "matriz r35 + 'ETIQUETAS.' r26"),
+        ('POSTPAGO', 'FACTURACIÓN'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r26 + Val.datos r40"),
+        ('POSTPAGO', 'INFORMACIÓN COMERCIAL'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r26 + Val.datos r20/21/22"),
+        ('POSTPAGO', 'BENEFICIOS DEL PLAN'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r26 + Val.datos r36"),
+        ('POSTPAGO', 'MIGRACIÓN A PLAN MENOR'): ('SK_CV_DOWNSELL_MOVIL_TX', 'DP_CV_DOWNSELL_MOVIL_TX', "'ETIQUETAS' r6 + 'ETIQUETAS 0' r9 + matriz r12"),
+        ('POSTPAGO', 'BAJA FINAL POSTPAGO'): ('SK_CV_RETENCIONES_MOVIL_TX', 'DP_CV_RETENCIONES_MOVIL_TX', 'matriz r28'),
+        ('POSTPAGO', 'MIGRACIÓN A PREPAGO'): ('SK_CV_RETENCIONES_MOVIL_TX', 'DP_CV_RETENCIONES_MOVIL_TX', 'matriz r29'),
+        ('POSTPAGO', 'CORTE POR ROBO POSTPAGO'): ('SK_CV_CXR_CORTE_X_ROBO_TX', 'DP_CV_CXR_CORTE_X_ROBO_TX', "'ETIQUETAS.' r31 + matriz r34"),
+        ('POSTPAGO', 'CORTE POR ROBO PREPAGO'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r32 + matriz r38"),
+        ('POSTPAGO', 'COMPRA DE PAQUETES LDI'): ('SK_CV_ROAMING_TX', 'DP_CV_ROAMING_TX', "'ETIQUETAS.' r30 + matriz r43"),
+        ('POSTPAGO', 'ÁREA DE VENTAS'): ('SK_CV_CROSS_MOVIL_FIJA_TX', 'DP_CV_CROSS_MOVIL_FIJA_TX', "'ETIQUETAS.' r51 + matriz r42"),
+        ('POSTPAGO', 'TÉCNICO N2'): ('SK_CV_TECNICO_MOVIL_TX', '', "'ETIQUETAS.' r23 + matriz r15"),
+        ('POSTPAGO', 'TÉCNICO ACREDITACIONES'): ('SK_CV_ACREDITACIONES_TX', '', "'ETIQUETAS.' r24 + matriz r16"),
+        ('MTOTAL', 'RECLAMOS'): ('SK_CV_PRIORITY_TX', 'DP_CV_PRIORITY_TX', "'ETIQUETAS.' r34 + matriz r35"),
+        ('MTOTAL', 'FACTURACIÓN'): ('SK_CV_PRIORITY_TX', 'DP_CV_PRIORITY_TX', "'ETIQUETAS.' r34 + Val.datos r40"),
+        ('MTOTAL', 'INFORMACIÓN COMERCIAL'): ('SK_CV_PRIORITY_TX', 'DP_CV_PRIORITY_TX', "'ETIQUETAS.' r34 + Val.datos r20/21/22"),
+        ('MTOTAL', 'BENEFICIOS DEL PLAN'): ('SK_CV_PRIORITY_TX', 'DP_CV_PRIORITY_TX', "'ETIQUETAS.' r34 + Val.datos r36"),
+        ('MTOTAL', 'MIGRACIÓN A PLAN MENOR'): ('SK_CV_DOWNSELL_FIJA_TX', 'DP_CV_DOWNSELL_FIJA_TX', "'ETIQUETAS.' r35 + matriz r32"),
+        ('MTOTAL', 'BAJA TOTAL O COMPONENTE MT'): ('SK_CV_RETENCIONES_CONVERGENTE_TX', 'DP_CV_RETENCIONES_CONVERGENTE_TX', "'ETIQUETAS.' r36 + 'ETIQUETAS' r15"),
+        ('MTOTAL', 'BAJA NO REGISTRADA'): ('SK_CV_BLINDAJE_FIJA_PRIORITY_TX', 'DP_CV_BLINDAJE_FIJA_PRIORITY_TX', "'ETIQUETAS.' r37 + 'ETIQUETAS 0' r27"),
+        ('MTOTAL', 'TRASLADO / MUDANZA'): ('SK_CV_TRASLADO_BAJA_FIJA_TX', 'DP_CV_TRASLADO_BAJA_FIJA_TX', "'ETIQUETAS 0' r26"),
+        ('MTOTAL', 'AVERÍA HOGAR'): ('SK_CV_TECNICO_FIJA_TX', 'DP_CV_TECNICO_FIJA_TX', "'ETIQUETAS.' r38 + matriz r40"),
+        ('MTOTAL', 'AVERÍAS HOGAR (DTH - SATELITAL)'): ('SK_CV_DTH_TX', 'DP_CV_DTH_TX', "'ETIQUETAS.' r39 + matriz r41"),
+        ('MTOTAL', 'COMPRA DE PAQUETES LDI'): ('SK_CV_ROAMING_TX', 'DP_CV_ROAMING_TX', "'ETIQUETAS.' r41 + 'ETIQUETAS' r18"),
+        ('MTOTAL', 'CORTE POR ROBO POSTPAGO'): ('SK_CV_CXR_CORTE_X_ROBO_TX', 'DP_CV_CXR_CORTE_X_ROBO_TX', "'ETIQUETAS.' r42 + 'ETIQUETAS' r19"),
+        ('MTOTAL', 'CORTE POR ROBO PREPAGO'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r43 + 'ETIQUETAS' r20"),
+        ('MTOTAL', 'ÁREA DE VENTAS'): ('SK_CV_CROSS_MOVIL_FIJA_TX', 'DP_CV_CROSS_MOVIL_FIJA_TX', "'ETIQUETAS.' r51 + matriz r42"),
+        ('MTOTAL', 'TÉCNICO N2'): ('SK_CV_TECNICO_MOVIL_TX', '', "'ETIQUETAS.' r23 + matriz r15"),
+        ('STANDALONE', 'RECLAMOS'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r45 + 'ETIQUETAS 0' r30"),
+        ('STANDALONE', 'FACTURACIÓN'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r45 + Val.datos r40"),
+        ('STANDALONE', 'INFORMACIÓN COMERCIAL'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r45 + Val.datos r20/21/22"),
+        ('STANDALONE', 'BENEFICIOS DEL PLAN'): ('SK_CV_COMERCIAL_TX', 'DP_CV_COMERCIAL_TX', "'ETIQUETAS.' r45 + Val.datos r36"),
+        ('STANDALONE', 'MIGRACIÓN A PLAN MENOR'): ('SK_CV_DOWNSELL_FIJA_TX', 'DP_CV_DOWNSELL_FIJA_TX', "'ETIQUETAS.' r46 + 'ETIQUETAS 0' r32"),
+        ('STANDALONE', 'BAJA DE SERVICIO'): ('SK_CV_RETENCIONES_FIJA_TX', 'DP_CV_RETENCIONES_FIJA_TX', "'ETIQUETAS.' r47 + 'ETIQUETAS' r24"),
+        ('STANDALONE', 'BAJA NO REGISTRADA'): ('SK_CV_BLINDAJE_FIJA_PRIORITY_TX', 'DP_CV_BLINDAJE_FIJA_PRIORITY_TX', "'ETIQUETAS 0' r34"),
+        ('STANDALONE', 'AVERÍA HOGAR'): ('SK_CV_TECNICO_FIJA_TX', 'DP_CV_TECNICO_FIJA_TX', "'ETIQUETAS.' r48 + matriz r40"),
+        ('STANDALONE', 'AVERÍAS HOGAR (DTH - SATELITAL)'): ('SK_CV_DTH_TX', 'DP_CV_DTH_TX', "'ETIQUETAS.' r49 + matriz r41"),
+        ('STANDALONE', 'TRASLADO / MUDANZA'): ('SK_CV_TRASLADO_BAJA_FIJA_TX', 'DP_CV_TRASLADO_BAJA_FIJA_TX', "'ETIQUETAS 0' r33"),
+        ('STANDALONE', 'ÁREA DE VENTAS'): ('SK_CV_CROSS_MOVIL_FIJA_TX', 'DP_CV_CROSS_MOVIL_FIJA_TX', "'ETIQUETAS.' r51 + matriz r42"),
+    }
+
+    # 1) Toda opción del popup existe en el baseline con el MISMO skill
+    pairs_now = re.findall(
+        r"cat:\s*'(POSTPAGO|MTOTAL|STANDALONE)',\s*area:[^,]+,\s*solicitud:\s*'([^']+)',"
+        r"[^}]*?skill_tx2:\s*'([^']*)',\s*skill_txdirecto:\s*'([^']*)'", etq_block, re.DOTALL)
+    drift = []
+    for cat, sol, sk2, skd in pairs_now:
+        key = (cat, sol)
+        if key not in ETIQUETAS_BASELINE:
+            drift.append(f'{key} no está en el baseline')
+            continue
+        exp2, expd, _ = ETIQUETAS_BASELINE[key]
+        if sk2 != exp2 or skd != expd:
+            drift.append(f'{key} skills {sk2}/{skd} ≠ baseline {exp2}/{expd}')
+    if not drift:
+        result.ok(f'v3.10.80 BASELINE: {len(pairs_now)} opciones coinciden con el Excel-verificado')
+    else:
+        result.fail('v3.10.80 BASELINE', f'{drift}')
+
+    # 2) El baseline no puede tener opciones huérfanas (borradas sin actualizar)
+    if len(ETIQUETAS_BASELINE) == len(pairs_now):
+        result.ok('v3.10.80 BASELINE: sin opciones huérfanas (baseline ↔ dataset 1:1)')
+    else:
+        result.fail('v3.10.80 BASELINE huérfanas',
+                    f'baseline={len(ETIQUETAS_BASELINE)} dataset={len(pairs_now)}')
+
+    # 3) Catálogo de skills canónicos del Excel: 16 SK_CV_* + sus 14 DP_CV_*
+    #    (TÉCNICO N2 y TÉCNICO ACREDITACIONES no tienen contraparte DP: el Excel
+    #    dice "Prohibido Tx DIRECTA" / "NO APLICA" → 16 - 2 = 14)
+    all_sk = {v[0] for v in ETIQUETAS_BASELINE.values()} | \
+             {v[1] for v in ETIQUETAS_BASELINE.values() if v[1]}
+    n_sk = len([s for s in all_sk if s.startswith('SK_CV_')])
+    n_dp = len([s for s in all_sk if s.startswith('DP_CV_')])
+    if n_sk == 16 and n_dp == 14:
+        result.ok(f'v3.10.80 SKILLS: {n_sk} códigos SK_CV_* + {n_dp} DP_CV_* (catálogo del Excel)')
+    else:
+        result.fail('v3.10.80 SKILLS', f'SK_CV={n_sk} (esperado 16), DP_CV={n_dp} (esperado 14)')
+
+    # 4) Validación nunca vacía (el Excel exige quién valida antes de transferir)
+    validas_vacias = []
+    for cat, sol, sk2, skd in pairs_now:
+        mval = re.search(r"solicitud:\s*'" + re.escape(sol) + r"',[^}]*?validacion:\s*'([^']*)'",
+                         etq_block, re.DOTALL)
+        if not mval or not mval.group(1).strip():
+            validas_vacias.append(sol)
+    if not validas_vacias:
+        result.ok('v3.10.80 VALIDACIÓN: las 39 opciones tienen texto de validación')
+    else:
+        result.fail('v3.10.80 VALIDACIÓN', f'vacías: {validas_vacias}')
+
+    # 5) Coherencia: AVERÍA HOGAR debe llevar la clause completa del Excel
+    if html.count("TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)") >= 9:
+        result.ok('v3.10.80 VALIDACIÓN: AVERÍA HOGAR con la clause completa del Excel')
+    else:
+        result.fail('v3.10.80 AVERÍA HOGAR validación', 'clause incompleta')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
