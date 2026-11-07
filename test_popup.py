@@ -5050,15 +5050,15 @@ def test(html_path):
     m_block = re.search(r'const ETIQUETAS_DATA = \[(.*?)\n\];', html, re.DOTALL)
     etq_block = m_block.group(1) if m_block else ''
 
-    # --- 1. Dataset: 38 records (13 POSTPAGO / 14 MTOTAL / 11 STANDALONE)
+    # --- 1. Dataset: 39 records (13 POSTPAGO / 15 MTOTAL / 11 STANDALONE)
     n_postpago = etq_block.count("cat: 'POSTPAGO'")
     n_mtotal = etq_block.count("cat: 'MTOTAL'")
     n_standalone = etq_block.count("cat: 'STANDALONE'")
     n_total = n_postpago + n_mtotal + n_standalone
-    if n_total == 38 and n_postpago == 13 and n_mtotal == 14 and n_standalone == 11:
-        result.ok(f'v3.10.78 DATASET: 38 opciones (POSTPAGO={n_postpago} MTOTAL={n_mtotal} STANDALONE={n_standalone})')
+    if n_total == 39 and n_postpago == 13 and n_mtotal == 15 and n_standalone == 11:
+        result.ok(f'v3.10.79 DATASET: 39 opciones (POSTPAGO={n_postpago} MTOTAL={n_mtotal} STANDALONE={n_standalone})')
     else:
-        result.fail('v3.10.78 DATASET', f'38 esperadas (13/14/11), obtenu {n_total} ({n_postpago}/{n_mtotal}/{n_standalone})')
+        result.fail('v3.10.79 DATASET', f'39 esperadas (13/15/11), obtenu {n_total} ({n_postpago}/{n_mtotal}/{n_standalone})')
 
     # --- 2. Títulos nuevos (CEO directive) presentes
     for t in ["solicitud: 'RECLAMOS'", "solicitud: 'FACTURACIÓN'",
@@ -5110,14 +5110,61 @@ def test(html_path):
         result.ok('v3.10.78 BÚSQUEDA: scoring por especificidad (title-first) + variantes singular/plural')
     else:
         result.fail('v3.10.78 BÚSQUEDA', 'etiquetasScore / queryVariants ausentes')
-    if re.search(r"matches\.slice\(0,\s*16\)", html):
-        result.ok('v3.10.78 BÚSQUEDA: cap de resultados 12 → 16 (MTOTAL tiene 14 opciones)')
+    if re.search(r"matches\.slice\(0,\s*18\)", html):
+        result.ok('v3.10.79 BÚSQUEDA: cap de resultados 16 → 18 (MTOTAL tiene 15 opciones)')
     else:
-        result.fail('v3.10.78 cap', 'matches.slice(0, 16) ausente')
+        result.fail('v3.10.79 cap', 'matches.slice(0, 18) ausente')
     if "'FACTURAS'" in html and "'FACTURA'" in html:
         result.ok('v3.10.78 BÚSQUEDA: alias singular/plural en FACTURACIÓN (FACTURA / FACTURAS)')
     else:
         result.fail('v3.10.78 alias plural', 'FACTURA/FACTURAS ausentes')
+
+    # --- 8. v3.10.79 — MISMA LÓGICA EN MT + STANDALONE
+    # 8.1 TRASLADO / MUDANZA en MT (gap real del Excel: 'ETIQUETAS 0' r26)
+    m_tr = re.search(r"cat:\s*'MTOTAL'[^}]*solicitud:\s*'TRASLADO / MUDANZA',[^}]*?"
+                     r"skill_tx2:\s*'SK_CV_TRASLADO_BAJA_FIJA_TX'", etq_block, re.DOTALL)
+    if m_tr:
+        result.ok('v3.10.79 GAP CERRADO: TRASLADO / MUDANZA presente en MTOTAL (Excel 0 r26)')
+    else:
+        result.fail('v3.10.79 TRASLADO MT', 'falta TRASLADO / MUDANZA en MTOTAL')
+
+    # 8.2 VENTAS: los 6 bullets del Excel indexados como alias (1 sola fila)
+    for a in ["'ALTA FIJA'", "'MONO'", "'DUO'", "'TRIO'", "'UPSELL'", "'MIGRACION A PLAN MAYOR'"]:
+        if a in etq_block:
+            result.ok(f'v3.10.79 VENTAS alias: {a.strip(chr(39))}')
+        else:
+            result.fail('v3.10.79 VENTAS alias', f'{a} ausente')
+
+    # 8.3 'MOVISTAR TOTAL' solo es alias en MT (contradice POST/PRE y STANDALONE)
+    #     OJO: el string también aparece como `area: 'MOVISTAR TOTAL'` en los
+    #     15 registros de MT → hay que contar SOLO dentro de arrays alias.
+    alias_lists = re.findall(r"alias:\s*\[([^\]]*)\]", etq_block, re.DOTALL)
+    n_mt_total_alias = sum(1 for al in alias_lists if "'MOVISTAR TOTAL'" in al)
+    m_mt_record = re.search(r"cat:\s*'MTOTAL'[^}]*?alias:\s*\[[^\]]*'MOVISTAR TOTAL'[^\]]*\]", etq_block, re.DOTALL)
+    if n_mt_total_alias == 1 and m_mt_record:
+        result.ok('v3.10.79 VENTAS: alias \'MOVISTAR TOTAL\' solo en MTOTAL (no contradice STAND ALONE)')
+    else:
+        result.fail('v3.10.79 VENTAS MT alias', f'alias con MOVISTAR TOTAL={n_mt_total_alias} (esperado 1, en MTOTAL)')
+
+    # 8.4 Alias del nombre operativo del Excel (matriz r17/r18)
+    for a in ["'AVERIAS DE SERVICIO DE HOGAR'", "'TV SATELITAL'"]:
+        if a in etq_block:
+            result.ok(f'v3.10.79 ALIAS EXCEL: {a.strip(chr(39))}')
+        else:
+            result.fail('v3.10.79 alias Excel', f'{a} ausente')
+
+    # 8.5 Cada skill del Excel presente en el popup (cobertura de skills)
+    for sk in ['SK_CV_COMERCIAL_TX', 'SK_CV_PRIORITY_TX', 'SK_CV_DOWNSELL_MOVIL_TX',
+               'SK_CV_DOWNSELL_FIJA_TX', 'SK_CV_RETENCIONES_MOVIL_TX',
+               'SK_CV_RETENCIONES_CONVERGENTE_TX', 'SK_CV_RETENCIONES_FIJA_TX',
+               'SK_CV_BLINDAJE_FIJA_PRIORITY_TX', 'SK_CV_CXR_CORTE_X_ROBO_TX',
+               'SK_CV_ROAMING_TX', 'SK_CV_CROSS_MOVIL_FIJA_TX', 'SK_CV_TECNICO_FIJA_TX',
+               'SK_CV_DTH_TX', 'SK_CV_TECNICO_MOVIL_TX', 'SK_CV_ACREDITACIONES_TX',
+               'SK_CV_TRASLADO_BAJA_FIJA_TX']:
+        if sk in etq_block:
+            result.ok(f'v3.10.79 SKILL COBERTURA: {sk}')
+        else:
+            result.fail('v3.10.79 skill cobertura', f'{sk} ausente')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
