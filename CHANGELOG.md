@@ -1,5 +1,49 @@
 # Changelog — cima-generador
 
+## [3.10.81] — 2026-11-06 — 🎛️ Chips por segmento + fix del estado "trancado" al pulsar otro botón
+
+### Chips: nombres por segmento (CEO directive)
+
+| Antes | Ahora | `data-cat` (lógica JS, sin cambios) |
+|---|---|---|
+| `POST/PRE` | **`MOVIL`** | `POSTPAGO` |
+| `MT` | **`M.TOTAL`** | `MTOTAL` |
+| `STANDALONE` | `STANDALONE` | `STANDALONE` |
+
+El `data-cat` **no** se toca: es la clave que usa `filterEtiquetasByCat` y la
+que aplica el tema CSS por categoría. Los `title` (tooltip) siguen llevando el
+nombre completo: `MÓVIL — POSTPAGO / PREPAGO`, `MOVISTAR TOTAL`,
+`STANDALONE (servicio fijo)`.
+
+### 🐛 Fix: la búsqueda quedaba "trancada" al pulsar otro botón
+
+**Síntoma:** el agente buscaba en MOVIL (p.ej. `ROBO`), seleccionaba, y al
+pulsar otro botón el **input marcado** (texto de la búsqueda) y el **dropdown
+abierto** seguían encima del grid → la UI parecía trabada, con un estado que
+ya no correspondía.
+
+| Causa raíz | Corrección |
+|---|---|
+| `filterEtiquetasByCat()` solo limpiaba la selección **si cambiaba de categoría**; el texto del input y el dropdown quedaban pegados | Ahora **siempre** limpia: texto del input, botón X, selección, preview y dropdown (también al pulsar el chip de la categoría activa) |
+| El click-outside **excluía** `.action-buttons-row` → al pulsar RESET/APN/CASO el dropdown **no se cerraba** | Se eliminó la exclusión: el dropdown **siempre** se cierra al hacer click fuera |
+| No existía limpieza del input al pulsar un botón de acción | Nuevo handler `mousedown` en `.action-buttons-row`: vacía el input, oculta el X y cierra el dropdown |
+
+**Decisión de diseño:** al pulsar un chip de categoría se limpia **todo**
+(contexto nuevo = reset completo). Al pulsar RESET/APN/CASO se limpia el
+**input y el dropdown**, pero la etiqueta **seleccionada se conserva**: el
+preview sigue mostrando los 2 códigos para que el agente pueda copiarlos sin
+perder el trabajo ya hecho.
+
+El dropdown **no** se re-abre al cambiar de categoría (regla v3.3.3: solo se
+abre por interacción con el input).
+
+**Verificado:** `test_popup.py` → **736 passed, 0 failed, 0 warnings** (13
+asserts nuevos) · aggressive/security/codereview/browser_static PASS ·
+sintaxis del `<script>` inline validada con `node --check` (1.02 MB) · CSS
+balance 566/566.
+
+---
+
 ## [3.10.80] — 2026-11-06 — 🛡️ Verificación integral de las 39 etiquetas + baseline anti-regresión
 
 ### Auditoría completa contra el Excel

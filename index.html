@@ -2451,7 +2451,7 @@
 
   /* ── Category chips: 3-col horizontal (segmented control) ─────────────── */
   /* v3.3.2: CEO directive 2026-10-15 — chips en 1 SOLA ROW horizontal.
-     Labels abreviados: POST/PRE | MT | STANDALONE.
+     Labels por segmento (v3.10.81): MOVIL | M.TOTAL | STANDALONE.
      En viewports <320px cae a 1-col como fallback mobile extremo. */
   .etiqueta-categories {
     display: grid;
@@ -4104,7 +4104,7 @@ font-size: 10px;
           <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
                tras recargar, el browser está sirviendo otro archivo/versión.
                Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
-          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.80</span>
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.81</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -4588,14 +4588,16 @@ font-size: 10px;
 
         <!-- Chips de categoría (siempre una activa — sin TODAS)
              v3.3.2: labels abreviados CEO directive: POST/PRE | MT | STANDALONE
-             data-cat preservado para JS logic (POSTPAGO/MTOTAL/STANDALONE). -->
+             v3.10.81: labels por SEGMENTO (CEO directive): MOVIL | M.TOTAL |
+             STANDALONE. `data-cat` preservado (POSTPAGO/MTOTAL/STANDALONE)
+             porque es la clave que usa la lógica JS. -->
         <div class="etiqueta-categories" role="group" aria-label="Filtro por categoría">
-          <button type="button" class="cat-chip is-active" data-cat="POSTPAGO" onclick="filterEtiquetasByCat('POSTPAGO')" aria-pressed="true" title="POSTPAGO/PREPAGO">
+          <button type="button" class="cat-chip is-active" data-cat="POSTPAGO" onclick="filterEtiquetasByCat('POSTPAGO')" aria-pressed="true" title="MÓVIL — POSTPAGO / PREPAGO">
             <svg class="cat-chip-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
               <line x1="12" y1="18" x2="12.01" y2="18"/>
             </svg>
-            <span>POST/PRE</span>
+            <span>MOVIL</span>
           </button>
           <button type="button" class="cat-chip" data-cat="MTOTAL" onclick="filterEtiquetasByCat('MTOTAL')" aria-pressed="false" title="MOVISTAR TOTAL">
             <svg class="cat-chip-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -4603,7 +4605,7 @@ font-size: 10px;
               <path d="M2 17l10 5 10-5"/>
               <path d="M2 12l10 5 10-5"/>
             </svg>
-            <span>MT</span>
+            <span>M.TOTAL</span>
           </button>
           <button type="button" class="cat-chip" data-cat="STANDALONE" onclick="filterEtiquetasByCat('STANDALONE')" aria-pressed="false" title="STANDALONE (servicio fijo)">
             <svg class="cat-chip-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -4636,7 +4638,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.80</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.81</span>
     </span>
   </footer>
 </div>
@@ -5504,16 +5506,24 @@ function filterEtiquetasByCat(cat) {
     var n = ETIQUETAS_DATA.filter(function (x) { return x.cat === cat; }).length;
     countEl.textContent = n;
   }
-  // v3.3.9: si la etiqueta seleccionada no aplica a la nueva categoría →
-  // limpiar selección + re-renderizar preview (los 2 cards SIEMPRE visibles,
-  // solo cambian sus codes — empty si la selección se invalidó).
-  if (TX_STATE.selectedId) {
-    var e = ETIQUETAS_DATA.find(function (x) { return x.id === TX_STATE.selectedId; });
-    if (!e || e.cat !== cat) {
-      TX_STATE.selectedId = null;
-      showEtiquetaPreview(null);  // empty state (solo labels, sin codes)
-    }
+  // ══════════════════════════════════════════════════════════════════════
+  // v3.10.81 — RESET COMPLETO al pulsar un chip de categoría (CEO directive)
+  // BUG: el agente buscaba (p.ej. "ROBO") en MOVIL, seleccionaba, y al
+  // pulsar otro chip el INPUT DE BÚSQUEDA quedaba con el texto y la
+  // selección marcada → estado "trancado": el input mostraba una búsqueda
+  // que ya no correspondía a la categoría visible.
+  // Ahora, al pulsar un chip (incluso el mismo) se limpian: texto del input,
+  // botón X, selección, preview y dropdown. El dropdown NO se re-abre
+  // (regla v3.3.3: abrir el dropdown solo por interacción con el input).
+  // ══════════════════════════════════════════════════════════════════════
+  var input = $('etiquetaSearch');
+  if (input) {
+    input.value = '';
+    updateEtiquetaClearVisibility();
   }
+  TX_STATE.selectedId = null;
+  showEtiquetaPreview(null);
+  hideEtiquetaDropdown();
   // v3.3.3 FIX: NO llamar renderEtiquetasDropdown aquí. Era el bug.
   // El dropdown solo se abre via search input handlers (focus/mousedown/input)
   // cuando hay selección activa. Click en chip = solo selección.
@@ -5882,9 +5892,31 @@ function setupEtiquetas() {
     if (!drop || drop.hidden) return;
     if (e.target.closest('#etiquetaSearch')) return;
     if (e.target.closest('#ac-etiqueta')) return;
-    if (e.target.closest('.action-buttons-row')) return;
+    // v3.10.81: ya NO se excluye `.action-buttons-row` → pulsar RESET / APN /
+    // CASO cierra el dropdown (antes quedaba abierto encima del grid, con el
+    // texto de la búsqueda pegado → el agente lo veía "trancado").
     hideEtiquetaDropdown();
   });
+
+  // ══════════════════════════════════════════════════════════════════════
+  // v3.10.81 — RESET / APN / CASO limpian el input de búsqueda marcado.
+  // Al pulsar un botón de acción se vacía el texto del buscador, se oculta el
+  // botón X y se cierra el dropdown. La etiqueta SELECCIONADA se conserva:
+  // el preview sigue mostrando los 2 códigos que el agente puede copiar
+  // (no perder trabajo ya hecho).
+  // ══════════════════════════════════════════════════════════════════════
+  var actionRow = document.querySelector('.action-buttons-row');
+  if (actionRow && !actionRow._etqResetWired) {
+    actionRow.addEventListener('mousedown', function () {
+      var searchInput = $('etiquetaSearch');
+      if (searchInput && searchInput.value) {
+        searchInput.value = '';
+        updateEtiquetaClearVisibility();
+      }
+      hideEtiquetaDropdown();
+    });
+    actionRow._etqResetWired = true;
+  }
 
   // ═══ v3.10.63 FIX DEFINITIVO: selección de etiquetas ═══
   // BUG: el click en un item de #ac-etiqueta NO seleccionaba nada.
