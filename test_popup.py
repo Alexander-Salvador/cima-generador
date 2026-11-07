@@ -4348,6 +4348,24 @@ def test(html_path):
     # dos field-row row-1 separados para tel/motivo.
     legacy_separate = (
         re.search(
+            r'<div\s+class="field-row\s+row-2">\s*<div\s+class="field">\s*<label\s+for="script-telefono"',
+            html, re.DOTALL
+        ) is not None and
+        re.search(
+            r'<div\s+class="field-row\s+row-2">[\s\S]{0,400}<label\s+for="script-motivo"',
+            html, re.DOTALL
+        ) is not None
+    )
+    if layout_ok:
+        result.ok('v3.10.52 LAYOUT: TELÉFONO + MOTIVO consolidados en 1 sola row-2 (side-by-side)')
+    else:
+        result.fail('v3.10.52 LAYOUT', 'TELÉFONO + MOTIVO deben compartir field-row row-2')
+
+    # LEGACY TEST — v3.10.45 esperaba que estuvieran en row-1 separados.
+    # v3.10.52 los consolidó en row-2. Anti-regression: NO deben existir
+    # dos field-row row-1 separados para tel/motivo.
+    legacy_separate = (
+        re.search(
             r'<div\s+class="field-row\s+row-1">\s*<div\s+class="field">\s*<label\s+for="script-telefono"',
             html, re.DOTALL
         ) is not None and
