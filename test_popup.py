@@ -1427,10 +1427,11 @@ def test(html_path):
     if 'SK_CV_TECNICO_MOVIL_TX_KONECTA' in html:
         result.ok('TIPIF v3.4.2 SK_CV_TECNICO_MOVIL_TX_KONECTA: presente (CEO: LINE 2 en los 3)')
 
-    # Conteo de TECNICO MOVIL (debe estar en POSTPAGO, MTOTAL, STANDALONE)
-    n_tec_mov = html.count("SK_CV_TECNICO_MOVIL")
-    if n_tec_mov >= 4:  # 2 nuevos + 2 existentes en sharedStrings
-        result.ok(f'TIPIF v3.4.2 TECNICO MOVIL: {n_tec_mov} referencias (en los 3 categorías)')
+    # Conteo de TECNICO MOVIL (v3.10.78: id 19/21 → id 12/27, y el skill
+    # KONECTA se corrigió a SK_CV_TECNICO_MOVIL_TX → 2 registros con ese skill)
+    n_tec_mov = html.count("skill_tx2: 'SK_CV_TECNICO_MOVIL_TX'")
+    if n_tec_mov >= 2:  # POSTPAGO (TÉCNICO N2) + MTOTAL (TÉCNICO N2)
+        result.ok(f'TIPIF v3.10.78 TECNICO MÓVIL: {n_tec_mov} registros con SK_CV_TECNICO_MOVIL_TX')
 
     # ACREDITACIONES solo en POSTPAGO (cat: 'POSTPAGO' cerca de ACREDITACIONES)
     m = re.search(r"\{ id:\s*\d+,\s*cat:\s*'POSTPAGO'[^}]*ACREDITACIONES", html, re.DOTALL)
@@ -1439,9 +1440,9 @@ def test(html_path):
     else:
         result.fail('ACREDITACIONES cat', 'no se encuentra solo en POSTPAGO')
 
-    # TÉCNICO MOVIL (LINE 2) en cada categoría (id 19 POSTPAGO, id 21 MTOTAL)
-    if 'id: 19' in html and 'id: 21' in html and "'TECNICO MOVIL" in html:
-        result.ok('TIPIF v3.4.2 TECNICO MOVIL (LINE 2): en POSTPAGO (id 19) + MTOTAL (id 21)')
+    # TÉCNICO N2 en POSTPAGO y MTOTAL (v3.10.78: nominado por nombre, no id)
+    if html.count("solicitud: 'TÉCNICO N2'") >= 2:
+        result.ok('TIPIF v3.10.78 TÉCNICO N2: en POSTPAGO + MTOTAL')
 
     # ══════════════════════════════════════════════════════════════════════
     # v3.4.3 — Comparativa exhaustiva Excel vs CIMA (3 SKUs nuevos)
@@ -1494,27 +1495,40 @@ def test(html_path):
     print('\n▸ TIPIF v3.4.4 — Auditoría Excel + DP fixes + search improvement')
 
     # DP fixes — skill_txdirecto debe ser '' para SK codes sin DP counterpart
-    # id 18 ACREDITACIONES (SK_CV_ACREDITACIONES_TX sin DP)
-    m18 = re.search(r"id:\s*18,[^}]*?skill_tx2:\s*'SK_CV_ACREDITACIONES_TX',\s*skill_txdirecto:\s*''", html, re.DOTALL)
-    if m18:
-        result.ok('TIPIF v3.4.4 id 18 ACREDITACIONES: skill_txdirecto = \'\' (no DP en Excel)')
+    # v3.10.78: el record pasó de id 18 a id 13 y se renombró a 'TÉCNICO
+    # ACREDITACIONES' (CEO directive). La aserción pasa a ser por NOMBRE
+    # (robusta a renumeración) en vez de por id.
+    m_acred = re.search(r"solicitud:\s*'TÉCNICO ACREDITACIONES',[^}]*?skill_tx2:\s*'SK_CV_ACREDITACIONES_TX',\s*skill_txdirecto:\s*''", html, re.DOTALL)
+    if m_acred:
+        result.ok('v3.10.78 TÉCNICO ACREDITACIONES: skill_txdirecto = \'\' (no DP en Excel)')
     else:
-        result.fail('id 18 DP fix', 'skill_txdirecto no está vacío')
-    # id 21 LINE 2 (SK_CV_TECNICO_MOVIL_TX_KONECTA sin DP)
-    m21 = re.search(r"id:\s*21,[^}]*?skill_tx2:\s*'SK_CV_TECNICO_MOVIL_TX_KONECTA',\s*skill_txdirecto:\s*''", html, re.DOTALL)
-    if m21:
-        result.ok('TIPIF v3.4.4 id 21 LINE 2: skill_txdirecto = \'\' (no DP en Excel)')
-    # id 19 TECNICO MOVIL (mismo SK KONECTA, sin DP)
-    m19 = re.search(r"id:\s*19,[^}]*?skill_tx2:\s*'SK_CV_TECNICO_MOVIL_TX_KONECTA',\s*skill_txdirecto:\s*''", html, re.DOTALL)
-    if m19:
-        result.ok('TIPIF v3.4.4 id 19 TECNICO MOVIL: skill_txdirecto = \'\' (mismo SK KONECTA, sin DP)')
+        result.fail('TÉCNICO ACREDITACIONES DP fix', 'skill_txdirecto no está vacío')
+    # v3.10.78: SK_CV_TECNICO_MOVIL_TX_KONECTA (1 sola hoja del Excel) fue
+    # corregido a SK_CV_TECNICO_MOVIL_TX (3 de 4 fuentes). El código KONECTA
+    # solo debe sobrevivir como alias de búsqueda, nunca como skill.
+    if "skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA'" not in html:
+        result.ok('v3.10.78 SKILL CORREGIDO: SK_CV_TECNICO_MOVIL_TX_KONECTA eliminado como skill')
+    else:
+        result.fail('KONECTA skill', 'SK_CV_TECNICO_MOVIL_TX_KONECTA sigue presente como skill')
+    # TÉCNICO N2 también sin TX directa (Excel: "NO APLICA")
+    m_n2 = re.search(r"solicitud:\s*'TÉCNICO N2',[^}]*?skill_txdirecto:\s*''", html, re.DOTALL)
+    if m_n2:
+        result.ok('v3.10.78 TÉCNICO N2: skill_txdirecto = \'\' (Excel: NO APLICA)')
+    else:
+        result.fail('TÉCNICO N2 DP fix', 'skill_txdirecto no está vacío')
 
-    # VENTAS simplificado — solicitud='VENTAS' (no inventado)
-    n_ventas = html.count("solicitud: 'VENTAS'")
+    # VENTAS — v3.10.78: el Excel (r51 + matriz r42) da SK_CV_CROSS_MOVIL_FIJA_TX
+    # y el nombre operativo es 'ÁREA DE VENTAS' (no 'VENTAS' genérico).
+    n_ventas = html.count("solicitud: 'ÁREA DE VENTAS'")
     if n_ventas >= 3:
-        result.ok(f'TIPIF v3.4.4 VENTAS simplificado: {n_ventas} records con solicitud="VENTAS" (genérico)')
+        result.ok(f'v3.10.78 ÁREA DE VENTAS: {n_ventas} records (POSTPAGO + MTOTAL + STANDALONE)')
     else:
-        result.fail('VENTAS simplificado', f'expected >=3, got {n_ventas}')
+        result.fail('ÁREA DE VENTAS', f'expected >=3, got {n_ventas}')
+    n_ventas_skill = html.count("skill_tx2: 'SK_CV_CROSS_MOVIL_FIJA_TX'")
+    if n_ventas_skill >= 3:
+        result.ok(f'v3.10.78 ÁREA DE VENTAS: skill Excel SK_CV_CROSS_MOVIL_FIJA_TX en {n_ventas_skill} records')
+    else:
+        result.fail('VENTAS skill Excel', f'SK_CV_CROSS_MOVIL_FIJA_TX expected >=3, got {n_ventas_skill}')
 
     # Search improvement — accent normalization
     if 'normalizeSearch' in html and 'NFD' in html and '\\u0300-\\u036f' in html:
@@ -5024,6 +5038,86 @@ def test(html_path):
     else:
         result.fail('v3.10.77 ALIGN filas',
                     'input debe estar en grid-row 1 y .phone-help en grid-row 2')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.78 — RECONCILIACIÓN EXHAUSTIVA CON EL EXCEL + BÚSQUEDA POR
+    # ESPECIFICIDAD (title-first + alias + singular/plural)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.78 — ETIQUETAS reconciliadas con el Excel + búsqueda específica')
+
+    # Conteo SOLO dentro del bloque ETIQUETAS_DATA (fuera está TX_STATE con
+    # `cat: 'POSTPAGO'` como default → contarlo ahí falsea el total).
+    m_block = re.search(r'const ETIQUETAS_DATA = \[(.*?)\n\];', html, re.DOTALL)
+    etq_block = m_block.group(1) if m_block else ''
+
+    # --- 1. Dataset: 38 records (13 POSTPAGO / 14 MTOTAL / 11 STANDALONE)
+    n_postpago = etq_block.count("cat: 'POSTPAGO'")
+    n_mtotal = etq_block.count("cat: 'MTOTAL'")
+    n_standalone = etq_block.count("cat: 'STANDALONE'")
+    n_total = n_postpago + n_mtotal + n_standalone
+    if n_total == 38 and n_postpago == 13 and n_mtotal == 14 and n_standalone == 11:
+        result.ok(f'v3.10.78 DATASET: 38 opciones (POSTPAGO={n_postpago} MTOTAL={n_mtotal} STANDALONE={n_standalone})')
+    else:
+        result.fail('v3.10.78 DATASET', f'38 esperadas (13/14/11), obtenu {n_total} ({n_postpago}/{n_mtotal}/{n_standalone})')
+
+    # --- 2. Títulos nuevos (CEO directive) presentes
+    for t in ["solicitud: 'RECLAMOS'", "solicitud: 'FACTURACIÓN'",
+              "solicitud: 'INFORMACIÓN COMERCIAL'", "solicitud: 'BENEFICIOS DEL PLAN'",
+              "solicitud: 'MIGRACIÓN A PLAN MENOR'", "solicitud: 'TÉCNICO N2'",
+              "solicitud: 'TÉCNICO ACREDITACIONES'", "solicitud: 'ÁREA DE VENTAS'"]:
+        if t in etq_block:
+            result.ok(f'v3.10.78 TÍTULO: {t.split(chr(39))[1]}')
+        else:
+            result.fail('v3.10.78 TÍTULO', f'{t} ausente')
+
+    # --- 3. La mega-fila consolidada debe estar eliminada (como valor de
+    #        solicitud — puede seguir mentioned en comentarios de trazabilidad)
+    if "solicitud: 'RECLAMOS, CONSULTAS Y FACTURACION'" not in html:
+        result.ok('v3.10.78 SPLIT: "RECLAMOS, CONSULTAS Y FACTURACION" ya no es una sola opción')
+    else:
+        result.fail('v3.10.78 SPLIT', 'la opción consolidada sigue presente')
+
+    # --- 4. PLAN MENOR móvil → skill corregida (DOWNSELL_MOVIL_TX)
+    m_pm = re.search(r"cat:\s*'POSTPAGO'[^}]*solicitud:\s*'MIGRACIÓN A PLAN MENOR',[^}]*?"
+                     r"skill_tx2:\s*'SK_CV_DOWNSELL_MOVIL_TX',\s*skill_txdirecto:\s*'DP_CV_DOWNSELL_MOVIL_TX'",
+                     html, re.DOTALL)
+    if m_pm:
+        result.ok('v3.10.78 BUG FIX: MIGRACIÓN A PLAN MENOR usa SK_CV_DOWNSELL_MOVIL_TX (Excel 3/4 fuentes)')
+    else:
+        result.fail('v3.10.78 PLAN MENOR skill', 'no usa SK_CV_DOWNSELL_MOVIL_TX / DP_CV_DOWNSELL_MOVIL_TX')
+
+    # --- 5. Sin duplicados (cat + solicitud) — invariante de datos
+    pairs = re.findall(r"cat:\s*'(POSTPAGO|MTOTAL|STANDALONE)',\s*area:[^,]+,\s*solicitud:\s*'([^']+)'", etq_block)
+    seen = {}
+    for c, s in pairs:
+        seen[(c, s)] = seen.get((c, s), 0) + 1
+    dupes = sorted([f'{c}|{s}' for (c, s), n in seen.items() if n > 1])
+    if not dupes:
+        result.ok(f'v3.10.78 SIN DUPLICADOS: {len(pairs)} pares (cat, solicitud) únicos')
+    else:
+        result.fail('v3.10.78 DUPLICADOS', f'{dupes}')
+
+    # --- 6. Cada opción tiene alias + etiqueta operativa
+    n_alias = etq_block.count("alias: [")
+    n_etq = len(re.findall(r"etq:\s*'(ROBO|COMERCIAL|RETENCIONES|VENTAS|ROAMING|TECNICO)'", etq_block))
+    if n_alias == n_total and n_etq == n_total:
+        result.ok(f'v3.10.78 METADATOS: {n_alias} alias + {n_etq} etiqueta operativa (1 por opción)')
+    else:
+        result.fail('v3.10.78 METADATOS', f'alias={n_alias}/{n_total} etq={n_etq}/{n_total}')
+
+    # --- 7. Búsqueda: scoring + variantes singular/plural + cap 16
+    if 'function etiquetasScore(' in html and 'function queryVariants(' in html:
+        result.ok('v3.10.78 BÚSQUEDA: scoring por especificidad (title-first) + variantes singular/plural')
+    else:
+        result.fail('v3.10.78 BÚSQUEDA', 'etiquetasScore / queryVariants ausentes')
+    if re.search(r"matches\.slice\(0,\s*16\)", html):
+        result.ok('v3.10.78 BÚSQUEDA: cap de resultados 12 → 16 (MTOTAL tiene 14 opciones)')
+    else:
+        result.fail('v3.10.78 cap', 'matches.slice(0, 16) ausente')
+    if "'FACTURAS'" in html and "'FACTURA'" in html:
+        result.ok('v3.10.78 BÚSQUEDA: alias singular/plural en FACTURACIÓN (FACTURA / FACTURAS)')
+    else:
+        result.fail('v3.10.78 alias plural', 'FACTURA/FACTURAS ausentes')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

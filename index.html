@@ -4104,7 +4104,7 @@ font-size: 10px;
           <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
                tras recargar, el browser está sirviendo otro archivo/versión.
                Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
-          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.77</span>
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.78</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -4573,7 +4573,7 @@ font-size: 10px;
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input id="etiquetaSearch" type="text"
-                 placeholder="Buscar etiqueta: ej. BAJA TOTAL, ROBO, PLAN MENOR…"
+                 placeholder="Buscar etiqueta: ej. ROBO, FACTURACIÓN, BENEFICIOS, PLAN MENOR…"
                  data-ac="etiqueta"
                  autocomplete="off" spellcheck="false"
                  aria-autocomplete="list" aria-expanded="false" aria-controls="ac-etiqueta" maxlength="100">
@@ -4636,7 +4636,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.77</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.78</span>
     </span>
   </footer>
 </div>
@@ -4699,75 +4699,139 @@ const SPEECH_TEMPLATES = {
 //   POSTPAGO   → "MOVIL POSTPAGO // PREPAGO"
 //   MTOTAL     → "MOVISTAR TOTAL"
 //   STANDALONE → "SERVICIO FIJA STAN ALONE"
+//
+// ═══════════════════════════════════════════════════════════════════════
+// v3.10.78 — RECONCILIACIÓN EXHAUSTIVA CON EL EXCEL (CEO directive)
+// ═══════════════════════════════════════════════════════════════════════
+// Fuente canónica: 'Recursos CIMA/Etiquetas de Transferencia/Etiquetas de
+// Transferencia.xlsx' (12 hojas). Matrices leídas:
+//   · 'ETIQUETAS.' (r23-r51)               → AREA/SOLICITUD/SKILL/VALIDACIÓN
+//   · 'VALIDACIÓN DE DATOS Y ETIQUETAS' (r22-r43) → matriz POOL/ESCENARIO
+//     (ya traía RECLAMOS / COMERCIAL / CONSULTAS separados — el split no es inventado)
+//   · 'Validación de datos' (r1-r43)       → catálogo de solicitudes (recibo,
+//     plan, saldo, consumo, beneficios) que fundamenta el detalle de cada opción
+//   · 'ETIQUETAS' / 'ETIQUETAS 0'          → versiones paralelas (conflictos)
+//
+// CAMBIOS DE DATOS (con evidencia en el Excel):
+//  1. "RECLAMOS, CONSULTAS Y FACTURACION" (×3 categorías) → partido en 4:
+//     RECLAMOS · FACTURACIÓN · INFORMACIÓN COMERCIAL · BENEFICIOS DEL PLAN
+//  2. "PLAN MENOR" (móvil) usaba SK_CV_COMERCIAL_TX — 3 de 4 fuentes del Excel
+//     dan SK_CV_DOWNSELL_MOVIL_TX → CORREGIDO. "MIGRACION DOWN (MOVIL)" era el
+//     MISMO escenario con otro nombre → fusionados en 1 sola opción.
+//  3. "BAJA DE TOTAL o MIGRACION A PREPAGO" → partido en BAJA FINAL POSTPAGO +
+//     MIGRACIÓN A PREPAGO ("BAJA FINAL POSTPAGO" duplicaba → fusionados).
+//  4. "VENTAS" usaba SK_CV_COMERCIAL_TX — el Excel (r51 + matriz r42) da
+//     SK_CV_CROSS_MOVIL_FIJA_TX → CORREGIDO en las 3 categorías.
+//  5. SK_CV_TECNICO_MOVIL_TX_KONECTA (1 sola hoja) → SK_CV_TECNICO_MOVIL_TX
+//     (3 de 4 fuentes) → CORREGIDO.
+//  6. Gaps del Excel incorporados: MT (LDI r41, ROBO POSTPAGO r42, ROBO
+//     PREPAGO r43), STANDALONE (TRASLADO 'ETIQUETAS 0' r33, BAJA NO
+//     REGISTRADA r34).
+//
+// CONVENCIONES DE ESTA RELEASE:
+//  · `solicitud` = nombre que ve y busca el agente (específico, singular).
+//  · `alias[]`   = sinónimos operationales (plural, nombre en Excel, jerga).
+//  · `etq`       = etiqueta operativa del Excel ('Validación de datos'
+//    → AREA QUE GESTIONA): ROBO · COMERCIAL · RETENCIONES · VENTAS ·
+//    ROAMING · TECNICO.
+//  · `skill_txdirecto: ''` = sin contraparte DP en el Excel (NO APLICA).
+// ═══════════════════════════════════════════════════════════════════════
 const ETIQUETAS_DATA = [
-  { id: 1,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'RECLAMOS, CONSULTAS Y FACTURACION',
-    detalle: 'Cliente solicita información sobre su recibo, plan, beneficios, solicitudes y reclamos de servicios moviles.',
+  { id: 1,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'RECLAMOS',
+    detalle: 'Cliente solicita ingresar un reclamo sobre el servicio contratado, ya sea móvil o fijo.',
     skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención, confirma el número de contacto y el motivo de la llamada.' },
-  { id: 2,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'PLAN MENOR',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['RECLAMO', 'QUEJA'] },
+  { id: 2,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'FACTURACIÓN',
+    detalle: 'Cliente solicita información sobre su recibo, deuda y vencimiento de pago.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['FACTURA', 'FACTURAS', 'RECIBO', 'DEUDA', 'COBRO'] },
+  { id: 3,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'INFORMACIÓN COMERCIAL',
+    detalle: 'Cliente solicita información sobre su plan, saldo y detalle de consumo.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['INFORMACION', 'CONSULTA', 'PLAN', 'SALDO', 'CONSUMO'] },
+  { id: 4,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'BENEFICIOS DEL PLAN',
+    detalle: 'Cliente solicita información sobre beneficios y paquetes incluidos en su plan.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['BENEFICIO', 'BENEFICIOS', 'PAQUETES', 'BONOS'] },
+  { id: 5,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'MIGRACIÓN A PLAN MENOR',
     detalle: 'Cliente solicita migrar a un plan de menor tarifa.',
-    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.' },
-  { id: 3,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'BAJA DE TOTAL o MIGRACION A PREPAGO',
-    detalle: 'Cliente solicita la baja y cambio a prepago del servicio móvil.',
+    skill_tx2: 'SK_CV_DOWNSELL_MOVIL_TX', skill_txdirecto: 'DP_CV_DOWNSELL_MOVIL_TX',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'COMERCIAL', alias: ['PLAN MENOR', 'DOWNSELL', 'MIGRACION DOWN', 'PLAN MENOR MOVIL'] },
+  { id: 6,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'BAJA FINAL POSTPAGO',
+    detalle: 'Cliente solicita la baja del servicio móvil.',
     skill_tx2: 'SK_CV_RETENCIONES_MOVIL_TX', skill_txdirecto: 'DP_CV_RETENCIONES_MOVIL_TX',
-    validacion: 'TITULAR. Validar identidad antes de transferir.' },
-  { id: 4,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'COMPRA DE PAQUETES LDI',
-    detalle: 'Cliente solicita la contratación o activación de un paquete de roaming.',
-    skill_tx2: 'SK_CV_ROAMING_TX', skill_txdirecto: 'DP_CV_ROAMING_TX',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención, confirma el número de contacto y el motivo de la llamada.' },
-  { id: 5,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'CORTE POR ROBO POSTPAGO',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'RETENCIONES', alias: ['BAJA', 'BAJA DE TOTAL', 'CANCELACION'] },
+  { id: 7,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'MIGRACIÓN A PREPAGO',
+    detalle: 'Cliente solicita la migración a modalidad prepago.',
+    skill_tx2: 'SK_CV_RETENCIONES_MOVIL_TX', skill_txdirecto: 'DP_CV_RETENCIONES_MOVIL_TX',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'RETENCIONES', alias: ['PREPAGO', 'MIGRACION A PREPAGO', 'BAJA DE TOTAL'] },
+  { id: 8,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'CORTE POR ROBO POSTPAGO',
     detalle: 'Cliente solicita la suspensión de la línea debido a robo o pérdida del equipo.',
     skill_tx2: 'SK_CV_CXR_CORTE_X_ROBO_TX', skill_txdirecto: 'DP_CV_CXR_CORTE_X_ROBO_TX',
-    validacion: 'TITULAR o USUARIO. Validar identidad y motivo.' },
-  { id: 6,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'CORTE POR ROBO PREPAGO',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'ROBO', alias: ['ROBO', 'EXTRAVIO', 'BLOQUEO', 'ROBO POSTPAGO'] },
+  { id: 9,  cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'CORTE POR ROBO PREPAGO',
     detalle: 'Cliente solicita la suspensión de la línea debido a robo o pérdida del equipo (prepago).',
     skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR o USUARIO. Validar identidad.' },
-  { id: 7,  cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'RECLAMOS, CONSULTAS Y FACTURACION',
-    detalle: 'Cliente solicita información sobre recibos, planes, beneficios, reclamos o gestiones relacionadas con su servicio Movistar Total.',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'ROBO', alias: ['ROBO', 'EXTRAVIO', 'ROBO PREPAGO'] },
+  { id: 10, cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'COMPRA DE PAQUETES LDI',
+    detalle: 'Cliente solicita la contratación o activación de un paquete de roaming.',
+    skill_tx2: 'SK_CV_ROAMING_TX', skill_txdirecto: 'DP_CV_ROAMING_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'ROAMING', alias: ['ROAMING', 'LDI', 'PAQUETE DE DATOS'] },
+  { id: 11, cat: 'POSTPAGO',  area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'ÁREA DE VENTAS',
+    detalle: 'Cliente manifiesta interés en adquirir un producto o servicio Movistar: alta móvil, portabilidad móvil, cambio de equipo, migración a un plan de mayor tarifa, alta fija (Mono, Dúo o Trío) o Movistar Total.',
+    skill_tx2: 'SK_CV_CROSS_MOVIL_FIJA_TX', skill_txdirecto: 'DP_CV_CROSS_MOVIL_FIJA_TX',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'VENTAS', alias: ['VENTAS', 'ALTA NUEVA', 'PORTABILIDAD', 'CAMBIO DE EQUIPO', 'ALTA'] },
+  { id: 12, cat: 'POSTPAGO',  area: 'BO TECNICA MOVIL', solicitud: 'TÉCNICO N2',
+    detalle: 'La atención es en línea, NO se tx. (En todos los escenarios primero crear caso antes de llamar)',
+    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX', skill_txdirecto: '',
+    validacion: 'Titular o Usuario. Comunicarse luego de descarte según flujo, no se transfiere. La comunicación es oper to oper.',
+    etq: 'TECNICO', alias: ['TECNICO MOVIL 2', 'N2', 'KONECTA', 'LINE 2', 'OPER TO OPER'] },
+  { id: 13, cat: 'POSTPAGO',  area: 'BO TECNICA MOVIL', solicitud: 'TÉCNICO ACREDITACIONES',
+    detalle: 'Consulta de entrega de beneficios, falta asignaciones de bonos y recargas.',
+    skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: '',
+    validacion: 'Solo comunicación oper to oper — no aplica TX directa.',
+    etq: 'TECNICO', alias: ['ACREDITACIONES', 'BONOS', 'RECARGAS'] },
+  { id: 14, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'RECLAMOS',
+    detalle: 'Cliente solicita ingresar un reclamo sobre el servicio contratado, ya sea móvil o fijo.',
     skill_tx2: 'SK_CV_PRIORITY_TX', skill_txdirecto: 'DP_CV_PRIORITY_TX',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención, confirma el número de contacto y el motivo de la llamada.' },
-  { id: 8,  cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'PLAN MENOR MT',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['RECLAMO', 'QUEJA'] },
+  { id: 15, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'FACTURACIÓN',
+    detalle: 'Cliente solicita información sobre su recibo, deuda y vencimiento de pago.',
+    skill_tx2: 'SK_CV_PRIORITY_TX', skill_txdirecto: 'DP_CV_PRIORITY_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['FACTURA', 'FACTURAS', 'RECIBO', 'DEUDA', 'COBRO'] },
+  { id: 16, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'INFORMACIÓN COMERCIAL',
+    detalle: 'Cliente solicita información sobre su plan, saldo y detalle de consumo.',
+    skill_tx2: 'SK_CV_PRIORITY_TX', skill_txdirecto: 'DP_CV_PRIORITY_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['INFORMACION', 'CONSULTA', 'PLAN', 'SALDO', 'CONSUMO'] },
+  { id: 17, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'BENEFICIOS DEL PLAN',
+    detalle: 'Cliente solicita información sobre beneficios y paquetes incluidos en su plan.',
+    skill_tx2: 'SK_CV_PRIORITY_TX', skill_txdirecto: 'DP_CV_PRIORITY_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['BENEFICIO', 'BENEFICIOS', 'PAQUETES', 'BONOS'] },
+  { id: 18, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'MIGRACIÓN A PLAN MENOR',
     detalle: 'Cliente solicita migrar a un plan de menor tarifa en su servicio hogar.',
     skill_tx2: 'SK_CV_DOWNSELL_FIJA_TX', skill_txdirecto: 'DP_CV_DOWNSELL_FIJA_TX',
-    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.' },
-  { id: 9,  cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'BAJA TOTAL O COMPONENTE MT',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'COMERCIAL', alias: ['PLAN MENOR', 'PLAN MENOR MT', 'DOWNSL', 'MIGRACION DOWNSL'] },
+  { id: 19, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'BAJA TOTAL O COMPONENTE MT',
     detalle: 'Cliente solicita la baja de MT o despaquetizar alguno de sus componentes.',
     skill_tx2: 'SK_CV_RETENCIONES_CONVERGENTE_TX', skill_txdirecto: 'DP_CV_RETENCIONES_CONVERGENTE_TX',
-    validacion: 'TITULAR. Validar identidad antes de transferir.' },
-  { id: 10, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'BAJA NO REGISTRADA (POSTPAGO - PREPAGO)',
-    detalle: 'Cliente indica que su solicitud de baja o migración a prepago no fue gestionada o atendida correctamente.',
-    skill_tx2: 'SK_CV_BLINDAJE_FIJA_PRIORITY_TX', skill_txdirecto: 'DP_CV_BLINDAJE_FIJA_PRIORITY_TX',
-    validacion: 'TITULAR. Blindaje previo.' },
-  { id: 11, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'AVERIA HOGAR',
-    detalle: 'Cliente solicita atención por avería o problemas técnicos en su servicio hogar.',
-    skill_tx2: 'SK_CV_TECNICO_FIJA_TX', skill_txdirecto: 'DP_CV_TECNICO_FIJA_TX',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
-  { id: 12, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'AVERÍAS HOGAR (DTH - SATELITAL)',
-    detalle: 'Cliente solicita atención por su servicio de TV Satelital - DTH.',
-    skill_tx2: 'SK_CV_DTH_TX', skill_txdirecto: 'DP_CV_DTH_TX',
-    validacion: 'Clientes TV Satelital.' },
-  { id: 13, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'RECLAMOS, CONSULTAS Y FACTURACION',
-    detalle: 'Cliente solicita información sobre su recibo, plan, beneficios, solicitudes y reclamos de servicios moviles / hogar.',
-    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
-  { id: 14, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'PLAN MENOR STAND ALONE',
-    detalle: 'Cliente solicita migrar a un plan de menor tarifa en su servicio hogar (cliente STAND ALONE, NO Movistar Total).',
-    skill_tx2: 'SK_CV_DOWNSELL_FIJA_TX', skill_txdirecto: 'DP_CV_DOWNSELL_FIJA_TX',
-    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.' },
-  { id: 15, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'BAJA DE SERVICIO',
-    detalle: 'Cliente solicita la cancelación de su servicio hogar.',
-    skill_tx2: 'SK_CV_RETENCIONES_FIJA_TX', skill_txdirecto: 'DP_CV_RETENCIONES_FIJA_TX',
-    validacion: 'TITULAR. Validar identidad antes de transferir.' },
-  { id: 16, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'AVERIA HOGAR',
-    detalle: 'Cliente solicita atención por avería o problemas técnicos en su servicio hogar (STAND ALONE).',
-    skill_tx2: 'SK_CV_TECNICO_FIJA_TX', skill_txdirecto: 'DP_CV_TECNICO_FIJA_TX',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
-  { id: 17, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'AVERÍAS HOGAR (DTH - SATELITAL)',
-    detalle: 'Cliente solicita atención por su servicio de TV Satelital - DTH (STAND ALONE).',
-    skill_tx2: 'SK_CV_DTH_TX', skill_txdirecto: 'DP_CV_DTH_TX',
-    validacion: 'Clientes TV Satelital.' },
+    validacion: 'TITULAR. Validar identidad antes de transferir.',
+    etq: 'RETENCIONES', alias: ['BAJA', 'DESPAQUETIZAR', 'COMPONENTE'] },
 
   // ═══════════════════════════════════════════════════════════════════════
   // v3.4.2: Records adicionales por CEO directive 2026-10-15.
@@ -4775,76 +4839,110 @@ const ETIQUETAS_DATA = [
   // 17 sheets). Sin modificar ni perder ningún record existente.
   // ═══════════════════════════════════════════════════════════════════════
 
-// ── POSTPAGO additions (CEO: ACREDITACIONES + VENTAS + TECNICO MOVIL) ──
-  // v3.4.4 FIX DP: SK_CV_ACREDITACIONES_TX NO tiene DP counterpart en Excel → empty
-  { id: 18, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'ACREDITACIONES',
-    detalle: 'Cliente solicita gestión de acreditaciones del servicio móvil (recargas, abonos, ajustes).',
-    skill_tx2: 'SK_CV_ACREDITACIONES_TX', skill_txdirecto: '',
-    validacion: 'TITULAR o USUARIO. Personaliza la atención.' },
-  // v3.4.4 FIX DP: SK_CV_TECNICO_MOVIL_TX_KONECTA NO tiene DP counterpart → empty
-  { id: 19, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'TECNICO MOVIL',
-    detalle: 'Cliente requiere soporte técnico móvil (avería datos/voz). Comunicarse oper to oper si es necesario.',
-    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: '',
-    validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
-  // v3.4.4 SIMPLIFICADO: VENTAS (genérico) — Excel solo tiene "VENTAS" como
-  // categoria, no "VENTAS - ALTA NUEVA / PORTABILIDAD / CAMBIO EQUIPO"
-  { id: 20, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'VENTAS',
-    detalle: 'Cliente manifiesta interés en adquirir producto móvil (alta nueva, portabilidad o cambio de equipo).',
-    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR o USUARIO. Validar identidad.' },
-
-  // ── MTOTAL additions (CEO: TECNICO MOVIL 2 = LINE 2 + VENTAS ALTA MT) ──
-  // v3.4.4 FIX DP: LINE 2 (KONECTA) NO tiene DP counterpart en Excel → empty
-  { id: 21, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'TECNICO MOVIL 2 (LINE 2)',
-    detalle: 'Cliente requiere soporte técnico móvil nivel 2 (konekta) para servicio Movistar Total.',
-    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX_KONECTA', skill_txdirecto: '',
-    validacion: 'TITULAR o USUARIO. Comunicarse oper to oper.' },
-  // v3.4.4 SIMPLIFICADO: VENTAS (genérico)
-  { id: 22, cat: 'MTOTAL', area: 'MOVISTAR TOTAL', solicitud: 'VENTAS',
-    detalle: 'Cliente quiere alta nueva del servicio Movistar Total (Mono/Duo/Trio).',
-    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR. Validar identidad y factibilidad.' },
-
-  // ── STANDALONE additions (CEO: VENTAS ALTA FIJA) ──
-  // v3.4.4 SIMPLIFICADO: VENTAS (genérico)
-  { id: 23, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE',
-    solicitud: 'VENTAS',
-    detalle: 'Cliente quiere alta nueva del servicio fijo Stand Alone (Mono/Duo/Trio).',
-    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
-    validacion: 'TITULAR. Validar identidad y factibilidad.' },
-
   // ═══════════════════════════════════════════════════════════════════════
-  // v3.4.3: Records adicionales por comparativa exhaustiva Excel vs CIMA.
-  // Análisis del XLSX identificó 3 SKUs únicos faltantes que CEO no había
-  // mencionado pero que existen en el Excel:
-  //   - SK_CV_DOWNSELL_MOVIL_TX (MIGRACIÓN DOWN MOVIL) → POSTPAGO
-  //   - SK_CV_TRASLADO_BAJA_FIJA_TX (TRASLADO/ MUDANZA) → STANDALONE
-  //   - SK_CV_RETENCIONES_MOVIL_TX (BAJA FINAL POSTPAGO) → POSTPAGO
+  // v3.10.78 — CONTINUIDAD MTOTAL + STANDALONE (reconciliación Excel)
+  // Gaps del Excel que el app NO tenía, ahora incorporados:
+  //   - MT: COMPRA DE PAQUETES LDI (r41), CORTE POR ROBO POSTPAGO (r42),
+  //     CORTE POR ROBO PREPAGO (r43)
+  //   - STANDALONE: TRASLADO / MUDANZA ('ETIQUETAS 0' r33)
+  //   - BAJA NO REGISTRADA (BLINDAJE) también en STANDALONE ('ETIQUETAS 0' r34)
   // ═══════════════════════════════════════════════════════════════════════
 
-  // v3.4.3: MIGRACIÓN DOWN (MOVIL) → POST/PRE
-  // Excel: "MIGRACIÓN DOWN ( MOVIL)" / "SK_CV_DOWNSELL_MOVIL_TX" — distinto
-  // de PLAN MENOR (que usa SK_CV_COMERCIAL_TX). Es down-sell específico.
-  { id: 24, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'MIGRACION DOWN (MOVIL)',
-    detalle: 'Cliente solicita migrar a un plan de menor tarifa móvil (down-sell).',
-    skill_tx2: 'SK_CV_DOWNSELL_MOVIL_TX', skill_txdirecto: 'DP_CV_DOWNSELL_MOVIL_TX',
-    validacion: 'TITULAR. Confirmar nuevo plan y factibilidad.' },
-
-  // v3.4.3: BAJA FINAL POSTPAGO → POST/PRE
-  // Excel: "BAJA FINAL POSTPAGO" (id 84 aprox). Diferente de "BAJA DE TOTAL o
-  // MIGRACION A PREPAGO" (id 3) — esta es la baja final del servicio.
-  { id: 25, cat: 'POSTPAGO', area: 'MOVIL POSTPAGO // PREPAGO', solicitud: 'BAJA FINAL POSTPAGO',
-    detalle: 'Cliente solicita la baja final del servicio móvil (postpago).',
-    skill_tx2: 'SK_CV_RETENCIONES_MOVIL_TX', skill_txdirecto: 'DP_CV_RETENCIONES_MOVIL_TX',
-    validacion: 'TITULAR. Validar identidad y confirmar baja.' },
-
-  // v3.4.3: TRASLADO/ MUDANZA → STANDALONE
-  // Excel: "TRASLADO/ MUDANZA" / "SK_CV_TRASLADO_BAJA_FIJA_TX" — skill code
-  // exclusivo del Excel (no estaba en CIMA).
-  { id: 26, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'TRASLADO / MUDANZA',
+  { id: 20, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'BAJA NO REGISTRADA',
+    detalle: 'Cliente indica que su solicitud de baja o migración a prepago no fue gestionada o atendida correctamente.',
+    skill_tx2: 'SK_CV_BLINDAJE_FIJA_PRIORITY_TX', skill_txdirecto: 'DP_CV_BLINDAJE_FIJA_PRIORITY_TX',
+    validacion: 'TITULAR. Blindaje previo.',
+    etq: 'RETENCIONES', alias: ['BLINDAJE', 'NO REGISTRADA', 'BAJA NO REGISTRADA EN SISTEMA'] },
+  { id: 21, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'AVERÍA HOGAR',
+    detalle: 'Cliente solicita atención por avería o problemas técnicos en su servicio hogar.',
+    skill_tx2: 'SK_CV_TECNICO_FIJA_TX', skill_txdirecto: 'DP_CV_TECNICO_FIJA_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención)',
+    etq: 'TECNICO', alias: ['AVERIA', 'AVERIAS', 'HOGAR'] },
+  { id: 22, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'AVERÍAS HOGAR (DTH - SATELITAL)',
+    detalle: 'Cliente solicita atención por su servicio de TV Satelital - DTH.',
+    skill_tx2: 'SK_CV_DTH_TX', skill_txdirecto: 'DP_CV_DTH_TX',
+    validacion: 'Clientes TV Satelital.',
+    etq: 'TECNICO', alias: ['DTH', 'SATELITAL', 'TV'] },
+  { id: 23, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'COMPRA DE PAQUETES LDI',
+    detalle: 'Cliente solicita la contratación o activación de un paquete de roaming.',
+    skill_tx2: 'SK_CV_ROAMING_TX', skill_txdirecto: 'DP_CV_ROAMING_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'ROAMING', alias: ['ROAMING', 'LDI', 'PAQUETE DE DATOS'] },
+  { id: 24, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'CORTE POR ROBO POSTPAGO',
+    detalle: 'Cliente solicita la suspensión de la línea debido a robo o pérdida del equipo.',
+    skill_tx2: 'SK_CV_CXR_CORTE_X_ROBO_TX', skill_txdirecto: 'DP_CV_CXR_CORTE_X_ROBO_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'ROBO', alias: ['ROBO', 'EXTRAVIO', 'BLOQUEO', 'ROBO POSTPAGO'] },
+  { id: 25, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'CORTE POR ROBO PREPAGO',
+    detalle: 'Cliente solicita la suspensión de la línea debido a robo o pérdida del equipo (prepago).',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'ROBO', alias: ['ROBO', 'EXTRAVIO', 'ROBO PREPAGO'] },
+  { id: 26, cat: 'MTOTAL',    area: 'MOVISTAR TOTAL', solicitud: 'ÁREA DE VENTAS',
+    detalle: 'Cliente manifiesta interés en adquirir un producto o servicio Movistar: alta móvil, portabilidad móvil, cambio de equipo, migración a un plan de mayor tarifa, alta fija (Mono, Dúo o Trío) o Movistar Total.',
+    skill_tx2: 'SK_CV_CROSS_MOVIL_FIJA_TX', skill_txdirecto: 'DP_CV_CROSS_MOVIL_FIJA_TX',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'VENTAS', alias: ['VENTAS', 'ALTA NUEVA', 'PORTABILIDAD', 'CAMBIO DE EQUIPO', 'ALTA'] },
+  { id: 27, cat: 'MTOTAL',    area: 'BO TECNICA MOVIL', solicitud: 'TÉCNICO N2',
+    detalle: 'La atención es en línea, NO se tx. (En todos los escenarios primero crear caso antes de llamar)',
+    skill_tx2: 'SK_CV_TECNICO_MOVIL_TX', skill_txdirecto: '',
+    validacion: 'Titular o Usuario. Comunicarse luego de descarte según flujo, no se transfiere. La comunicación es oper to oper.',
+    etq: 'TECNICO', alias: ['TECNICO MOVIL 2', 'N2', 'KONECTA', 'LINE 2', 'OPER TO OPER'] },
+  { id: 28, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'RECLAMOS',
+    detalle: 'Cliente solicita ingresar un reclamo sobre el servicio contratado, ya sea móvil o fijo.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['RECLAMO', 'QUEJA'] },
+  { id: 29, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'FACTURACIÓN',
+    detalle: 'Cliente solicita información sobre su recibo, deuda y vencimiento de pago.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['FACTURA', 'FACTURAS', 'RECIBO', 'DEUDA', 'COBRO'] },
+  { id: 30, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'INFORMACIÓN COMERCIAL',
+    detalle: 'Cliente solicita información sobre su plan, saldo y detalle de consumo.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['INFORMACION', 'CONSULTA', 'PLAN', 'SALDO', 'CONSUMO'] },
+  { id: 31, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'BENEFICIOS DEL PLAN',
+    detalle: 'Cliente solicita información sobre beneficios y paquetes incluidos en su plan.',
+    skill_tx2: 'SK_CV_COMERCIAL_TX', skill_txdirecto: 'DP_CV_COMERCIAL_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención, confirma el número de contacto y el motivo de la llamada)',
+    etq: 'COMERCIAL', alias: ['BENEFICIO', 'BENEFICIOS', 'PAQUETES', 'BONOS'] },
+  { id: 32, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'MIGRACIÓN A PLAN MENOR',
+    detalle: 'Cliente solicita migrar a un plan de menor tarifa en su servicio hogar (cliente STAND ALONE, NO Movistar Total).',
+    skill_tx2: 'SK_CV_DOWNSELL_FIJA_TX', skill_txdirecto: 'DP_CV_DOWNSELL_FIJA_TX',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'COMERCIAL', alias: ['PLAN MENOR', 'PLAN MENOR STAND ALONE', 'DOWNSL', 'MIGRACION DOWNSL'] },
+  { id: 33, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'BAJA DE SERVICIO',
+    detalle: 'Cliente solicita la cancelación de su servicio hogar.',
+    skill_tx2: 'SK_CV_RETENCIONES_FIJA_TX', skill_txdirecto: 'DP_CV_RETENCIONES_FIJA_TX',
+    validacion: 'TITULAR. Validar identidad antes de transferir.',
+    etq: 'RETENCIONES', alias: ['BAJA', 'CANCELACION', 'BAJA DE SERVICIO'] },
+  { id: 34, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'BAJA NO REGISTRADA',
+    detalle: 'Cliente indica que su solicitud de baja o migración a prepago no fue gestionada o atendida correctamente.',
+    skill_tx2: 'SK_CV_BLINDAJE_FIJA_PRIORITY_TX', skill_txdirecto: 'DP_CV_BLINDAJE_FIJA_PRIORITY_TX',
+    validacion: 'TITULAR. Blindaje previo.',
+    etq: 'RETENCIONES', alias: ['BLINDAJE', 'NO REGISTRADA', 'BAJA NO REGISTRADA EN SISTEMA'] },
+  { id: 35, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'AVERÍA HOGAR',
+    detalle: 'Cliente solicita atención por avería o problemas técnicos en su servicio hogar (STAND ALONE).',
+    skill_tx2: 'SK_CV_TECNICO_FIJA_TX', skill_txdirecto: 'DP_CV_TECNICO_FIJA_TX',
+    validacion: 'TITULAR o USUARIO. (Personaliza la atención)',
+    etq: 'TECNICO', alias: ['AVERIA', 'AVERIAS', 'HOGAR'] },
+  { id: 36, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'AVERÍAS HOGAR (DTH - SATELITAL)',
+    detalle: 'Cliente solicita atención por su servicio de TV Satelital - DTH (STAND ALONE).',
+    skill_tx2: 'SK_CV_DTH_TX', skill_txdirecto: 'DP_CV_DTH_TX',
+    validacion: 'Clientes TV Satelital.',
+    etq: 'TECNICO', alias: ['DTH', 'SATELITAL', 'TV'] },
+  { id: 37, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'TRASLADO / MUDANZA',
     detalle: 'Cliente solicita traslado o mudanza del servicio fijo Stand Alone.',
     skill_tx2: 'SK_CV_TRASLADO_BAJA_FIJA_TX', skill_txdirecto: 'DP_CV_TRASLADO_BAJA_FIJA_TX',
-    validacion: 'TITULAR. Confirmar nueva dirección y factibilidad técnica.' }
+    validacion: 'TITULAR. Confirmar nueva dirección y factibilidad técnica.',
+    etq: 'RETENCIONES', alias: ['TRASLADO', 'MUDANZA', 'CAMBIO DE DIRECCION'] },
+  { id: 38, cat: 'STANDALONE', area: 'SERVICIO FIJA STAND ALONE', solicitud: 'ÁREA DE VENTAS',
+    detalle: 'Cliente manifiesta interés en adquirir un producto o servicio Movistar: alta móvil, portabilidad móvil, cambio de equipo, migración a un plan de mayor tarifa, alta fija (Mono, Dúo o Trío) o Movistar Total.',
+    skill_tx2: 'SK_CV_CROSS_MOVIL_FIJA_TX', skill_txdirecto: 'DP_CV_CROSS_MOVIL_FIJA_TX',
+    validacion: 'Se transfiere a solo TITULAR: Nombre y Apellido del titular · Documento de identidad.',
+    etq: 'VENTAS', alias: ['VENTAS', 'ALTA NUEVA', 'PORTABILIDAD', 'CAMBIO DE EQUIPO', 'ALTA'] }
 ];
 // Estado del cliente (cat siempre activa — sin opción TODAS)
 const TX_STATE = {
@@ -5413,22 +5511,71 @@ function normalizeSearch(str) {
     .trim();
 }
 
+// v3.10.78 — BÚSQUEDA POR ESPECIFICIDAD (title-first + alias + plural).
+// PROBLEMA QUE CORRIGE:
+//   · "FACTURAS" (como lo escribe el agente) → 0 resultados: el Excel dice
+//     "FACTURACION" y el match era substring literal.
+//   · "COMERCIAL" → 4–6 resultados: el substring plano también comparaba contra
+//     el SKILL code (SK_CV_COMERCIAL_TX), no solo contra el título.
+//   · "PLAN MENOR" y "MIGRACIÓN DOWN" eran 2 opciones del mismo escenario.
+// AHORA: puntaje por especificidad. Título > alias > etiqueta operativa >
+// detalle > área > skill code > id. El título manda siempre.
+function queryVariants(q) {
+  // Tolerancia singular/plural: "FACTURAS" → "FACTURA", "ROBOS" → "ROBO".
+  var v = [q];
+  if (q.length > 3) {
+    if (q.charAt(q.length - 1) === 's') v.push(q.slice(0, -1));
+    else v.push(q + 's');
+  }
+  return v;
+}
+
+function etiquetasScore(e, q) {
+  var sol = normalizeSearch(e.solicitud);
+  if (sol.indexOf(q) === 0) return 100;         // título empieza por el query
+  if (sol.indexOf(q) >= 0) return 90;           // título contiene el query
+  var alias = e.alias || [];
+  for (var i = 0; i < alias.length; i++) {
+    var a = normalizeSearch(alias[i]);
+    if (a.indexOf(q) === 0) return 80;          // alias exacto al inicio
+    if (a.indexOf(q) >= 0) return 70;           // alias contiene el query
+  }
+  if (e.etq && normalizeSearch(e.etq).indexOf(q) >= 0) return 60;  // etiqueta operativa
+  if (normalizeSearch(e.detalle).indexOf(q) >= 0) return 40;
+  // v3.10.78: `area` FUERA del índice de búsqueda a propósito.
+  // El area replica el segmento que YA está activo en el chip de categoría
+  // ("MOVIL POSTPAGO // PREPAGO" contiene "PREPAGO") → buscar "PREPAGO"
+  // devolvía las 13 opciones de POSTPAGO (ruido puro). La cobertura se
+  // conserva con `etq` (etiqueta operativa) + `alias`.
+  if (normalizeSearch(e.skill_tx2).indexOf(q) >= 0) return 20;
+  if (normalizeSearch(e.skill_txdirecto).indexOf(q) >= 0) return 20;
+  if (String(e.id) === q) return 10;            // búsqueda exacta por id
+  return 0;
+}
+
 function filterEtiquetas(query, cat) {
-  var q = normalizeSearch(query);
   var c = cat || TX_STATE.cat;
-  return ETIQUETAS_DATA.filter(function (e) {
-    if (e.cat !== c) return false;  // siempre filtrar por categoría activa
-    if (!q) return true;
-    // Normalizamos cada campo searchable para comparación consistente
-    return (
-      normalizeSearch(e.solicitud).indexOf(q) >= 0 ||
-      normalizeSearch(e.detalle).indexOf(q) >= 0 ||
-      normalizeSearch(e.area).indexOf(q) >= 0 ||
-      normalizeSearch(e.skill_tx2).indexOf(q) >= 0 ||
-      normalizeSearch(e.skill_txdirecto).indexOf(q) >= 0 ||
-      String(e.id) === q  // búsqueda exacta por id
-    );
-  });
+  var variants = queryVariants(normalizeSearch(query));
+  var scored = [];
+  for (var i = 0; i < ETIQUETAS_DATA.length; i++) {
+    var e = ETIQUETAS_DATA[i];
+    if (e.cat !== c) continue;  // siempre filtrar por categoría activa
+    if (!variants[0]) {         // query vacío → todas las de la categoría
+      scored.push({ e: e, s: 50, i: i });
+      continue;
+    }
+    var best = 0;
+    for (var v = 0; v < variants.length; v++) {
+      var s = etiquetasScore(e, variants[v]);
+      if (s > best) best = s;
+    }
+    if (best > 0) scored.push({ e: e, s: best, i: i });
+  }
+  // Orden: score DESC → luego orden original del Excel (desempate estable).
+  scored.sort(function (a, b) { return (b.s - a.s) || (a.i - b.i); });
+  var out = [];
+  for (var k = 0; k < scored.length; k++) out.push(scored[k].e);
+  return out;
 }
 
 // Render del dropdown con resultados — v3.1: 3 filas (header + detalle + meta pills)
@@ -5454,7 +5601,9 @@ function renderEtiquetasDropdown(query) {
     renderEtiquetasDropdownPosition();
     return;
   }
-  var html = matches.slice(0, 12).map(function (e) {
+  // v3.10.78: cap 12 → 16 (MTOTAL tiene 14 opciones tras la reconciliación
+  // con el Excel; con 12 el último quedaba oculto sin scroll).
+  var html = matches.slice(0, 16).map(function (e) {
     var safeSol = escapeHtml(e.solicitud);
     // v3.10.8 (A7/D10): event delegation. data-id en lugar de onclick inline.
     return '<div class="ac-item etiqueta-item" data-id="' + escapeHtml(String(e.id)) + '" data-action="select-etiqueta" role="option">' +

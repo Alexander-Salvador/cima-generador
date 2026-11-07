@@ -1,5 +1,80 @@
 # Changelog — cima-generador
 
+## [3.10.78] — 2026-11-06 — 📚 ETIQUETAS reconciliadas con el Excel + búsqueda por especificidad
+
+### Qué se reconcilió
+
+Auditoría exhaustiva del Excel `Recursos CIMA/Etiquetas de Transferencia/Etiquetas de
+Transferencia.xlsx` (12 hojas, 4 matrices de etiquetas). El contenido del popup
+vuelve a ser **el del Excel**, con los splits que la propia matriz operativa ya
+traía separada (`VALIDACION DE DATOS Y ETIQUETAS` r35 RECLAMOS · r36 COMERCIAL ·
+r39 CONSULTAS MOVISTAR TOTAL — el split no es inventado).
+
+### 3 bugs corregidos (con evidencia del Excel)
+
+| Bug | Antes | Ahora | Evidencia |
+|---|---|---|---|
+| **PLAN MENOR / MIGRACIÓN DOWN** | 2 opciones del mismo escenario con skills distintas (`SK_CV_COMERCIAL_TX` vs `SK_CV_DOWNSELL_MOVIL_TX`) | 1 opción `MIGRACIÓN A PLAN MENOR` → `SK_CV_DOWNSELL_MOVIL_TX` / `DP_CV_DOWNSELL_MOVIL_TX` | 3 de 4 hojas del Excel dan `DOWNSELL_MOVIL_TX` (`ETIQUETAS` r6, `ETIQUETAS 0` r9); la canónica r27 arrastraba el skill de COMERCIAL |
+| **VENTAS** | `SK_CV_COMERCIAL_TX` (3 categorías) | `SK_CV_CROSS_MOVIL_FIJA_TX` (3 categorías) | `ETIQUETAS.` r51 + matriz r42 + `ETIQUETAS 0` r15 |
+| **TÉCNICO N2** | `SK_CV_TECNICO_MOVIL_TX_KONECTA` | `SK_CV_TECNICO_MOVIL_TX` | 3 de 4 hojas (`ETIQUETAS.` r23, matriz r15, `ETIQUETAS` r31); KONECTA sobrevive solo como alias de búsqueda |
+
+Además: **BAJA DE TOTAL** y **BAJA FINAL POSTPAGO** eran la misma baja en dos
+opciones → fusionadas. **BAJA NO REGISTRADA** (BLINDAJE) se mantiene en MTOTAL y
+STANDALONE (fuentes canónicas) — la matriz la rotula "BLINDAJE MOVIL": pendiente
+de tu confirmación.
+
+### Nombres afinados (CEO directive)
+
+| Antes | Ahora |
+|---|---|
+| `RECLAMOS, CONSULTAS Y FACTURACION` (×3) | `RECLAMOS` · `FACTURACIÓN` · `INFORMACIÓN COMERCIAL` · `BENEFICIOS DEL PLAN` |
+| `TECNICO MOVIL 2 (N2)` | `TÉCNICO N2` |
+| `ACREDITACIONES` | `TÉCNICO ACREDITACIONES` |
+| `PLAN MENOR` / `MIGRACION DOWN (MOVIL)` | `MIGRACIÓN A PLAN MENOR` |
+| `VENTAS` | `ÁREA DE VENTAS` |
+| `AVERIA HOGAR` | `AVERÍA HOGAR` |
+
+### Dataset: 26 → 38 opciones
+
+| Categoría | Antes | Ahora |
+|---|---|---|
+| POST/PRE | 11 | **13** |
+| MOVISTAR TOTAL | 8 | **14** |
+| STANDALONE | 7 | **11** |
+
+Gaps del Excel incorporados: MT → COMPRA DE PAQUETES LDI (r41), CORTE POR ROBO
+POSTPAGO (r42), CORTE POR ROBO PREPAGO (r43); STANDALONE → TRASLADO / MUDANZA
+(`ETIQUETAS 0` r33) y BAJA NO REGISTRADA (r34).
+
+Cada opción lleva 3 campos nuevos: `alias[]` (sinónimos: plural, nombre del
+Excel, jerga del agente), `etq` (etiqueta operativa del Excel: ROBO · COMERCIAL ·
+RETENCIONES · VENTAS · ROAMING · TECNICO) y skill codes corregidos.
+
+### Búsqueda por especificidad (title-first)
+
+Antes era un substring plano sobre 6 campos, sin ranking:
+
+| Query | Antes | Ahora |
+|---|---|---|
+| `FACTURAS` | 🔴 **0 resultados** (el Excel dice FACTURACION) | ✅ 1 → `FACTURACIÓN` |
+| `COMERCIAL` | 🟡 4 resultados sin orden (matcheaba el *skill code*) | ✅ 6 ordenados — top-1 `INFORMACIÓN COMERCIAL` |
+| `PREPAGO` | 🔴 11 resultados (matcheaba el *area* `MOVIL POSTPAGO // PREPAGO`) | ✅ 2 → `MIGRACIÓN A PREPAGO`, `CORTE POR ROBO PREPAGO` |
+| `PLAN MENOR` | 🟡 2 opciones distintas | ✅ 1 → `MIGRACIÓN A PLAN MENOR` |
+| `DOWNSELL` / `MIGRACION DOWN` | 🟡 1 con skill ambigua | ✅ 1 con skill corregida |
+
+Scoring: **título (100/90) > alias (80/70) > etiqueta operativa (60) > detalle
+(40) > skill code (20) > id (10)**. Se añadió tolerancia singular/plural
+(`FACTURA`↔`FACTURAS`, `ROBO`↔`ROBOS`) y el cap del dropdown subió de 12 → 16
+(MTOTAL tiene 14 opciones; con 12 la última quedaba oculta).
+
+`area` salió del índice de búsqueda: replicaba el segmento que ya está activo en
+el chip de categoría y generaba ruido.
+
+**Verificado con el JS real en node** (no simulación): 696/676 asserts del
+suite + 22 asserts nuevos de reconciliación → **696 passed, 0 failed**.
+
+---
+
 ## [3.10.77] — 2026-11-06 — 🎯 Alineación del contador `9/9` en TELÉFONO DE CONSULTA
 
 ### El indicador estaba descentrado respecto al input
