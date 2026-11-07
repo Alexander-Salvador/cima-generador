@@ -1,5 +1,63 @@
 # Changelog — cima-generador
 
+## [3.10.82] — 2026-11-06 — 🎛️ Botones de TIPIFICACIÓN: RESET nuevo · APN→JIRA · CASO eliminado
+
+### Qué cambia en la fila de acciones
+
+| Botón | Antes | Ahora |
+|---|---|---|
+| **RESET** | "Se genera el proceso de RESET, y se invita a apagar el equipo por 5 minutos…" | **"Se genera tratamiento a cliente mediante Tripartita de manera efectiva y activado del modo avión."** |
+| **APN** | "Se realiza la configuración del APN con éxito…" | **JIRA** — plantilla `CREACION DE TK JIRA` |
+| **CASO** | "Se realiza el escalamiento de CASO, por AVERÍA MASIVA detectada." | **ELIMINADO** (CEO directive) |
+
+La fila queda con **2 botones** (RESET · JIRA) en el mismo segmented control; el
+`flex: 1 1 0` los reparte 50/50 sin tocar CSS de layout. El icono de APN (wifi)
+se reemplaza por uno de **clipboard** (JIRA). El accent verde pasa de APN a
+JIRA; el de CASO (ámbar) se elimina con el botón.
+
+### Contenido de JIRA (literal)
+
+Es la fila `CREACION DE TK JIRA` de la hoja **PLANTILLAS PLAZOS** del Excel,
+columna **EJEMPLO** — verificada carácter por carácter contra el XLSX:
+
+```
+Tipo de Servicio: MOVIL
+
+NOMBRE DEL CLIENTE: MARIA JUARES
+
+DNI CLIENTE: 09863222
+
+NÚMERO DE SUSCRIPCIÓN: 99999 55555
+
+TRANSACCIÓN: Validacion de saldo
+
+MOTIVO: No permite validar saldo
+
+MENSAJE DE ERROR: ProductType
+
+
+Pasar la imagen del error (LA IMAGEN)
+```
+
+Se conserva el doble salto de línea final del Excel (`\n\n\n`) para que la
+instrucción de adjuntar la imagen del error quede separada del bloque de datos.
+
+### Limpieza
+
+`SPEECH_TEMPLATES` queda con 2 claves (`reset`, `jira`). Eliminados: botón
+CASO, template `caso`, template `apn`, `copySpeech('caso')`,
+`copySpeech('apn')`, accent CSS `[data-action="caso"]`, iconos y comentarios
+que los mencionaban. Se corrigió además el `};;` doble punto y coma que
+quedaba en la declaración de `SPEECH_TEMPLATES`.
+
+**Verificado:** `test_popup.py` → **749 passed, 0 failed, 0 warnings** (13
+asserts nuevos + 10 de "eliminado") · contenido del portapapeles extraído con
+node y comparado contra el Excel · sintaxis del `<script>` inline validada con
+`node --check` · CSS balance 565/565 · aggressive/security/codereview/
+browser_static PASS.
+
+---
+
 ## [3.10.81] — 2026-11-06 — 🎛️ Chips por segmento + fix del estado "trancado" al pulsar otro botón
 
 ### Chips: nombres por segmento (CEO directive)

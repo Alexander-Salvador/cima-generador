@@ -760,7 +760,7 @@ def test(html_path):
 
     # v3.0.2 TIPIFICACIÓN TX — premium action buttons + etiquetas
     print('\n▸ TIPIFICACIÓN v3.0.2 (Premium action buttons + etiquetas)')
-    for k in ['action-buttons-row', 'action-btn', 'data-action="reset"', 'data-action="apn"', 'data-action="caso"',
+    for k in ['action-buttons-row', 'action-btn', 'data-action="reset"', 'data-action="jira"',
               'action-btn-icon', 'action-btn-feedback',
               'etiquetas-block', 'etiqueta-categories', 'cat-chip', 'data-cat="POSTPAGO"',
               'data-cat="MTOTAL"', 'data-cat="STANDALONE"', 'etiquetaPreview',
@@ -793,14 +793,14 @@ def test(html_path):
     else:
         result.fail('SPEECH_TEMPLATES check', '"✓" todavía presente en textos copiables')
     # v3.0.2: Puntuación correcta con artículos en español
+    # v3.10.82: CASO eliminado + APN renombrado a JIRA (CEO directive)
     punct_check = [
-        ('reset: ', 'Se genera el proceso de RESET'),
-        ('apn: ',   'Se realiza la configuración del APN'),
-        ('caso: ',  'Se realiza el escalamiento de CASO, por AVERÍA MASIVA'),
+        ('reset: ', 'Se genera tratamiento a cliente mediante Tripartita de manera efectiva y activado del modo avión'),
+        ('jira: ',  'Tipo de Servicio: MOVIL'),
     ]
     for _, expected in punct_check:
         if expected in html:
-            result.ok(f'TIPIF v3.0.2 punctuation: "{expected[:40]}…"')
+            result.ok(f'TIPIF v3.10.82 punctuation: "{expected[:40]}…"')
         else:
             result.fail('Punctuation', f'"{expected[:40]}" ausente')
     # ETIQUETAS_DATA con 17+ registros categorizados
@@ -5321,6 +5321,70 @@ def test(html_path):
         result.ok('v3.10.81 click-outside: la fila de acciones ya no queda excluida (dropdown siempre cierra)')
     else:
         result.fail('v3.10.81 click-outside', '.action-buttons-row sigue excluida del cierre')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.82 — BOTONES DE ACCIÓN: RESET (texto nuevo) · JIRA (renombrado)
+    # · CASO ELIMINADO (CEO directive)
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.82 — RESET nuevo · JIRA (plantilla Excel) · CASO eliminado')
+
+    # 1) Solo 2 botones de acción: RESET + JIRA
+    n_btns = len(re.findall(r'<button[^>]*class="action-btn"[^>]*data-action="([a-z]+)"', html))
+    actions = re.findall(r'<button[^>]*class="action-btn"[^>]*data-action="([a-z]+)"', html)
+    if sorted(actions) == ['jira', 'reset']:
+        result.ok(f'v3.10.82 BOTONES: 2 acciones {sorted(actions)} (CASO eliminado)')
+    else:
+        result.fail('v3.10.82 BOTONES', f'acciones={actions} (esperado reset + jira)')
+
+    # 2) CASO y APN completamente eliminados (DOM, template y CSS)
+    for dead in ['data-action="caso"', 'data-action="apn"', 'copySpeech(\'caso\')',
+                 'copySpeech(\'apn\')', 'caso: ', 'apn: ', '>CASO<', '>APN<',
+                 '[data-action="caso"]', '[data-action="apn"]']:
+        if dead not in html:
+            result.ok(f'v3.10.82 ELIMINADO: {dead} ausente')
+        else:
+            result.fail('v3.10.82 ELIMINADO', f'{dead} sigue presente')
+
+    # 3) RESET — texto nuevo del CEO (Tripartita + modo avión)
+    reset_txt = ('Se genera tratamiento a cliente mediante Tripartita de manera '
+                 'efectiva y activado del modo avión')
+    if reset_txt in html:
+        result.ok('v3.10.82 RESET: texto Tripartita + modo avión')
+    else:
+        result.fail('v3.10.82 RESET', 'texto nuevo ausente')
+
+    # 4) JIRA — las 7 líneas de la plantilla + la instrucción de la imagen
+    jira_lines = [
+        'Tipo de Servicio: MOVIL',
+        'NOMBRE DEL CLIENTE: MARIA JUARES',
+        'DNI CLIENTE: 09863222',
+        'NÚMERO DE SUSCRIPCIÓN: 99999 55555',
+        'TRANSACCIÓN: Validacion de saldo',
+        'MOTIVO: No permite validar saldo',
+        'MENSAJE DE ERROR: ProductType',
+        'Pasar la imagen del error (LA IMAGEN)',
+    ]
+    m_jira = re.search(r"jira:\s*\"(.*?)\"\s*\n\};", html, re.DOTALL)
+    jira_body = m_jira.group(1) if m_jira else ''
+    faltan = [l for l in jira_lines if l not in jira_body]
+    if not faltan:
+        result.ok(f'v3.10.82 JIRA: {len(jira_lines)} líneas de la plantilla CREACION DE TK JIRA')
+    else:
+        result.fail('v3.10.82 JIRA', f'faltan: {faltan}')
+
+    # 5) El botón JIRA usa la acción correcta y el accent CSS existe
+    if 'onclick="copySpeech(\'jira\')"' in html and 'data-action="jira"]' in html:
+        result.ok('v3.10.82 JIRA: botón enlazado a copySpeech(\'jira\') con accent propio')
+    else:
+        result.fail('v3.10.82 JIRA botón', 'falt onclick o accent CSS')
+
+    # 6) copySpeech resuelve por clave → el template jira debe existir
+    m_tpl = re.search(r"const SPEECH_TEMPLATES = \{(.*?)\n\};", html, re.DOTALL)
+    tpl_body = m_tpl.group(1) if m_tpl else ''
+    if 'reset:' in tpl_body and 'jira:' in tpl_body:
+        result.ok('v3.10.82 TEMPLATES: reset + jira definidos')
+    else:
+        result.fail('v3.10.82 TEMPLATES', 'reset/jira no definidos')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
