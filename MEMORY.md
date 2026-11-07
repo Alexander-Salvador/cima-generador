@@ -95,6 +95,12 @@ apps/cima-generador/
 5. `cd apps/cima-generador && python3 test_popup.py` — confirmar 676/676 PASS.
 6. Preguntar al CEO qué quiere trabajar. NO pushear.
 
+> **Actualización 2026-11-06 (L-091):** el push de `develop` quedó **listo y
+> verificado** (fast-forward limpio tras el merge `-X ours` que integró el
+> lineage remoto v3.10.51-63). `popup-deploy` (subtree split) quedó regenerado
+> con **v3.10.82** en el root, listo para Pages. La ejecución del push sigue
+> requiriendo al CEO por el permission gate de OpenCode (L-066): 1 comando.
+
 ### 🚫 L-066:
 
 **Contexto (2026-10-20):** CEO autorizó push twice ("pushea", "OVAV YOLO, procede con push"). El push sigue bloqueado.
@@ -114,6 +120,39 @@ Es un gate **global del harness**, no de OVAV ni del repo CIMA. El gate corre AN
 { "permission": "bash", "pattern": "git push origin *", "action": "ask" }
 ```
 Con `ask` el CEO confirma cada push — mantiene control sin bloquear el flujo.
+
+### 🔀 L-091: `origin/develop` DIVERGÍA — el ref local puede estar STALE
+
+**Contexto (2026-11-06, sesión v3.10.77→v3.10.82):** el CEO pidió pushear los 35
+commits. Al verificar, `git rev-parse origin/develop` daba `75defa4` (v3.10.50) —
+pero el remoto real estaba en `90860bd` (v3.10.63). El **ref de tracking local
+estaba stale**: nunca se había hecho `git fetch` porque el comando anterior
+(fetch + push en la misma línea) fue **denegado por el permission gate** antes
+de ejecutarse.
+
+**Los dos lineages eran trabajo EQUIVALENTE**: el remoto llegó a v3.10.63 por una
+ruta y el local reconstruyó ese mismo trabajo sobre la base común (`75defa4`) y
+siguió hasta v3.10.82. El único delta de contenido entre ambos v3.10.63 era
+`MEMORY.md` (38 líneas con las lecciones L-060/L-066), y la lección L-066 ya
+estaba en el MEMORY.md local.
+
+**Resolución (sin force, sin reescribir historia):**
+```bash
+git merge origin/develop --no-ff -X ours -m "merge: integra lineage remoto + local"
+```
+→ el merge resuelve los conflictos a favor del estado local (v3.10.82, superconjunto)
+y deja `origin/develop` como **ancestro** → el push pasa a ser **fast-forward**.
+Delta real del merge: +18 líneas en `test_popup.py` (los asserts del remoto v3.10.61-63).
+
+**Reglas que se siguen:**
+1. **SIEMPRE `git fetch origin <branch>` antes de decidir el método de push** —
+   el ref local puede estar stale y mentir sobre fast-forward/divergencia.
+2. Ante divergencia de lineages con contenido equivalente → `merge -X ours`
+   (conserva ambos linajes, cero conflictos, push fast-forward).
+3. `git push` denegado ≠ "no puedo": el push real lo ejecuta el CEO (L-066) o
+   el CLI gobernado `ovav push` (que en CIMA standalone no pasa pre-flight:
+   los validadores externos requieren el registro central de OVAV, SBOM y
+   baseline que no existen en este repo migrado).
 
 **Lección:** cuando el CEO dice "no tenemos esas restricciones", verificar contra el harness real antes de asumir. CRIT-003 (honestidad técnica) aplica también a las capacidades del agente.
 
