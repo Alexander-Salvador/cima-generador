@@ -1067,16 +1067,16 @@ def test(html_path):
     if '@media (max-width: 320px)' in html and '.etiqueta-categories' in html:
         result.ok('TIPIF v3.3.2 mobile fallback: chips 1-col solo @ <=320px (extremo)')
 
-    # Labels abreviados visibles
+    # Labels por SEGMENTO (v3.10.81: POST/PRE → MOVIL, MT → M.TOTAL)
     # (data-cat preserva nombres lógicos: POSTPAGO/MTOTAL/STANDALONE)
-    if '<span>POST/PRE</span>' in html:
-        result.ok('TIPIF v3.3.2 label: POST/PRE (abreviatura CEO)')
+    if '<span>MOVIL</span>' in html:
+        result.ok('TIPIF v3.10.81 label: MOVIL (segmento MÓVIL — POSTPAGO/PREPAGO)')
     else:
-        result.fail('label POST/PRE', 'abreviatura ausente')
-    if '<span>MT</span>' in html:
-        result.ok('TIPIF v3.3.2 label: MT (abreviatura MOVISTAR TOTAL)')
+        result.fail('label MOVIL', 'abreviatura ausente')
+    if '<span>M.TOTAL</span>' in html:
+        result.ok('TIPIF v3.10.81 label: M.TOTAL (MOVISTAR TOTAL)')
     else:
-        result.fail('label MT', 'abreviatura ausente')
+        result.fail('label M.TOTAL', 'abreviatura ausente')
     if '<span>STANDALONE</span>' in html:
         result.ok('TIPIF v3.3.2 label: STANDALONE (sin cambio, ya corto)')
     else:
@@ -1090,9 +1090,10 @@ def test(html_path):
             result.fail(f'data-cat {cat}', 'ausente')
 
     # Title attributes para tooltip completo (accesibilidad)
-    for title in ['title="POSTPAGO/PREPAGO"', 'title="MOVISTAR TOTAL"', 'title="STANDALONE (servicio fijo)"']:
+    # v3.10.81: el title del chip MOVIL pasa a "MÓVIL — POSTPAGO / PREPAGO"
+    for title in ['title="MÓVIL — POSTPAGO / PREPAGO"', 'title="MOVISTAR TOTAL"', 'title="STANDALONE (servicio fijo)"']:
         if title in html:
-            result.ok(f'TIPIF v3.3.2 title attribute: {title}')
+            result.ok(f'TIPIF v3.10.81 title attribute: {title}')
         else:
             result.fail(f'title {title}', 'ausente — nombres completos no accesibles')
 
@@ -5270,6 +5271,56 @@ def test(html_path):
         result.ok('v3.10.80 VALIDACIÓN: AVERÍA HOGAR con la clause completa del Excel')
     else:
         result.fail('v3.10.80 AVERÍA HOGAR validación', 'clause incompleta')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.81 — Chips por segmento (MOVIL | M.TOTAL | STANDALONE) +
+    # RESET del estado de búsqueda al pulsar otro botón (anti "trancado")
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.81 — Chips por segmento + reset del input marcado')
+
+    # 1) Labels de los 3 chips por segmento
+    for lbl in ['<span>MOVIL</span>', '<span>M.TOTAL</span>', '<span>STANDALONE</span>']:
+        if lbl in html:
+            result.ok(f'v3.10.81 CHIP: {lbl}')
+        else:
+            result.fail('v3.10.81 CHIP', f'{lbl} ausente')
+
+    # 2) Los data-cat lógicos NO cambian (la lógica JS depende de ellos)
+    for dc in ['data-cat="POSTPAGO"', 'data-cat="MTOTAL"', 'data-cat="STANDALONE"']:
+        if dc in html:
+            result.ok(f'v3.10.81 data-cat preservado: {dc}')
+        else:
+            result.fail('v3.10.81 data-cat', f'{dc} ausente')
+
+    # 3) filterEtiquetasByCat debe limpiar el input + selección + dropdown
+    m_cat = re.search(r'function filterEtiquetasByCat\(cat\) \{(.*?)(?=\nfunction )', html, re.DOTALL)
+    cat_body = m_cat.group(1) if m_cat else ''
+    if ("input.value = ''" in cat_body and 'TX_STATE.selectedId = null' in cat_body
+            and 'showEtiquetaPreview(null)' in cat_body and 'hideEtiquetaDropdown()' in cat_body):
+        result.ok('v3.10.81 RESET chip: limpia input + selección + preview + dropdown')
+    else:
+        result.fail('v3.10.81 RESET chip', 'filterEtiquetasByCat no limpia el estado marcado')
+    # El dropdown NO debe re-abrirse al cambiar de categoría (regla v3.3.3)
+    if 'renderEtiquetasDropdown(' not in cat_body:
+        result.ok('v3.10.81 chips: el dropdown NO se re-abre al cambiar de categoría (v3.3.3)')
+    else:
+        result.fail('v3.10.81 chips', 'renderEtiquetasDropdown no debe llamarse en filterEtiquetasByCat')
+
+    # 4) Botones RESET/APN/CASO: limpian el input marcado y cierran el dropdown
+    m_action = re.search(r"actionRow\.addEventListener\('mousedown', function \(\) \{(.*?)\}\);", html, re.DOTALL)
+    act_body = m_action.group(1) if m_action else ''
+    if "searchInput.value = ''" in act_body and 'hideEtiquetaDropdown()' in act_body:
+        result.ok('v3.10.81 RESET acciones: RESET/APN/CASO limpian el input y cierran el dropdown')
+    else:
+        result.fail('v3.10.81 RESET acciones', 'handler de .action-buttons-row incompleto')
+
+    # 5) El click-outside ya NO excluye la fila de acciones (dropdown siempre cierra)
+    m_outside = re.search(r"document\.addEventListener\('mousedown', function \(e\) \{(.*?)\n  \}\);", html, re.DOTALL)
+    out_body = m_outside.group(1) if m_outside else ''
+    if ".action-buttons-row')) return;" not in out_body and 'hideEtiquetaDropdown();' in out_body:
+        result.ok('v3.10.81 click-outside: la fila de acciones ya no queda excluida (dropdown siempre cierra)')
+    else:
+        result.fail('v3.10.81 click-outside', '.action-buttons-row sigue excluida del cierre')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')
