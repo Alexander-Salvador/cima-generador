@@ -1,5 +1,53 @@
 # Changelog — cima-generador
 
+## [3.10.79] — 2026-11-06 — 🧭 Misma lógica en MOVISTAR TOTAL + STANDALONE (auditoría de trazabilidad)
+
+### Auditoría: cada fila del Excel → su opción en el popup
+
+Se re-cruzó **cada** título del Excel (canónica `ETIQUETAS.` + las 2 hojas
+paralelas `ETIQUETAS` y `ETIQUETAS 0`) contra las 39 opciones del popup, y cada
+opción contra su origen. Resultado: **0 gaps reales, 0 duplicados, 0 pérdidas**.
+
+| Categoría | Opciones | Skills del Excel cubiertos |
+|---|---|---|
+| POST/PRE | 13 | 7 de 7 |
+| MOVISTAR TOTAL | **15** (antes 14) | 10 de 10 |
+| STANDALONE | 11 | 9 de 9 |
+
+### 1 gap real cerrado
+
+**`TRASLADO / MUDANZA` faltaba en MOVISTAR TOTAL** — el Excel lo tiene en
+`ETIQUETAS 0` r26 (`SK_CV_TRASLADO_BAJA_FIJA_TX`) y solo estaba cargado en
+STANDALONE. Ahora existe en ambos (2 opciones, mismo skill).
+
+### Optimización de búsqueda (sin duplicar filas)
+
+`ÁREA DE VENTAS` mapea 6 intenciones del Excel (r51 + matriz r42) que comparten
+el mismo skill y la misma etiqueta → **se indexan como alias, no como filas
+nuevas**: `ALTA FIJA`, `MONO`, `DUO`, `TRIO`, `UPSELL`,
+`MIGRACION A PLAN MAYOR` (+ los previos `ALTA NUEVA`, `PORTABILIDAD`,
+`CAMBIO DE EQUIPO`). Buscar "portabilidad" lleva directo a `ÁREA DE VENTAS`
+sin inflar el dropdown.
+
+`MOVISTAR TOTAL` es alias **solo en MT**: en STANDALONE sería contradictorio
+(cliente STAND ALONE es, por definición, *no* Movistar Total).
+
+Alias del nombre operativo del Excel agregado: `AVERIAS DE SERVICIO DE HOGAR`
+(matriz r17/r18), `TV SATELITAL`, `BAJA SERVICIO HOGAR`.
+
+### Higiene
+
+- IDs renumerados **1..39** en orden de array (sin cambios de contenido).
+- Cap del dropdown 16 → **18** (MT tiene 15 opciones).
+- Invariante nueva en el suite: **0 pares `(cat, solicitud)` duplicados** +
+  cobertura de los **16 skills** del Excel.
+
+**Verificado:** `test_popup.py` → **722 passed, 0 failed** (44 asserts nuevos) ·
+búsqueda re-verificada con el **JS real en node** (no simulación) ·
+CSS balance 566/566.
+
+---
+
 ## [3.10.78] — 2026-11-06 — 📚 ETIQUETAS reconciliadas con el Excel + búsqueda por especificidad
 
 ### Qué se reconcilió
