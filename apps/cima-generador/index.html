@@ -1935,7 +1935,7 @@
     gap: 6px;
   }
   /* ══════════════════════════════════════════════════════════════════════
-     TIPIFICACIÓN v3.2 — Segmented action buttons (RESET/APN/CASO)
+     TIPIFICACIÓN v3.2 — Segmented action buttons (RESET/JIRA)
      Single-row iOS segment-control aesthetic — 3 acciones unificadas
      en UN contenedor glass con dividers internos (no 3 islands).
      Cada botón: flex 1 1 0 (equal distribution), bg transparente,
@@ -1984,10 +1984,10 @@
   .action-btn + .action-btn {
     border-left: 1px solid var(--glass-border);
   }
-  /* Per-action accent colors (gradiente en el icono) */
+  /* Per-action accent colors (gradiente en el icono)
+     v3.10.82: APN → JIRA (verde se mantiene, pasa a JIRA); CASO eliminado. */
   .action-btn[data-action="reset"] { --btn-accent: #3b82f6; --btn-grad: linear-gradient(135deg, #60a5fa, #2563eb); --btn-glow: rgba(59,130,246,0.32); }
-  .action-btn[data-action="apn"]   { --btn-accent: #10b981; --btn-grad: linear-gradient(135deg, #34d399, #059669); --btn-glow: rgba(16,185,129,0.32); }
-  .action-btn[data-action="caso"]  { --btn-accent: #f59e0b; --btn-grad: linear-gradient(135deg, #fbbf24, #d97706); --btn-glow: rgba(245,158,11,0.32); }
+  .action-btn[data-action="jira"]  { --btn-accent: #10b981; --btn-grad: linear-gradient(135deg, #34d399, #059669); --btn-glow: rgba(16,185,129,0.32); }
 
   .action-btn::before {
     /* Hairline highlight (glass iOS) — aparece en hover */
@@ -4104,7 +4104,7 @@ font-size: 10px;
           <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
                tras recargar, el browser está sirviendo otro archivo/versión.
                Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
-          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.81</span>
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.82</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -4511,12 +4511,14 @@ font-size: 10px;
        </button>
        <div class="grid-body" id="gridTipif-body">
 
-      <!-- FILA 1: 3 action-buttons (RESET · APN · CASO) — copy al click
+      <!-- FILA 1: 2 action-buttons (RESET · JIRA) — copy al click
            v3.2 segmented control: single glass container con dividers internos.
            Cada botón: flex 1 1 0 (equal distribution), 34px altura, gradiente
-           por acción en el icono. Feedback "✓ COPIADO" via overlay. -->
+           por acción en el icono. Feedback "✓ COPIADO" via overlay.
+           v3.10.82: APN → JIRA (plantilla CREACION DE TK JIRA del Excel).
+           v3.10.82: CASO ELIMINADO (CEO directive). -->
       <div class="action-buttons-row" role="group" aria-label="Acciones rápidas de tipificación">
-        <button type="button" class="action-btn" data-action="reset" onclick="copySpeech('reset')" aria-label="Copiar texto de proceso RESET">
+        <button type="button" class="action-btn" data-action="reset" onclick="copySpeech('reset')" aria-label="Copiar texto de tratamiento Tripartita y modo avión">
           <span class="action-btn-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
@@ -4528,27 +4530,16 @@ font-size: 10px;
           <span class="action-btn-label">RESET</span>
           <span class="action-btn-feedback" aria-hidden="true">Copiado</span>
         </button>
-        <button type="button" class="action-btn" data-action="apn" onclick="copySpeech('apn')" aria-label="Copiar texto de configuración APN">
+        <button type="button" class="action-btn" data-action="jira" onclick="copySpeech('jira')" aria-label="Copiar plantilla de JIRA (tipo de servicio, cliente, DNI, suscripción, transacción, motivo y mensaje de error)">
           <span class="action-btn-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-              <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-              <circle cx="12" cy="20" r="1.2" fill="currentColor"/>
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1"/>
+              <path d="M9 12h6"/>
+              <path d="M9 16h4"/>
             </svg>
           </span>
-          <span class="action-btn-label">APN</span>
-          <span class="action-btn-feedback" aria-hidden="true">Copiado</span>
-        </button>
-        <button type="button" class="action-btn" data-action="caso" onclick="copySpeech('caso')" aria-label="Copiar texto de escalamiento de CASO">
-          <span class="action-btn-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 3h7v7"/>
-              <path d="M10 14 21 3"/>
-              <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>
-            </svg>
-          </span>
-          <span class="action-btn-label">CASO</span>
+          <span class="action-btn-label">JIRA</span>
           <span class="action-btn-feedback" aria-hidden="true">Copiado</span>
         </button>
       </div>
@@ -4638,7 +4629,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.81</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.82</span>
     </span>
   </footer>
 </div>
@@ -4679,22 +4670,28 @@ const PROBLEMAS = {
 const ADDRESS_INPUTS = ['direccion', 'referencia', 'departamento', 'provincia', 'distrito', 'ccpp'];
 
 // ══════════════════════════════════════════════════════════════════════
-// TIPIFICACIÓN v3.0 — Speech templates (RESET/APN/CASO) + Etiquetas TX
+// TIPIFICACIÓN v3.0 — Speech templates (RESET/JIRA) + Etiquetas TX
 // Datos inline para evitar fetch (consistente con UBIGEO/CCPP_DATA inline)
 // Fuentes:
 //   - SPEECH RECURRENTES sheet "SPEECH ANTES DE GENERAR RESET DE VOZ O DATOS"
 //   - PLANTILLAS PLAZOS sheet "CREACION DE TK JIRA"
-//   - Movistar Perú APN config (estándar público)
+//   - PLANTILLAS PLAZOS sheet 'CREACION DE TK JIRA' (EJEMPLO literal)
 //   - ETIQUETAS sheet "Etiquetas y Validaciones" 24 records v3.0
 // ══════════════════════════════════════════════════════════════════════
 
+// v3.10.82 — TEXTOS DE LOS BOTONES DE ACCIÓN (CEO directive 2026-11-06)
+//   · RESET → Tripartita + activación de modo avión (texto nuevo del CEO).
+//   · JIRA  → RENOMBRA el antiguo botón APN. Contenido = hoja 'PLANTILLAS
+//     PLAZOS' del Excel, fila 'CREACION DE TK JIRA', columna EJEMPLO (literal,
+//     incluye la instrucción final de adjuntar la imagen del error).
+//   · CASO  → ELIMINADO (CEO directive). Se retiran botón, template y
+//     cualquier dependencia del mismo.
 // v3.0.1 — Textos SIN prefijo "✓" (queda fuera del clipboard)
 // Puntuación correcta en español con artículos ("el", "la", "una").
 const SPEECH_TEMPLATES = {
-  reset: "Se genera el proceso de RESET, y se invita a apagar el equipo por 5 minutos para realizar pruebas posteriores.",
-  apn: "Se realiza la configuración del APN con éxito. El cliente puede navegar correctamente.",
-  caso: "Se realiza el escalamiento de CASO, por AVERÍA MASIVA detectada."
-};;
+  reset: "Se genera tratamiento a cliente mediante Tripartita de manera efectiva y activado del modo avión.",
+  jira: "Tipo de Servicio: MOVIL\n\nNOMBRE DEL CLIENTE: MARIA JUARES\n\nDNI CLIENTE: 09863222\n\nNÚMERO DE SUSCRIPCIÓN: 99999 55555\n\nTRANSACCIÓN: Validacion de saldo\n\nMOTIVO: No permite validar saldo\n\nMENSAJE DE ERROR: ProductType\n\n\nPasar la imagen del error (LA IMAGEN)"
+};
 
 // Etiquetas de Transferencia — extraídas de XLSX 'Etiquetas de Transferencia'
 // Categorización derivada de columna AREA del Excel:
@@ -5440,7 +5437,7 @@ function copyOutput(elementId) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// TIPIFICACIÓN v3.0.3 — Speech templates (3 botones: RESET/APN/CASO)
+// TIPIFICACIÓN v3.0.3 — Speech templates (2 botones: RESET/JIRA)
 // FIX bug v3.0.2: NO destruimos textContent (rompía iconos y font).
 // Usamos toggle de clase `.is-copied` para mostrar feedback via
 // overlay (.action-btn-feedback), preservando 100% el DOM original.
@@ -5892,14 +5889,14 @@ function setupEtiquetas() {
     if (!drop || drop.hidden) return;
     if (e.target.closest('#etiquetaSearch')) return;
     if (e.target.closest('#ac-etiqueta')) return;
-    // v3.10.81: ya NO se excluye `.action-buttons-row` → pulsar RESET / APN /
-    // CASO cierra el dropdown (antes quedaba abierto encima del grid, con el
+    // v3.10.81: ya NO se excluye `.action-buttons-row` → pulsar RESET / JIRA
+    // cierra el dropdown (antes quedaba abierto encima del grid, con el
     // texto de la búsqueda pegado → el agente lo veía "trancado").
     hideEtiquetaDropdown();
   });
 
   // ══════════════════════════════════════════════════════════════════════
-  // v3.10.81 — RESET / APN / CASO limpian el input de búsqueda marcado.
+  // v3.10.81 — RESET / JIRA limpian el input de búsqueda marcado.
   // Al pulsar un botón de acción se vacía el texto del buscador, se oculta el
   // botón X y se cierra el dropdown. La etiqueta SELECCIONADA se conserva:
   // el preview sigue mostrando los 2 códigos que el agente puede copiar
