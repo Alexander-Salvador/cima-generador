@@ -167,11 +167,35 @@ cd apps/cima-generador && python3 test_popup.py   # 676 asserts, gate obligatori
 11. ⛔ **LOCAL ÚNICAMENTE — CERO PUSH SIN AUTORIZACIÓN.** El CEO gobierna los
     deploys. No ejecutar `DEPLOY.sh`, no hacer push, no proponer push, no
     mencionarlo como pendiente, hasta que él lo autorice explícitamente en la
-    sesión. Que GitHub Pages sirva `v3.10.63` mientras el local va `v3.10.76` es
-    el **estado correcto**, no una deuda. Ver `MEMORY.md` L-076.
+    sesión. Ver `MEMORY.md` L-076.
+    **Procedimiento cuando SÍ hay OK** (ver `MEMORY.md` L-091 / L-092):
+    1. `git fetch origin <branch>` — el ref local puede estar stale y mentir
+       sobre fast-forward/divergencia.
+    2. Si divergió y el contenido es equivalente → `git merge origin/<branch>
+       --no-ff -X ours` (conserva ambos linajes, push queda fast-forward).
+    3. Backup atómico previo: `git update-ref refs/backups/<branch>-pre-push-<ts> <branch>`.
+    4. `develop` → push **fast-forward, sin force**.
+    5. `main` (Pages) → subtree split + `--force-with-lease=main:<sha-remoto>`
+       (**nunca** `--force` a secas).
+    6. Verificar build de Pages + versión servida antes de cerrar.
+    Nota: el gate `git push*` del harness OpenCode estaba **stale** (la decisión
+    ratificada de OVAV es ALLOW con gate) → corregido en
+    `/home/braka/Systems/ovav/opencode.json` (backup `*.bak-push-allow-<ts>`),
+    **sin commitear** — decisión del CEO.
 
 ---
 
+## 📍 Estado al 2026-11-07
+
+- Popup **local = LIVE = v3.10.82** (`develop` `c163567` · Pages `cda031b`).
+- 39 etiquetas de transferencia reconciliadas contra el Excel, con
+  `ETIQUETAS_BASELINE` como baseline anti-regresión en el gate.
+- Decisiones abiertas del CEO (D1/D2/D3) en `PENDIENTES.md`.
+- Handoff de sesión: `docs/handoff/2026-11-07-v3.10.82.md`.
+
+---
+
+*Actualizado 2026-11-07 — sesión v3.10.77 → v3.10.82 (Thavren)*
 *Actualizado 2026-10-22 — sesión v3.10.72/73/74/76 (Thavren)*
 *OVAV migrated from develop — 2026-10-05*
 *Project lead: Alexander Salvador (CEO)*
