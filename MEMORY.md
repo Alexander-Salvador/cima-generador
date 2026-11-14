@@ -49,6 +49,15 @@ checkpoint, **sin tocar remoto** hasta nuevo OK del CEO.
 
 ### Decisiones PENDIENTES del CEO (no tocar sin OK)
 
+0. **Hook de superficies protegidas:** `AGENTS.md` está en la lista de superficies
+   protegidas del hook OVAV (`core.hooksPath` → `/home/braka/Systems/ovav/.ovav/hooks/pre-commit`).
+   En **CIMA el baseline NO es aplicable** (de 6 superficies protegidas solo existe
+   `AGENTS.md`; `ovav integrity baseline --write` aborta por las ausentes y
+   `runtime_integrity` ya falla de base). Al tocar `AGENTS.md` hay que commitear con
+   `OVAV_BYPASS_BASELINE_CHECK=1` (escape documentado en el propio hook) **dejando la
+   justificación en el mensaje**. No fabricar un `baseline.json` a mano: solo silencia
+   el hook sin validar nada.
+
 1. **`BAJA NO REGISTRADA`** → ¿agregarla a **MÓVIL**? Hoy está en M.TOTAL + STANDALONE.
    El Excel se contradice: canónica r37 (MOVISTAR TOTAL) vs matriz r33 (pool **BLINDAJE MOVIL**)
    vs `Validación de datos` r17 (Baja final del **servicio móvil** → Etiqueta Retenciones).
