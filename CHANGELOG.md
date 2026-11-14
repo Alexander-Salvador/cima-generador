@@ -6,6 +6,58 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.1.0] — 2026-11-07 — **Popup v3.10.82 publicado** (etiquetas reconciliadas + gate anti-regresión)
+
+### 🎯 Headline
+
+Seis releases del popup (**v3.10.77 → v3.10.82**) cerradas, auditadas contra el
+Excel fuente y **publicadas**: `develop` `90860bd→c163567` (fast-forward) y
+`main`/Pages `be99090→cda031b` (subtree split + `--force-with-lease`).
+El detalle por release vive en `apps/cima-generador/CHANGELOG.md`.
+
+### ✨ Added
+
+- **39 etiquetas de transferencia** reconciliadas contra el XLSX oficial
+  (`Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx`),
+  con los splits que la propia matriz operativa del Excel ya traía separados.
+- **`ETIQUETAS_BASELINE`** en `test_popup.py`: cada opción queda anclada a
+  `(cat, solicitud) → (skill 2 pasos, skill directa) + fila de origen en el
+  Excel`. Editar un skill o un nombre **rompe el gate** → hay que re-verificar.
+- **Búsqueda por especificidad** (title-first): título > alias > etiqueta
+  operativa > detalle > skill > id, con tolerancia singular/plural
+  (`FACTURAS` → `FACTURACIÓN`).
+- **`etq`** (etiqueta operativa ROBO/COMERCIAL/RETENCIONES/VENTAS/ROAMING/TECNICO)
+  y **`alias[]`** por opción — base para el filtro por etiqueta operativa.
+
+### 🐛 Fixed
+
+- **3 skills corregidos** contra el Excel: `PLAN MENOR` (→ `SK_CV_DOWNSELL_MOVIL_TX`),
+  `VENTAS` (→ `SK_CV_CROSS_MOVIL_FIJA_TX`), `TÉCNICO N2` (`KONECTA` → `SK_CV_TECNICO_MOVIL_TX`).
+- `PLAN MENOR` y `MIGRACIÓN DOWN` eran el mismo escenario con skills distintos → fusionados.
+- `TRASLADO / MUDANZA` faltaba en M.TOTAL (gap real del Excel) → agregado.
+- Contador `9/9` del input TELÉFONO desalineado → overlay CSS Grid.
+- Estado "trancado": al pulsar un chip o un botón de acción quedaban el input
+  marcado y el dropdown abierto → ahora se limpian.
+- `AVERÍA HOGAR` había perdido una clause de validación que el Excel sí tiene.
+
+### ✏️ Changed
+
+- Chips de categoría → **MOVIL · M.TOTAL · STANDALONE** (`data-cat` intactos).
+- Botones de TIPIFICACIÓN → **RESET** (texto Tripartita + modo avión) y
+  **APN→JIRA** (plantilla `CREACION DE TK JIRA` literal del Excel).
+  **CASO eliminado**.
+- `PENDIENTES.md`, `MEMORY.md` (checkpoint + L-091/092/093), `AGENTS.md`, `README.md`
+  y `docs/handoff/2026-11-07-v3.10.82.md` actualizados al estado vigente.
+
+### ⏳ Pending (decisiones del CEO)
+
+`BAJA NO REGISTRADA` → ¿en MÓVIL? · `AVERÍA HOGAR` MT → `TEFC_PRIORITY_TX` vs
+`TECNICO_FIJA_TX` · 5 propuestas de mejora de botones (A filtro por etiqueta
+operativa · B teclado · C badge de skill · D contador por chip · E JIRA
+auto-rellenado). Detalle en `PENDIENTES.md`.
+
+---
+
 ## [1.0.0] — 2026-10-05 — **Standalone Release**
 
 ### 🎯 Headline

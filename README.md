@@ -88,11 +88,14 @@ curl -s https://alexander-salvador.github.io/cima-generador/ \
 
 **LIVE:** https://alexander-salvador.github.io/cima-generador/
 
-> **Estado:** producción en `v3.10.63`. El local va en `v3.10.74`. El fix del
-> input TELÉFONO (solo 9 dígitos) **aún no está desplegado** — los agentes siguen
-> viendo `type="text" maxlength="40"`. Deploy pendiente de OK del CEO.
+> **Estado (2026-11-07):** local **= LIVE = `v3.10.82`**. Incluye el input
+> TELÉFONO con solo 9 dígitos + contador, las **39 etiquetas** reconciliadas
+> contra el Excel, los chips por segmento (**MOVIL · M.TOTAL · STANDALONE**) y
+> los botones **RESET** / **JIRA** (plantilla `CREACION DE TK JIRA`).
+> Siguiente: 3 decisiones del CEO abiertas en [`PENDIENTES.md`](./PENDIENTES.md).
 
 ---
 
-*OVAV-migrated: 2026-10-05* · *Popup local v3.10.74 / LIVE v3.10.63 (2026-10-22)*
+*OVAV-migrated: 2026-10-05* · *Popup local v3.10.82 = LIVE v3.10.82 (2026-11-07)*
+*Handoff de sesión: [`docs/handoff/2026-11-07-v3.10.82.md`](./docs/handoff/2026-11-07-v3.10.82.md)*
 *Origen canónico de desarrollo: `http://localhost:8765/index.html?popup=1`*

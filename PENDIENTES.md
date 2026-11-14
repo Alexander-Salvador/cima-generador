@@ -1,224 +1,134 @@
-# CIMA — Lista de Pendientes (Estado verificado 2026-10-20)
+# CIMA — Lista de Pendientes (Estado verificado 2026-11-07)
 
-**Fecha verificación:** 2026-10-20
-**Branch:** `develop`
-**HEAD:** `6bb660e` (docs HANDSHAKE FINAL v3.10.63)
-**Popup LIVE GitHub Pages:** v3.10.63
-**URL LIVE:** https://alexander-salvador.github.io/cima-generador/
-**Working dir popup:** `apps/cima-generador/`
-**DIRECTIVA ACTIVA:** LOCAL FIRST — no pushear sin OK explícito del CEO.
+**Fecha verificación:** 2026-11-07
+**Branch:** `develop` (working tree limpio)
+**HEAD local:** `c163567` · `origin/develop` sincronizado (mismo SHA)
+**Popup local:** `apps/cima-generador/` → **v3.10.82**
+**Popup LIVE (Pages):** **v3.10.82** (`cda031b`) → https://alexander-salvador.github.io/cima-generador/
+**Tests:** `test_popup.py` **750/750 PASS** + aggressive / security / codereview / browser_static
+**DIRECTIVA ACTIVA:** seguir en **LOCAL**. No tocar remoto sin OK explícito del CEO.
 
 ---
 
-## 📊 Snapshot del repo (verificado en vivo)
+## 🗓️ Contexto de la última sesión (2026-11-06 → 2026-11-07)
 
-| Métrica | Valor real | Fuente |
+6 releases cerradas y **publicadas** (v3.10.77 → v3.10.82):
+
+| Release | Qué cambió |
+|---|---|
+| v3.10.77 | Contador `9/9` del input TELÉFONO desalineado → overlay CSS Grid |
+| v3.10.78 | ETIQUETAS reconciliadas con el Excel (26 → 38). Split de la mega-fila comercial en 4. **3 bugs corregidos**: `PLAN MENOR` (skill `DOWNSELL_MOVIL_TX`), `VENTAS` (`CROSS_MOVIL_FIJA_TX`), `KONECTA` → `TECNICO_MOVIL_TX`. Búsqueda title-first + alias + singular/plural |
+| v3.10.79 | Misma lógica en M.TOTAL + STANDALONE → **39** opciones. Gap real cerrado: `TRASLADO / MUDANZA` faltaba en MT |
+| v3.10.80 | Auditoría integral (8 ejes, 0 errores) + `ETIQUETAS_BASELINE` anti-regresión en el gate. Corregida clause de validación perdida en `AVERÍA HOGAR` |
+| v3.10.81 | Chips por segmento (**MOVIL · M.TOTAL · STANDALONE**) + fix del estado "trancado" (input marcado + dropdown abierto) |
+| v3.10.82 | Botones TIPIF: **RESET** texto nuevo (Tripartita + modo avión) · **APN→JIRA** (plantilla `CREACION DE TK JIRA` del Excel) · **CASO eliminado** |
+
+**Publicación:** `develop` `90860bd→c163567` (fast-forward, 36 commits, sin force) ·
+`main` `be99090→cda031b` (subtree split + `--force-with-lease` + backup atómico previo) ·
+Pages build `built` ✅. Detalle del procedimiento en `MEMORY.md` L-091 / L-092.
+
+---
+
+## 🔴 DECISIONES DEL CEO — pendientes de OK (no tocar sin respuesta)
+
+### D1 · `BAJA NO REGISTRADA` → ¿en MÓVIL?
+
+Hoy está en **M.TOTAL + STANDALONE** (2 de 3). El Excel se contradice:
+
+| Fuente | Ubicación | Área / Pool |
 |---|---|---|
-| `apps/cima-generador/index.html` | 1.18 MB / **8,435 líneas** | `ls -la` + `wc -l` |
-| `apps/cima-generador/VERSION` | **3.10.63** ✅ | cat VERSION |
-| Footer-version (HTML) | **3.10.63** ✅ | grep index.html |
-| CHANGELOG última entrada | v3.10.61 ⚠️ | head CHANGELOG.md |
-| Tests passing | **676/676** | test_popup.py |
-| CSS balance | 530 `{` = 530 `}` | audit |
-| HTML balance | 85 abiertos = 85 cerrados | audit |
-| `var` (legacy ES5) | **479** | grep index.html |
-| `let`/`const` (ES6) | 20 | grep index.html |
-| Ratio var/let+const | **96% legacy** | calculado |
-| `addEventListener` | 37 | grep |
-| `removeEventListener` | 4 | grep |
-| Ratio leak | **9.25 : 1** ⚠️ | calculado |
-| `setTimeout(` | **21** | grep |
-| `onclick=` hardcoded | **10** | grep |
-| `@media (prefers-reduced-motion` | **3 bloques** | grep |
-| TODO/FIXME/XXX reales | **0** | grep estricto |
+| `ETIQUETAS.` r37 (canónica) | BAJA NO REGISTRADA (POSTPAGO - PREPAGO) | **MOVISTAR TOTAL** |
+| `ETIQUETAS 0` r27 / r34 | BAJA NO REGISTRADAS EN EL SISTEMA | Movistar Total **y** Fija Stand Alone |
+| matriz `VALIDACIÓN DE DATOS Y ETIQUETAS` r33 | BAJA NO REGISTRADA EN SISTEMA | pool **BLINDAJE MOVIL** |
+| `Validación de datos` r17 | Baja final del **servicio móvil** / Migración a Prepago | Etiqueta Retenciones |
 
-> 📐 **Tamaños de funciones grandes (verificados por diff de líneas en v3.10.63):**
+*Recomendación: agregarla a MÓVIL* (mismo `skill_tx2`/`skill_txdirecto`, misma
+etiqueta → riesgo cero; el caso móvil "pedí la baja y no laвичé" hoy no aparece
+en la pestaña MOVIL). Impacto: 39 → 40 opciones.
 
-| Función | Línea inicio | Línea fin | Líneas reales |
+### D2 · `AVERÍA HOGAR` en M.TOTAL → `TEFC_PRIORITY_TX` vs `TECNICO_FIJA_TX`
+
+Fuentes 2 vs 2 (`ETIQUETAS` r16 + `ETIQUETAS 0` r12 → `TEFC_PRIORITY`;
+`ETIQUETAS.` r38 + matriz r17 → `TECNICO_FIJA`). **Desempata el patrón de la
+línea MT** (cada línea tiene su familia de skills — ver `MEMORY.md` L-093):
+MT usa `PRIORITY` · `CONVERGENTE` · `BLINDAJE_FIJA_PRIORITY` → `TEFC_PRIORITY`
+(=`TEcnica Fija` + `PRIORITY`) encaja; la fila canónica rompe el patrón.
+
+*Recomendación: `SK_CV_TECF_PRIORITY_TX` / `DP_CV_TECF_PRIORITY_TX` solo en
+M.TOTAL; STANDALONE mantiene `SK_CV_TECNICO_FIJA_TX`.*
+
+### D3 · Botones — 5 propuestas, elegir prioridad
+
+| # | Propuesta | Base real (código actual) | Ganancia para el agente |
 |---|---|---|---|
-| `renderCoberturaButton` | 6009 | 6124 | **116** |
-| `showApagadoPanelInline` | 6125 | 6639 | **515** ⚠️ |
-| `acGetDropdown` (+ helpers) | 6640 | 6789 | **150** |
-| `acFilter` | 6790 | 6826 | **37** (era 221 → refactor parcial) |
-| `subsequenceMatch` | 6827 | 6834 | **8** |
-| `acHighlight` | 6835 | 7873 | **1039** ⚠️ GIGANTE no catalogado |
-| `compactAddress` | 7874 | 8175 | **302** |
-| `auditZonasApagadas` | 8176 | 8435 (EOF) | **259** |
+| **A** | Filtro por **etiqueta operativa** (ROBO · COMERCIAL · RETENCIONES · VENTAS · ROAMING · TECNICO) | el campo `etq` ya existe en las 39 opciones y **no se usa en la UI** | Filtrar por cómo piensa ("es una Etiqueta Robo") |
+| **B** | **Teclado** en el dropdown (↑ ↓ Enter Esc) | `#etiquetaSearch` no tiene `keydown` → solo mouse (el autocomplete de ADDRESS sí lo tiene) | Elegir sin soltar el teclado |
+| **C** | **Badge de skill** por ítem | el dropdown es solo título (decisión v3.3.4) | Ver a dónde va la TX sin seleccionar |
+| **D** | **Contador por chip** (13 · 15 · 11) | hoy solo existe `#etiquetasCount` de la categoría activa | Saber dónde hay más opciones antes de cambiar de chip |
+| **E** | **JIRA auto-rellenado** | plantilla con valores fijos del Excel; el popup ya tiene **Cliente** y **Teléfono de consulta** | Copiar con los datos reales del caso |
+
+*Recomendación: A + B* (mayor impacto y **no tocan datos**).
 
 ---
 
-## ✅ RESUELTOS — Sesión 2026-10-20 (v3.10.40 → v3.10.63) — 24 releases
+## 🟢 SIGUIENTE BLOQUE (a definir por el CEO)
 
-| Versión | Cambio |
+| Bloque | Contenido | Esfuerzo |
+|---|---|---|
+| **A** | Decisiones D1 + D2 (datos) → 40-41 opciones + actualizar `ETIQUETAS_BASELINE` | 30-45 min |
+| **B** | Botones D3-A + D3-B (filtro por etiqueta operativa + teclado) | 2-3 h |
+| **C** | Botones D3-C + D3-D (badge de skill + contador por chip) | 1-1.5 h |
+| **D** | Botón D3-E (JIRA auto-rellenado) | 45 min |
+| **E** | Higiene técnica del popup: `acHighlight` (1039 L) y `showApagadoPanelInline` (515 L) sin catalogar · 33 `addEventListener` huérfanos · 21 `setTimeout` sin consolidar · 479 `var` | 6-10 h |
+
+---
+
+## 📊 Snapshot verificado del popup (2026-11-07)
+
+| Métrica | Valor |
 |---|---|
-| v3.10.40 | Housekeeping limpieza branches fugas |
-| v3.10.41-42 | Alertas amables + redistribución 1/section |
-| v3.10.43 | 3 BUG FIXES (telefono-last3, layout encuesta, jerarquía) |
-| v3.10.44-45 | HEADER "Estructura de Llamada" + MOTIVO cards Apple |
-| v3.10.46-47 | 4 BUG FIXES (CTRL+SHIFT+R, grids mismo ancho) |
-| v3.10.48 | SPEECHES nutridos AI 2026 (variación + consecutivas) |
-| v3.10.49-50 | DESGLOSE click MOTIVO + 3 BUG FIXES |
-| v3.10.51 | MOTIVO consolidado en 1 dropdown (4 opciones) |
-| v3.10.52 | TELÉFONO + MOTIVO en 1 row |
-| v3.10.53 | Texts ocultos hasta seleccionar MOTIVO |
-| v3.10.54 | FIX bug estructura HTML (grid-body cerraba prematuramente) |
-| v3.10.55 | Estilización + compactación GRID |
-| v3.10.56 | DISCLOSURE CONTROL PILLS (Apple HIG 2026) |
-| v3.10.57 | FIX grid-body max-height 1200→8000px |
-| v3.10.58 | **FIX CRÍTICO**: llave CSS extra rompía 6800 líneas |
-| v3.10.59 | COLLAPSED PILL-LINE ultra-compacta (−55%) |
-| v3.10.60 | FIX render glitch (border-radius interpolate) |
-| v3.10.61 | ALERTS como refuerzo inteligente en 1 row |
-| v3.10.62 | FIX Grid Tipificación (parcial) |
-| **v3.10.63** | **FIX DEFINITIVO** selección etiquetas (capture phase + id normalize) |
-
-(Histórico completo v3.10.0 → v3.10.39 → ver `MEMORY.md` sección "Logros previos")
+| `apps/cima-generador/index.html` | 1.22 MB · ~8,975 líneas |
+| `apps/cima-generador/VERSION` | **3.10.82** ✅ |
+| Footer-version / build-chip (HTML) | **v3.10.82** ✅ |
+| `ETIQUETAS_DATA` | **39** opciones (13 POSTPAGO / 15 MTOTAL / 11 STANDALONE) |
+| Skills `SK_CV_*` en uso | 16 · con contraparte `DP_CV_*`: 14 |
+| Tests `test_popup.py` | **750/750** ✅ |
+| CSS balance | 565 `{` = 565 `}` ✅ |
+| Suites adicionales | aggressive · security · codereview · browser_static → PASS |
+| Build servido (`/__build`) | `v3.10.82` · md5 `6f3a35d0d75c…` (cambia con cada release) |
 
 ---
 
-## ⏳ PENDIENTES — CONTRAVALIDACIÓN REAL (2026-10-20)
+## 🧭 Reglas de trabajo (no negociables)
 
-### 🔴 OBSOLETOS — Remover de la lista
-
-| ID | Razón de obsolescencia | Evidencia |
-|---|---|---|
-| **A9** | "Push a origin/main" | **YA HECHO** en HANDSHAKE FINAL v3.10.63 (commit `90860bd4`) |
-| **D8** | "2 TODO sin owner" | **0 TODO/FIXME/XXX reales** (los matches eran "todo el" en comentarios) |
-
-### 🔴 SUBESTIMADOS — Recalibrar prioridad/estimación
-
-| ID | Estimado original | Real verificado | Acción |
-|---|---|---|---|
-| **D4** | 426 `var` | **479 `var` vs 20 `let`/`const`** | Ratio **96% legacy**. **PRIORIDAD UPGRADE: BAJA → ALTA.** Estimación: **6-8h reales** (mecánico) o **2-3 días** (refactor serio con módulos ES). |
-| **D9** | 30 add / 4 remove | **37 add / 4 remove** | Ratio empeoró de 7.5:1 → **9.25:1**. **33 addEventListener huérfanos** sin cleanup = leak garantizado en SPA long-running. |
-| **D7** | 5 `setTimeout` hardcoded | **21 `setTimeout`** | Subestimado x4.2. Consolidar a objeto `TIMINGS = {...}`. |
-| **D6** | 5 `@media prefers-reduced-motion` | **3 bloques** (bajó pero NO consolidado) | Parcial. Falta unificación en 1 solo bloque. |
-| **D10** | 11 `onclick=` hardcoded | **10 `onclick`** | Parcial. Bajó 1 (A7/D10 v3.10.8 resolvió 2 críticos). Quedan 1 crítico + 8 literales seguros. |
-
-### 🟢 VIGENTES — Recomendaciones Marco (R1, R4-R12)
-
-| ID | Recomendación | Líneas reales | Tiempo | Prioridad |
-|---|---|---|---|---|
-| **R1** | Borrar 1100+ legacy post-shadowing | ~800-1000 (estimado) | **3-4h** | ALTA |
-| **R4** | `showApagadoPanelInline` → descomponer | **515 líneas reales** (subestimado desde 278) | **3-4h** | ALTA |
-| **R5** | `acFilter` → extraer render | 37 (subestimado original 221) | **20min** | BAJA |
-| **R6** | `auditZonasApagadas` → checks separados | **259 líneas reales** (subestimado desde 187) | **45min** | BAJA |
-| **R7** | Consolidar `renderCoberturaButton` con v3.10 | 116 líneas | **30min** | BAJA |
-| **R8** | Mover 3 bloques `.apagado-tooltip` CSS | — | **20min** | BAJA |
-| **R9** | Documentar `acGetDropdown` y portal pattern | **150 líneas reales** (no es one-liner) | **45min** | BAJA |
-| **R10** | `subsequenceMatch` → bounded iter (DoS) | **8 líneas** (función corta pero vulnerable) | **15min** | MEDIA |
-| **R11** | `compactAddress` paso 4 → extraer | **302 líneas reales** (subestimado, era 15min → ahora 1h) | **1h** | BAJA |
-| **R12** | `subsequenceMatch` + `acHighlight` → unificar | acHighlight = **1039 líneas** ⚠️ | **3-4h** | **NUEVA ALTA** |
-| **NUEVO** ⚠️ | `acHighlight` 1039 líneas → descomponer | **1039 líneas** (NO estaba catalogado) | **4-6h** | **NUEVA ALTA** |
-
-### 🟡 DEUDA TÉCNICA vigente
-
-| ID | Pendiente | Estimación recalibrada |
-|---|---|---|
-| **D4** | 479 `var` → `let`/`const` (o módulos ES) | 6-8h mecánico / 2-3 días refactor serio |
-| **D6** | Consolidar 3 `@media prefers-reduced-motion` en 1 | 30min |
-| **D7** | 21 `setTimeout` → objeto `TIMINGS` | 45min |
-| **D9** | 33 addEventListener huérfanos → cleanup pattern | **2h** (empeoró) |
-| **D10** | 10 `onclick=` → event delegation (1 crítico + 8 literales) | **1-2h** |
-| **D11** | Inline data 707KB → lazy load si >2MB | Vigente pero umbral no alcanzado (archivo 1.18MB) |
-
-### 🟢 BAJA — Otros pendientes
-
-| ID | Pendiente | Notas |
-|---|---|---|
-| **A8** | INEI Marco Geoestadístico 2018+ para CCPP rurales | No automatizable (red bloqueada en este entorno). 33 dist rurales sin CCPP compensados por fuzzy matching (100% cobertura). |
-| **A10** | Re-medir throughput con Chrome real (no Node) | Requiere Chrome headless + harness. Benchmark Node.js actual estable; útil pero no crítico. |
+1. **LOCAL FIRST**: todo cambio se commitea en local. Push solo con OK explícito del CEO.
+2. **Origen canónico**: solo `localhost:8765` (nunca `127.0.0.1` ni IP de LAN).
+3. **Gate antes de commitear**: `cd apps/cima-generador && python3 test_popup.py` (750 asserts)
+   + CSS balance. Cambios en CSS → validar llaves.
+4. **Excel = fuente de verdad** de ETIQUETAS. Toda skill nueva debe existir en el XLSX
+   (`Recursos CIMA/Etiquetas de Transferencia/Etiquetas de Transferencia.xlsx`).
+5. **Sin inventar**: si un texto no está en el Excel, se marca como derivado y se declara.
+6. **`ETIQUETAS_BASELINE`** (en `test_popup.py`) ata cada opción a su fila de Excel:
+   cambiar un skill o un nombre **rompe el gate** → hay que re-verificar contra el Excel.
+7. **No tocar remoto** sin OK del CEO en sesión.
 
 ---
 
-## 📈 Tiempo recalibrado para v3.11
+## 🔧 Comandos de verificación (sesión nueva)
 
-| Bloque | Tiempo |
-|---|---|
-| D9 (event listener leak) | **2h** |
-| R12 (acHighlight 1039 → descomponer) | **4-6h** ⚠️ nuevo |
-| R4 (showApagadoPanelInline 515 → descomponer) | **3-4h** |
-| D4 (var→let mecánico) | 6-8h |
-| R1 (legacy 800-1000 líneas) | 3-4h |
-| D7 + D6 + D10 + R5 + R6 + R7 + R8 + R9 + R10 + R11 | ~5h |
-| **TOTAL v3.11 mínimo viable** | **~25-30h** |
-| D4 refactor serio (módulos ES + build) | **+2-3 días** |
+```bash
+cd /home/braka/Systems/projects/work/cima
+git status && git log --oneline -5
 
----
+# Popup local (origen canónico)
+cd apps/cima-generador && python3 serve.py     # → http://localhost:8765/index.html?popup=1
 
-## 🔗 Contexto para próximo chat
-
-1. Leer `MEMORY.md` (cargado) — incluye histórico completo v3.10.0 → v3.10.63.
-2. Leer `PENDIENTES.md` (este archivo) — solo vigente, con data verificada.
-3. Si trabajás en popup:
-   ```bash
-   cd apps/cima-generador
-   python3 test_popup.py          # 676/676 PASS
-   python3 test_aggressive.py     # agresivo
-   python3 test_audit_brutal.py   # auditoría
-   python3 test_browser_static.py # browser estático
-   python3 test_security.py       # seguridad
-   python3 test_codereview.py     # code review
-   python3 test_cobertura_peru.py # cobertura nacional
-   ```
-4. **Server local:** `python3 serve.py` (puerto 8765, anti-cache). Ya NO usar
-   `python3 -m http.server` — no manda `Cache-Control`, y con un documento de
-   1.2 MB el browser aplica heurística de freshness y re-sirve HTML viejo
-   (ver L-070e).
-5. **URL popup mode:** `http://localhost:8765/index.html?popup=1`
-   ⚠️ **Solo `localhost`.** `127.0.0.1` es un origin distinto con state de browser
-   separado (ver L-071). No usar IPs de LAN: no son secure context.
-6. **Refresh:** CTRL+R · CTRL+SHIFT+R = limpiar template.
-7. **Próximo bloque sugerido (CEO decide):**
-   - **A:** Higiene rápida (D9 cleanup + obsolete removal + CHANGELOG catchup) — 3h
-   - **B:** Atacar el gigante (R12 acHighlight 1039 líneas → descomponer) — 4-6h
-   - **C:** Legacy estructural (R1 + R4) — 6-8h
+# Gate obligatorio
+cd apps/cima-generador && python3 test_popup.py            # 750/750
+python3 test_aggressive.py && python3 test_security.py
+python3 test_codereview.py && python3 test_browser_static.py
+```
 
 ---
 
-## 📁 Archivos de referencia (verificados)
-
-| Path | Estado |
-|---|---|
-| `apps/cima-generador/index.html` | 1.18 MB / 8,435 líneas / 3.10.63 ✅ |
-| `apps/cima-generador/VERSION` | 3.10.63 ✅ |
-| `apps/cima-generador/CHANGELOG.md` | Última entrada v3.10.61 ⚠️ (drift: falta 3.10.62, 3.10.63) |
-| `apps/cima-generador/data/zonas_apagadas.json` | Consolidada |
-| `apps/cima-generador/data/known_data_gaps.json` | 41 dist categorizados |
-| `apps/cima-generador/scripts/` | 13 scripts (regenerate, fix_*) |
-| `apps/cima-generador/test_*.py` (8) | + 4 test_*.js |
-| `MEMORY.md` | Checkpoint vivo v3.10.63 |
-| `PENDIENTES.md` | **Este archivo** (reemplaza versión v3.10.39) |
-| `docs/CHECKLIST_MENTIRAS.md` | Auditoría previa |
-| `docs/SHEETS_BRIDGE_BUILD_PENDING.md` | Legacy pre-migración |
-| `/VERSION` (root) | 1.0.0 ⚠️ drift raíz (no se usa) |
-
----
-
-## 🌿 Estado de branches (verificado `git branch -a`)
-
-| Branch | Estado | Notas |
-|---|---|---|
-| `develop` (local) | **HEAD `6bb660e`** ✅ | working tree clean |
-| `main` (local) | ✅ | sheets bridge legacy, no tocar |
-| `popup-deploy` (local) | **stale** | subtree split `83a82fd`, ya no regenerarse (`main` ya pusheado) |
-| `origin/develop` | `90860bd4` ✅ | synced |
-| `origin/main` | `be99090c` ✅ | synced + GitHub Pages built |
-| `feat/apagado-inteligente` | deprecated | LOCAL ONLY per CEO 2026-10-19 |
-
----
-
-## 🎯 Decisiones arquitectónicas recientes (resumen CRIT-009/004)
-
-| Decisión | Razón | Versión |
-|---|---|---|
-| Disclosure pills (Apple HIG 2026) | CEO: "píldoras... no se desplegarán automáticamente" | v3.10.56 |
-| CSS balance check obligatorio | Lección: `}` extra destruyó 6800 líneas silenciosamente | v3.10.58 |
-| MOTIVO = 1 dropdown (no cards) | CEO: "1 dropdown cada 1 ocupa 1 row" | v3.10.51 |
-| `localStorage cima_*_v1` (4 keys) | Persistencia colapsado/pills/hecho por versión | v3.10.53-56 |
-| Capture phase + id normalize | L-064/L-065: event delegation con múltiples dropdowns | v3.10.63 |
-
----
-
-*Generado por Thavren — contravalidación real con `grep`/`wc`/`ls` en repo vivo · 2026-10-20*
-*Reemplaza versión previa v3.10.39 (180 líneas) — solo vigente, sin histórico redundante*
+*Actualizado por Thavren — 2026-11-07 · sesión v3.10.77 → v3.10.82 (publicada) · checkpoint `c163567`*
