@@ -2194,11 +2194,15 @@ def test(html_path):
     # JS: renderCoberturaButton unifica los estados activos
     # v3.10.0: labels actualizados a "COMU-XXXX (NIVEL · fuente)" + data-severidad
     # v3.10.12: solo COMU-5514 (ipt/COMU-5672 eliminado)
+    # v3.10.83: el comunicado del botón se RESUELVE desde el registro de campañas
+    # (ya no hardcodeado) → el assert pasa a exigir la forma data-driven.
     m_btn = re.search(r'function renderCoberturaButton\(check\)\s*\{(.*?)\n\}', html, re.DOTALL)
-    if m_btn and 'COMU-5514' in m_btn.group(1) and 'data-severidad' in m_btn.group(1):
-        result.ok('v3.10.0/12 JS: renderCoberturaButton usa COMU-5514 + data-severidad (sin COMU-5672)')
+    if (m_btn and 'data-severidad' in m_btn.group(1)
+            and 'zaDefaultComunicado()' in m_btn.group(1)
+            and "comu: 'COMU-5514'" not in m_btn.group(1)):
+        result.ok('v3.10.83 JS: renderCoberturaButton resuelve el comunicado desde el registro (data-driven)')
     else:
-        result.fail('JS renderCoberturaButton labels', 'labels COMU-5514/data-severidad no presentes')
+        result.fail('JS renderCoberturaButton labels', 'labels data-severidad/comunicado dinámico no presentes')
 
     # JS: acRender emite triángulo para items ccpp apagados (sin label inline)
     # v3.8.0 (FIX 2): CEO removió el texto "APAGADO" — solo ICONO + ZONA
@@ -5403,6 +5407,223 @@ def test(html_path):
         result.ok('v3.10.82 TEMPLATES: reset + jira definidos')
     else:
         result.fail('v3.10.82 TEMPLATES', 'reset/jira no definidos')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.83 — REGISTRO DE CAMPAÑAS + COMU-5569 (campaña diciembre 2026)
+    # El popup dejó de hardcodear "COMU-5514" en la detección: cada CCPP se
+    # atribuye a la campaña que lo declara. COMU-5569 queda registrada como
+    # campaña ANUNCIADA con estado "zonas_pendiente" y 0 CCPP (nunca se
+    # inventa cobertura: el PDF del comunicado no trae la tabla de zonas).
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.83 — Registro de campañas + COMU-5569')
+
+    # 1) Contenedor de campañas
+    m_camp = re.search(r'campanas:\s*\{([\s\S]*?)\n  \},\n  // v3\.10\.3', html)
+    camp_body = m_camp.group(1) if m_camp else ''
+    if m_camp:
+        result.ok('v3.10.83 INTEL: contenedor campanas presente')
+    else:
+        result.fail('v3.10.83 campanas', 'ZONAS_APAGADAS_INTEL.campanas missing')
+
+    # 2) COMU-5514 (cobertura real) — el bloque debe seguir íntegro
+    m_c5514 = re.search(r'"COMU-5514":\s*\{([\s\S]*?)\n    \},?', camp_body)
+    c5514 = m_c5514.group(1) if m_c5514 else ''
+    if c5514:
+        result.ok('v3.10.83 campanas: COMU-5514 registrada')
+        for campo, valor in [
+            ('estado', '"zonas_conocidas"'),
+            ('fecha_apagado', '"2026-09-11"'),
+            ('fecha_sms_inicio', '"2026-09-04"'),
+            ('ccpp_count', '234'),
+            ('ccpp_set_ref', '"ccpp_keys"'),
+            ('speech_visor', '"comu5514_visor_unico"'),
+            ('speech_postventa', '"comu5514_postventa_marcaje"'),
+        ]:
+            if f'{campo}: {valor}' in c5514:
+                result.ok(f'v3.10.83 COMU-5514: {campo} = {valor}')
+            else:
+                result.fail(f'v3.10.83 COMU-5514 {campo}', f'esperado {valor}')
+    else:
+        result.fail('v3.10.83 COMU-5514', 'no encontrada en el registro de campañas')
+
+    # 3) COMU-5569 (anunciada, sin cobertura) — anti-fabricación
+    m_c5569 = re.search(r'"COMU-5569":\s*\{([\s\S]*?)\n    \},?', camp_body)
+    c5569 = m_c5569.group(1) if m_c5569 else ''
+    if c5569:
+        result.ok('v3.10.83 campanas: COMU-5569 registrada')
+        for campo, valor in [
+            ('estado', '"zonas_pendiente"'),
+            ('fecha_apagado', '"2026-12-10"'),
+            ('ccpp_count', '0'),
+            ('speech_visor', '"comu5569_visor_unico"'),
+            ('speech_postventa', '"comu5569_postventa_marcaje"'),
+        ]:
+            if f'{campo}: {valor}' in c5569:
+                result.ok(f'v3.10.83 COMU-5569: {campo} = {valor}')
+            else:
+                result.fail(f'v3.10.83 COMU-5569 {campo}', f'esperado {valor}')
+        # ccpp_set vacío
+        if re.search(r'ccpp_set:\s*\[\s*\],', c5569):
+            result.ok('v3.10.83 COMU-5569: ccpp_set vacío (sin cobertura inventada)')
+        else:
+            result.fail('v3.10.83 COMU-5569 ccpp_set', 'ccpp_set no vacío')
+        # NINGÚN CCPP dentro del bloque de la campaña (no hay zonas cargadas)
+        ccpps_fabricados = re.findall(r'"(\d{6}:[^"]+)"', c5569)
+        if not ccpps_fabricados:
+            result.ok('v3.10.83 COMU-5569: 0 CCPP inventados (anti-fabricación)')
+        else:
+            result.fail('v3.10.83 COMU-5569 CCPP', f'{len(ccpps_fabricados)} CCPP sin fuente: {ccpps_fabricados[:3]}')
+        # faltantes + fuente_urls (qué falta y de dónde sacarlo)
+        m_fal = re.search(r'faltantes:\s*\[([\s\S]*?)\]', c5569)
+        faltantes = re.findall(r'"([^"]+)"', m_fal.group(1)) if m_fal else []
+        if len(faltantes) >= 3:
+            result.ok(f'v3.10.83 COMU-5569: {len(faltantes)} faltantes declarados')
+        else:
+            result.fail('v3.10.83 COMU-5569 faltantes', f'{len(faltantes)} (esperado >=3)')
+        if 'id=178147' in c5569 and 'id=178146' in c5569:
+            result.ok('v3.10.83 COMU-5569: fuente_urls del recurso interno (id=178147/178146)')
+        else:
+            result.fail('v3.10.83 COMU-5569 fuente_urls', 'faltan enlaces del detalle de zonas')
+        if 'sin cobertura de zonas' in c5569:
+            result.ok('v3.10.83 COMU-5569: aviso explícito de campaña sin cobertura')
+        else:
+            result.fail('v3.10.83 COMU-5569 aviso', 'falta aviso de cobertura')
+    else:
+        result.fail('v3.10.83 COMU-5569', 'no encontrada en el registro de campañas')
+
+    # 4) Speeches de COMU-5569
+    m_speechs = re.search(r'speechs:\s*\{([\s\S]*?)\n  \},', html)
+    speech_body = m_speechs.group(1) if m_speechs else ''
+    for key, tokens in [
+        ('comu5569_visor_unico', ['[día]', '[mes]', '[nombre de la zona]', 'COMU-5569']),
+        ('comu5569_postventa_marcaje', ['{dia}', '{mes}', '{zona}', 'COMU-5569']),
+    ]:
+        if key in speech_body:
+            result.ok(f'v3.10.83 SPEECH: {key} definido')
+            for tok in tokens:
+                if tok in speech_body:
+                    result.ok(f'v3.10.83 SPEECH {key}: contiene {tok}')
+                else:
+                    result.fail(f'v3.10.83 SPEECH {key}', f'falta {tok}')
+        else:
+            result.fail(f'v3.10.83 SPEECH {key}', 'missing en ZONAS_APAGADAS_INTEL.speechs')
+
+    # 5) Flujos postventa de COMU-5569
+    m_flujos = re.search(r'flujos_postventa:\s*\{([\s\S]*?)\n  \},', html)
+    flujos_body = m_flujos.group(1) if m_flujos else ''
+    if '"COMU-5569"' in flujos_body:
+        result.ok('v3.10.83 FLUJOS: COMU-5569 con flujo postventa')
+        for tok in ['reclamo_ruta', 'baja_servicio', 'faqs', 'sms', 'escenarios']:
+            if tok in flujos_body:
+                result.ok(f'v3.10.83 FLUJOS COMU-5569: {tok} presente')
+            else:
+                result.fail(f'v3.10.83 FLUJOS COMU-5569', f'falta {tok}')
+    else:
+        result.fail('v3.10.83 FLUJOS COMU-5569', 'missing en flujos_postventa')
+
+    # 6) JS: helpers del registro + detección data-driven (sin hardcode)
+    for fn in ['zaCampanas', 'zaCampanaSet', 'zaCampanasOrdenadas',
+               'zaDefaultComunicado', 'zaResolveComunicado']:
+        if f'function {fn}(' in html:
+            result.ok(f'v3.10.83 JS: helper {fn} definido')
+        else:
+            result.fail(f'v3.10.83 JS helper {fn}', 'missing')
+
+    m_check = re.search(r'function checkZonaApagada\(depto, prov, dist, ccpp\) \{([\s\S]*?)\n\}', html)
+    check_body = m_check.group(1) if m_check else ''
+    if check_body:
+        if 'comu: zaResolveComunicado(key)' in check_body:
+            result.ok('v3.10.83 JS: ccpp_exacto atribuido por registro (zaResolveComunicado)')
+        else:
+            result.fail('v3.10.83 JS ccpp_exacto', 'no usa zaResolveComunicado')
+        if "comu: 'COMU-5514'" in check_body:
+            result.fail('v3.10.83 JS hardcode', 'checkZonaApagada aún hardcodea COMU-5514')
+        else:
+            result.ok('v3.10.83 JS: checkZonaApagada SIN hardcode de comunicado')
+    else:
+        result.fail('v3.10.83 JS checkZonaApagada', 'función no encontrada')
+
+    m_panel = re.search(r'function showApagadoPanelInline\(btn, currentCheck, addrCtx\) \{([\s\S]*?)\n\}', html)
+    panel_body = m_panel.group(1) if m_panel else ''
+    if panel_body:
+        if 'zaApplyCampana(' in panel_body:
+            result.ok('v3.10.83 JS: panel resuelve metadata desde el registro')
+        else:
+            result.fail('v3.10.83 JS panel', 'no usa zaApplyCampana')
+        if "comunicadoLabel = 'COMU-5514'" in panel_body:
+            result.fail('v3.10.83 JS panel hardcode', 'panel aún hardcodea COMU-5514')
+        else:
+            result.ok('v3.10.83 JS: panel SIN hardcode de comunicado')
+    else:
+        result.fail('v3.10.83 JS panel', 'showApagadoPanelInline no encontrada')
+
+    # 7) Audit: check 12 (integridad del registro)
+    if 'registro de campañas VACÍO' in html and 'zonas_pendiente' in html and 'ccpp_count' in html:
+        result.ok('v3.10.83 AUDIT: check 12 (integridad del registro de campañas)')
+    else:
+        result.fail('v3.10.83 AUDIT check 12', 'validación del registro ausente')
+
+    # 8) Anti-regresión: la cobertura existente NO cambió
+    m_keys = re.search(r'ccpp_keys: new Set\(\[(.*?)\]\)', html, re.DOTALL)
+    n_keys = len(re.findall(r'"([0-9]{6}:[^"]+)"', m_keys.group(1))) if m_keys else 0
+    if n_keys == 234:
+        result.ok(f'v3.10.83 ANTI-REGRESIÓN: ccpp_keys sigue en {n_keys} (no se tocaron zonas)')
+    else:
+        result.fail('v3.10.83 ccpp_keys', f'{n_keys} (esperado 234)')
+
+    # 9) Data layer reconciliado + pipeline de ingesta disponible
+    data_path = Path(__file__).parent / 'data' / 'zonas_apagadas.json'
+    if data_path.exists():
+        try:
+            import json as _json2
+            zd = _json2.loads(data_path.read_text())
+            if len(zd.get('ccpp_keys', [])) == 234:
+                result.ok('v3.10.83 DATA: zonas_apagadas.json reconciliado a 234 ccpp_keys')
+            else:
+                result.fail('v3.10.83 DATA ccpp_keys', f"{len(zd.get('ccpp_keys', []))} (esperado 234)")
+            camp_json = zd.get('campanas', {})
+            if 'COMU-5569' in camp_json:
+                if camp_json['COMU-5569'].get('ccpp_count') == 0 and camp_json['COMU-5569'].get('estado') == 'zonas_pendiente':
+                    result.ok('v3.10.83 DATA: COMU-5569 en JSON con estado zonas_pendiente y 0 CCPP')
+                else:
+                    result.fail('v3.10.83 DATA COMU-5569', 'estado/ccpp_count inconsistentes')
+            else:
+                result.fail('v3.10.83 DATA campanas', 'COMU-5569 missing en JSON')
+            rec = zd.get('reconciliacion_2026_11_14', {})
+            if len(rec.get('keys_eliminados', [])) == 5:
+                result.ok('v3.10.83 DATA: reconciliación documentada (5 keys contaminadas eliminadas)')
+            else:
+                result.fail('v3.10.83 DATA reconciliación', 'keys_eliminados != 5')
+        except Exception as e:
+            result.fail('v3.10.83 DATA JSON', f'parse error: {e}')
+    else:
+        result.fail('v3.10.83 DATA', 'data/zonas_apagadas.json missing')
+
+    script_path = Path(__file__).parent / 'scripts' / 'ingest_comunicado_zonas.py'
+    script_test = Path(__file__).parent / 'test_ingest_comunicado_zonas.py'
+    if script_path.exists():
+        result.ok('v3.10.83 SCRIPT: scripts/ingest_comunicado_zonas.py existe')
+    else:
+        result.fail('v3.10.83 SCRIPT', 'ingest_comunicado_zonas.py missing')
+    if script_test.exists():
+        result.ok('v3.10.83 SCRIPT: test_ingest_comunicado_zonas.py existe')
+    else:
+        result.fail('v3.10.83 SCRIPT TEST', 'test_ingest_comunicado_zonas.py missing')
+
+    # 10) Doc de fuentes actualizado con la campaña nueva
+    doc_path2 = Path(__file__).parent / 'docs' / 'FUENTES_ZONAS_APAGADAS.md'
+    if doc_path2.exists():
+        doc_text2 = doc_path2.read_text()
+        if 'COMU-5569' in doc_text2:
+            result.ok('v3.10.83 DOC: FUENTES_ZONAS_APAGADAS.md documenta COMU-5569')
+        else:
+            result.fail('v3.10.83 DOC COMU-5569', 'FUENTES doc sin COMU-5569')
+        if '178147' in doc_text2 and '393c127b' in doc_text2:
+            result.ok('v3.10.83 DOC: FUENTES doc con enlaces del recurso + md5 de la fuente')
+        else:
+            result.fail('v3.10.83 DOC fuentes', 'faltan enlaces/md5 en FUENTES doc')
+    else:
+        result.fail('v3.10.83 DOC', 'docs/FUENTES_ZONAS_APAGADAS.md missing')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

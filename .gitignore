@@ -70,6 +70,9 @@ apps/cima-generador/.regenerate_state.json
 apps/cima-generador/data/zonas_apagadas.json
 data/zonas_apagadas.json
 **/zonas_apagadas.json
+# Campañas por comunicado (misma fuente restringida) + estado de dedupe
+**/zonas_apagadas_*.json
+**/.ingest_dedupe_*.json
 # Pre-feature backups (transient)
 .backup-*/
 

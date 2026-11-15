@@ -1,12 +1,48 @@
-# CIMA — Lista de Pendientes (Estado verificado 2026-11-07)
+# CIMA — Lista de Pendientes (Estado verificado 2026-11-14)
 
-**Fecha verificación:** 2026-11-07
-**Branch:** `develop` (working tree limpio)
-**HEAD local:** `c163567` · `origin/develop` sincronizado (mismo SHA)
-**Popup local:** `apps/cima-generador/` → **v3.10.82**
+**Fecha verificación:** 2026-11-14
+**Branch:** `develop` (working tree limpio) · local **3+ commits adelante** de `origin/develop` (sin push)
+**HEAD local:** `0b3d6cb` + **v3.10.83** (COMU-5569 + registro de campañas) · `origin/develop` @ `c163567`
+**Popup local:** `apps/cima-generador/` → **v3.10.83** (commit local, **NO publicada**)
 **Popup LIVE (Pages):** **v3.10.82** (`cda031b`) → https://alexander-salvador.github.io/cima-generador/
-**Tests:** `test_popup.py` **750/750 PASS** + aggressive / security / codereview / browser_static
+**Tests:** `test_popup.py` **804/804 PASS** + aggressive / security / codereview / browser_static / ingest_comunicado_zonas (76/76)
 **DIRECTIVA ACTIVA:** seguir en **LOCAL**. No tocar remoto sin OK explícito del CEO.
+
+---
+
+## 🔴 BLOQUEO — falta la tabla de zonas de COMU-5569 (campaña 10-dic-2026)
+
+**Qué se cargó:** 4 PDFs en `Recursos CIMA/Bases y Zonas de Apagado/` → los 4 son
+**el mismo archivo** (md5 `393c127b3b6b4bb486d3d03be0850f97`): el comunicado
+**COMU-5569 v00001** (inicio 10-dic-2026, 13.5K clientes). **No trae la tabla de
+zonas** (ni CCPP, ni centros poblados, ni fechas por departamento).
+
+**Dónde está el detalle:** botón "Revisa las zonas" del propio PDF →
+`https://geniomovistar.com.pe/mod/resource/view.php?id=178147` (y `id=178146`).
+Recurso interno corporativo: no accesible desde este entorno (TLS/red + login).
+
+**Qué necesito del CEO (cualquiera de estos):**
+1. Export/print del recurso `id=178147` (PDF o tabla de centros poblados por depto).
+2. El PDF/tabla original de zonas de la campaña diciembre 2026.
+3. Acceso/red habilitada al portal geniomovistar desde el entorno de build.
+
+**Qué YA está listo (no requiere el dato):**
+- Campaña COMU-5569 registrada (estado `zonas_pendiente`, 0 CCPP) → el popup
+  **no alerta** en zonas sin cobertura: cero riesgo de speech a un cliente que
+  no está apagado.
+- Speechs oficiales (visor §4, postventa §5), flujo postventa (2 escenarios, SMS,
+  reclamo, baja, 2 FAQs).
+- Comando de ingesta listo (1 comando cuando llegue la tabla):
+  ```bash
+  python3 apps/cima-generador/scripts/ingest_comunicado_zonas.py \
+    --comunicado COMU-5569 --source "<TABLA>" --modo union --apply-inline
+  ```
+  (dedupe md5 · fuzzy UBIGEO · backup atómico · idempotente · dry-run por defecto)
+
+**Decisión a futuro (CEO):** ¿COMU-5569 **acumula** zonas a las 234 de COMU-5514
+(`--modo union`, default, recomendado) o **las reemplaza** (`--modo replace`, solo
+con OK explícito)? El comunicado dice 13.5K clientes vs 18.4K de COMU-5514 → no se
+puede asumir que sean las mismas zonas.
 
 ---
 
@@ -80,6 +116,7 @@ M.TOTAL; STANDALONE mantiene `SK_CV_TECNICO_FIJA_TX`.*
 | **C** | Botones D3-C + D3-D (badge de skill + contador por chip) | 1-1.5 h |
 | **D** | Botón D3-E (JIRA auto-rellenado) | 45 min |
 | **E** | Higiene técnica del popup: `acHighlight` (1039 L) y `showApagadoPanelInline` (515 L) sin catalogar · 33 `addEventListener` huérfanos · 21 `setTimeout` sin consolidar · 479 `var` | 6-10 h |
+| **F** | **Cargar tabla de zonas COMU-5569** (cuando el CEO entregue el export del recurso `id=178147`) → 1 comando + gate + commit local | 15-30 min |
 
 ---
 

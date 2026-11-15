@@ -185,16 +185,26 @@ cd apps/cima-generador && python3 test_popup.py   # 676 asserts, gate obligatori
 
 ---
 
-## 📍 Estado al 2026-11-07
+## 📍 Estado al 2026-11-14
 
-- Popup **local = LIVE = v3.10.82** (`develop` `c163567` · Pages `cda031b`).
+- Popup **local = v3.10.83** (commit local, **NO publicado**). **LIVE = v3.10.82**
+  (`develop` `c163567` · Pages `cda031b`) — remoto intacto, LOCAL FIRST.
+- Gate: `test_popup.py` **804/804** + 5 suites (aggressive · security ·
+  codereview · browser_static · ingest_comunicado_zonas).
+- v3.10.83: **registro de campañas** (`ZONAS_APAGADAS_INTEL.campanas`) — el
+  popup ya no hardcodea `COMU-5514`; cada CCPP se atribuye a su campaña.
+- 🔴 **BLOQUEO**: falta la tabla de zonas de **COMU-5569** (campaña 10-dic-2026).
+  Los 4 PDF cargados son el mismo comunicado (mismo md5), no la tabla de zonas.
+  Detalle + comando de ingesta en `PENDIENTES.md` y
+  `apps/cima-generador/docs/FUENTES_ZONAS_APAGADAS.md` §9–§10.
 - 39 etiquetas de transferencia reconciliadas contra el Excel, con
   `ETIQUETAS_BASELINE` como baseline anti-regresión en el gate.
 - Decisiones abiertas del CEO (D1/D2/D3) en `PENDIENTES.md`.
-- Handoff de sesión: `docs/handoff/2026-11-07-v3.10.82.md`.
+- Handoff de sesión: `docs/handoff/2026-11-14-comu5569.md`.
 
 ---
 
+*Actualizado 2026-11-14 — sesión COMU-5569 / v3.10.83 (Thavren)*
 *Actualizado 2026-11-07 — sesión v3.10.77 → v3.10.82 (Thavren)*
 *Actualizado 2026-10-22 — sesión v3.10.72/73/74/76 (Thavren)*
 *OVAV migrated from develop — 2026-10-05*

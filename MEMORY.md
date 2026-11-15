@@ -14,11 +14,74 @@
 | **Servidor local dev** | `cd apps/cima-generador && python3 serve.py` (puerto 8765, NO 8000) — anti-cache |
 | **URL local popup mode** | http://localhost:8765/index.html?popup=1 (**solo `localhost`** — ver Ley del origen canónico) |
 | **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) · CTRL+SHIFT+R limpia template |
-| **Branch de trabajo** | `develop` (working tree limpio) — `origin/develop` sincronizado |
+| **Branch de trabajo** | `develop` (working tree limpio) — local **3+ commits adelante** de `origin/develop` (LOCAL FIRST, sin push) |
+| **Versión LOCAL** | **v3.10.83** — COMU-5569 + registro de campañas · commit local, **NO publicada** |
 | **Versión LIVE (Pages)** | **v3.10.82** (`cda031b`) — publicada 2026-11-07 |
-| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.82) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.83) |
 | **Working dir del popup** | `apps/cima-generador/` |
-| **Tests** | **750/750 PASS** (`apps/cima-generador/test_popup.py`) + 4 suites más |
+| **Tests** | **804/804 PASS** (`apps/cima-generador/test_popup.py`) + 5 suites más (aggressive · security · codereview · browser_static · ingest_comunicado_zonas) |
+
+---
+
+## 🗓️ CHECKPOINT DE SESIÓN — 2026-11-14 (v3.10.83, local)
+
+**Estado al cerrar:** `develop` con commits locales (3 de documentación + v3.10.83).
+**Remoto intacto** (`origin/develop` @ `c163567`, Pages v3.10.82). DIRECTIVA ACTIVA:
+LOCAL FIRST — **sin push** hasta OK explícito del CEO.
+
+### Qué se hizo
+
+| # | Cambio | Resultado |
+|---|---|---|
+| 1 | **Registro de campañas** (`ZONAS_APAGADAS_INTEL.campanas`) | El popup YA NO hardcodea `COMU-5514`: cada CCPP se atribuye a la campaña que lo declara (`zaResolveComunicado`). Panel, botón y auditoría leen del registro. |
+| 2 | **COMU-5569 v00001** (campaña 10-dic-2026, 13.5K clientes) | Registrada con estado `zonas_pendiente` y **0 CCPP** + speechs oficiales (visor §4, postventa §5) + flujo postventa (2 escenarios, SMS, reclamos, baja, 2 FAQs). |
+| 3 | **Anti-fabricación** | `auditZonasApagadas()` check 12 (R1–R8): una campaña `zonas_pendiente` DEBE tener 0 CCPP + `faltantes` + `fuente_urls`. El popup **no alerta** en zonas sin cobertura cargada. |
+| 4 | **Pipeline de ingesta** (`scripts/ingest_comunicado_zonas.py`) | CSV/XLSX/PDF/JSON → dedupe por md5 + fuzzy UBIGEO + backup atómico + idempotente + `--dry-run`. 76/76 tests. |
+| 5 | **Reconciliación de data** | `data/zonas_apagadas.json` (gitignored) sincronizado a **234 ccpp_keys** (el inline es la verdad de runtime). Las 5 keys contaminadas (CCPP == nombre de distrito) quedan documentadas en `reconciliacion_2026_11_14`. |
+| 6 | **Docs** | `apps/cima-generador/docs/FUENTES_ZONAS_APAGADAS.md` §9–§10 (campaña + comando de ingesta), CHANGELOG v3.10.83, handoff `docs/handoff/2026-11-14-comu5569.md`. |
+
+**Verificación:** `test_popup.py` **804/804** · aggressive PASS (234/234) · security CLEAN ·
+codereview GOOD · browser_static PASS · `test_ingest_comunicado_zonas.py` 76/76 ·
+harness runtime (node) 37/37 (registro + atribución + audit check 12).
+
+### 🔴 BLOQUEO — falta la tabla de zonas de COMU-5569
+
+Los **4 PDF cargados son el MISMO archivo** (md5 `393c127b3b6b4bb486d3d03be0850f97`
+en los 4) → es el **comunicado**, NO la tabla de zonas. El detalle (CCPP por
+departamento + fecha de apagado + fecha de SMS) vive en el recurso interno
+`geniomovistar.com.pe/mod/resource/view.php?id=178147` (y `id=178146`), no
+accesible desde este entorno (TLS/red corporativa, sin login).
+
+**Falta del CEO:** export de ese recurso (o el PDF/tabla de centros poblados por
+departamento). Con eso, 1 comando y el popup queda con la campaña de diciembre
+cobertura real. Detalle: `PENDIENTES.md` §"BLOQUEO" + `FUENTES_ZONAS_APAGADAS.md` §10.
+
+### 📐 L-094: un COMUNICADO no es una TABLA de zonas — y 4 archivos pueden ser 1
+
+**Contexto (2026-11-14):** el CEO cargó "4 PDFs actualizados de las nuevas zonas de
+apagado". Realidad: 4 copias byte-idénticas (mismo md5) del comunicado COMU-5569;
+la tabla de zonas está detrás de un enlace a un recurso interno no accesible.
+
+**Reglas que quedan:**
+1. **Dedupe por md5 SIEMPRE** antes de procesar "N fuentes nuevas" — 4 descargas
+   pueden ser 1 archivo (Windows agrega `(1)`, `(2)`, `(3)`).
+2. **Un comunicado ≠ la tabla de zonas.** El comunicado trae alcance, fechas,
+   speech y flujos; los CCPP vienen en el detalle ("Revisa las zonas"). Verificar
+   si el PDF tiene la tabla ANTES de prometer cobertura.
+3. **Si el detalle no está disponible, NO se inventa cobertura**: la campaña se
+   registra con 0 CCPP, estado `zonas_pendiente`, lista de `faltantes` y la fuente
+   exacta donde conseguirla. El popup no alerta en lo que no conoce.
+4. **El pipeline se prepara antes que el dato**: registro de campañas + comando de
+   ingesta listos → cuando llega la tabla, es 1 comando (no una sesión).
+
+### 📐 L-095: el comunicado hardcodeado es deuda que rompe en la campaña siguiente
+
+`checkZonaApagada()`, `showApagadoPanelInline()` y `renderCoberturaButton()` tenían
+`COMU-5514` / `v00003` / `2026-09-11` escritos a mano: al entrar COMU-5569, el
+popup habría atribuido la campaña nueva al comunicado viejo. **Atribución por
+registro** (`campanas` + `zaResolveComunicado`) elimina la clase de bug, no el
+síntoma. Regla: cuando un dato de negocio puede cambiar (comunicado, fecha,
+versión, speech), va en el registro, no en la lógica.
 
 ---
 

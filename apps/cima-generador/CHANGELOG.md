@@ -1,5 +1,87 @@
 # Changelog — cima-generador
 
+## [3.10.83] — 2026-11-14 — 🛰️ Registro de campañas + COMU-5569 (campaña diciembre 2026)
+
+### Qué cambia
+
+El popup dejó de hardcodear `COMU-5514` en la detección de zonas de apagado. Ahora
+cada CCPP se atribuye a la **campaña** que lo declara
+(`ZONAS_APAGADAS_INTEL.campanas`) y el panel resuelve comunicado / versión / fecha /
+speech desde ese registro. Cargar una campaña nueva ya no exige tocar la lógica.
+
+### Campaña COMU-5569 — anunciada, cobertura pendiente
+
+| Campo | Valor |
+|---|---|
+| Comunicado | **COMU-5569 v00001** — Apagado de Estaciones Base en Centros Poblados |
+| Inicio | **10 de diciembre de 2026** |
+| Q clientes | 13.5K |
+| Canales | Call Convergente · Tiendas · Soluciones · Retenciones · Embajador · Canales escritos · Priority |
+| Estado en el popup | `zonas_pendiente` — **0 CCPP** (sin cobertura cargada) |
+| Fuente | `COMU-5569_..._Noviembre.pdf` — md5 `393c127b3b6b4bb486d3d03be0850f97` |
+
+**Los 4 PDF cargados son el MISMO archivo** (md5 idéntico en los 4) → es el
+*comunicado*, no la tabla de zonas. El detalle (CCPP por departamento + fecha de
+apagado + fecha de SMS) vive en el recurso interno
+`geniomovistar.com.pe/mod/resource/view.php?id=178147` (y `id=178146`), no
+accesible desde el entorno de build.
+
+**No se inventó cobertura**: la campaña queda registrada con 0 CCPP, `ccpp_count: 0`
+y la lista exacta de lo que falta. El popup **no alerta** en centros poblados sin
+cobertura cargada.
+
+### Ya disponible para el asesor
+
+- **Speech visor** `comu5569_visor_unico` — texto oficial literal (COMU-5569 §4).
+- **Speech postventa** `comu5569_postventa_marcaje` — texto oficial §5 con
+  placeholders `{dia}/{mes}/{zona}` adaptados al resolver del popup.
+- **Flujo postventa COMU-5569** — 2 escenarios, SMS 1, ruta de reclamo, baja de
+  servicio y 2 FAQs oficiales.
+
+### Cuando llegue la tabla de zonas (1 comando)
+
+```bash
+python3 apps/cima-generador/scripts/ingest_comunicado_zonas.py \
+  --comunicado COMU-5569 --source "<TABLA>" --modo union --apply-inline
+```
+
+Dedupe por md5 · fuzzy match contra UBIGEO · backup atómico de `index.html` ·
+idempotente · `--dry-run` por defecto. `--modo union` acumula (no borra COMU-5514).
+
+### Cambios técnicos
+
+| # | Cambio | Detalle |
+|---|---|---|
+| 1 | `ZONAS_APAGADAS_INTEL.campanas` | Registro de campañas: COMU-5514 (`zonas_conocidas`, 234 CCPP) + COMU-5569 (`zonas_pendiente`, 0 CCPP) |
+| 2 | `zaCampanas()` · `zaCampanaSet()` · `zaCampanasOrdenadas()` · `zaDefaultComunicado()` · `zaResolveComunicado()` | Atribución data-driven; fin del comunicado hardcodeado |
+| 3 | `checkZonaApagada()` | `comu` se resuelve del registro en los 3 niveles (`ccpp_exacto`, `ccpp_fuzzy`, `distrito_of`) |
+| 4 | `showApagadoPanelInline()` | comunicado + versión + fecha + speech desde la campaña (`zaApplyCampana`) |
+| 5 | `renderCoberturaButton()` | `aria-label` y `title` nombran la campaña real |
+| 6 | `auditZonasApagadas()` **check 12** | 8 reglas (R1–R8) de integridad del registro, incluida anti-fabricación y coherencia set global ↔ registro |
+| 7 | `data/zonas_apagadas.json` | Reconciliado a **234 ccpp_keys** (el inline es la verdad de runtime); las 5 keys contaminadas (CCPP == nombre de distrito) quedan documentadas en `reconciliacion_2026_11_14` |
+| 8 | `scripts/ingest_comunicado_zonas.py` + test | Pipeline de ingesta por comunicado (CSV/XLSX/PDF/JSON), dedupe por md5, fuzzy UBIGEO, dry-run, backup, idempotente |
+
+### Verificación
+
+| Suite | Resultado |
+|---|---|
+| `test_popup.py` | **804/804 PASS** (750 → 804, +54 asserts nuevos) |
+| `test_aggressive.py` | PASS — 234/234 fuzzy |
+| `test_security.py` | CLEAN |
+| `test_codereview.py` | GOOD |
+| `test_browser_static.py` | PASS |
+| `test_ingest_comunicado_zonas.py` | 76/76 PASS |
+| Harness runtime (node) | 37/37 PASS — registro, atribución, audit check 12, anti-regresión de cobertura |
+
+### ⛔ Bloqueo abierto
+
+Falta la **tabla de zonas de COMU-5569** (CCPP por departamento + fechas). Hasta que
+llegue, la campaña de diciembre 2026 no puede generar alertas de zona. Owner: CEO
+(export del recurso `id=178147` / `id=178146`). Detalle y comando en
+`apps/cima-generador/docs/FUENTES_ZONAS_APAGADAS.md` §9–§10.
+
+---
+
 ## [3.10.82] — 2026-11-06 — 🎛️ Botones de TIPIFICACIÓN: RESET nuevo · APN→JIRA · CASO eliminado
 
 ### Qué cambia en la fila de acciones
