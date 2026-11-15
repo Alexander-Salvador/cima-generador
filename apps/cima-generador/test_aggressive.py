@@ -133,16 +133,17 @@ if n_ccpp >= EXPECTED_CCPP_MIN:
 else:
     result.fail('CCPP_DATA total', f'{n_ccpp} < {EXPECTED_CCPP_MIN}')
 
-# 1.3 ZONAS_APAGADAS: 234 ccpp_keys, 188 districts_with_off (v3.10.15 limpieza)
-if len(CCPP_KEYS) == 234:
-    result.ok(f'ZONAS_APAGADAS.ccpp_keys: {len(CCPP_KEYS)} (esperado 234, recuperación v3.10.13)')
+# 1.3 ZONAS_APAGADAS: 238 ccpp_keys, 191 districts_with_off (v3.10.84 barrido de fuente)
+if len(CCPP_KEYS) == 238:
+    result.ok(f'ZONAS_APAGADAS.ccpp_keys: {len(CCPP_KEYS)} (esperado 238, barrido v3.10.84 + 4 zonas restauradas)')
 else:
-    result.fail('ccpp_keys size', f'{len(CCPP_KEYS)} != 234')
-# v3.10.15: districts_with_off ahora solo los 188 d6 con CCPPs exactos reales
+    result.fail('ccpp_keys size', f'{len(CCPP_KEYS)} != 238')
+# v3.10.15: districts_with_off solo los d6 con CCPPs exactos reales
 # (antes 1,824 por contaminación con UBIGEO completo + 1,798 IPT, lo que generaba
 # falsos positivos en SANTIAGO DE SURCO y otros 1,635 distritos)
-if len(DISTRICTS_WITH_OFF) == 188:
-    result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (188 d6 con CCPPs exactos confirmados)')
+# v3.10.84: +3 d6 por las 4 zonas restauradas (010512, 040411, 080206)
+if len(DISTRICTS_WITH_OFF) == 191:
+    result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (191 d6 con CCPPs exactos confirmados)')
 elif len(DISTRICTS_WITH_OFF) >= 100:
     result.ok(f'ZONAS_APAGADAS.districts_with_off: {len(DISTRICTS_WITH_OFF)} (>=100)')
 else:

@@ -187,10 +187,15 @@ cd apps/cima-generador && python3 test_popup.py   # 676 asserts, gate obligatori
 
 ## 📍 Estado al 2026-11-14
 
-- Popup **local = v3.10.83** (commit local, **NO publicado**). **LIVE = v3.10.82**
+- Popup **local = v3.10.84** (commit local, **NO publicado**). **LIVE = v3.10.82**
   (`develop` `c163567` · Pages `cda031b`) — remoto intacto, LOCAL FIRST.
-- Gate: `test_popup.py` **804/804** + 5 suites (aggressive · security ·
+- Gate: `test_popup.py` **844/844** + 5 suites (aggressive · security ·
   codereview · browser_static · ingest_comunicado_zonas).
+- Zonas de apagado: **238 CCPP** (COMU-5514, 191 distritos) + **1.798 IPT**
+  (COMU-5672) + COMU-5569 pendiente (0 CCPP).
+- v3.10.84: **barrido completo contra la fuente** (3 PDFs + manual) → 4 CCPP
+  legítimos recuperados (matching por fold), audit runtime 3 issues → 0,
+  data layer alineado. Informe: `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md`.
 - v3.10.83: **registro de campañas** (`ZONAS_APAGADAS_INTEL.campanas`) — el
   popup ya no hardcodea `COMU-5514`; cada CCPP se atribuye a su campaña.
 - 🔴 **BLOQUEO**: falta la tabla de zonas de **COMU-5569** (campaña 10-dic-2026).
@@ -199,7 +204,7 @@ cd apps/cima-generador && python3 test_popup.py   # 676 asserts, gate obligatori
   `apps/cima-generador/docs/FUENTES_ZONAS_APAGADAS.md` §9–§10.
 - 39 etiquetas de transferencia reconciliadas contra el Excel, con
   `ETIQUETAS_BASELINE` como baseline anti-regresión en el gate.
-- Decisiones abiertas del CEO (D1/D2/D3) en `PENDIENTES.md`.
+- Decisiones abiertas del CEO (D1/D2/D3 + D4/D5/D6 del barrido) en `PENDIENTES.md`.
 - Handoff de sesión: `docs/handoff/2026-11-14-comu5569.md`.
 
 ---

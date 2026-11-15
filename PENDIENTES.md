@@ -1,12 +1,27 @@
 # CIMA — Lista de Pendientes (Estado verificado 2026-11-14)
 
 **Fecha verificación:** 2026-11-14
-**Branch:** `develop` (working tree limpio) · local **3+ commits adelante** de `origin/develop` (sin push)
-**HEAD local:** `0b3d6cb` + **v3.10.83** (COMU-5569 + registro de campañas) · `origin/develop` @ `c163567`
-**Popup local:** `apps/cima-generador/` → **v3.10.83** (commit local, **NO publicada**)
+**Branch:** `develop` (working tree limpio) · local **4+ commits adelante** de `origin/develop` (sin push)
+**HEAD local:** `0ba89ca` + **v3.10.84** (barrido completo de zonas) · `origin/develop` @ `c163567`
+**Popup local:** `apps/cima-generador/` → **v3.10.84** (commit local, **NO publicada**)
 **Popup LIVE (Pages):** **v3.10.82** (`cda031b`) → https://alexander-salvador.github.io/cima-generador/
-**Tests:** `test_popup.py` **804/804 PASS** + aggressive / security / codereview / browser_static / ingest_comunicado_zonas (76/76)
+**Tests:** `test_popup.py` **844/844 PASS** + aggressive / security / codereview / browser_static / ingest_comunicado_zonas (76/76)
+**Zonas:** **238 CCPP** (COMU-5514, 191 distritos) + **1.798 IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP)
 **DIRECTIVA ACTIVA:** seguir en **LOCAL**. No tocar remoto sin OK explícito del CEO.
+
+---
+
+## 🗺️ BARRIDO COMPLETO DE ZONAS (v3.10.84) — qué se entregó
+
+| Artefacto | Contenido |
+|---|---|
+| `apps/cima-generador/data/apagados_tabla_completa.csv` | **2.081 filas × 22 columnas** — 282 COMU-5514 (247 CCPP únicos + 35 duplicados) · 1.798 COMU-5672 · 1 COMU-5569 pendiente. Sin pérdida de campos |
+| `apps/cima-generador/data/audit_zonas_apagado.json` | Detalle programático (pérdidas · extras · precisión · huérfanos · data layer) |
+| `apps/cima-generador/scripts/audit_zonas_apagado.py` | Barrido reproducible: `python3 scripts/audit_zonas_apagado.py` |
+| `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md` | Informe H1–H7 + decisiones D4–D6 |
+
+**Barrido de verdad:** 234 → **238 CCPP** (4 legítimas que NO alertaban, recuperadas) ·
+188 → **191 distritos** · audit runtime **3 issues → 0** · data layer alineado (0 divergencias).
 
 ---
 
@@ -104,6 +119,41 @@ M.TOTAL; STANDALONE mantiene `SK_CV_TECNICO_FIJA_TX`.*
 | **E** | **JIRA auto-rellenado** | plantilla con valores fijos del Excel; el popup ya tiene **Cliente** y **Teléfono de consulta** | Copiar con los datos reales del caso |
 
 *Recomendación: A + B* (mayor impacto y **no tocan datos**).
+
+### D4 · `010105:CHILIQUIN` — el PDF escribe el DISTRITO, no un caserío
+
+En el PDF de Grupo 2, la fila dice DEPARTAMENTO AMAZONAS · CHACHAPOYAS · **CHILIQUIN** ·
+CENTRO POBLADO **CHILIQUIN**. GeoNames lista para ese distrito el caserío **"Chiliquini"**
+(otro nombre) → no hay caserío "ChILIQUIN" con esa grafía.
+
+*Opciones:*
+- **(a) Semántica "todo el distrito"** → el popup alerta cuando se selecciona el
+  distrito CHILIQUIN (no un CCPP exacto). Requiere un nivel de detección nuevo.
+- **(b) Es el caserío "Chiliquini"** (typo en el PDF) → se agrega la clave
+  `010105:CHILIQUINI` y la zona queda cubierta por CCPP exacto.
+- **(c) No cubrir** (estado actual: sin alerta, documentado).
+
+*Recomendación:* **(b)** — el resto de filas de esa familia (p. ej. `010105:VITUYA`) son
+caseríos exactos, y la cobertura por caserío es más precisa que por distrito.
+
+### D5 · 2 zonas de la fuente sin cobertura por falta de datos base
+
+| Zona | Problema | Qué falta |
+|---|---|---|
+| `060101:INCA CORRAL` (CAJAMARCA) | No existe en UBIGEO ni en CCPP_DATA. El PDF además escribe la provincia como "CAJABAMBA" (el dataset usa "CAJAMARCA") | Definición del caserío/distrito INCA CORRAL (nombre oficial + caseríos) |
+| `160405:SANTA ROSA` (LORETO) | El distrito **existe** en el UBIGEO inline (160405) pero tiene **0 caseríos** en CCPP_DATA | Los caseríos del distrito (p. ej. SANTA ROSA) |
+
+*Recomendación:* pedir al CEO la lista de caseríos (o un XLSX) de ambos →
+se ingestan con `ingest_comunicado_zonas.py` y quedan con alerta real.
+
+### D6 · 4 caseríos con d6 divergente (PDF PACAIPAMPA vs GeoNames AYABACA)
+
+`CURRILCAS` · `PAPELILLO` · `TOJAS` · `TULMAN DE MATALACAS` → el PDF los atribuye a
+PIURA/AYABACA/**PACAIPAMPA** (d6 200206); GeoNames los lista en **AYABACA** (d6 200201),
+que es donde el sistema los tiene (y es la única clave alcanzable desde el dropdown).
+
+*Estado:* cubierto funcionalmente. *Decisión:* ¿se deja así (recomendado) o se replica
+también la clave 200206 (doble alerta, riesgo de duplicidad)?
 
 ---
 

@@ -73,6 +73,10 @@ data/zonas_apagadas.json
 # Campañas por comunicado (misma fuente restringida) + estado de dedupe
 **/zonas_apagadas_*.json
 **/.ingest_dedupe_*.json
+# Artefactos del barrido de zonas (derivados de PDFs internos Movistar)
+**/apagado_ocr_visual.json
+**/apagados_tabla_completa.csv
+**/audit_zonas_apagado.json
 # Pre-feature backups (transient)
 .backup-*/
 

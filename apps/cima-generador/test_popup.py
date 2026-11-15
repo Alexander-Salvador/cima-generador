@@ -248,11 +248,15 @@ def test(html_path):
         total_districts = int(sizes.group(4))
         # v3.10.13: ccpp_keys 234 (CCPP exactos COMU-5514 estaciones base, recuperación
         # end-to-end de 32 CCPPs del data consolidada + 2 sin match CCPP_DATA).
+        # v3.10.84: 238 — se restauran 4 CCPP legítimos que el check 5 viejo
+        # (CCPP == DISTRITO ⇒ contaminación) había borrado por error.
         # districts_with_off: SOLO CCPP exactos (sin IPT/2G). Antes incluía 1798 IPT.
-        if len(ccpp_items) == 234: result.ok(f'ccpp_keys size = {len(ccpp_items)} (234 expected, recuperación v3.10.13)')
-        elif len(ccpp_items) == 239: result.ok(f'ccpp_keys size = {len(ccpp_items)} (239 legacy, NOT cleaned)')
-        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 234 recovered or 239 legacy)')
+        if len(ccpp_items) == 238: result.ok(f'ccpp_keys size = {len(ccpp_items)} (238 expected, v3.10.84 +4 restaurados)')
+        elif len(ccpp_items) == 234: result.ok(f'ccpp_keys size = {len(ccpp_items)} (234 legacy, sin los 4 restaurados)')
+        else: result.fail(f'ccpp_keys size', f'{len(ccpp_items)} (expected 238 v3.10.84)')
         if len(dist_items) >= 100: result.ok(f'districts_with_off size = {len(dist_items)} (>=100, sin IPT)')
+        if total_zones == len(ccpp_items): result.ok(f'total_zones = {total_zones} == ccpp_keys.size ({len(ccpp_items)})')
+        else: result.fail('total_zones vs ccpp_keys.size', f'{total_zones} != {len(ccpp_items)}')
         if total_zones >= 200: result.ok(f'total_zones = {total_zones} (>=200)')
         else: result.fail(f'total_zones', f'{total_zones} (expected >=200)')
         if total_districts >= 200: result.ok(f'total_districts = {total_districts} (>=200)')
@@ -5434,7 +5438,7 @@ def test(html_path):
             ('estado', '"zonas_conocidas"'),
             ('fecha_apagado', '"2026-09-11"'),
             ('fecha_sms_inicio', '"2026-09-04"'),
-            ('ccpp_count', '234'),
+            ('ccpp_count', '238'),
             ('ccpp_set_ref', '"ccpp_keys"'),
             ('speech_visor', '"comu5514_visor_unico"'),
             ('speech_postventa', '"comu5514_postventa_marcaje"'),
@@ -5563,24 +5567,37 @@ def test(html_path):
     else:
         result.fail('v3.10.83 AUDIT check 12', 'validación del registro ausente')
 
-    # 8) Anti-regresión: la cobertura existente NO cambió
+    # 8) Anti-regresión: la cobertura existente NO cambió (salvo los +4 de v3.10.84)
     m_keys = re.search(r'ccpp_keys: new Set\(\[(.*?)\]\)', html, re.DOTALL)
     n_keys = len(re.findall(r'"([0-9]{6}:[^"]+)"', m_keys.group(1))) if m_keys else 0
-    if n_keys == 234:
-        result.ok(f'v3.10.83 ANTI-REGRESIÓN: ccpp_keys sigue en {n_keys} (no se tocaron zonas)')
+    if n_keys == 238:
+        result.ok(f'v3.10.84 ANTI-REGRESIÓN: ccpp_keys = {n_keys} (234 previos + 4 restaurados)')
     else:
-        result.fail('v3.10.83 ccpp_keys', f'{n_keys} (esperado 234)')
+        result.fail('v3.10.84 ccpp_keys', f'{n_keys} (esperado 238)')
 
     # 9) Data layer reconciliado + pipeline de ingesta disponible
+    # v3.10.84: data/ quedó RESINCADO al runtime (238 ccpp_keys) tras el barrido.
+    # Se verifica que JSON y runtime estén sincronizados y que la reconciliación
+    # documente las 5 claves de la limpieza v3.10.13 y las 4 restauradas en v3.10.84.
     data_path = Path(__file__).parent / 'data' / 'zonas_apagadas.json'
     if data_path.exists():
         try:
             import json as _json2
             zd = _json2.loads(data_path.read_text())
-            if len(zd.get('ccpp_keys', [])) == 234:
-                result.ok('v3.10.83 DATA: zonas_apagadas.json reconciliado a 234 ccpp_keys')
+            json_keys = set(zd.get('ccpp_keys', []))
+            if len(json_keys) == 238:
+                result.ok('v3.10.84 DATA: zonas_apagadas.json sincronizado con runtime (238 ccpp_keys)')
             else:
-                result.fail('v3.10.83 DATA ccpp_keys', f"{len(zd.get('ccpp_keys', []))} (esperado 234)")
+                result.fail('v3.10.84 DATA ccpp_keys', f"{len(json_keys)} (esperado 238)")
+            runtime_keys = set(re.findall(r'"([0-9]{6}:[^"]+)"', m_keys.group(1))) if m_keys else set()
+            delta = runtime_keys - json_keys
+            esperados_v31084 = {'010512:OCALLI', '040411:TIPAN', '080206:RONDOCAN', '221003:POLVORA'}
+            if delta == set():
+                result.ok('v3.10.84 DATA: sin delta runtime-JSON (data layer alineado)')
+            elif delta == esperados_v31084:
+                result.ok(f'v3.10.84 DATA: delta runtime-JSON = las 4 claves restauradas ({sorted(delta)})')
+            else:
+                result.fail('v3.10.84 DATA delta', f'{sorted(delta)} (esperado vacío o {sorted(esperados_v31084)})')
             camp_json = zd.get('campanas', {})
             if 'COMU-5569' in camp_json:
                 if camp_json['COMU-5569'].get('ccpp_count') == 0 and camp_json['COMU-5569'].get('estado') == 'zonas_pendiente':
@@ -5590,10 +5607,16 @@ def test(html_path):
             else:
                 result.fail('v3.10.83 DATA campanas', 'COMU-5569 missing en JSON')
             rec = zd.get('reconciliacion_2026_11_14', {})
-            if len(rec.get('keys_eliminados', [])) == 5:
-                result.ok('v3.10.83 DATA: reconciliación documentada (5 keys contaminadas eliminadas)')
+            eliminados = rec.get('keys_eliminados_v31083', rec.get('keys_eliminados', []))
+            restaurados = rec.get('keys_restaurados_v31084', [])
+            if len(eliminados) == 5:
+                result.ok('v3.10.83 DATA: reconciliación documentada (5 keys eliminadas en la limpieza v3.10.13)')
             else:
-                result.fail('v3.10.83 DATA reconciliación', 'keys_eliminados != 5')
+                result.fail('v3.10.83 DATA reconciliación', f'keys eliminados = {len(eliminados)} (esperado 5)')
+            if len(restaurados) == 4:
+                result.ok('v3.10.84 DATA: reconciliación documenta las 4 claves restauradas')
+            else:
+                result.fail('v3.10.84 DATA restauradas', f'{len(restaurados)} (esperado 4)')
         except Exception as e:
             result.fail('v3.10.83 DATA JSON', f'parse error: {e}')
     else:
@@ -5624,6 +5647,160 @@ def test(html_path):
             result.fail('v3.10.83 DOC fuentes', 'faltan enlaces/md5 en FUENTES doc')
     else:
         result.fail('v3.10.83 DOC', 'docs/FUENTES_ZONAS_APAGADAS.md missing')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.84 — FOLD CANÓNICO DE CCPP + PRECISIÓN DEL AUDIT
+    # 1) 4 zonas legítimas restauradas (falsos negativos por tildes).
+    # 2) zaNormalizeCcpp (fold sin diacríticos) en TODOS los puntos de
+    #    comparación de CCPP.
+    # 3) audit check 5 reescrito: "CCPP == DISTRITO" ya NO es contaminación
+    #    (era un falso positivo en 34 de 38 filas homónimas).
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.84 — Fold canónico de CCPP + precisión del audit')
+
+    import unicodedata
+
+    def _fold_ccpp(s):
+        """Replica exacta de zaNormalizeCcpp() (index.html)."""
+        if not s:
+            return ''
+        t = unicodedata.normalize('NFKD', str(s))
+        t = ''.join(c for c in t if not unicodedata.combining(c))
+        t = ' '.join(t.upper().split())
+        return unicodedata.normalize('NFC', t)
+
+    def _fn_body(name, src=None):
+        src = html if src is None else src
+        m = re.search(r'function\s+' + re.escape(name) + r'\s*\([^)]*\)\s*\{', src)
+        if not m:
+            return None
+        m2 = re.compile(r'\n\}', re.M).search(src, m.end())
+        return src[m.end():m2.start()] if m2 else ''
+
+    # 1) Fold: lógica (equivalente Python de zaNormalizeCcpp)
+    for raw, esperado in [('Ocallí', 'OCALLI'), ('Pólvora', 'POLVORA'),
+                          ('CHIÑAMA', 'CHINAMA'), ('SANTA ROSA', 'SANTA ROSA')]:
+        got = _fold_ccpp(raw)
+        if got == esperado:
+            result.ok(f'v3.10.84 FOLD: "{raw}" → "{esperado}"')
+        else:
+            result.fail(f'v3.10.84 FOLD "{raw}"', f'{got} (esperado {esperado})')
+
+    # 2) Fold: la función JS existe y hace NFKD + quita diacríticos
+    m_fold = re.search(r'function\s+zaNormalizeCcpp\s*\(s\)\s*\{(.*?)\n\}', html, re.DOTALL)
+    if m_fold:
+        result.ok('v3.10.84 JS: zaNormalizeCcpp() definida')
+        fold_body = m_fold.group(1)
+        for token in ["NFKD", "\\u0300-\\u036f", "toUpperCase()", "normalize('NFC')"]:
+            if token in fold_body:
+                result.ok(f'v3.10.84 JS zaNormalizeCcpp: contiene {token}')
+            else:
+                result.fail(f'v3.10.84 JS zaNormalizeCcpp', f'falta {token}')
+        # NO debe tocar la normalización geográfica (zaNormalize intacto)
+        if re.search(r'function\s+zaNormalize\s*\(s\)\s*\{\s*if \(!s\) return \'\';\s*return String\(s\)\.trim\(\)\.toUpperCase\(\)', html):
+            result.ok('v3.10.84 JS: zaNormalize (geográfico/UBIGEO) intacto')
+        else:
+            result.fail('v3.10.84 JS zaNormalize', 'zaNormalize fue alterado (solo zaNormalizeCcpp debía cambiar)')
+    else:
+        result.fail('v3.10.84 JS zaNormalizeCcpp', 'no definida')
+
+    # 3) Fold: usada en los 5 puntos de comparación de CCPP
+    for fn in ['initCCPPKeyNormalized', 'checkZonaApagada', 'zaUpdateCcppInputZoneClass',
+               'acRender', 'zaFuzzySearchCcpp']:
+        body = _fn_body(fn)
+        if body is None:
+            # initCCPPKeyNormalized es un IIFE, no una function declaration
+            m_iife = re.search(r'\(function\s+' + re.escape(fn) + r'\s*\(\)\s*\{(.*?)\n\}\)\(\);', html, re.DOTALL)
+            body = m_iife.group(1) if m_iife else None
+        if body is None:
+            result.fail(f'v3.10.84 JS {fn}', 'función no encontrada')
+        elif 'zaNormalizeCcpp' in body:
+            result.ok(f'v3.10.84 JS: {fn}() usa zaNormalizeCcpp (fold)')
+        else:
+            result.fail(f'v3.10.84 JS {fn}', 'no usa zaNormalizeCcpp')
+
+    # 4) 4 zonas restauradas + conteos
+    m_keys84 = re.search(r'ccpp_keys: new Set\(\[(.*?)\]\)', html, re.DOTALL)
+    keys84 = re.findall(r'"([0-9]{6}:[^"]+)"', m_keys84.group(1)) if m_keys84 else []
+    if len(keys84) == 238:
+        result.ok('v3.10.84 DATA: ccpp_keys = 238 (234 previos + 4 restaurados)')
+    else:
+        result.fail('v3.10.84 ccpp_keys size', f'{len(keys84)} (esperado 238)')
+    m_tz = re.search(r'total_zones:\s*(\d+)', html)
+    total_zones84 = int(m_tz.group(1)) if m_tz else -1
+    if total_zones84 == 238:
+        result.ok('v3.10.84 DATA: total_zones = 238')
+    else:
+        result.fail('v3.10.84 total_zones', f'{total_zones84} (esperado 238)')
+    if total_zones84 == len(keys84):
+        result.ok(f'v3.10.84 DATA: total_zones ({total_zones84}) == ccpp_keys.size ({len(keys84)})')
+    else:
+        result.fail('v3.10.84 total_zones vs size', f'{total_zones84} != {len(keys84)}')
+    for k in ['010512:OCALLI', '040411:TIPAN', '080206:RONDOCAN', '221003:POLVORA']:
+        if k in keys84:
+            result.ok(f'v3.10.84 DATA: zona restaurada {k}')
+        else:
+            result.fail(f'v3.10.84 DATA zona restaurada', f'{k} ausente de ccpp_keys')
+    # los d6 de las zonas restauradas deben estar en districts_with_off
+    m_dwo84 = re.search(r'districts_with_off: new Set\(\[(.*?)\]\)', html, re.DOTALL)
+    dwo84 = set(re.findall(r'"(\d{6})"', m_dwo84.group(1))) if m_dwo84 else set()
+    for d6 in ['010512', '040411', '080206', '221003']:
+        if d6 in dwo84:
+            result.ok(f'v3.10.84 DATA: d6 {d6} en districts_with_off (audit check 2)')
+        else:
+            result.fail(f'v3.10.84 DATA d6 {d6}', 'falta en districts_with_off (audit check 2 fallaría)')
+    # ccpp_count de la campaña = |set|
+    m_camp84 = re.search(r'"COMU-5514":\s*\{([\s\S]*?)\n    \},?', html)
+    if m_camp84 and 'ccpp_count: 238' in m_camp84.group(1):
+        result.ok('v3.10.84 DATA: campanas["COMU-5514"].ccpp_count = 238')
+    else:
+        result.fail('v3.10.84 ccpp_count campaña', 'no es 238')
+
+    # 5) Audit check 5 reescrito (precisión real, no comparación ingenua)
+    m_audit84 = re.search(r'function\s+auditZonasApagadas\s*\(\)\s*\{([\s\S]*?)\n\}\n', html)
+    audit_body = m_audit84.group(1) if m_audit84 else ''
+    if audit_body:
+        result.ok('v3.10.84 AUDIT: auditZonasApagadas() localizada')
+        if re.search(r'ccppName\s*===\s*distName', audit_body):
+            result.fail('v3.10.84 AUDIT check 5', 'sigue usando la comparación ingenua ccppName === distName')
+        else:
+            result.ok('v3.10.84 AUDIT check 5: ya NO usa "ccppName === distName" como contaminación')
+        if 'ccpp_keys contaminated' in html:
+            result.fail('v3.10.84 AUDIT check 5', 'queda el mensaje de contaminación histórica')
+        else:
+            result.ok('v3.10.84 AUDIT check 5: sin mensaje de contaminación histórica')
+        if 'CCPP_DATA' in audit_body:
+            result.ok('v3.10.84 AUDIT check 5: valida contra CCPP_DATA (GeoNames)')
+        else:
+            result.fail('v3.10.84 AUDIT check 5', 'no referencia CCPP_DATA')
+        if 'CCPP_CASERIO_ALIASES' in audit_body:
+            result.ok('v3.10.84 AUDIT check 5: consulta CCPP_CASERIO_ALIASES')
+        else:
+            result.fail('v3.10.84 AUDIT check 5', 'no referencia CCPP_CASERIO_ALIASES')
+        if 'zaNormalizeCcpp' in audit_body:
+            result.ok('v3.10.84 AUDIT check 5: compara con fold canónico (zaNormalizeCcpp)')
+        else:
+            result.fail('v3.10.84 AUDIT check 5', 'no usa zaNormalizeCcpp')
+        if 'ccpp fuera de caserios' in audit_body:
+            result.ok('v3.10.84 AUDIT check 5: reporta "ccpp fuera de caserios"')
+        else:
+            result.fail('v3.10.84 AUDIT check 5', 'falta el issue "ccpp fuera de caserios"')
+    else:
+        result.fail('v3.10.84 AUDIT', 'auditZonasApagadas() no encontrada')
+
+    # 6) Alias set documental
+    m_alias = re.search(r'var\s+CCPP_CASERIO_ALIASES\s*=\s*new Set\(\[(.*?)\]\);', html, re.DOTALL)
+    alias_body = m_alias.group(1) if m_alias else ''
+    aliases = re.findall(r'"([^"]+)"', alias_body)
+    if m_alias:
+        result.ok('v3.10.84 JS: CCPP_CASERIO_ALIASES definido')
+    else:
+        result.fail('v3.10.84 JS CCPP_CASERIO_ALIASES', 'no definido')
+    for k in ['030608:OCCCEPATA', '080602:CHUQUICAHUANA']:
+        if k in aliases:
+            result.ok(f'v3.10.84 JS CCPP_CASERIO_ALIASES: contiene {k}')
+        else:
+            result.fail(f'v3.10.84 JS CCPP_CASERIO_ALIASES', f'falta {k}')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

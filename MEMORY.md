@@ -14,12 +14,67 @@
 | **Servidor local dev** | `cd apps/cima-generador && python3 serve.py` (puerto 8765, NO 8000) — anti-cache |
 | **URL local popup mode** | http://localhost:8765/index.html?popup=1 (**solo `localhost`** — ver Ley del origen canónico) |
 | **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) · CTRL+SHIFT+R limpia template |
-| **Branch de trabajo** | `develop` (working tree limpio) — local **3+ commits adelante** de `origin/develop` (LOCAL FIRST, sin push) |
-| **Versión LOCAL** | **v3.10.83** — COMU-5569 + registro de campañas · commit local, **NO publicada** |
+| **Branch de trabajo** | `develop` (working tree limpio) — local **4+ commits adelante** de `origin/develop` (LOCAL FIRST, sin push) |
+| **Versión LOCAL** | **v3.10.84** — barrido completo de zonas (4 CCPP recuperados, matching por fold) · **NO publicada** |
 | **Versión LIVE (Pages)** | **v3.10.82** (`cda031b`) — publicada 2026-11-07 |
-| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.83) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.84) |
 | **Working dir del popup** | `apps/cima-generador/` |
-| **Tests** | **804/804 PASS** (`apps/cima-generador/test_popup.py`) + 5 suites más (aggressive · security · codereview · browser_static · ingest_comunicado_zonas) |
+| **Tests** | **844/844 PASS** (`test_popup.py`) + 5 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas) |
+| **Zonas de apagado** | **238 CCPP exactos** (COMU-5514, 191 distritos) + **1.798 zonas IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP) |
+
+---
+
+## 🗓️ CHECKPOINT DE SESIÓN — 2026-11-14 (segunda tanda) · v3.10.84 — BARRIDO COMPLETO DE ZONAS
+
+**Peden del CEO:** tabla completa de las nuevas ubicaciones de apagado + barrido de
+la data de zonas. **Resultado:** los 4 PDF nuevos no traen la tabla de zonas (son el
+comunicado COMU-5569, mismo md5), pero el barrido contra la fuente **encontró y
+corrigió 4 zonas que no alertaban**.
+
+### Qué se hizo
+
+| # | Cambio | Resultado |
+|---|---|---|
+| 1 | **Reconstrucción de la fuente** | 3 PDFs (G2 texto 204 filas · G1 OCR 16 · G3 OCR 21) + manual (37) → **243 CCPP únicos** |
+| 2 | **Cruce fuente ↔ runtime** | 234 → **238 CCPP** (4 legítimas restauradas) · 188 → **191 distritos** |
+| 3 | **Matching por fold** (`zaNormalizeCcpp`) | "Ocallí" (GeoNames) y "OCALLI" (PDF) son la misma clave → fin de 4 falsos negativos |
+| 4 | **Audit check 5 reescrito** | Usa `CCPP_DATA[d6]` (fold) en vez de "CCPP == distrito" → 38 falsos positivos eliminados · runtime **0 issues** (antes 3) |
+| 5 | **Audit check 6 corregido** | El invariante `ipt ⊆ districts_with_off` era imposible (sets disjuntos) → ahora valida d6 ∈ UBIGEO |
+| 6 | **Data layer alineado** | `data/ubigeo_consolidated.json` +160405 (SANTA ROSA DE LORETO) → 0 divergencias con el inline |
+| 7 | **Tabla completa exportada** | `data/apagados_tabla_completa.csv` → **2.081 filas × 22 columnas** (282 COMU-5514 · 1.798 IPT · 1 COMU-5569 pendiente) |
+| 8 | **Script reproducible** | `scripts/audit_zonas_apagado.py` (pérdidas · extras · precisión · huérfanos · data layer · campañas) |
+| 9 | **Informe** | `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md` (H1–H7 + D4–D6) |
+
+### 📐 L-096: el fold (sin diacríticos) es OBLIGATORIO para caseríos
+
+**Contexto (2026-11-14):** GeoNames escribe `Ocallí`, `Tipán`, `Rondocán`, `Pólvora`.
+El PDF de Movistar escribe `OCALLI`, `TIPAN`, `RONDOCAN`, `POLVORA`. El matcher
+comparaba `NFC+UPPER` (conserva tildes) → **la zona no alertaba**, y una limpieza
+previa (v3.10.13) las había borrado por creerlas "contaminación".
+
+**Reglas:**
+1. Toda clave de caserío se compara con **fold** (NFKD → sin diacríticos → UPPER).
+   La grafía oficial (GeoNames) y la literal del PDF deben dar la MISMA clave.
+2. La regla "CCPP == nombre del distrito ⇒ contaminación" es **incorrecta**: en Perú
+   el caserío cabecera suele llamarse igual al distrito (38 de 43 casos eran legítimos).
+   La condición de contaminación real es: **no está en `CCPP_DATA[d6]`**.
+3. Cuando el PDF y GeoNames difieren, la clave debe ser la **alcanzable desde el
+   dropdown** (GeoNames) y el literal del PDF queda en allowlist documentada.
+
+### 📐 L-097: "tenemos la data" no es lo mismo que "la data es correcta"
+
+**Contexto (2026-11-14):** el popup llevaba 4 zonas sin alerta y un audit que
+reportaba issues en cada carga, sin que nadie lo notara (el gate chequeaba la
+*existencia* del código, no su *resultado*).
+
+**Reglas:**
+1. **Todo dato de negocio se barre contra su fuente** (PDF → runtime), no contra
+   un JSON derivado: `scripts/audit_zonas_apagado.py` es el patrón.
+2. El audit de runtime debe ejecutarse en el gate y dar **0 issues**, no solo
+   "el código del audit existe".
+3. Toda zona que la fuente declara y el sistema no cubre se documenta como
+   **decisión pendiente**, nunca se descarta en silencio (H3 → D4/D5).
+4. La fuente manda sobre el data layer: si inline ≠ `data/`, se alinea (H6).
 
 ---
 
