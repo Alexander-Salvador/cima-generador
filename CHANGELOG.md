@@ -1,5 +1,72 @@
 # Changelog — cima-generador
 
+## [3.10.85] — 2026-11-14 — 🛡️ BARRIDO DE SEGURIDAD de datos + verificación OCR independiente
+
+### Qué cambia
+
+Cierre de la auditoría de zonas: verificación **doble** del OCR de los PDFs
+escaneados, **barrido de seguridad como gate** (S1–S19) y **tabla visual completa**
+(XLSX multi-hoja) para el inventario de zonas.
+
+### Verificación independiente del OCR (37 filas re-leídas)
+
+| PDF | Filas | Resultado |
+|---|---|---|
+| `APAGADP1.pdf` (Grupo 1) | 16 | **16/16 correctas** |
+| `APAGADO2.pdf` (Grupo 3) | 21 | 19/21 → **2 correcciones** |
+
+| d6 | 1ª transcripción | Literal del PDF | Efecto |
+|---|---|---|---|
+| `030608` | OCCEPATA | **CCCEPATA** | typo real del PDF (falta la "O") → alias justificado |
+| `080602` | CHUQICAHUANA | **CHUQUICAHUANA** | coincide con el sistema → **no era typo** → alias eliminado |
+
+**Consecuencias:** allowlist `CCPP_CASERIO_ALIASES` **4 → 3 entradas**
+(`030608:OCCCEPATA` · `090119:HUANDO` · `110208:SAN JUAN DE YANAC`) · fuente única
+**243 → 242 CCPP** · el sistema **no cambió** (ya tenía las grafías correctas).
+
+### Barrido de seguridad (nuevo gate)
+
+`scripts/security_sweep_zonas.py` + `test_sweep_zonas.py` (gate): **18 PASS · 1 WARN · 0 FAIL**
+
+| # | Check | Qué garantiza |
+|---|---|---|
+| S1 | Conteos coherentes | runtime = `total_zones` = data layer = `campanas.ccpp_count` |
+| S2 | Anti-invención | toda clave del runtime existe en la fuente |
+| S3 | Sin drops silenciosos | toda fila de la fuente está cubierta o declarada pendiente |
+| S4–S5 | d6 válidos | claves y distritos marcados existen en UBIGEO |
+| S6–S8 | Precisión | CCPP en caseríos o allowlist · sin contaminación · sin colisiones de fold |
+| S9–S10 | Campañas | cobertura o pendiente declarado · speechs coherentes |
+| S11–S12 | IPT | d6 válidos · overlap CCPP↔IPT atribuido por campaña |
+| S13 | Cifras de la fuente | **WARN**: clientes IPT 43.728 (suma por depto) vs 39.500 (declarado) → +10,7% |
+| S14–S15 | Data layer | ubigeo y zonas alineados con el runtime |
+| S16 | Falsos positivos | simulación: CCPP de distrito no apagado / mismo nombre en otro d6 / typo → 0 match |
+| S17–S19 | Trazabilidad y higiene | md5 de la fuente · sin secretos · sin URLs no declaradas |
+
+### Tabla visual completa (nuevo)
+
+- `data/TABLA_ZONAS_APAGADO_2026-11-14.xlsx` — 7 hojas: RESUMEN · COMU-5514 CCPP (238) ·
+  COMU-5672 IPT (1.798) · COMU-5569 PENDIENTE · PENDIENTES DECISIÓN (3) ·
+  DIVERGENCIAS d6 (4) · AUDITORÍA (H1–H8).
+- `scripts/export_tabla_zonas.py` — regenera XLSX + `docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md`.
+- Copia operativa en `Recursos CIMA/Bases y Zonas de Apagado/TABLA_COMPLETA_ZONAS_APAGADO_2026-11-14.csv` (2.081 filas × 23 columnas).
+
+### Hallazgo nuevo
+
+- **H8 (WARN, no bloqueante)** · la suma de clientes por departamento de COMU-5672 da
+  **43.728** vs **39.500** declarados en el comunicado (+10,7%). Inconsistencia **de la
+  fuente**, no del sistema → decisión **D7** (qué cifra se muestra al supervisor).
+
+### Verificación
+
+| Suite | Resultado |
+|---|---|
+| `test_popup.py` | **846/846 PASS** |
+| `test_sweep_zonas.py` (nuevo) | **17 checks PASS · 1 WARN · 0 FAIL** |
+| `test_aggressive.py` · `test_security.py` · `test_codereview.py` · `test_browser_static.py` | PASS |
+| `test_ingest_comunicado_zonas.py` | 76/76 PASS |
+
+---
+
 ## [3.10.84] — 2026-11-14 — 🧭 BARRIDO COMPLETO de zonas de apagado: 4 zonas perdidas recuperadas + data precisa auditada
 
 ### Qué cambia
