@@ -1,5 +1,59 @@
 # Changelog — cima-generador
 
+## [3.10.86] — 2026-11-14 — 📅 FECHA POR ZONA: "11/09/2026" es el INICIO DE CAMPAÑA, no la fecha de cada zona
+
+### Qué cambia (corrección de una afirmación falsa del popup)
+
+El panel mostraba **"apagado: 11/09/2026"** para **todas** las zonas de la base.
+Eso es incorrecto: **11/09/2026 es el inicio de campaña** del comunicado
+COMU-5514 v00003 ("Inicio: Desde el 11 de septiembre de 2026"). La fecha *programada
+por departamento* y el inicio de SMS están en los recursos internos "Ver aquí"
+del comunicado, no accesibles desde este entorno.
+
+**Ahora el popup:**
+1. Muestra el grupo de la zona: `Grupo 1` (16 CCPP) · `Grupo 2` (201) · `Grupo 3` (21) —
+   derivado del PDF de origen de cada CCPP.
+2. Etiqueta la fecha según su certeza: **"apagado: DD/MM/YYYY"** solo si la fecha de
+   esa zona está verificada; si no, **"inicio campaña: 11/09/2026"** + aviso visible:
+   *"Fecha exacta de esta zona no confirmada — el comunicado COMU-5514 v00003 fija el
+   inicio de campaña el 11/09/2026; la fecha programada por departamento y el inicio de
+   SMS están en el recurso interno. Confirmar la fecha antes de informarla al cliente."*
+3. **El speech al cliente ya no afirma una fecha no verificada**: usa
+   `comu5514_postventa_fecha_pendiente` (texto oficial adaptado: "...dejará de funcionar
+   en la zona {zona}, a partir de la fecha de apagado comunicada para tu centro poblado").
+
+### Hallazgo de fuente (verificado)
+
+COMU-5514 v00003 (1 pág, imagen, "Última actualización 18/09/26"): inicio de campaña
+**11/09/2026** · 3 grupos con su propio botón "Ver aquí" (G1 1.7K · G2 15K ·
+G3 1.7K, marcado "Nuevo" en v00003). El detalle por departamento (fecha programada +
+inicio de SMS) está en esos recursos internos → **no accesible** desde el entorno.
+
+### Cambios técnicos
+
+| # | Cambio | Detalle |
+|---|---|---|
+| 1 | `ZONAS_APAGADAS_INTEL.grupos_apagado` | 3 grupos con `ccpp_count`, `fuente_pdf`, `q_clientes`, `fecha_apagado_campana`, `fecha_apagado_zona: null`, `estado_fecha: pendiente_recurso_interno` |
+| 2 | `ZONAS_APAGADAS_INTEL.grupo_por_key` | 238 claves → grupo (G1 16 · G2 201 · G3 21), derivado del PDF de origen (incluye variantes de grafía) |
+| 3 | `showApagadoPanelInline()` | `zaGrupoDeZona()` + `zaApplyGrupo()` · meta etiquetada (`apagado:` vs `inicio campaña:`) · nota de fecha pendiente + CSS |
+| 4 | `comu5514_postventa_fecha_pendiente` | Speech sin fecha para zonas sin fecha confirmada |
+| 5 | `auditZonasApagadas()` | (v3.10.86) el check 5 sigue verde: los 238 CCPP tienen grupo y los grupos pendientes no declaran fecha por zona |
+| 6 | `security_sweep_zonas.py` | **S20** (todo CCPP tiene grupo) + **S21** (sin fecha de zona falsa: grupos pendientes con `fecha_apagado_zona: null` + panel etiquetado) |
+| 7 | `audit_zonas_apagado.py` | CSV con 28 columnas: `grupo_campana`, `fecha_apagado_campana`, `fecha_apagado_zona`, `fecha_sms_zona`, `estado_fecha` |
+| 8 | `export_tabla_zonas.py` | Hoja COMU-5514 con grupo + fecha de campaña + fecha de zona ("PENDIENTE") + estado de fecha |
+
+### Verificación
+
+| Suite | Resultado |
+|---|---|
+| `test_popup.py` | **866/866 PASS** |
+| `test_sweep_zonas.py` | **19 checks PASS · 1 WARN · 0 FAIL** |
+| `test_aggressive.py` · `test_security.py` · `test_codereview.py` · `test_browser_static.py` | PASS |
+| `test_ingest_comunicado_zonas.py` | 76/76 PASS |
+| Harness runtime (panel) | 17/17 — HUIPOCA: `COMU-5514 · v00003 · Grupo 2 · inicio campaña: 11/09/2026` + aviso, sin fecha afirmada |
+
+---
+
 ## [3.10.85] — 2026-11-14 — 🛡️ BARRIDO DE SEGURIDAD de datos + verificación OCR independiente
 
 ### Qué cambia

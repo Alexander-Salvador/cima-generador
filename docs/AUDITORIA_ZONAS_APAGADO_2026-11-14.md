@@ -1,8 +1,8 @@
 # CIMA — Auditoría de zonas de apagado
 
-**Versión auditada:** v3.10.84  
+**Versión auditada:** v3.10.86 (barrido v3.10.84 + H9 · fecha por zona)  
 **Fecha:** 2026-11-14  
-**Alcance:** zonas de apagado de estaciones base (COMU-5514), zonas IPT (COMU-5672) y cobertura pendiente de COMU-5569  
+**Alcance:** zonas de apagado de estaciones base (COMU-5514), zonas IPT (COMU-5672), cobertura pendiente de COMU-5569 y honestidad de la fecha mostrada por zona  
 **Fuente:** PDFs internos restringidos; no versionados en el repositorio
 
 ---
@@ -18,6 +18,7 @@
 - Permanecen 3 zonas de la fuente sin cobertura y 4 caseríos con atribución d6 divergente; requieren decisión del CEO (H3/H4).
 - Se corrigieron la divergencia del data layer y el invariante imposible del audit check 6 (H6/H7).
 - La suma de clientes IPT por departamento de la fuente (+10,7% sobre lo declarado) es una inconsistencia de la fuente, no del sistema (H8).
+- El popup afirmaba «apagado: 11/09/2026» para las 238 zonas: esa fecha es el INICIO de campaña del COMU-5514 v00003, no la fecha de cada zona; la fecha programada por departamento y el inicio de SMS están en 3 recursos internos no accesibles (H9). Desde v3.10.86 el panel etiqueta «inicio campaña: 11/09/2026» + aviso y el speech ya no afirma una fecha no verificada.
 - COMU-5569 sigue pendiente con 0 CCPP: los cuatro PDF cargados son el mismo comunicado, no la tabla de zonas.
 
 ---
@@ -43,7 +44,8 @@ La verdad de referencia se reconstruyó desde los tres PDFs de `Recursos CIMA/Ba
 5. Contrastar `CCPP_DATA`, el data layer de UBIGEO y la cobertura por campaña.
 6. Ejecutar las suites y el audit runtime después de los fixes v3.10.84.
 7. Re-transcribir de forma independiente las 37 filas de los PDF escaneados (render 300 DPI + lectura visual de las 3 bandas) y corregir la transcripción.
-8. Ejecutar el barrido de seguridad de datos (`scripts/security_sweep_zonas.py`, checks S1–S19).
+8. Ejecutar el barrido de seguridad de datos (`scripts/security_sweep_zonas.py`, checks S1–S21).
+9. Verificar el comunicado COMU-5514 v00003 (1 pág, imagen; render 300 DPI + lectura visual) para separar el inicio de campaña de la fecha programada por zona (H9).
 
 ### 2.3 Reglas de normalización
 
@@ -76,12 +78,12 @@ Los artefactos son locales y gitignored porque derivan de una fuente restringida
 | Artefacto | Contenido |
 |---|---|
 | `scripts/audit_zonas_apagado.py` | Barrido reproducible; escribe el JSON y el CSV derivados |
-| `scripts/security_sweep_zonas.py` | Barrido de seguridad de datos (checks S1–S19); escribe `data/security_sweep_zonas.json` |
+| `scripts/security_sweep_zonas.py` | Barrido de seguridad de datos (checks S1–S21); escribe `data/security_sweep_zonas.json` |
 | `data/audit_zonas_apagado.json` | Detalle programático: sistema, fuente, pérdidas, extras, aliases, campañas y divergencias |
-| `data/security_sweep_zonas.json` | Resultado de los 19 checks de seguridad: 18 PASS · 1 WARN (S13/H8) · 0 FAIL |
+| `data/security_sweep_zonas.json` | Resultado de los 21 checks de seguridad: 20 PASS · 1 WARN (S13/H8) · 0 FAIL |
 | `data/apagados_tabla_completa.csv` | 2.081 filas: 282 COMU-5514 (278 de fuente → 242 CCPP únicos + 36 duplicadas, más 4 claves vigentes sin fila literal), 1.798 COMU-5672 IPT y 1 COMU-5569 pendiente |
 
-El CSV tiene 23 columnas: `comunicado`, `campana_estado`, `version`, `fecha_apagado`, `fecha_sms_inicio`, `nivel`, `depto`, `provincia`, `distrito`, `centro_poblado_ccpp`, `ubigeo_d6`, `key_sistema`, `cobertura_en_sistema`, `estado_validacion`, `metodo_resolucion`, `ccpp_en_caserios`, `en_caserios_igual_a_distrito`, `speech_key`, `postventa_speech_key`, `origen_pdf`, `grupo`, `pagina`, `notas`.
+El CSV tiene 28 columnas: `comunicado`, `campana_estado`, `version`, `fecha_apagado`, `fecha_sms_inicio`, `nivel`, `depto`, `provincia`, `distrito`, `centro_poblado_ccpp`, `ubigeo_d6`, `key_sistema`, `cobertura_en_sistema`, `estado_validacion`, `metodo_resolucion`, `ccpp_en_caserios`, `en_caserios_igual_a_distrito`, `speech_key`, `postventa_speech_key`, `origen_pdf`, `grupo`, `pagina`, `notas`, `grupo_campana`, `fecha_apagado_campana`, `fecha_apagado_zona`, `fecha_sms_zona`, `estado_fecha`.
 
 ---
 
@@ -229,19 +231,56 @@ El PDF escribe «CURILCAS» y «PAPELILLO»; GeoNames y el runtime usan «CURRIL
 
 **Impacto en el supervisor:** la lógica de alerta no se ve afectada — el set IPT (1.798 zonas) es el mismo y cada zona se atribuye a su campaña. Lo que queda abierto es qué cifra de clientes puede mostrar el popup. **La inconsistencia está en la fuente** (suma por departamento frente al total del comunicado), no en el sistema.
 
-**Estado:** WARN, no bloqueante. El barrido cierra con 18 PASS · 1 WARN · 0 FAIL. Requiere decisión del CEO (D7): qué cifra se muestra al supervisor.
+**Estado:** WARN, no bloqueante. El barrido cierra con 20 PASS · 1 WARN · 0 FAIL (21 checks S1–S21). Requiere decisión del CEO (D7): qué cifra se muestra al supervisor.
+
+### H9 · El popup afirmaba «apagado: 11/09/2026» para las 238 zonas
+
+**Qué:** el panel mostraba **«apagado: 11/09/2026»** para **todas** las zonas de la base (238 CCPP). Esa fecha es el **inicio de campaña**, no la fecha de apagado de cada zona: es una afirmación falsa de precisión.
+
+**Evidencia (COMU-5514 v00003 — 1 pág, imagen; render 300 DPI + lectura visual):**
+
+- «Última actualización: 18/09/26»
+- «Inicio: Desde el 11 de septiembre del 2026»
+- 3 grupos, cada uno con su botón «Ver aquí»: **Grupo 1 (Q 1.7K)**, **Grupo 2 (Q 15K)**, **Grupo 3 (Q 1.7K, marcado «Nuevo» en v00003)**.
+
+La fecha *programada por departamento* y el inicio de SMS están en esos 3 recursos internos (geniomovistar), no accesibles desde este entorno.
+
+**Impacto en el supervisor:** 238 zonas con una fecha de zona no verificada afirmada como fecha de apagado; riesgo de informar al cliente una fecha que no corresponde a su centro poblado.
+
+**Fix aplicado (v3.10.86):**
+
+| # | Cambio | Detalle |
+|---|---|---|
+| 1 | `ZONAS_APAGADAS_INTEL.grupos_apagado` | 3 grupos con `ccpp_count`, `fuente_pdf`, `q_clientes`, `fecha_apagado_campana: 2026-09-11`, `fecha_apagado_zona: null`, `estado_fecha: "pendiente_recurso_interno"` |
+| 2 | `ZONAS_APAGADAS_INTEL.grupo_por_key` | 238 claves → grupo (G1 16 · G2 201 · G3 21), derivado del PDF de origen de cada CCPP |
+| 3 | `showApagadoPanelInline()` | La fecha se etiqueta según su certeza: **«apagado: DD/MM/YYYY»** solo si la fecha de esa zona está verificada; si no, **«inicio campaña: 11/09/2026»** + aviso visible («Fecha exacta de esta zona no confirmada… Confirmar la fecha antes de informarla al cliente») |
+| 4 | `comu5514_postventa_fecha_pendiente` | Speech sin fecha para zonas sin fecha confirmada: «…dejará de funcionar en la zona {zona}, a partir de la fecha de apagado comunicada para tu centro poblado» |
+| 5 | Tabla completa (CSV 28 columnas + XLSX) | Nuevas columnas `grupo_campana`, `fecha_apagado_campana`, `fecha_apagado_zona`, `fecha_sms_zona`, `estado_fecha` |
+| 6 | Gate anti-fecha-falsa | `scripts/security_sweep_zonas.py` **S20** (todo CCPP tiene grupo) y **S21** (los grupos pendientes no declaran fecha por zona + el panel no afirma «apagado: <fecha>» de forma incondicional) |
+
+**Estado:** popup corregido; falta el dato de los 3 recursos internos → decisión **D8**.
 
 ---
 
 ## 6. Cobertura por campaña
 
-| Campaña | Nivel | Fuente | Cobertura runtime | Estado |
-|---|---|---|---|---|
-| COMU-5514 | CCPP exacto / estación base | 3 PDF + OCR manual; 242 CCPP únicos de fuente | 238 CCPP exactos · 191 d6 marcados | `zonas_conocidas`; 3 sin cobertura y 4 atribuciones d6 pendientes de decisión |
-| COMU-5672 | Distrito / red 2G IPT | PDF interno de zonas IPT | 1.798 zonas IPT | `zonas_conocidas`; set separado de CCPP exacto; cifra de clientes con inconsistencia de fuente (H8) |
-| COMU-5569 | CCPP exacto | Comunicado sin tabla de zonas | 0 CCPP | `zonas_pendiente`; 13.5K clientes, inicio 10-dic-2026 |
+| Campaña | Nivel | Fuente | Cobertura runtime | Fechas | Estado |
+|---|---|---|---|---|---|
+| COMU-5514 | CCPP exacto / estación base | 3 PDF + OCR manual; 242 CCPP únicos de fuente | 238 CCPP exactos · 191 d6 marcados | Campaña 2026-09-11; fecha por zona pendiente (H9/D8) | `zonas_conocidas`; 3 sin cobertura y 4 atribuciones d6 pendientes de decisión |
+| COMU-5672 | Distrito / red 2G IPT | PDF interno de zonas IPT | 1.798 zonas IPT | Por departamento: 2026-08-28 (10 deptos) · 2026-09-03 (11 deptos) | `zonas_conocidas`; set separado de CCPP exacto; cifra de clientes con inconsistencia de fuente (H8) |
+| COMU-5569 | CCPP exacto | Comunicado sin tabla de zonas | 0 CCPP | Campaña 2026-12-10; fecha por zona pendiente | `zonas_pendiente`; 13.5K clientes, inicio 10-dic-2026 |
 
-### 6.1 Reconciliación fuente ↔ runtime (COMU-5514)
+### 6.1 Cobertura por grupo (COMU-5514)
+
+| Grupo | CCPP | Q clientes | PDF de zonas | Fecha de campaña | Fecha por zona | Estado |
+|---|---:|---:|---|---|---|---|
+| Grupo 1 | 16 | 1.7K | `APAGADP1.pdf` | 2026-09-11 | — | `pendiente_recurso_interno` |
+| Grupo 2 | 201 | 15K | `APAGADO.pdf` | 2026-09-11 | — | `pendiente_recurso_interno` |
+| Grupo 3 | 21 | 1.7K | `APAGADO2.pdf` | 2026-09-11 | — | `pendiente_recurso_interno` |
+
+El reparto (16 + 201 + 21 = **238 CCPP**) se deriva del PDF de origen de cada zona; `grupo_por_key` cubre las 238 claves del runtime (check S20). El modelo «campaña + fecha por zona» ya existe en el sistema: COMU-5672 lo usa por departamento y COMU-5569 lo declara a nivel de campaña.
+
+### 6.2 Reconciliación fuente ↔ runtime (COMU-5514)
 
 | Métrica | Valor |
 |---|---:|
@@ -271,11 +310,11 @@ Los **4 extras** son el contraparte exacto de las 4 divergencias d6: las claves 
 
 Balance: **242 − 8 + 4 = 238** CCPP exactos en runtime, sin pérdidas injustificadas (check S3).
 
-### 6.2 COMU-5569
+### 6.3 COMU-5569
 
 Los cuatro archivos PDF cargados por el CEO son el mismo documento, md5 `393c127b3b6b4bb486d3d03be0850f97`: es el comunicado, no la tabla de zonas. El detalle reside en los recursos internos geniomovistar `id=178147` / `id=178146`.
 
-El popup no alerta en zonas sin cobertura cargada. Esta regla de anti-fabricación se mantiene hasta recibir la tabla de centros poblados, fecha de apagado por departamento y fecha de inicio de SMS.
+El popup no alerta en zonas sin cobertura cargada. Esta regla de anti-fabricación se mantiene hasta recibir la tabla de centros poblados, fecha de apagado por departamento y fecha de inicio de SMS. La fecha de campaña declarada es 2026-12-10; sin tabla de zonas no se puede afirmar una fecha por zona.
 
 ---
 
@@ -287,6 +326,7 @@ El popup no alerta en zonas sin cobertura cargada. Esta regla de anti-fabricaci�
 | **D5** | `060101:INCA CORRAL` y `160405:SANTA ROSA` | A) incorporar el CCPP faltante; B) mantener sin cobertura; C) cubrir el distrito | Solicitar una fuente geográfica/campaña autoritativa. Corregir `CAJABAMBA` a `CAJAMARCA` y resolver SANTA ROSA con el catálogo de caseríos. Hasta entonces, no fabricar claves. | Pendiente |
 | **D6** | Atribución PACAIPAMPA / AYABACA | A) conservar d6 runtime `200201`; B) migrar a d6 fuente `200206` | Mantener `200201`: es la atribución GeoNames y la clave alcanzable desde el dropdown. Registrar la divergencia de fuente y pedir confirmación antes de migrar. | Pendiente |
 | **D7** | Cifra de clientes de la campaña IPT (COMU-5672) | A) mostrar 39.500 (declarado en el comunicado); B) mostrar 43.728 (suma por departamento) | Mantener la cifra declarada 39.500 hasta que el emisor aclare el origen de la diferencia (+10,7%); la inconsistencia es de la fuente, no del sistema (H8). | Pendiente |
+| **D8** | Fechas programadas por zona de COMU-5514 (3 grupos · 238 CCPP) | A) mantener el comportamiento seguro actual (inicio de campaña etiquetado + aviso); B) cargar la fecha por grupo cuando llegue el detalle por departamento | **Owner: CEO · prioridad alta.** Falta el detalle por departamento (fecha programada de apagado + inicio de SMS) de los 3 recursos «Ver aquí» del COMU-5514 v00003 (geniomovistar, no accesibles desde este entorno). Mientras tanto el popup muestra el inicio de campaña etiquetado + aviso (comportamiento seguro) y el speech no afirma fecha (H9). | Pendiente |
 
 No se implementará ninguna de estas decisiones sin aprobación explícita del CEO.
 
@@ -296,17 +336,19 @@ No se implementará ninguna de estas decisiones sin aprobación explícita del C
 
 | Suite / control | Resultado | Detalle |
 |---|---|---|
-| `test_popup.py` | PASS | 844/844 |
+| `test_popup.py` | PASS | 866/866 |
 | `test_aggressive.py` | PASS | 238/238 fuzzy |
 | `test_security.py` | CLEAN | Sin hallazgos |
 | `test_codereview.py` | GOOD | Sin hallazgos |
 | `test_browser_static.py` | PASS | Incluye `node --check` del JS inline |
 | `test_ingest_comunicado_zonas.py` | PASS | 76/76 |
+| `test_sweep_zonas.py` | PASS | 19 PASS · 1 WARN · 0 FAIL |
 | Audit runtime | PASS | 0 issues |
 | `node --check` | OK | Sintaxis del `<script>` inline |
-| `scripts/security_sweep_zonas.py` | PASS | **18 PASS · 1 WARN (S13/H8) · 0 FAIL** — checks S1–S19 |
+| Harness runtime (panel) | PASS | 17/17 — HUIPOCA: `COMU-5514 · v00003 · Grupo 2 · inicio campaña: 11/09/2026` + aviso, sin fecha afirmada |
+| `scripts/security_sweep_zonas.py` | PASS | **20 PASS · 1 WARN (S13/H8) · 0 FAIL** — checks S1–S21 |
 
-### 8.1 Barrido de seguridad de datos (S1–S19)
+### 8.1 Barrido de seguridad de datos (S1–S21)
 
 Cruza tres universos — FUENTE (PDFs + OCR manual), RUNTIME (`index.html` inline) y DATA LAYER (`data/zonas_apagadas.json` + `data/ubigeo_consolidated.json`) — y exige que coincidan.
 
@@ -331,6 +373,8 @@ Cruza tres universos — FUENTE (PDFs + OCR manual), RUNTIME (`index.html` inlin
 | S17 | Trazabilidad de la fuente (md5 de los PDFs) | PASS | 3 PDFs con md5 + COMU-5569 con un único md5 |
 | S18 | Sin secretos ni emails nuevos en el popup inline | PASS | secretos=0 · emails: ninguno |
 | S19 | URLs externas del inline: solo las declaradas y documentadas | PASS | 8 URLs · no declaradas: ninguna |
+| S20 | Todo CCPP del runtime tiene grupo de campaña (base de la fecha por zona) | PASS | 238 CCPP · sin grupo: ninguno |
+| S21 | Sin fecha de zona falsa (grupos pendientes sin fecha por zona + panel etiquetado) | PASS | 3 grupos · `fecha_apagado_zona: null` en los pendientes · el panel etiqueta «apagado» vs «inicio campaña» |
 
 ---
 
@@ -347,6 +391,7 @@ python3 scripts/test_security.py
 python3 scripts/test_codereview.py
 python3 scripts/test_browser_static.py
 python3 scripts/test_ingest_comunicado_zonas.py
+python3 test_sweep_zonas.py
 ```
 
 `test_browser_static.py` extrae el `<script>` inline y ejecuta `node --check`. El barrido regenera únicamente `data/apagados_tabla_completa.csv` y `data/audit_zonas_apagado.json`; el barrido de seguridad escribe `data/security_sweep_zonas.json`. Los tres son derivados y gitignored.
@@ -362,7 +407,8 @@ Un barrido contra la fuente es parte del gate, no una curiosidad documental.
 - El OCR de una fuente restringida se verifica dos veces antes de alimentar el sistema: la lectura única dejó 1 alias espurio (`CHUQICAHUANA`) y 1 CCPP de más en la fuente reconstruida.
 - Cada release que cambie cobertura debe reconciliar el set fuente contra runtime, con equivalencias explícitas, allowlist mínima y decisiones pendientes visibles.
 - Ante ambigüedad no verificable, el sistema debe refrainerse de alertar en vez de fabricar cobertura.
+- Una fecha de campaña heredada y mostrada como fecha de zona es una afirmación falsa de precisión: etiquetar «inicio campaña» + aviso (y no afirmar «apagado: <fecha>») es el comportamiento seguro hasta recibir el dato por grupo/departamento (H9/D8).
 
 ---
 
-*Auditor: Thavren — 2026-11-14 · barrido completo de zonas de apagado*
+*Auditor: Thavren — 2026-11-14 · barrido completo de zonas de apagado · v3.10.86 fecha por zona*

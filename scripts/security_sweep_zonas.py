@@ -422,6 +422,44 @@ def main():
     chk('S19', 'URLs externas del inline: solo las declaradas y documentadas', not extra,
         str(len(urls)) + ' URLs · no declaradas=' + (str(extra[:5]) if extra else 'ninguna'))
 
+    # ── S20 · honestidad de la fecha por zona (anti-fecha-falsa) ──────────
+    gpk = {}
+    mg = re.search(r'grupo_por_key:\s*\{([\s\S]*?)\n  \},', html)
+    if mg:
+        for _k, _g in re.findall(r'"([0-9]{6}:[^"]+)":\s*"(Grupo [123])"', mg.group(1)):
+            gpk[fold(_k)] = _g
+    grupos = {}
+    mgr = re.search(r'grupos_apagado:\s*\{([\s\S]*?)\n  \},', html)
+    if mgr:
+        for _m in re.finditer(r'"(Grupo [123])":\s*\{([\s\S]*?)\n    \},?', mgr.group(1)):
+            grupos[_m.group(1)] = _m.group(2)
+    # cada CCPP del runtime debe tener grupo
+    sin_grupo = []
+    for _k in keys:
+        if fold(_k) not in gpk:
+            sin_grupo.append(_k)
+    chk('S20', 'Cada CCPP del runtime tiene grupo de campaña (base de la fecha por zona)',
+        not sin_grupo,
+        str(len(keys)) + ' CCPP · sin grupo: ' + (str(sin_grupo[:5]) if sin_grupo else 'ninguno'))
+    # los grupos con fecha no confirmada NO pueden declarar fecha por zona
+    fecha_falsa = []
+    for _g, _body in grupos.items():
+        if 'estado_fecha: "pendiente_recurso_interno"' in _body and 'fecha_apagado_zona: null' not in _body:
+            fecha_falsa.append(_g + ': pendiente pero con fecha por zona declarada')
+        if 'fecha_apagado_campana' not in _body:
+            fecha_falsa.append(_g + ': sin fecha de campaña declarada')
+    # el panel NO puede afirmar "apagado: <fecha>" de forma incondicional
+    mpanel = re.search(r'function showApagadoPanelInline\(btn, currentCheck, addrCtx\) \{([\s\S]*?)\n\}', html)
+    pbody = mpanel.group(1) if mpanel else ''
+    if "metaParts.push('apagado: ' + fechaCorta)" in pbody:
+        fecha_falsa.append('panel: afirma "apagado: <fecha>" sin verificar la fecha de la zona')
+    if 'inicio campaña:' not in pbody:
+        fecha_falsa.append('panel: sin etiqueta "inicio campaña"')
+    chk('S21', 'Sin fecha de zona falsa (grupos pendientes + panel etiquetado)',
+        not fecha_falsa,
+        ('; '.join(fecha_falsa) if fecha_falsa else
+         f"{len(grupos)} grupos · fecha por zona null en los pendientes · panel etiqueta 'apagado' vs 'inicio campaña'"))
+
     # ── reporte ─────────────────────────────────────────────────────────
     fails = []
     warns = []

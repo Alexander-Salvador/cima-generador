@@ -172,6 +172,62 @@ def load_manual_zones():
              'ccpp': z.get('ccpp', ''), 'grupo': 'manual', 'pagina': 0} for z in raw.get('zonas', [])]
 
 
+
+def build_grupo_map(rows):
+    """grupo por clave (d6:ccpp) — el PDF de origen manda; 'manual'/'sistema' son
+    duplicados o variantes de grafía de un PDF (G1=APAGADP1 · G2=APAGADO · G3=APAGADO2)."""
+    import difflib
+    pdf_g = {}
+    for _r in rows:
+        if _r.get('comunicado') not in (None, '', 'COMU-5514'):
+            continue
+        _k = fold(str(_r.get('d6') or _r.get('ubigeo_d6', '')) + ':' + str(_r.get('centro_poblado_ccpp', '')))
+        if _r.get('grupo') in ('Grupo 1', 'Grupo 2', 'Grupo 3'):
+            pdf_g.setdefault(_k, set()).add(_r['grupo'])
+    out = {}
+    for _r in rows:
+        if _r.get('comunicado') not in (None, '', 'COMU-5514'):
+            continue
+        _k = fold(str(_r.get('d6') or _r.get('ubigeo_d6', '')) + ':' + str(_r.get('centro_poblado_ccpp', '')))
+        if _k in pdf_g:
+            out[_k] = sorted(pdf_g[_k])[0]
+            continue
+        _d6, _s, _cc = _k.partition(':')
+        _hit = None
+        for _kk, _gg in pdf_g.items():
+            if _kk.partition(':')[2] == _cc:
+                _hit = sorted(_gg)[0]
+                break
+        if _hit is None:
+            for _kk, _gg in pdf_g.items():
+                if _kk.partition(':')[0] != _d6:
+                    continue
+                if difflib.SequenceMatcher(None, _kk.partition(':')[2], _cc).ratio() >= 0.85:
+                    _hit = sorted(_gg)[0]
+                    break
+        out[_k] = _hit or 'Grupo 2'
+    return out
+
+
+def grupo_de_clave(grupo_map, pdf_g, key):
+    """Grupo de una clave 'd6:CCPP' con fallback tolerante:
+       exacto → mismo d6 con grafía equivalente (≥0.85) → Grupo 2."""
+    import difflib
+    k = fold(str(key))
+    if k in grupo_map:
+        return grupo_map[k]
+    d6, _s, cc = k.partition(':')
+    fuzzy = None
+    for kk, gg in pdf_g.items():
+        kd6, _s2, kcc = kk.partition(':')
+        if kd6 != d6:
+            continue
+        if kcc == cc:
+            return sorted(gg)[0]
+        if fuzzy is None and difflib.SequenceMatcher(None, kcc, cc).ratio() >= 0.85:
+            fuzzy = sorted(gg)[0]
+    return fuzzy or 'Grupo 2'
+
 # ── barrido ─────────────────────────────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser(description='Barrido completo de zonas de apagado')
@@ -248,6 +304,14 @@ def main():
         rows.append({**r, 'd6': d6, 'key': key, 'metodo': metodo, 'error': err,
                      'estado': estado, 'cobertura': cobertura, 'nota': nota,
                      'en_caserios': en_caserios, 'es_distrito': es_distrito})
+
+    # grupo por zona (PDF de origen) — base de las fechas por zona
+    grupo_map = build_grupo_map(rows)
+    pdf_g = {}
+    for _r in rows:
+        if _r.get('grupo') in ('Grupo 1', 'Grupo 2', 'Grupo 3'):
+            _k = fold(str(_r.get('d6') or _r.get('ubigeo_d6', '')) + ':' + str(_r.get('ccpp', '')))
+            pdf_g.setdefault(_k, set()).add(_r['grupo'])
 
     # diferencias sistema ↔ fuente
     src_folded = {r['key'] for r in rows if r['key']}
@@ -333,7 +397,9 @@ def main():
                     'nivel', 'depto', 'provincia', 'distrito', 'centro_poblado_ccpp', 'ubigeo_d6',
                     'key_sistema', 'cobertura_en_sistema', 'estado_validacion', 'metodo_resolucion',
                     'ccpp_en_caserios', 'en_caserios_igual_a_distrito', 'speech_key',
-                    'postventa_speech_key', 'origen_pdf', 'grupo', 'pagina', 'notas'])
+                    'postventa_speech_key', 'origen_pdf', 'grupo', 'pagina', 'notas',
+                    'grupo_campana', 'fecha_apagado_campana', 'fecha_apagado_zona',
+                    'fecha_sms_zona', 'estado_fecha'])
         for r in sorted(rows, key=lambda x: (x['grupo'], x.get('d6') or '', fold(x['ccpp']))):
             d6 = r['d6']
             nombres = ubigeo.get(d6, (r['depto'], r['prov'], r['dist']))
@@ -351,6 +417,8 @@ def main():
                 'comu5514_visor_unico', 'comu5514_postventa_marcaje',
                 f"{r['grupo']}.pdf" if r['grupo'] != 'manual' else 'zonas_apagadas_manual.json',
                 r['grupo'], r['pagina'], ' | '.join(notas),
+                grupo_de_clave(grupo_map, pdf_g, str(d6 or '') + ':' + norm(r['ccpp'])),
+                '2026-09-11', '', '', 'pendiente_recurso_interno',
             ])
         # claves del sistema sin fila directa en la fuente
         for k in extras:
@@ -363,7 +431,9 @@ def main():
                         'SI' if fold(cc) == fold(nombres[2]) else 'NO',
                         'comu5514_visor_unico', 'comu5514_postventa_marcaje',
                         'zonas_apagadas_manual.json', 'sistema', 0,
-                        'Clave vigente en el sistema cuya fila literal no se pudo alinear'])
+                        'Clave vigente en el sistema cuya fila literal no se pudo alinear',
+                        grupo_de_clave(grupo_map, pdf_g, k), '2026-09-11', '', '',
+                        'pendiente_recurso_interno'])
         # IPT
         for z in sorted(ipt_rows, key=lambda x: (x.get('depto', ''), x.get('prov', ''), x.get('dist', ''))):
             w.writerow(['COMU-5672', 'zonas_conocidas', '00001', z.get('fecha_apagado', ''),
@@ -371,7 +441,9 @@ def main():
                         z.get('prov', ''), z.get('dist', ''), '', z.get('ubigeo', ''), '',
                         'SI', 'ipt_amplitud_departamento', 'exacto', 'N/A', 'NO',
                         'ipt_visor_4g', 'ipt_postventa_4g', 'Apagado Zonas IPT.pdf', 'Grupo IPT', 0,
-                        f"clientes={z.get('clientes_depto', '')} centros={z.get('centros_depto', '')}"])
+                        f"clientes={z.get('clientes_depto', '')} centros={z.get('centros_depto', '')}",
+                        'Grupo IPT', z.get('fecha_apagado', ''), z.get('fecha_apagado', ''),
+                        z.get('fecha_sms_inicio', ''), 'confirmada_por_departamento'])
         # campañas pendientes
         for cid, c in camp.items():
             if c['estado'] != 'zonas_pendiente':
@@ -381,7 +453,9 @@ def main():
                         '', 'N/A', 'NO', '', '', 'COMU-5569 (comunicado, sin tabla de zonas)',
                         'Campaña', 0,
                         'FALTA: tabla de centros poblados por departamento + fecha apagado + fecha SMS '
-                        '(recurso interno geniomovistar id=178147/178146)'])
+                        '(recurso interno geniomovistar id=178147/178146)',
+                        'Grupo 5569', c['fecha_apagado'] or '', '', c['fecha_sms_inicio'] or '',
+                        'pendiente_recurso_interno'])
 
     report = {
         'generado': __import__('datetime').datetime.now().isoformat(timespec='seconds'),

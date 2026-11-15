@@ -5808,6 +5808,105 @@ def test(html_path):
     else:
         result.fail('v3.10.85 allowlist mínima', '080602:CHUQUICAHUANA coincide con el PDF: sobra en la allowlist')
 
+    # ══════════════════════════════════════════════════════════════════════
+    # v3.10.86 — FECHA POR ZONA (no una fecha global para toda la base)
+    # El popup no puede afirmar "apagado: 11/09/2026" para una zona cuya
+    # fecha programada no fue verificada: el comunicado COMU-5514 v00003 solo
+    # fija el INICIO de campaña y 3 grupos con detalle en recursos internos.
+    # ══════════════════════════════════════════════════════════════════════
+    print('\n▸ v3.10.86 — Fecha por zona (grupos) y honestidad de la fecha')
+
+    m_grupos = re.search(r'grupos_apagado:\s*\{([\s\S]*?)\n  \},\n  // grupo por CCPP', html)
+    grupos_body = m_grupos.group(1) if m_grupos else ''
+    if m_grupos:
+        result.ok('v3.10.86 INTEL: grupos_apagado presente')
+        for g, cnt in [('Grupo 1', 16), ('Grupo 2', 201), ('Grupo 3', 21)]:
+            if f'"{g}":' in grupos_body:
+                result.ok(f'v3.10.86 grupos: {g} declarado')
+            else:
+                result.fail(f'v3.10.86 grupos {g}', 'missing')
+            if f'ccpp_count: {cnt}' in grupos_body:
+                result.ok(f'v3.10.86 grupos: {g} ccpp_count = {cnt}')
+            else:
+                result.fail(f'v3.10.86 grupos {g} ccpp_count', f'esperado {cnt}')
+        if grupos_body.count('fecha_apagado_zona: null') == 3:
+            result.ok('v3.10.86 grupos: fecha_apagado_zona null en los 3 (pendiente de recurso)')
+        else:
+            result.fail('v3.10.86 fecha por zona', 'se esperaba fecha_apagado_zona null en los 3 grupos')
+        if grupos_body.count('estado_fecha: "pendiente_recurso_interno"') == 3:
+            result.ok('v3.10.86 grupos: estado_fecha pendiente_recurso_interno en los 3')
+        else:
+            result.fail('v3.10.86 estado_fecha', 'faltan estados de fecha pendientes')
+        if grupos_body.count('fecha_apagado_campana: "2026-09-11"') == 3:
+            result.ok('v3.10.86 grupos: inicio de campaña 2026-09-11 (etiquetado como campaña)')
+        else:
+            result.fail('v3.10.86 fecha campaña', 'falta fecha_apagado_campana en los grupos')
+    else:
+        result.fail('v3.10.86 grupos', 'grupos_apagado missing en ZONAS_APAGADAS_INTEL')
+
+    # grupo_por_key: 238 claves y cobertura total de ccpp_keys
+    m_gpk = re.search(r'grupo_por_key:\s*\{([\s\S]*?)\n  \},', html)
+    gpk_body = m_gpk.group(1) if m_gpk else ''
+    gpk_items = re.findall(r'"(\d{6}:[^"]+)":\s*"(Grupo [123])"', gpk_body)
+    if len(gpk_items) == 238:
+        result.ok(f'v3.10.86 grupo_por_key: {len(gpk_items)} claves (238 CCPP)')
+    else:
+        result.fail('v3.10.86 grupo_por_key', f'{len(gpk_items)} (esperado 238)')
+    runtime_keys = set(re.findall(r'"([0-9]{6}:[^"]+)"', m_keys.group(1))) if m_keys else set()
+    covered = {k for k, _g in gpk_items}
+    faltan_grupo = sorted(runtime_keys - covered)
+    if not faltan_grupo:
+        result.ok('v3.10.86 grupo_por_key: cobertura total de las claves del runtime')
+    else:
+        result.fail('v3.10.86 grupo_por_key cobertura', f'{len(faltan_grupo)} sin grupo: {faltan_grupo[:3]}')
+    from collections import Counter as _C2
+    gcount = _C2(g for _k, g in gpk_items)
+    if gcount.get('Grupo 1') == 16 and gcount.get('Grupo 2') == 201 and gcount.get('Grupo 3') == 21:
+        result.ok(f'v3.10.86 reparto por grupo: G1=16 · G2=201 · G3=21 (coincide con los PDFs)')
+    else:
+        result.fail('v3.10.86 reparto grupos', str(dict(gcount)))
+
+    # el panel solo dice "apagado: <fecha>" si la fecha de la zona está confirmada
+    m_panel2 = re.search(r'function showApagadoPanelInline\(btn, currentCheck, addrCtx\) \{([\s\S]*?)\n\}', html)
+    panel_body2 = m_panel2.group(1) if m_panel2 else ''
+    if panel_body2:
+        if "(fechaConfirmada ? 'apagado: ' : 'inicio campaña: ')" in panel_body2:
+            result.ok('v3.10.86 JS: panel etiqueta la fecha (apagado vs inicio campaña)')
+        else:
+            result.fail('v3.10.86 JS etiqueta fecha', 'no distingue fecha confirmada vs inicio de campaña')
+        if "metaParts.push('apagado: ' + fechaCorta)" in panel_body2:
+            result.fail('v3.10.86 JS fecha global', 'el panel sigue afirmando "apagado: <fecha>" sin verificar')
+        else:
+            result.ok('v3.10.86 JS: sin afirmación incondicional de "apagado: <fecha>"')
+        if 'fechaNotaHtml' in panel_body2 and 'Fecha exacta de esta zona no confirmada' in panel_body2:
+            result.ok('v3.10.86 JS: nota visible de fecha no confirmada por zona')
+        else:
+            result.fail('v3.10.86 JS nota fecha', 'falta la nota de fecha pendiente')
+        if 'zaApplyGrupo(' in panel_body2 and 'zaGrupoDeZona(' in panel_body2:
+            result.ok('v3.10.86 JS: panel resuelve el grupo de la zona')
+        else:
+            result.fail('v3.10.86 JS grupo', 'el panel no resuelve el grupo de la zona')
+    else:
+        result.fail('v3.10.86 JS panel', 'showApagadoPanelInline no encontrada')
+
+    # speech con fecha pendiente (no afirma una fecha no verificada)
+    if 'comu5514_postventa_fecha_pendiente' in html:
+        result.ok('v3.10.86 SPEECH: comu5514_postventa_fecha_pendiente definido')
+        m_sp2 = re.search(r'"comu5514_postventa_fecha_pendiente": \{"titulo": "[^"]*", "cuerpo": "([^"]*)"', html)
+        cuerpo = m_sp2.group(1) if m_sp2 else ''
+        if cuerpo and not re.search(r'\d{1,2}\s+de\s+\w+|\d{2}/\d{2}/\d{4}', cuerpo):
+            result.ok('v3.10.86 SPEECH: el texto pendiente NO afirma una fecha')
+        else:
+            result.fail('v3.10.86 SPEECH fecha', 'el texto pendiente afirma una fecha')
+    else:
+        result.fail('v3.10.86 SPEECH', 'comu5514_postventa_fecha_pendiente missing')
+
+    # CSS de la nota
+    if '.apagado-panel-fecha-nota' in html:
+        result.ok('v3.10.86 CSS: estilo de la nota de fecha presente')
+    else:
+        result.fail('v3.10.86 CSS nota', '.apagado-panel-fecha-nota missing')
+
     # 10. SUMMARY
     print(f'\n{"="*60}')
     print(f'  RESULTS: {len(result.passed)} passed, {len(result.failed)} failed, {len(result.warnings)} warnings')
