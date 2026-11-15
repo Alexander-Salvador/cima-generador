@@ -1,13 +1,50 @@
 # CIMA — Lista de Pendientes (Estado verificado 2026-11-14)
 
 **Fecha verificación:** 2026-11-14
-**Branch:** `develop` (working tree limpio) · local **4+ commits adelante** de `origin/develop` (sin push)
-**HEAD local:** `0ba89ca` + **v3.10.84** (barrido completo de zonas) · `origin/develop` @ `c163567`
-**Popup local:** `apps/cima-generador/` → **v3.10.84** (commit local, **NO publicada**)
+**Branch:** `develop` (working tree limpio) · local **5+ commits adelante** de `origin/develop` (sin push)
+**HEAD local:** `0baf4e1` + **v3.10.85** (barrido de seguridad + OCR doble + tabla visual) · `origin/develop` @ `c163567`
+**Popup local:** `apps/cima-generador/` → **v3.10.85** (commit local, **NO publicada**)
 **Popup LIVE (Pages):** **v3.10.82** (`cda031b`) → https://alexander-salvador.github.io/cima-generador/
-**Tests:** `test_popup.py` **844/844 PASS** + aggressive / security / codereview / browser_static / ingest_comunicado_zonas (76/76)
+**Tests:** `test_popup.py` **846/846 PASS** + 6 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas 76/76 · **sweep_zonas** 17 PASS/1 WARN/0 FAIL)
 **Zonas:** **238 CCPP** (COMU-5514, 191 distritos) + **1.798 IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP)
+**Fuente reconstruida:** **242 CCPP únicos** (3 PDFs + manual) — OCR verificado 2 veces
 **DIRECTIVA ACTIVA:** seguir en **LOCAL**. No tocar remoto sin OK explícito del CEO.
+
+---
+
+## 🗺️ TABLA VISUAL COMPLETA DE ZONAS (v3.10.85)
+
+| Artefacto | Contenido |
+|---|---|
+| `apps/cima-generador/data/TABLA_ZONAS_APAGADO_2026-11-14.xlsx` | **7 hojas**: RESUMEN · COMU-5514 CCPP (238) · COMU-5672 IPT (1.798) · COMU-5569 PENDIENTE · PENDIENTES DECISIÓN (3) · DIVERGENCIAS d6 (4) · AUDITORÍA (H1–H8) |
+| `Recursos CIMA/Bases y Zonas de Apagado/TABLA_COMPLETA_ZONAS_APAGADO_2026-11-14.csv` | **2.081 filas × 23 columnas** (282 COMU-5514 + 1.798 IPT + 1 COMU-5569) |
+| `apps/cima-generador/docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md` | Resumen legible (por campaña, por departamento, pendientes, divergencias, verificación) |
+| `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md` | Informe completo H1–H8 + decisiones D4–D7 |
+| `apps/cima-generador/scripts/export_tabla_zonas.py` | Regenera XLSX + MD |
+| `apps/cima-generador/scripts/security_sweep_zonas.py` | Barrido de seguridad S1–S19 (**gate**) |
+| `apps/cima-generador/scripts/audit_zonas_apagado.py` | Barrido fuente ↔ runtime (pérdidas · extras · precisión) |
+
+### Cifras exactas (corroboradas)
+
+| Métrica | Valor |
+|---|---|
+| **4 PDF nuevos (COMU-5569)** | **1 archivo único** (md5 `393c127b…`) → **0 zonas** (es el comunicado) |
+| Campañas registradas | 2 (COMU-5514 con cobertura · COMU-5569 pendiente) |
+| CCPP exactos en runtime | **238** (191 distritos) |
+| CCPP únicos en la fuente | **242** (204 G2 + 16 G1 + 21 G3 + 37 manual, con 36 duplicadas) |
+| Zonas IPT | **1.798** (21 departamentos) |
+| Zonas activas totales | **2.036** |
+| Filas de la tabla completa | **2.081** |
+| Barrido de seguridad | **18 PASS · 1 WARN · 0 FAIL** |
+
+### D7 · Cifra de clientes de la campaña IPT (COMU-5672)
+
+La suma de clientes por departamento da **43.728** mientras el comunicado declara
+**39.500** → **+10,7%** de inconsistencia **en la fuente** (no en el sistema).
+
+*Decisión:* ¿qué cifra se muestra al supervisor? (a) la suma por departamento (43.728),
+(b) el total del comunicado (39.500), (c) mostrar ambas con la nota de discrepancia.
+*Recomendación:* **(c)** — es la única que no esconde la inconsistencia.
 
 ---
 
@@ -15,7 +52,7 @@
 
 | Artefacto | Contenido |
 |---|---|
-| `apps/cima-generador/data/apagados_tabla_completa.csv` | **2.081 filas × 22 columnas** — 282 COMU-5514 (247 CCPP únicos + 35 duplicados) · 1.798 COMU-5672 · 1 COMU-5569 pendiente. Sin pérdida de campos |
+| `apps/cima-generador/data/apagados_tabla_completa.csv` | **2.081 filas × 23 columnas** — 282 COMU-5514 (246 CCPP únicos + 36 duplicados) · 1.798 COMU-5672 · 1 COMU-5569 pendiente. Sin pérdida de campos |
 | `apps/cima-generador/data/audit_zonas_apagado.json` | Detalle programático (pérdidas · extras · precisión · huérfanos · data layer) |
 | `apps/cima-generador/scripts/audit_zonas_apagado.py` | Barrido reproducible: `python3 scripts/audit_zonas_apagado.py` |
 | `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md` | Informe H1–H7 + decisiones D4–D6 |

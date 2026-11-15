@@ -5796,11 +5796,17 @@ def test(html_path):
         result.ok('v3.10.84 JS: CCPP_CASERIO_ALIASES definido')
     else:
         result.fail('v3.10.84 JS CCPP_CASERIO_ALIASES', 'no definido')
-    for k in ['030608:OCCCEPATA', '080602:CHUQUICAHUANA']:
+    for k in ['030608:OCCCEPATA', '090119:HUANDO', '110208:SAN JUAN DE YANAC']:
         if k in aliases:
             result.ok(f'v3.10.84 JS CCPP_CASERIO_ALIASES: contiene {k}')
         else:
             result.fail(f'v3.10.84 JS CCPP_CASERIO_ALIASES', f'falta {k}')
+    # v3.10.85: la allowlist debe ser MÍNIMA — 080602:CHUQUICAHUANA coincide
+    # literal con el PDF (verificado con re-OCR independiente) → no va aquí.
+    if '080602:CHUQUICAHUANA' not in aliases:
+        result.ok('v3.10.85 JS CCPP_CASERIO_ALIASES: sin entradas innecesarias (080602:CHUQUICAHUANA es literal del PDF)')
+    else:
+        result.fail('v3.10.85 allowlist mínima', '080602:CHUQUICAHUANA coincide con el PDF: sobra en la allowlist')
 
     # 10. SUMMARY
     print(f'\n{"="*60}')

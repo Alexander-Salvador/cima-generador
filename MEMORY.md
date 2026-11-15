@@ -15,12 +15,41 @@
 | **URL local popup mode** | http://localhost:8765/index.html?popup=1 (**solo `localhost`** — ver Ley del origen canónico) |
 | **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) · CTRL+SHIFT+R limpia template |
 | **Branch de trabajo** | `develop` (working tree limpio) — local **4+ commits adelante** de `origin/develop` (LOCAL FIRST, sin push) |
-| **Versión LOCAL** | **v3.10.84** — barrido completo de zonas (4 CCPP recuperados, matching por fold) · **NO publicada** |
+| **Versión LOCAL** | **v3.10.85** — barrido de seguridad + verificación OCR doble + tabla visual XLSX · **NO publicada** |
 | **Versión LIVE (Pages)** | **v3.10.82** (`cda031b`) — publicada 2026-11-07 |
-| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.84) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.85) |
 | **Working dir del popup** | `apps/cima-generador/` |
-| **Tests** | **844/844 PASS** (`test_popup.py`) + 5 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas) |
-| **Zonas de apagado** | **238 CCPP exactos** (COMU-5514, 191 distritos) + **1.798 zonas IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP) |
+| **Tests** | **846/846 PASS** (`test_popup.py`) + 6 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas · **sweep_zonas**) |
+| **Zonas de apagado** | **238 CCPP exactos** (COMU-5514, 191 distritos) + **1.798 zonas IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP) · fuente: **242 CCPP únicos** (3 PDFs + manual) |
+| **Tabla de zonas** | `data/TABLA_ZONAS_APAGADO_2026-11-14.xlsx` (7 hojas) + `data/apagados_tabla_completa.csv` (2.081 filas) + `docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md` |
+
+### 📐 L-098: el OCR de una fuente restringida se verifica DOS veces
+
+**Contexto (2026-11-14):** la transcripción visual de los 2 PDFs escaneados
+(37 filas) Feeding the system tuvo **2 errores**: `CCCEPATA` → "OCCEPATA" y
+`CHUQUICAHUANA` → "CHUQICAHUANA". El sistema quedó correcto por otra razón
+(usa la grafía de GeoNames), pero el barrido habría reportado 2 "typos del PDF"
+que **no existían** y la allowlist habría cargado entradas falsas.
+
+**Reglas:**
+1. Toda transcripción OCR que alimenta el runtime se **re-lee de forma independiente**
+   (otro render + lectura visual) antes de aceptarse.
+2. Si el sistema y la transcripción discrepan, **gana el PDF literal** (la fuente),
+   no el OCR ni el GeoNames: se documenta la diferencia como variante.
+3. La allowlist de excepciones debe ser **mínima**: si una entrada ya no hace
+   falta, se elimina (4 → 3).
+
+### 📐 L-099: el barrido de seguridad es un GATE, no un informe
+
+**Contexto (2026-11-14):** el gate comprobaba que el código del audit EXISTIERA,
+no que su resultado fuera 0 issues. Hoy `scripts/security_sweep_zonas.py`
+(19 checks) corre dentro del gate (`test_sweep_zonas.py`) y falla si algún check
+queda en FAIL.
+
+**Checks queBlindan contra datos falsos:** S2 (anti-invención), S3 (sin drops
+silenciosos), S6/S7 (precisión caserío↔distrito), S8 (colisiones de fold),
+S14/S15 (data layer ↔ runtime), S16 (simulación de falsos positivos), S17 (md5),
+S18/S19 (higiene).
 
 ---
 

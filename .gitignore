@@ -77,6 +77,8 @@ data/zonas_apagadas.json
 **/apagado_ocr_visual.json
 **/apagados_tabla_completa.csv
 **/audit_zonas_apagado.json
+**/security_sweep_zonas.json
+**/TABLA_ZONAS_APAGADO_*.xlsx
 # Pre-feature backups (transient)
 .backup-*/
 
