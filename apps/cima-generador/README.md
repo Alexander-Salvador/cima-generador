@@ -1,12 +1,15 @@
 # cima-generador
 
-**v2.0.0** · popup standalone para Google Sites · generador de plantillas CIMA (Address + Tipificación)
+**v3.10.86 local** (LIVE: v3.10.82) · popup standalone para Google Sites · generador de plantillas CIMA
+(Address + Tipificación + **Zonas de apagado**)
 
 ## ¿Qué es?
 
 Popup HTML autocontenido (sin backend, sin CDN, sin fetch externo) que genera
 plantillas de dirección en formato Google Maps / Nominatim a partir del catálogo
-de ubigeo del Perú (25 deptos · 196 prov · 1,892 dist) y 43,491 caseríos.
+de ubigeo del Perú (25 deptos · 196 prov · 1.892 dist) y 43.491 caseríos.
+Además detecta **zonas de apagado** (estaciones base / red 2G) y entrega el speech
+de atención correspondiente al supervisor.
 
 ## Stack
 
@@ -20,8 +23,10 @@ de ubigeo del Perú (25 deptos · 196 prov · 1,892 dist) y 43,491 caseríos.
 
 | Dato | Cobertura | Licencia | Atribución |
 |------|-----------|----------|-----------|
-| Ubigeo (depto→prov→dist) | 25 / 196 / 1,892 | ODbL | RitchieRD/ubigeos-peru-data |
+| Ubigeo (depto→prov→dist) | 25 / 196 / 1.892 | ODbL | RitchieRD/ubigeos-peru-data |
 | CCPP (centros poblados) | 43,491 caseríos | CC BY 4.0 | GeoNames PE.zip |
+| Zonas de apagado COMU-5514 | 238 CCPP exactos (3 grupos) | **Interno Movistar** | PDFs internos (no redistribuibles) |
+| Zonas de apagado COMU-5672 (IPT) | 1.798 zonas por distrito | **Interno Movistar** | PDF interno (no redistribuible) |
 
 Para regenerar la data inlineada, ver `docs/SOURCES.md` y `data/` (backup).
 
@@ -54,16 +59,47 @@ existen). Ley del origen canónico en `AGENTS.md`.
 
 **URL pública:** https://alexander-salvador.github.io/cima-generador/
 
+## Zonas de apagado
+
+| Campaña | Detalle | Fecha mostrada |
+|---|---|---|
+| COMU-5514 | Apagado de estaciones base · 238 CCPP · Grupo 1 (16) / Grupo 2 (201) / Grupo 3 (21) | "inicio campaña 11/09/2026" + aviso; la fecha por zona aún no está verificada (recurso interno) |
+| COMU-5672 | Apagado de red 2G (IPT) · 1.798 zonas por distrito | fecha por departamento (28-ago / 03-sep-2026) |
+| COMU-5569 | Campaña diciembre 2026 | ⏳ sin cobertura cargada (falta la tabla de zonas) |
+
+**Reglas del sistema**
+- El comunicado se **atribuye por campaña** (`ZONAS_APAGADAS_INTEL.campanas`), no hardcodeado.
+- El **matching de caserío es por fold** (sin diacríticos): "Ocallí" (GeoNames) y
+  "OCALLI" (PDF) son la misma clave.
+- **Nunca se afirma una fecha de zona sin verificarla** → se muestra el inicio de
+  campaña etiquetado + aviso, y el speech pide la fecha del centro poblado.
+
+Scripts (reproducibles):
+
+```bash
+python3 scripts/audit_zonas_apagado.py    # fuente ↔ runtime (pérdidas · extras · precisión)
+python3 scripts/security_sweep_zonas.py   # 21 checks anti-datos-falsos
+python3 scripts/export_tabla_zonas.py     # tabla visual XLSX + resumen MD
+python3 scripts/ingest_comunicado_zonas.py --comunicado COMU-5569 --source <TABLA> --dry-run
+```
+
 ## Versiones
 
+- **v3.10.86** (2026-11-14) — fecha por zona (grupos) · barrido de seguridad como gate · tabla XLSX
+- **v3.10.85** (2026-11-14) — barrido de seguridad (21 checks) + verificación OCR doble
+- **v3.10.84** (2026-11-14) — barrido completo contra la fuente (4 CCPP recuperados)
+- **v3.10.83** (2026-11-14) — registro de campañas + COMU-5569 (pendiente)
+- **v3.10.82** (2026-11-07) — RESET nuevo · APN→JIRA · CASO eliminado
 - **v2.0.0** (2026-10-14) — Standalone. Datos inlineados (sin fetch). FIX #1-#6.
 - v1.0.0 (2026-10-13) — Eager-load ubigeo, lazy-load CCPP via fetch.
+
+Historial completo: [`CHANGELOG.md`](./CHANGELOG.md)
 
 ## Seguridad
 
 Ver `docs/AUDIT.md` para análisis adversarial completo.
 
-**Estado v2.0.0:**
+**Estado v2.0.0 (frontend):**
 
 | Sev | Issue v1 | Estado v2 |
 |-----|----------|-----------|
@@ -78,10 +114,17 @@ Ver `docs/AUDIT.md` para análisis adversarial completo.
 | LOW | #9 referencia data loss | 🟡 Pendiente (decisión) |
 | LOW | #10 sandbox | ✅ Documentado (sandbox en iframe) |
 
+**Integridad de datos (v3.10.85+):** `test_sweep_zonas.py` es un gate con 21 checks
+que fallan si el popup afirma una zona sin respaldo en la fuente, si una fila de la
+fuente queda fuera sin declararse, si se afirma una fecha de zona no verificada o
+si aparecen secretos/URLs no documentados.
+
 ## Atribución obligatoria
 
 Datos © GeoNames (CC BY 4.0) y RitchieRD (ODbL).
 Popup © Alexander Salvador.
+Los datos de zonas de apagado son **material interno Movistar**: prohibido
+reproducirlos o distribuirlos (regla de los PDFs de origen).
 
 ## Más info
 
@@ -89,6 +132,9 @@ Popup © Alexander Salvador.
 - `docs/AUDIT.md` — análisis adversarial
 - `docs/SOURCES.md` — atribución de datos
 - `docs/INTEGRATION.md` — guía embed Google Sites
+- `docs/FUENTES_ZONAS_APAGADO_2026-11-14.md` — auditoría de zonas (H1–H9) + decisiones
+- `docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md` — inventario visual de zonas
+- `docs/FUENTES_ZONAS_APAGADAS.md` — fuentes y trazabilidad de zonas
 
 ---
 

@@ -7,6 +7,7 @@ Identidad del grupo WhatsApp del equipo: **CIMA**.
 
 📖 **[Leer AGENTS.md](./AGENTS.md)** para entender qué es CIMA y cómo trabajar.
 📚 **[Leer MEMORY.md](./MEMORY.md)** para decisiones arquitectónicas, reglas y lessons learned.
+📋 **[Leer PENDIENTES.md](./PENDIENTES.md)** para el estado vigente y las decisiones abiertas (D1–D8).
 
 ---
 
@@ -30,11 +31,15 @@ cd apps/cima-generador && python3 serve.py
 #   Launcher:             http://localhost:8765/launcher.html
 #   Salud:                http://localhost:8765/__health
 
-# Tests
-python3 test_popup.py           # 676 tests — UI/CSS/JS structure
-python3 test_aggressive.py      # CCPP + fuzzy matching (234/234)
-python3 test_codereview.py      # listeners/leaks
-python3 test_security.py        # secrets scan
+# Gate completo (7 suites)
+cd apps/cima-generador
+python3 test_popup.py                # 866 asserts — UI/CSS/JS + zonas + etiquetas
+python3 test_aggressive.py           # CCPP + fuzzy matching (238/238)
+python3 test_security.py             # secrets scan
+python3 test_codereview.py           # listeners/leaks
+python3 test_browser_static.py       # estáticas del DOM
+python3 test_ingest_comunicado_zonas.py   # 76 asserts — ingesta por comunicado
+python3 test_sweep_zonas.py          # 19 checks — barrido de seguridad de datos
 
 # Refresh: CTRL+SHIFT+R (limpia template + bypass cache)
 # ⚠️  Si cambiaste CSS: un solo `}` de más rompe TODO el stylesheet.
@@ -44,6 +49,20 @@ python3 test_security.py        # secrets scan
 **Si el popup muestra una versión vieja** (el footer no coincide con el chip de
 build): abrí incógnito (`Ctrl+Shift+N`). El origin limpio confirma si el código
 sirve o si hay estado residual del browser.
+
+### Zonas de apagado (datos + auditoría)
+
+```bash
+cd apps/cima-generador
+python3 scripts/audit_zonas_apagado.py    # fuente (3 PDFs + manual) ↔ runtime
+python3 scripts/security_sweep_zonas.py   # 21 checks anti-datos-falsos (gate)
+python3 scripts/export_tabla_zonas.py     # tabla visual XLSX + resumen MD
+```
+
+Artefactos (locales, **no versionados** por ser derivados de PDFs internos):
+`data/apagados_tabla_completa.csv` (2.081 filas × 28 col) ·
+`data/TABLA_ZONAS_APAGADO_2026-11-14.xlsx` (7 hojas) ·
+`data/security_sweep_zonas.json`.
 
 ### Sheets bridge (backend legacy)
 
@@ -60,7 +79,23 @@ cd go-runtime && go run ./cmd/citrix_upload/ --help
 - **FEEDBACK** — supervisor → agente con workflow
 - **CITRIX** — RRHH, archivo separado
 - **Popup CIMA** (`apps/cima-generador/`) — generador de plantillas para call center:
-  Address (ubigeo + CCPP) + Estructura de Llamada (speeches por motivo) + Etiquetas de transferencia
+  Address (ubigeo + CCPP) + Estructura de Llamada (speeches por motivo) +
+  Etiquetas de transferencia (39, contra el Excel) + **Zonas de apagado**
+
+## Zonas de apagado (estado 2026-11-14)
+
+| Campaña | Qué es | Cobertura | Fecha |
+|---|---|---|---|
+| **COMU-5514** | Apagado de estaciones base (3 grupos) | **238 CCPP exactos** en 191 distritos | inicio de campaña 11/09/2026 · **fecha por zona pendiente** (recurso interno) |
+| **COMU-5672** | Apagado de red 2G / zonas IPT | **1.798 zonas** por distrito (21 deptos) | 28-ago / 03-sep-2026 **por departamento** |
+| **COMU-5569** | Campaña diciembre 2026 | ⏳ **0 CCPP** (falta la tabla de zonas) | inicio 10-dic-2026 |
+
+> El popup **nunca afirma una fecha de zona sin verificarla**: si la fecha exacta no
+> está confirmada muestra el inicio de campaña etiquetado + aviso, y el speech pide
+> la fecha del centro poblado. Gate que lo protege: `test_sweep_zonas.py` (S20/S21).
+
+Detalle: [`apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md`](./apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md) ·
+[`apps/cima-generador/docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md`](./apps/cima-generador/docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md)
 
 ---
 
@@ -88,14 +123,15 @@ curl -s https://alexander-salvador.github.io/cima-generador/ \
 
 **LIVE:** https://alexander-salvador.github.io/cima-generador/
 
-> **Estado (2026-11-07):** local **= LIVE = `v3.10.82`**. Incluye el input
-> TELÉFONO con solo 9 dígitos + contador, las **39 etiquetas** reconciliadas
-> contra el Excel, los chips por segmento (**MOVIL · M.TOTAL · STANDALONE**) y
-> los botones **RESET** / **JIRA** (plantilla `CREACION DE TK JIRA`).
-> Siguiente: 3 decisiones del CEO abiertas en [`PENDIENTES.md`](./PENDIENTES.md).
+> **Estado (2026-11-14):** local **v3.10.86** (registro de campañas · barrido de
+> zonas · fecha por zona · tabla XLSX) — **commit local, NO publicado**.
+> **LIVE = v3.10.82.** Sin push hasta OK explícito del CEO.
+> Bloqueo abierto: la tabla de zonas de **COMU-5569** (los 4 PDF cargados son el
+> mismo comunicado) y las **fechas por zona de COMU-5514** (D8) — ver
+> [`PENDIENTES.md`](./PENDIENTES.md).
 
 ---
 
-*OVAV-migrated: 2026-10-05* · *Popup local v3.10.82 = LIVE v3.10.82 (2026-11-07)*
-*Handoff de sesión: [`docs/handoff/2026-11-07-v3.10.82.md`](./docs/handoff/2026-11-07-v3.10.82.md)*
+*OVAV-migrated: 2026-10-05* · *Popup local v3.10.86 (sin publicar) = LIVE v3.10.82 (2026-11-07)*
+*Handoff de sesión: [`docs/handoff/2026-11-14-comu5569.md`](./docs/handoff/2026-11-14-comu5569.md)*
 *Origen canónico de desarrollo: `http://localhost:8765/index.html?popup=1`*
