@@ -187,24 +187,23 @@ cd apps/cima-generador && python3 test_popup.py   # 676 asserts, gate obligatori
 
 ## 📍 Estado al 2026-11-14
 
-- Popup **local = v3.10.84** (commit local, **NO publicado**). **LIVE = v3.10.82**
+- Popup **local = v3.10.86** (commit local, **NO publicado**). **LIVE = v3.10.82**
   (`develop` `c163567` · Pages `cda031b`) — remoto intacto, LOCAL FIRST.
-- Gate: `test_popup.py` **844/844** + 5 suites (aggressive · security ·
-  codereview · browser_static · ingest_comunicado_zonas).
+- Gate: `test_popup.py` **866/866** + 6 suites (aggressive · security ·
+  codereview · browser_static · ingest_comunicado_zonas · sweep_zonas).
 - Zonas de apagado: **238 CCPP** (COMU-5514, 191 distritos) + **1.798 IPT**
   (COMU-5672) + COMU-5569 pendiente (0 CCPP).
-- v3.10.84: **barrido completo contra la fuente** (3 PDFs + manual) → 4 CCPP
-  legítimos recuperados (matching por fold), audit runtime 3 issues → 0,
-  data layer alineado. Informe: `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md`.
-- v3.10.83: **registro de campañas** (`ZONAS_APAGADAS_INTEL.campanas`) — el
-  popup ya no hardcodea `COMU-5514`; cada CCPP se atribuye a su campaña.
-- 🔴 **BLOQUEO**: falta la tabla de zonas de **COMU-5569** (campaña 10-dic-2026).
-  Los 4 PDF cargados son el mismo comunicado (mismo md5), no la tabla de zonas.
-  Detalle + comando de ingesta en `PENDIENTES.md` y
-  `apps/cima-generador/docs/FUENTES_ZONAS_APAGADAS.md` §9–§10.
-- 39 etiquetas de transferencia reconciliadas contra el Excel, con
-  `ETIQUETAS_BASELINE` como baseline anti-regresión en el gate.
-- Decisiones abiertas del CEO (D1/D2/D3 + D4/D5/D6 del barrido) en `PENDIENTES.md`.
+- v3.10.86: **fecha por zona** — `11/09/2026` es el INICIO DE CAMPAÑA de COMU-5514,
+  no la fecha de cada zona. Cada CCPP lleva su grupo (G1 16 · G2 201 · G3 21); si la
+  fecha de la zona no está verificada el popup la etiqueta como "inicio campaña" y
+  avisa. La fecha programada por departamento vive en los recursos internos
+  "Ver aquí" (no accesibles) → decisión **D8**.
+- v3.10.85: barrido de seguridad (gate S1–S21) + verificación OCR doble.
+- v3.10.84: **barrido completo contra la fuente** → 4 CCPP legítimos recuperados,
+  audit runtime 3 issues → 0. Informe: `apps/cima-generador/docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md`.
+- v3.10.83: **registro de campañas** (`ZONAS_APAGADAS_INTEL.campanas`).
+- 🔴 **BLOQUEO COMU-5569**: falta la tabla de zonas (los 4 PDF son el mismo comunicado).
+- Decisiones abiertas del CEO (D1–D8) en `PENDIENTES.md`.
 - Handoff de sesión: `docs/handoff/2026-11-14-comu5569.md`.
 
 ---

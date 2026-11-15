@@ -2,13 +2,38 @@
 
 **Fecha verificación:** 2026-11-14
 **Branch:** `develop` (working tree limpio) · local **5+ commits adelante** de `origin/develop` (sin push)
-**HEAD local:** `0baf4e1` + **v3.10.85** (barrido de seguridad + OCR doble + tabla visual) · `origin/develop` @ `c163567`
-**Popup local:** `apps/cima-generador/` → **v3.10.85** (commit local, **NO publicada**)
+**HEAD local:** `57e51b0` + **v3.10.86** (fecha por zona/grupos + barrido de seguridad + tabla XLSX) · `origin/develop` @ `c163567`
+**Popup local:** `apps/cima-generador/` → **v3.10.86** (commit local, **NO publicada**)
 **Popup LIVE (Pages):** **v3.10.82** (`cda031b`) → https://alexander-salvador.github.io/cima-generador/
-**Tests:** `test_popup.py` **846/846 PASS** + 6 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas 76/76 · **sweep_zonas** 17 PASS/1 WARN/0 FAIL)
+**Tests:** `test_popup.py` **866/866 PASS** + 6 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas 76/76 · **sweep_zonas** 19 PASS/1 WARN/0 FAIL)
 **Zonas:** **238 CCPP** (COMU-5514, 191 distritos) + **1.798 IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP)
 **Fuente reconstruida:** **242 CCPP únicos** (3 PDFs + manual) — OCR verificado 2 veces
+**Fechas:** COMU-5514 → **11/09/2026 es el INICIO DE CAMPAÑA**, no la fecha de cada
+zona (3 grupos con detalle en recursos internos, no accesibles). COMU-5672 → fecha
+**por departamento** (28-ago / 03-sep-2026). COMU-5569 → 10-dic-2026.
 **DIRECTIVA ACTIVA:** seguir en **LOCAL**. No tocar remoto sin OK explícito del CEO.
+
+---
+
+## 🔴 D8 · Fechas programadas por zona de COMU-5514 (3 grupos)
+
+El popup ya **no afirma una fecha de zona sin verificar**: muestra el inicio de
+campaña (11/09/2026) etiquetado + aviso, y el speech pide la fecha del centro
+poblado. Falta el dato real por grupo/departamento.
+
+| Grupo | CCPP | Q clientes | PDF de zonas | Fecha por zona |
+|---|---|---|---|---|
+| Grupo 1 | 16 | 1.7K | `APAGADP1.pdf` | ⏳ PENDIENTE (recurso interno) |
+| Grupo 2 | 201 | 15K | `APAGADO.pdf` | ⏳ PENDIENTE (recurso interno) |
+| Grupo 3 | 21 | 1.7K ("nuevo" en v00003) | `APAGADO2.pdf` | ⏳ PENDIENTE (recurso interno) |
+
+**Qué necesito:** el detalle por departamento (fecha programada de apagado + inicio de
+SMS) de los 3 recursos "Ver aquí" del comunicado COMU-5514 v00003 — o el PDF/tabla
+equivalente. Con eso se carga por grupo (sin tocar el resto) y el popup empieza a
+mostrar la fecha real de cada zona.
+
+*Alternativa si no hay detalle por zona:* mantener el aviso actual (inicio de campaña
++ "confirmar fecha antes de informar") — es lo seguro, pero el asesor debe consultar.
 
 ---
 

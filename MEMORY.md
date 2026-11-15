@@ -15,12 +15,13 @@
 | **URL local popup mode** | http://localhost:8765/index.html?popup=1 (**solo `localhost`** — ver Ley del origen canónico) |
 | **Refresh** | CTRL+R (HTML crudo + JS, todo inline, sin HMR) · CTRL+SHIFT+R limpia template |
 | **Branch de trabajo** | `develop` (working tree limpio) — local **4+ commits adelante** de `origin/develop` (LOCAL FIRST, sin push) |
-| **Versión LOCAL** | **v3.10.85** — barrido de seguridad + verificación OCR doble + tabla visual XLSX · **NO publicada** |
+| **Versión LOCAL** | **v3.10.86** — fecha por zona (grupos) + barrido de seguridad + tabla XLSX · **NO publicada** |
 | **Versión LIVE (Pages)** | **v3.10.82** (`cda031b`) — publicada 2026-11-07 |
-| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.85) |
+| **Versión CHANGELOG** | `apps/cima-generador/CHANGELOG.md` (v1.0 → v3.10.86) |
 | **Working dir del popup** | `apps/cima-generador/` |
-| **Tests** | **846/846 PASS** (`test_popup.py`) + 6 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas · **sweep_zonas**) |
+| **Tests** | **866/866 PASS** (`test_popup.py`) + 6 suites (aggressive · security · codereview · browser_static · ingest_comunicado_zonas · **sweep_zonas** 19 PASS/1 WARN/0 FAIL) |
 | **Zonas de apagado** | **238 CCPP exactos** (COMU-5514, 191 distritos) + **1.798 zonas IPT** (COMU-5672) + COMU-5569 pendiente (0 CCPP) · fuente: **242 CCPP únicos** (3 PDFs + manual) |
+| **Fechas por zona** | COMU-5514: **inicio de campaña 11/09/2026** (no fecha de zona) · 3 grupos (G1 16 · G2 201 · G3 21) con fecha programada **PENDIENTE** (recurso interno) · COMU-5672: fecha **por departamento** (28-ago / 03-sep-2026) |
 | **Tabla de zonas** | `data/TABLA_ZONAS_APAGADO_2026-11-14.xlsx` (7 hojas) + `data/apagados_tabla_completa.csv` (2.081 filas) + `docs/TABLA_ZONAS_APAGADO_RESUMEN_2026-11-14.md` |
 
 ### 📐 L-098: el OCR de una fuente restringida se verifica DOS veces
@@ -50,6 +51,31 @@ queda en FAIL.
 silenciosos), S6/S7 (precisión caserío↔distrito), S8 (colisiones de fold),
 S14/S15 (data layer ↔ runtime), S16 (simulación de falsos positivos), S17 (md5),
 S18/S19 (higiene).
+
+### 📐 L-100: la fecha de CAMPAÑA no es la fecha de ZONA
+
+**Contexto (2026-11-14):** el popup mostraba "apagado: 11/09/2026" para **todas** las
+zonas. El CEO lo detectó: "son diferentes fechas y estás asumiendo todo como 1 sola
+fecha para toda la base". Tenías razón: **11/09/2026 es el INICIO DE CAMPAÑA**
+(COMU-5514 v00003, "Inicio: desde el 11 de septiembre de 2026"), no la fecha de cada
+zona. La fecha programada por departamento y el inicio de SMS están en los recursos
+internos "Ver aquí" (geniomovistar), no accesibles desde este entorno.
+
+**Reglas:**
+1. Un dato que la fuente declara a nivel campaña **no** se afirma a nivel zona.
+   Si la fecha por zona no está verificada → se muestra el dato de campaña
+   **etiquetado** ("inicio campaña: 11/09/2026") + aviso visible.
+2. El speech al cliente tampoco puede afirmar una fecha no verificada: existe
+   `comu5514_postventa_fecha_pendiente` (texto oficial adaptado, sin fecha).
+3. **Todo CCPP lleva su grupo de campaña** (`grupo_por_key`, derivado del PDF de
+   origen: G1 16 · G2 201 · G3 21) → base para fecha, SMS y client count por grupo.
+4. **Gate anti-fecha-falsa**: `security_sweep_zonas.py` S20/S21 fallan si un grupo
+   pendiente declara fecha por zona o si el panel vuelve a afirmar
+   "apagado: \<fecha\>\" sin verificar.
+
+**Verificación de la fuente (COMU-5514 v00003, 1 pág, imagen):** "Última actualización
+18/09/26" · "Inicio: Desde el 11 de septiembre del 2026" · 3 grupos (1.7K / 15K /
+1.7K, Grupo 3 marcado "Nuevo") · cada grupo con su botón "Ver aquí" (recurso interno).
 
 ---
 
