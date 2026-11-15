@@ -1,5 +1,70 @@
 # Changelog — cima-generador
 
+## [3.10.84] — 2026-11-14 — 🧭 BARRIDO COMPLETO de zonas de apagado: 4 zonas perdidas recuperadas + data precisa auditada
+
+### Qué cambia
+
+Se reconstruyó la verdad de las zonas desde los **3 PDFs fuente** (Grupo 1 + 2 + 3)
+y se cruzó contra el runtime. Resultado: **4 zonas de apagado legítimas NO alertaban**
+(falsos negativos) y el audit de runtime emitía **3 issues en cada carga**. Todo corregido.
+
+### Hallazgos → impacto
+
+| # | Hallazgo | Impacto en el supervisor | Fix |
+|---|---|---|---|
+| **H1** | 4 CCPP reales borrados por la regla "CCPP == distrito" + matcher sensible a tildes: `010512:OCALLI` (Ocallí), `040411:TIPAN` (Tipán), `080206:RONDOCAN` (Rondocán), `221003:POLVORA` (Pólvora) | **No saltaba la alerta** en 4 zonas apagadas | Restaurados (234 → **238 CCPP**) + `zaNormalizeCcpp()` (fold sin diacríticos) en los 6 puntos de lookup |
+| **H2** | Audit check 5 marcaba 38 caseríos legítimos como "contaminados" (p. ej. `010116:OLLEROS`) | Ruido: 3 issues por carga | Regla nueva: solo es issue si el CCPP **no** está en `CCPP_DATA[d6]`; allowlist documentada `CCPP_CASERIO_ALIASES` (4 variantes literales del PDF) |
+| **H3** | 3 zonas de la fuente siguen sin cobertura → **decisión del CEO** | Sin alerta (correcto: no se inventa) | `010105:CHILIQUIN` · `060101:INCA CORRAL` · `160405:SANTA ROSA` → D4/D5 en `PENDIENTES.md` |
+| **H4** | 4 caseríos con d6 divergente (PDF: PACAIPAMPA / GeoNames: AYABACA) | Cobertura funcional ✓ | Documentado; el sistema usa la clave alcanzable desde el dropdown |
+| **H5** | 35 filas duplicadas en los PDFs | — | Dedupe por clave; marcadas `duplicado_fuente` en la tabla |
+| **H6** | `data/ubigeo_consolidated.json` sin el d6 160405 (SANTA ROSA DE LORETO) | Data layer desalineado | Alineado (0 divergencias) |
+| **H7** | Audit check 6 imposible de satisfacer (`ipt ⊆ districts_with_off`, sets disjuntos) | 1 issue permanente | Ahora valida que todo d6 exista en UBIGEO |
+
+### Estado del sistema
+
+| | Antes | Ahora |
+|---|---|---|
+| CCPP exactos (COMU-5514) | 234 | **238** |
+| Distritos con CCPP confirmado | 188 | **191** |
+| Zonas IPT (COMU-5672) | 1.798 | 1.798 |
+| Campañas registradas | 2 | 2 (COMU-5569 sigue `zonas_pendiente`, 0 CCPP) |
+| Audit runtime (issues por carga) | 3 | **0** |
+
+### Artefactos del barrido (locales, gitignored — fuente restringida)
+
+- `data/apagados_tabla_completa.csv` — **2.081 filas × 22 columnas**: 282 COMU-5514 (247 CCPP únicos + 35 duplicados) · 1.798 COMU-5672 IPT · 1 fila COMU-5569 pendiente.
+- `data/audit_zonas_apagado.json` — detalle programático.
+- `scripts/audit_zonas_apagado.py` — reproducible: `python3 scripts/audit_zonas_apagado.py`.
+- `docs/AUDITORIA_ZONAS_APAGADO_2026-11-14.md` — informe con H1–H7 y decisiones D4–D6.
+
+### Cambios técnicos
+
+| # | Cambio | Detalle |
+|---|---|---|
+| 1 | `zaNormalizeCcpp()` | Fold canónico (NFKD + sin diacríticos + UPPER + espacio simple). `zaNormalize` (UBIGEO) intacto |
+| 2 | 6 puntos de lookup CCPP | `CCPP_KEYS_NORMALIZED` · `checkZonaApagada` (key + cacheKey) · `zaUpdateCcppInputZoneClass` · `acRender` · `zaFuzzySearchCcpp` (+`zaSimilarity`) · `zaResolveComunicado` |
+| 3 | `ccpp_keys` | +4 claves restauradas (orden lexicográfico) · `total_zones` 238 · `campanas["COMU-5514"].ccpp_count` 238 · `districts_with_off` 188 → 191 |
+| 4 | `auditZonasApagadas()` check 5 | Reescrito: d6 ∈ UBIGEO + CCPP ∈ `CCPP_DATA[d6]` (fold) o alias documentado |
+| 5 | `auditZonasApagadas()` check 6 | `ipt ⊆ districts_with_off` (imposible) → todo d6 de ambos sets ∈ UBIGEO |
+| 6 | `CCPP_CASERIO_ALIASES` | 4 allowlist documentada: `030608:OCCCEPATA` (PDF: "OCCEPATA"), `080602:CHUQUICAHUANA` (PDF: "CHUQICAHUANA"), `090119:HUANDO`, `110208:SAN JUAN DE YANAC` |
+| 7 | `scripts/audit_zonas_apagado.py` | Barrido reproducible fuente ↔ runtime (pérdidas · extras · precisión · huérfanos · data layer · campañas) |
+| 8 | `data/ubigeo_consolidated.json` | +160405 SANTA ROSA DE LORETO (alineado con el UBIGEO inline) |
+
+### Verificación
+
+| Suite | Resultado |
+|---|---|
+| `test_popup.py` | **844/844 PASS** |
+| `test_aggressive.py` | PASS — 238/238 fuzzy |
+| `test_security.py` | CLEAN |
+| `test_codereview.py` | GOOD |
+| `test_browser_static.py` | PASS |
+| `test_ingest_comunicado_zonas.py` | 76/76 PASS |
+| Audit runtime | **0 issues** (antes 3) |
+| `node --check` JS inline | OK |
+
+---
+
 ## [3.10.83] — 2026-11-14 — 🛰️ Registro de campañas + COMU-5569 (campaña diciembre 2026)
 
 ### Qué cambia

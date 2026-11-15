@@ -4104,7 +4104,7 @@ font-size: 10px;
           <!-- v3.10.69: build chip SIEMPRE visible. Si el número no cambia
                tras recargar, el browser está sirviendo otro archivo/versión.
                Es el indicador de "qué build estás viendo" sin abrir DevTools. -->
-          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.83</span>
+          <span class="build-chip" id="buildChip" title="Build servido — si no cambia tras recargar, hay caché">v3.10.84</span>
           <svg class="grid-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -4629,7 +4629,7 @@ font-size: 10px;
       <span>por</span>
       <strong>Alexander Salvador</strong>
       <span class="heart">♥</span>
-      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.83</span>
+      <span class="footer-version" id="footerVersion" title="Versión del popup desplegada — si este número no cambia, el navegador está sirviendo caché">v3.10.84</span>
     </span>
   </footer>
 </div>
@@ -6064,9 +6064,9 @@ const CCPP_LOADED = true;
 //   - d2: solo departamentos con >=40% de distritos apagados (≥10 distritos)
 // Extracción: pdfplumber (Grupo 1) + OCR visual (Grupo 3) en sesión 2026-10-14.
 const ZONAS_APAGADAS = {
-  ccpp_keys: new Set(["010105:VITUYA","010114:SAN JOSE","010114:SANTA CRUZ DEL TINGO","010116:OLLEROS","010116:SAN MIGUEL DE LA REYNA","010117:QUINJALCA","010118:PIPUS","010121:SAN JUAN DE SONCHE","010202:TUTUMBEROS","010513:COLLONCE","010520:SANTA CATALINA","010602:ACHAMAL","010608:MILPUC","010609:SAN JOSE","010610:SANTA ROSA DE HUAYABAMBA","010611:TOTORA","010701:VISTA HERMOSA","010705:LA PALMA","010705:TAMBOLIC","010706:NUEVA YORK","020110:CHACCHAN","020508:CHUSPIC","020804:CASABLANCA","021015:VICHON","021206:CHACLANCAYO","021208:HUARIPAMPA","021701:COLLAHUASI","021707:PAMPAS CHICO","030104:ANTILLA","030107:ACCOPAMPA","030107:PICHIRHUA","030201:SOCNACANCHA","030207:CAVIRA","030209:ARGAMA BAJA","030218:BELEN ANTA","030415:TINTAY","030504:PATAN","030505:PITIC","030608:OCCCEPATA","030611:CHUYAMA","030611:RIO BLANCO","030702:RACCKEY","040204:PUCCHUN","040206:OCONA","040308:ACHANIZO","040504:HUITLLANE","040603:ARCATA","040603:TOCROYO (TOCJRULLO)","040810:TOMEPAMPA","050113:MUYURINA","050203:CUSIBAMBA","050205:CCARHUACCOCCO","050406:SAN JOSE DE SECCE","050502:SACHARACCAY","050507:COMUNPIARI","050507:SIMARIBA","050507:YANASACHA","050603:CABANA","050609:NUEVO SANTIAGO","050609:UCHUYMARCA","050613:OTOCA","050618:SAN ISIDRO DE TOTORA","050701:PAMPAMARCA","050703:PALLANCATA","051005:RACCAYA","051012:ESPITE","051103:CARHUANCA","060202:CACHACHI","060204:LLUCHUBAMBA","060305:LUCMAPAMPA","060418:TOCMOCHE","060506:SANTA CRUZ DE TOLED","060602:CHIPLE","060606:CONDORHUASI","060606:CUYCA","060801:EL NOGAL","060805:EL HUACO","060808:PLAYA AZUL","060812:LA YUNGA","060812:PUERTO HUALLAPE","060901:LA MORA GRANDE","060906:PUERTO TUPAC AMARU","060907:LINDEROS","060907:MANCHARA","061304:CHANCAYBANOS","080203:HUAYQUI","080401:ACCHA PAMPA","080403:CHUMPE-POQUES","080407:HUANCALLE","080408:PALTAYBAMBA","080507:QUEHUE","080602:CHUQUICAHUANA","080701:LA ESQUINA","080706:LUTTO","080806:PICHIGUA","080807:VIRGINIYOC","080904:SANTA MARIA LA NUEVA","080905:CHICO CHINGANILLA","080906:CHANCAMAYO","080906:PUTUCUSI","080909:HUANCACALLE","080914:NUEVO MUNDO","080918:TERESA","081009:POMATE","081106:ATALAYA","081201:URCOS","081208:LUCRE","081210:JULLICUNCA","081210:MAHUAYANI","081210:OCONGATE","090102:ACOBAMBILLA","090108:LARMENTA","090119:HUANDO","090301:TACCSANA","090510:PALTAMARCA","090706:LA COLPA","090706:RUNDO","090718:TINTAY","100201:CAPAPAMPA","100507:PALO ACERO","100511:COYLLARBAMBA","100903:HONORIA","101005:PILCOCANCHA","110208:SAN JUAN DE YANAC","120124:HUANUSCO","120124:MIO TAMBO","120124:SAN BALVIN","120124:SANTA ROSA DE ILA","120134:LA LIBERTAD","120302:SANTA ROSA DE RIO AMARILLO","120304:PLAYA PAMPA BAJO","120304:SAN FRANCISCO DE ASIS","120304:SAN LUIS DE SHUARO","120405:CANCHAYLLO","120602:RIO BLANCO","120606:ALTO ANAPATI","120606:CIUDAD DE DIOS","120607:SAN JUAN DE HUAHUARI","120701:PIAN","120801:HUARI","130801:JUCUSBAMBA","130809:CHAGUAL","130809:MAYAS","130901:YANASARA","130902:YAMAN","140110:SANTA RITA","140202:CHIÑAMA","140203:LAQUIPAMPA","140205:MOCHUMI VIEJO","140307:MONDRAGON","140308:PASAJE NORTE","140308:QUERPON","150204:LATERAL L","150508:CATAPALLA","150606:YUNGUY","150606:ÑAUPAY","150611:PISCOCOTO","150708:HUANZA","150720:SAN JUAN DE TANTARANCHE","150809:CHIUCHIN","150901:PATON","150901:VIROC","151002:YAURICOCHA","160101:FRAY MARTIN","160103:GALLITO","160107:SANTA CLOTILDE","160108:SANTA MARIA DE OJEAL","160113:MORALILLO","160201:COTOYACU","160201:TUPAC AMARU","160210:POLLERA POZA","160210:SANTA CRUZ","160211:NUEVO CANAAN","160301:SAN REGIS","160302:PARINARI","160305:CONCORDIA","160305:SAN JOSE DE SARAMURO","160401:CHIMBOTE","160401:CUSHILLO COCHA","160503:FLOR DE PUNGA","160503:PINTULLACTA","160504:DOCE DE OCTUBRE","160504:NUEVO ACURACAY","160505:SAN MARTIN DE PIURI ISLA","160505:SANTA ISABEL","160507:MARISCAL CASTILLA","160508:NUEVA ALEJANDRIA","160509:IBERIA","160603:TIRUNTAN","160605:DOS DE MAYO","160605:JUANCITO","160605:TIERRA BLANCA","160702:SANTA MARIA DE CAHUAPANAS","160705:ULLPAYACU","170202:BOCA MANU","180202:SANTIAGO DE PACHAS","190102:QUIPARACRA","190104:ANIMON","190106:PALLANCHACRA","190107:CUTUCHACA","190109:SAN PEDRO DE RACO","200201:CURRILCAS","200201:PAPELLILLO","200201:PARAGUERO","200201:PINGOLA","200201:TOJAS","200201:TULMAN DE MATALACAS","200304:CONGOÑA","200409:SAN MIGUEL","200604:LANCONES","210208:MUNANI","210309:LANLACUNI BAJO","210803:CUPI","220101:LOS ANGELES","220204:LEDOY","220304:EL CHAPARRAL","220406:TINGO DE SAPOSOA","220502:ALTO CUTERVO","220502:PACAYZAPA","220502:PORVENIR AMAZONICO","220504:BONILLA","220504:SHUCSHUYACU","220510:PONAZAPA","220601:HUAYABAMBA","220601:HUINGUILLO","220704:MISHQUIYACU","220906:NUEVO SAN JUAN","220906:PELEJO","221003:BUENOS AIRES (LA LOMA)","230107:VILA VILANI","230302:EL CAIRO","230302:ILABAYA","230405:CHALLAGUAYA","250301:HUIPOCA"]),
-  districts_with_off: new Set(["010105", "010114", "010116", "010117", "010118", "010121", "010202", "010513", "010520", "010602", "010608", "010609", "010610", "010611", "010701", "010705", "010706", "020110", "020508", "020804", "021015", "021206", "021208", "021701", "021707", "030104", "030107", "030201", "030207", "030209", "030218", "030415", "030504", "030505", "030608", "030611", "030702", "040204", "040206", "040308", "040504", "040603", "040810", "050113", "050203", "050205", "050406", "050502", "050507", "050603", "050609", "050613", "050618", "050701", "050703", "051005", "051012", "051103", "060202", "060204", "060305", "060418", "060506", "060602", "060606", "060801", "060805", "060808", "060812", "060901", "060906", "060907", "061304", "080203", "080401", "080403", "080407", "080408", "080507", "080602", "080701", "080706", "080806", "080807", "080904", "080905", "080906", "080909", "080914", "080918", "081009", "081106", "081201", "081208", "081210", "090102", "090108", "090119", "090301", "090510", "090706", "090718", "100201", "100507", "100511", "100903", "101005", "110208", "120124", "120134", "120302", "120304", "120405", "120602", "120606", "120607", "120701", "120801", "130801", "130809", "130901", "130902", "140110", "140202", "140203", "140205", "140307", "140308", "150204", "150508", "150606", "150611", "150708", "150720", "150809", "150901", "151002", "160101", "160103", "160107", "160108", "160113", "160201", "160210", "160211", "160301", "160302", "160305", "160401", "160503", "160504", "160505", "160507", "160508", "160509", "160603", "160605", "160702", "160705", "170202", "180202", "190102", "190104", "190106", "190107", "190109", "200201", "200304", "200409", "200604", "210208", "210309", "210803", "220101", "220204", "220304", "220406", "220502", "220504", "220510", "220601", "220704", "220906", "221003", "230107", "230302", "230405", "250301"]),
-  total_zones: 234,  // v3.10.83: = ccpp_keys.size (234 CCPP exactos COMU-5514). Las 1.798 zonas IPT (COMU-5672) viven en ZONAS_APAGADAS_INTEL.ipt_districts, NO en este set.
+  ccpp_keys: new Set(["010105:VITUYA","010114:SAN JOSE","010114:SANTA CRUZ DEL TINGO","010116:OLLEROS","010116:SAN MIGUEL DE LA REYNA","010117:QUINJALCA","010118:PIPUS","010121:SAN JUAN DE SONCHE","010202:TUTUMBEROS","010512:OCALLI","010513:COLLONCE","010520:SANTA CATALINA","010602:ACHAMAL","010608:MILPUC","010609:SAN JOSE","010610:SANTA ROSA DE HUAYABAMBA","010611:TOTORA","010701:VISTA HERMOSA","010705:LA PALMA","010705:TAMBOLIC","010706:NUEVA YORK","020110:CHACCHAN","020508:CHUSPIC","020804:CASABLANCA","021015:VICHON","021206:CHACLANCAYO","021208:HUARIPAMPA","021701:COLLAHUASI","021707:PAMPAS CHICO","030104:ANTILLA","030107:ACCOPAMPA","030107:PICHIRHUA","030201:SOCNACANCHA","030207:CAVIRA","030209:ARGAMA BAJA","030218:BELEN ANTA","030415:TINTAY","030504:PATAN","030505:PITIC","030608:OCCCEPATA","030611:CHUYAMA","030611:RIO BLANCO","030702:RACCKEY","040204:PUCCHUN","040206:OCONA","040308:ACHANIZO","040411:TIPAN","040504:HUITLLANE","040603:ARCATA","040603:TOCROYO (TOCJRULLO)","040810:TOMEPAMPA","050113:MUYURINA","050203:CUSIBAMBA","050205:CCARHUACCOCCO","050406:SAN JOSE DE SECCE","050502:SACHARACCAY","050507:COMUNPIARI","050507:SIMARIBA","050507:YANASACHA","050603:CABANA","050609:NUEVO SANTIAGO","050609:UCHUYMARCA","050613:OTOCA","050618:SAN ISIDRO DE TOTORA","050701:PAMPAMARCA","050703:PALLANCATA","051005:RACCAYA","051012:ESPITE","051103:CARHUANCA","060202:CACHACHI","060204:LLUCHUBAMBA","060305:LUCMAPAMPA","060418:TOCMOCHE","060506:SANTA CRUZ DE TOLED","060602:CHIPLE","060606:CONDORHUASI","060606:CUYCA","060801:EL NOGAL","060805:EL HUACO","060808:PLAYA AZUL","060812:LA YUNGA","060812:PUERTO HUALLAPE","060901:LA MORA GRANDE","060906:PUERTO TUPAC AMARU","060907:LINDEROS","060907:MANCHARA","061304:CHANCAYBANOS","080203:HUAYQUI","080206:RONDOCAN","080401:ACCHA PAMPA","080403:CHUMPE-POQUES","080407:HUANCALLE","080408:PALTAYBAMBA","080507:QUEHUE","080602:CHUQUICAHUANA","080701:LA ESQUINA","080706:LUTTO","080806:PICHIGUA","080807:VIRGINIYOC","080904:SANTA MARIA LA NUEVA","080905:CHICO CHINGANILLA","080906:CHANCAMAYO","080906:PUTUCUSI","080909:HUANCACALLE","080914:NUEVO MUNDO","080918:TERESA","081009:POMATE","081106:ATALAYA","081201:URCOS","081208:LUCRE","081210:JULLICUNCA","081210:MAHUAYANI","081210:OCONGATE","090102:ACOBAMBILLA","090108:LARMENTA","090119:HUANDO","090301:TACCSANA","090510:PALTAMARCA","090706:LA COLPA","090706:RUNDO","090718:TINTAY","100201:CAPAPAMPA","100507:PALO ACERO","100511:COYLLARBAMBA","100903:HONORIA","101005:PILCOCANCHA","110208:SAN JUAN DE YANAC","120124:HUANUSCO","120124:MIO TAMBO","120124:SAN BALVIN","120124:SANTA ROSA DE ILA","120134:LA LIBERTAD","120302:SANTA ROSA DE RIO AMARILLO","120304:PLAYA PAMPA BAJO","120304:SAN FRANCISCO DE ASIS","120304:SAN LUIS DE SHUARO","120405:CANCHAYLLO","120602:RIO BLANCO","120606:ALTO ANAPATI","120606:CIUDAD DE DIOS","120607:SAN JUAN DE HUAHUARI","120701:PIAN","120801:HUARI","130801:JUCUSBAMBA","130809:CHAGUAL","130809:MAYAS","130901:YANASARA","130902:YAMAN","140110:SANTA RITA","140202:CHIÑAMA","140203:LAQUIPAMPA","140205:MOCHUMI VIEJO","140307:MONDRAGON","140308:PASAJE NORTE","140308:QUERPON","150204:LATERAL L","150508:CATAPALLA","150606:YUNGUY","150606:ÑAUPAY","150611:PISCOCOTO","150708:HUANZA","150720:SAN JUAN DE TANTARANCHE","150809:CHIUCHIN","150901:PATON","150901:VIROC","151002:YAURICOCHA","160101:FRAY MARTIN","160103:GALLITO","160107:SANTA CLOTILDE","160108:SANTA MARIA DE OJEAL","160113:MORALILLO","160201:COTOYACU","160201:TUPAC AMARU","160210:POLLERA POZA","160210:SANTA CRUZ","160211:NUEVO CANAAN","160301:SAN REGIS","160302:PARINARI","160305:CONCORDIA","160305:SAN JOSE DE SARAMURO","160401:CHIMBOTE","160401:CUSHILLO COCHA","160503:FLOR DE PUNGA","160503:PINTULLACTA","160504:DOCE DE OCTUBRE","160504:NUEVO ACURACAY","160505:SAN MARTIN DE PIURI ISLA","160505:SANTA ISABEL","160507:MARISCAL CASTILLA","160508:NUEVA ALEJANDRIA","160509:IBERIA","160603:TIRUNTAN","160605:DOS DE MAYO","160605:JUANCITO","160605:TIERRA BLANCA","160702:SANTA MARIA DE CAHUAPANAS","160705:ULLPAYACU","170202:BOCA MANU","180202:SANTIAGO DE PACHAS","190102:QUIPARACRA","190104:ANIMON","190106:PALLANCHACRA","190107:CUTUCHACA","190109:SAN PEDRO DE RACO","200201:CURRILCAS","200201:PAPELLILLO","200201:PARAGUERO","200201:PINGOLA","200201:TOJAS","200201:TULMAN DE MATALACAS","200304:CONGOÑA","200409:SAN MIGUEL","200604:LANCONES","210208:MUNANI","210309:LANLACUNI BAJO","210803:CUPI","220101:LOS ANGELES","220204:LEDOY","220304:EL CHAPARRAL","220406:TINGO DE SAPOSOA","220502:ALTO CUTERVO","220502:PACAYZAPA","220502:PORVENIR AMAZONICO","220504:BONILLA","220504:SHUCSHUYACU","220510:PONAZAPA","220601:HUAYABAMBA","220601:HUINGUILLO","220704:MISHQUIYACU","220906:NUEVO SAN JUAN","220906:PELEJO","221003:BUENOS AIRES (LA LOMA)","221003:POLVORA","230107:VILA VILANI","230302:EL CAIRO","230302:ILABAYA","230405:CHALLAGUAYA","250301:HUIPOCA"]),
+  districts_with_off: new Set(["010105", "010114", "010116", "010117", "010118", "010121", "010202", "010512", "010513", "010520", "010602", "010608", "010609", "010610", "010611", "010701", "010705", "010706", "020110", "020508", "020804", "021015", "021206", "021208", "021701", "021707", "030104", "030107", "030201", "030207", "030209", "030218", "030415", "030504", "030505", "030608", "030611", "030702", "040204", "040206", "040308", "040411", "040504", "040603", "040810", "050113", "050203", "050205", "050406", "050502", "050507", "050603", "050609", "050613", "050618", "050701", "050703", "051005", "051012", "051103", "060202", "060204", "060305", "060418", "060506", "060602", "060606", "060801", "060805", "060808", "060812", "060901", "060906", "060907", "061304", "080203", "080206", "080401", "080403", "080407", "080408", "080507", "080602", "080701", "080706", "080806", "080807", "080904", "080905", "080906", "080909", "080914", "080918", "081009", "081106", "081201", "081208", "081210", "090102", "090108", "090119", "090301", "090510", "090706", "090718", "100201", "100507", "100511", "100903", "101005", "110208", "120124", "120134", "120302", "120304", "120405", "120602", "120606", "120607", "120701", "120801", "130801", "130809", "130901", "130902", "140110", "140202", "140203", "140205", "140307", "140308", "150204", "150508", "150606", "150611", "150708", "150720", "150809", "150901", "151002", "160101", "160103", "160107", "160108", "160113", "160201", "160210", "160211", "160301", "160302", "160305", "160401", "160503", "160504", "160505", "160507", "160508", "160509", "160603", "160605", "160702", "160705", "170202", "180202", "190102", "190104", "190106", "190107", "190109", "200201", "200304", "200409", "200604", "210208", "210309", "210803", "220101", "220204", "220304", "220406", "220502", "220504", "220510", "220601", "220704", "220906", "221003", "230107", "230302", "230405", "250301"]),
+  total_zones: 238,  // v3.10.84: = ccpp_keys.size (238 CCPP exactos COMU-5514; +4 restaurados del barrido de datos: 010512:OCALLI, 040411:TIPAN, 080206:RONDOCAN, 221003:POLVORA). Las 1.798 zonas IPT (COMU-5672) viven en ZONAS_APAGADAS_INTEL.ipt_districts, NO en este set.
   total_districts: 1821,
   fuente: "Bases de Apagado Movistar (COMU-5514) + COMU-5672 IPT + registro campañas COMU-5569 (regenerado 2026-11-14)",
   fecha: "2026-11-14"
@@ -6093,7 +6093,7 @@ const ZONAS_APAGADAS_INTEL = {
   // ═══════════════════════════════════════════════════════════════════════
   // Cada campaña declara su estado de cobertura de zonas, fecha de apagado,
   // speechs, fuente y — si está incompleta — qué falta exactamente.
-  //   ccpp_set_ref → Set legado en ZONAS_APAGADAS (COMU-5514, 234 CCPP)
+  //   ccpp_set_ref → Set legado en ZONAS_APAGADAS (COMU-5514, 238 CCPP)
   //   ccpp_set     → array "d6:CCPP" (campañas nuevas; vacío = sin cobertura)
   // Regla anti-fabricación: una campaña con estado "zonas_pendiente" DEBE
   // tener ccpp_count === 0, faltantes no vacío y fuente_urls no vacío.
@@ -6107,7 +6107,7 @@ const ZONAS_APAGADAS_INTEL = {
       fecha_apagado: "2026-09-11",
       fecha_sms_inicio: "2026-09-04",
       q_clientes: 18400,
-      ccpp_count: 234,
+      ccpp_count: 238,
       ccpp_set_ref: "ccpp_keys",
       ccpp_set: [],
       speech_visor: "comu5514_visor_unico",
@@ -6115,7 +6115,7 @@ const ZONAS_APAGADAS_INTEL = {
       fuente: "Bases de Apagado PDFs (APAGADO.pdf G2 · APAGADO2.pdf G3 · APAGADP1.pdf G1) + zonas_apagadas_manual.json",
       fuente_urls: [],
       faltantes: [],
-      notas: "Campaña septiembre 2026 — 18.4K clientes en 3 grupos (1.700 / 15.000 / 1.700). Cobertura: 234 CCPP exactos en 188 distritos."
+      notas: "Campaña septiembre 2026 — 18.4K clientes en 3 grupos (1.700 / 15.000 / 1.700). Cobertura: 238 CCPP exactos en 191 distritos."
     },
     "COMU-5569": {
       comunicado: "COMU-5569",
@@ -6294,6 +6294,17 @@ function zaNormalize(s) {
   return String(s).trim().toUpperCase().replace(/\s+/g, ' ').normalize('NFC');
 }
 
+// v3.10.84: fold canónico de CCPP — NFKD + sin diacríticos + UPPER + espacio simple.
+// Permite que "Ocallí" (GeoNames) y "OCALLI" (PDF) sean la MISMA clave.
+// OJO: NO usar para nombres geográficos (depto/prov/dist) — zaNormalize sigue
+// intacto para UBIGEO. Este fold es SOLO para el mundo CCPP.
+function zaNormalizeCcpp(s) {
+  if (!s) return '';
+  var t = String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  t = t.toUpperCase().replace(/\s+/g, ' ').trim();
+  return t.normalize('NFC');
+}
+
 // v3.10.2: Levenshtein distance para fuzzy matching de CCPP.
 // Retorna el número mínimo de ediciones (insert/delete/replace) para
 // convertir `a` en `b`. Usado para sugerir CCPPs similares cuando el
@@ -6327,9 +6338,11 @@ function zaLevenshtein(a, b) {
 // v3.10.2: Ratio de similitud 0..1 basado en Levenshtein.
 // 1.0 = idéntico, 0.0 = completamente diferente.
 // Usa la longitud del string más largo como denominador.
+// v3.10.84: la comparación usa el fold canónico de CCPP (zaNormalizeCcpp):
+// "Ocallí" vs "OCALLI" = 1.0 (antes 0.83 por el acento).
 function zaSimilarity(a, b) {
   if (!a || !b) return 0;
-  var an = zaNormalize(a), bn = zaNormalize(b);
+  var an = zaNormalizeCcpp(a), bn = zaNormalizeCcpp(b);
   if (an === bn) return 1.0;
   var maxLen = Math.max(an.length, bn.length);
   if (maxLen === 0) return 1.0;
@@ -6394,7 +6407,10 @@ function zaBuildFuzzyIndex() {
 function zaFuzzySearchCcpp(d6, queryCcpp, threshold) {
   if (!ZA_FUZZY_BY_D6) zaBuildFuzzyIndex();
   if (threshold === undefined) threshold = 0.7;
-  var qn = zaNormalize(queryCcpp);
+  // v3.10.84: el query se fold-ea (zaNormalizeCcpp) para que "Ocallí" y
+  // "OCALLI" sean el mismo CCPP. El `name` que se devuelve al supervisor
+  // sigue siendo el literal de ccpp_keys (sin tocar).
+  var qn = zaNormalizeCcpp(queryCcpp);
   if (!qn) return [];
   var candidates = ZA_FUZZY_BY_D6.get(d6) || [];
   var matches = [];
@@ -6491,13 +6507,23 @@ function zaDefaultComunicado() {
 }
 
 // Atribución de un CCPP exacto ("d6:CCPP") a la campaña que lo declara.
+// v3.10.84: comparación por fold canónico (zaNormalizeCcpp) — el key que
+// arma checkZonaApagada ya viene fold-eado ("010512:OCALLI") y las claves del
+// set pueden traer tildes ("140202:CHIÑAMA"). Sin fold, la atribución
+// perdería esos casos.
 function zaResolveComunicado(ccppKey) {
   if (!ccppKey) return zaDefaultComunicado();
   var camps = zaCampanas();
   var order = zaCampanasOrdenadas();
+  var want = zaNormalizeCcpp(ccppKey);
   for (var i = 0; i < order.length; i++) {
     var set = zaCampanaSet(camps[order[i]]);
-    if (set && typeof set.has === 'function' && set.has(ccppKey)) return order[i];
+    if (!set || typeof set.has !== 'function') continue;
+    var found = false;
+    set.forEach(function (k) {
+      if (!found && zaNormalizeCcpp(k) === want) found = true;
+    });
+    if (found) return order[i];
   }
   return zaDefaultComunicado();
 }
@@ -6518,7 +6544,9 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
 
   // v3.10.2: LRU cache. Key = d6:ccpp_normalizado (o d6 si no hay ccpp).
   // Supera 1000 entradas: evict oldest (FIFO).
-  var cacheKey = d6 + (hasCcpp ? ':' + zaNormalize(ccpp) : ':_');
+  // v3.10.84: el key del cache usa el fold canónico (zaNormalizeCcpp) — el
+  // MISMO key que se consulta en CCPP_KEYS_NORMALIZED.
+  var cacheKey = d6 + (hasCcpp ? ':' + zaNormalizeCcpp(ccpp) : ':_');
   var cached = zaCacheGet(cacheKey);
   if (cached !== undefined) return cached;
 
@@ -6535,7 +6563,9 @@ function checkZonaApagada(depto, prov, dist, ccpp) {
   // Nivel 1: ccpp exacto (COMU-5514) — confirmación más específica.
   // v3.10.0: severidad ALTA — es el único nivel con CCPP físicamente verificado en lista.
   if (hasCcpp) {
-    var key = d6 + ':' + zaNormalize(ccpp);
+    // v3.10.84: key con fold canónico (zaNormalizeCcpp) → "Ocallí" y
+    // "OCALLI" resuelven a la MISMA clave y disparan la alerta.
+    var key = d6 + ':' + zaNormalizeCcpp(ccpp);
     if (lookupCcpp(key)) {
       result = {
         nivel: 'ccpp_exacto',
@@ -6657,7 +6687,8 @@ function zaUpdateCcppInputZoneClass() {
   if (!codes || !codes.d6) return;
   var d6 = codes.d6;
   // v3.8.0: usar pre-normalized set (CCPP_KEYS_NORMALIZED) si está disponible.
-  var itemKey = d6 + ':' + zaNormalize(ccppVal);
+  // v3.10.84: itemKey con fold canónico (zaNormalizeCcpp).
+  var itemKey = d6 + ':' + zaNormalizeCcpp(ccppVal);
   var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
     ? CCPP_KEYS_NORMALIZED.has(itemKey)
     : ZONAS_APAGADAS_STATE.ccpp_keys.has(itemKey);
@@ -7557,7 +7588,8 @@ function acRender(key) {
       // v3.8.0: lookup en CCPP_KEYS_NORMALIZED (pre-normalizado) o fallback
       // al set original. La normalización debe ser EXACTAMENTE la misma
       // que la usada en CCPP_KEYS_NORMALIZED al startup.
-      var itemKey = d6ForMark + ':' + (item.normalize ? item.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : item.toUpperCase().replace(/\s+/g, ' ').trim());
+      // v3.10.84: fold canónico (zaNormalizeCcpp) — sin tildes.
+      var itemKey = d6ForMark + ':' + zaNormalizeCcpp(item);
       if (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED) {
         off = CCPP_KEYS_NORMALIZED.has(itemKey);
       } else {
@@ -7761,7 +7793,9 @@ function updateCcppInputZoneClass() {
   var d6 = codes.d6;
   // v3.8.0: usar pre-normalized set (CCPP_KEYS_NORMALIZED) si está disponible.
   // Misma normalización que en auditZonasApagadas al startup.
-  var itemKey = ccppVal.normalize ? ccppVal.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : ccppVal.toUpperCase().replace(/\s+/g, ' ').trim();
+  // v3.10.84: fold canónico (zaNormalizeCcpp) — mismo criterio que
+  // CCPP_KEYS_NORMALIZED.
+  var itemKey = zaNormalizeCcpp(ccppVal);
   var hasMatch = (typeof CCPP_KEYS_NORMALIZED !== 'undefined' && CCPP_KEYS_NORMALIZED)
     ? CCPP_KEYS_NORMALIZED.has(d6 + ':' + itemKey)
     : ZONAS_APAGADAS.ccpp_keys.has(d6 + ':' + itemKey);
@@ -8769,6 +8803,8 @@ document.addEventListener('DOMContentLoaded', function () {
 // v3.8.0: Set pre-normalizado para lookup O(1) de CCPP apagados.
 // v3.10.7 (A2): se inicializa al final del script (línea initRuntimeState abajo)
 // para que esté disponible en Node.js runtime, no solo en browser.
+// v3.10.84: el pre-set se construye con el FOLD canónico (zaNormalizeCcpp)
+// → "Ocallí" (GeoNames) y "OCALLI" (PDF) son la misma clave.
 var CCPP_KEYS_NORMALIZED = null;
 
 // v3.10.7 (A2): INIT al module-level. Antes esto estaba en DOMContentLoaded
@@ -8782,7 +8818,7 @@ var CCPP_KEYS_NORMALIZED = null;
     if (idx < 0) return;
     var d6 = k.substring(0, idx);
     var name = k.substring(idx + 1);
-    var normalized = name.normalize ? name.normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim() : name.toUpperCase().replace(/\s+/g, ' ').trim();
+    var normalized = zaNormalizeCcpp(name);
     CCPP_KEYS_NORMALIZED.add(d6 + ':' + normalized);
   });
 })();
@@ -8801,6 +8837,23 @@ var CCPP_COUNT_BY_D6 = new Map();
     CCPP_COUNT_BY_D6.set(d6, (CCPP_COUNT_BY_D6.get(d6) || 0) + 1);
   });
 })();
+
+// v3.10.84: EXCEPCIONES DOCUMENTADAS del check 5 del audit (precisión).
+// Son keys cuyo CCPP existe en la fuente (PDF de Bases de Apagado) pero cuya
+// grafía NO aparece literalmente en CCPP_DATA[d6] (GeoNames):
+//   030608:OCCCEPATA → el PDF dice "OCCEPATA" (1 C).
+//   080602:CHUQUICAHUANA → el PDF dice "CHUQICAHUANA" (sin H).
+//   090119:HUANDO → GeoNames no lista la cabecera del distrito entre sus
+//     caseríos; el lugar existe (es el propio distrito HUANDO).
+//   110208:SAN JUAN DE YANAC → ídem (cabecera de distrito no listada).
+// Allowlist explícita y mínima: cualquier homónimo de distrito que NO esté
+// aquí y no aparezca en CCPP_DATA[d6] se reporta como issue.
+var CCPP_CASERIO_ALIASES = new Set([
+  "030608:OCCCEPATA",
+  "080602:CHUQUICAHUANA",
+  "090119:HUANDO",
+  "110208:SAN JUAN DE YANAC"
+]);
 
 // v3.8.0: AUDITORÍA DE INTEGRIDAD — verifica ZONAS_APAGADAS end-to-end.
 // Loguea issues a console.warn. No rompe la app.
@@ -8842,10 +8895,25 @@ function auditZonasApagadas() {
   if (ZONAS_APAGADAS.total_zones !== ZONAS_APAGADAS.ccpp_keys.size) {
     issues.push('total_zones (' + ZONAS_APAGADAS.total_zones + ') ≠ ccpp_keys.size (' + ZONAS_APAGADAS.ccpp_keys.size + ')');
   }
-  // Check 5 (v3.8.0 — BUG 2.1 fix verification): CCPP name NO debe ser
-  // igual al nombre del distrito (data contamination histórica). Si
-  // encuentra, marca como issue y excluye de la vista del distrito.
+  // Check 5 (v3.10.84 — PRECISIÓN): el CCPP de cada key debe existir en la
+  // fuente de verdad (CCPP_DATA de GeoNames) y el d6 debe ser un distrito real.
+  //
+  // v3.8.0 usaba "CCPP name == distrito name ⇒ contaminación" (data
+  // contamination histórica). Ese criterio era demasiado grueso: 34 de las
+  // 38 filas con CCPP == DISTRITO son caseríos LEGÍTIMOS de GeoNames
+  // (p. ej. 010116:OLLEROS → CCPP_DATA[010116] contiene "Olleros"), así
+  // que el check reportaba falsos positivos en CADA carga.
+  //
+  // Reglas nuevas (fold canónico zaNormalizeCcpp):
+  //  (a) el d6 de cada key DEBE existir en UBIGEO (si no → issue).
+  //  (b) si CCPP_DATA[d6] tiene elementos, el CCPP (fold) DEBE estar en
+  //      CCPP_DATA[d6] (fold) o en CCPP_CASERIO_ALIASES (si no → issue
+  //      "ccpp fuera de caserios").
+  //  (c) "CCPP == DISTRITO" ya NO es issue por sí solo: sólo es issue si
+  //      además el CCPP no aparece en CCPP_DATA[d6] ni en el alias set
+  //      (ambigüedad real entre "el caserío" y "el distrito").
   var ubigeo = (typeof UBIGEO !== 'undefined') ? UBIGEO : null;
+  var ccppData = (typeof CCPP_DATA !== 'undefined') ? CCPP_DATA : null;
   if (ubigeo) {
     // Build d6 -> distrito name lookup
     var distByD6 = {};
@@ -8856,29 +8924,74 @@ function auditZonasApagadas() {
             for (var distName in ubigeo[depto].provincias[prov].distritos) {
               var info = ubigeo[depto].provincias[prov].distritos[distName];
               if (info && info._ubigeo) {
-                distByD6[info._ubigeo] = distName.toUpperCase();
+                distByD6[info._ubigeo] = distName;
               }
             }
           }
         }
       }
     }
-    var contaminated = [];
+    var ccppDataIdx = {};   // d6 -> Set(fold(caserío))
+    if (ccppData) {
+      Object.keys(ccppData).forEach(function (d6) {
+        if (!Array.isArray(ccppData[d6])) return;
+        var set = new Set();
+        ccppData[d6].forEach(function (c) { set.add(zaNormalizeCcpp(c)); });
+        ccppDataIdx[d6] = set;
+      });
+    }
+    var d6NotInUbigeo = [];      // (a)
+    var ccppOutsideCaserios = [];// (b) CCPP inexistente en GeoNames
+    var ambiguousHomonyms = [];  // (c) CCPP == DISTRITO sin respaldo en GeoNames
     ZONAS_APAGADAS.ccpp_keys.forEach(function (k) {
       var idx = k.indexOf(':');
       if (idx < 0) return;
       var d6 = k.substring(0, idx);
-      var ccppName = k.substring(idx + 1).trim().toUpperCase();
+      var ccppName = k.substring(idx + 1);
       var distName = distByD6[d6];
-      if (distName && ccppName === distName) {
-        contaminated.push(k);
+      // (a) el d6 debe ser un distrito real
+      if (!distName) {
+        d6NotInUbigeo.push(k);
+        return;
+      }
+      var alias = CCPP_CASERIO_ALIASES.has(k);
+      var caserios = ccppDataIdx[d6];
+      if (!caserios || caserios.size === 0) return;  // d6 sin caseríos: no verificable
+      var folded = zaNormalizeCcpp(ccppName);
+      if (caserios.has(folded)) return;              // respaldado por GeoNames
+      if (alias) return;                             // excepción documentada
+      // (c) homónimo del distrito sin respaldo → ambigüedad real
+      if (folded === zaNormalizeCcpp(distName)) {
+        ambiguousHomonyms.push(k);
+      } else {
+        ccppOutsideCaserios.push(k);
       }
     });
-    if (contaminated.length > 0) {
-      issues.push('ccpp_keys contaminated (CCPP name == distrito name): ' + contaminated.length);
+    if (d6NotInUbigeo.length > 0) {
+      issues.push('ccpp_keys con d6 fuera de UBIGEO: ' + d6NotInUbigeo.length +
+                  ' (' + d6NotInUbigeo.slice(0, 5).join(', ') + ')');
+    }
+    if (ccppOutsideCaserios.length > 0) {
+      issues.push('ccpp fuera de caserios (no está en CCPP_DATA): ' + ccppOutsideCaserios.length +
+                  ' (' + ccppOutsideCaserios.slice(0, 5).join(', ') + ')');
+    }
+    if (ambiguousHomonyms.length > 0) {
+      issues.push('ccpp homónimo del distrito sin respaldo en GeoNames: ' + ambiguousHomonyms.length +
+                  ' (' + ambiguousHomonyms.slice(0, 5).join(', ') + ')');
     }
   }
-  // Check 6 (v3.8.0): ipt_districts debe existir y ser subset de districts_with_off
+  // Check 6 (v3.10.84): coherencia de los SETS DE DISTRITOS contra UBIGEO.
+  // v3.8.0 exigía "ipt_districts ⊆ districts_with_off". Ese invariante era
+  // válido cuando districts_with_off = 1821 (los 1798 del set IPT + 23
+  // extras) y dejó de existir en v3.10.13, cuando districts_with_off se
+  // estrechó a los distritos con CCPP exacto de COMU-5514 (191 hoy). Los dos
+  // sets son de campañas DISTINTAS (COMU-5514 vs COMU-5672) y hoy son
+  // disjuntos por diseño: la relación de subconjunto ya no aplica en ningún
+  // sentido, así que el check viejo era un falso positivo permanente.
+  // Se verifica el invariante que sí vale en el modelo actual:
+  //  (a) todo d6 de districts_with_off existe en UBIGEO,
+  //  (b) todo d6 de ipt_districts existe en UBIGEO,
+  //  (c) el set IPT no está vacío.
   if (typeof ZONAS_APAGADAS_INTEL === 'undefined' || !ZONAS_APAGADAS_INTEL.ipt_districts) {
     issues.push('ipt_districts missing o vacío (COMU-5672 IPT zone)');
   } else {
@@ -8886,14 +8999,34 @@ function auditZonasApagadas() {
     if (iptD6.size === 0) {
       issues.push('ipt_districts está VACÍO');
     }
-    var iptNotInDistricts = [];
-    iptD6.forEach(function (d6) {
-      if (!ZONAS_APAGADAS.districts_with_off.has(d6)) {
-        iptNotInDistricts.push(d6);
+    var ubigeoD6 = {};
+    if (ubigeo) {
+      for (var dDepto in ubigeo) {
+        if (!ubigeo[dDepto] || !ubigeo[dDepto].provincias) continue;
+        for (var dProv in ubigeo[dDepto].provincias) {
+          if (!ubigeo[dDepto].provincias[dProv] || !ubigeo[dDepto].provincias[dProv].distritos) continue;
+          for (var dDist in ubigeo[dDepto].provincias[dProv].distritos) {
+            var dInfo = ubigeo[dDepto].provincias[dProv].distritos[dDist];
+            if (dInfo && dInfo._ubigeo) ubigeoD6[dInfo._ubigeo] = true;
+          }
+        }
       }
+    }
+    var dwoNotInUbigeo = [];
+    ZONAS_APAGADAS.districts_with_off.forEach(function (d6) {
+      if (!ubigeoD6[d6]) dwoNotInUbigeo.push(d6);
     });
-    if (iptNotInDistricts.length > 0) {
-      issues.push('ipt_districts d6 NO en districts_with_off: ' + iptNotInDistricts.length);
+    var iptNotInUbigeo = [];
+    iptD6.forEach(function (d6) {
+      if (!ubigeoD6[d6]) iptNotInUbigeo.push(d6);
+    });
+    if (dwoNotInUbigeo.length > 0) {
+      issues.push('districts_with_off d6 NO en UBIGEO: ' + dwoNotInUbigeo.length +
+                  ' (' + dwoNotInUbigeo.slice(0, 5).join(', ') + ')');
+    }
+    if (iptNotInUbigeo.length > 0) {
+      issues.push('ipt_districts d6 NO en UBIGEO: ' + iptNotInUbigeo.length +
+                  ' (' + iptNotInUbigeo.slice(0, 5).join(', ') + ')');
     }
   }
   // Check 7 (v3.9.15): speech data integrity — cada speech data tiene cuerpo
